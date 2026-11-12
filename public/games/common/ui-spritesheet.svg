@@ -1,0 +1,423 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <clipPath id="flagClipEn">
+      <rect x="264" y="15" width="48" height="34" rx="6"/>
+    </clipPath>
+    <clipPath id="flagClipId">
+      <rect x="328" y="15" width="48" height="34" rx="6"/>
+    </clipPath>
+  </defs>
+
+  <!-- ==================== ROW 0 (y=0): Brand, Navigation & Flags ==================== -->
+
+  <!-- [0,0] ui-lotus: Crisp Architectural Lotus Emblem -->
+  <g transform="translate(0,0)">
+    <rect x="9" y="9" width="46" height="46" rx="10" fill="#FAF7F2" stroke="#D6CFC2" stroke-width="2"/>
+    <path d="M32 16C26.5 23 25.5 31 32 37C38.5 31 37.5 23 32 16Z" fill="#2563EB" stroke="#18181B" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M21.5 22.5C18 29 19.5 36.5 30.5 38.5C26 33 25 27.5 21.5 22.5Z" fill="#60A5FA" stroke="#18181B" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M42.5 22.5C46 29 44.5 36.5 33.5 38.5C38 33 39 27.5 42.5 22.5Z" fill="#60A5FA" stroke="#18181B" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M16 35C19.5 41.5 26 44 32 43C38 44 44.5 41.5 48 35C42 37.5 37 38.8 32 38.8C27 38.8 22 37.5 16 35Z" fill="#16A34A" stroke="#18181B" stroke-width="2" stroke-linejoin="round"/>
+  </g>
+
+  <!-- [0,1] ui-home: Architectural Home -->
+  <g transform="translate(64,0)">
+    <path d="M12 29L32 13L52 29V48C52 49.7 50.7 51 49 51H15C13.3 51 12 49.7 12 48V29Z" fill="#F4F1EA"/>
+    <path d="M10 30L32 12L54 30" stroke="#18181B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M16 26V48C16 49.7 17.3 51 19 51H45C46.7 51 48 49.7 48 48V26" stroke="#18181B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M26 51V37C26 35.6 27.1 34.5 28.5 34.5H35.5C36.9 34.5 38 35.6 38 37V51" fill="#2563EB" stroke="#18181B" stroke-width="2" stroke-linejoin="round"/>
+  </g>
+
+  <!-- [0,2] ui-login: Teacher Sign-In Portal -->
+  <g transform="translate(128,0)">
+    <path d="M29 14H45C47.8 14 50 16.2 50 19V45C50 47.8 47.8 50 45 50H29" fill="#EFF6FF" stroke="#18181B" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M12 32H37" stroke="#1D4ED8" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M29 24L37 32L29 40" stroke="#1D4ED8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="43.5" cy="32" r="2" fill="#18181B"/>
+  </g>
+
+  <!-- [0,3] ui-community: Clean Globe -->
+  <g transform="translate(192,0)">
+    <circle cx="32" cy="32" r="18" fill="#EFF6FF" stroke="#18181B" stroke-width="2.3"/>
+    <ellipse cx="32" cy="32" rx="8.5" ry="18" fill="#BFDBFE" stroke="#18181B" stroke-width="2"/>
+    <path d="M15 27H49M15 37H49" stroke="#18181B" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="46" cy="17" r="4.5" fill="#16A34A" stroke="#18181B" stroke-width="1.8"/>
+  </g>
+
+  <!-- [0,4] ui-lang-en: Crisp Rectangular Flag (UK/EN) -->
+  <g transform="translate(0,0)">
+    <g clip-path="url(#flagClipEn)">
+      <rect x="264" y="15" width="48" height="34" fill="#1E3A8A"/>
+      <path d="M264 15L312 49M312 15L264 49" stroke="#FFFFFF" stroke-width="7"/>
+      <path d="M264 15L312 49M312 15L264 49" stroke="#DC2626" stroke-width="3"/>
+      <path d="M288 15V49M264 32H312" stroke="#FFFFFF" stroke-width="9"/>
+      <path d="M288 15V49M264 32H312" stroke="#DC2626" stroke-width="5"/>
+    </g>
+    <rect x="264" y="15" width="48" height="34" rx="6" stroke="#334155" stroke-width="1.8"/>
+  </g>
+
+  <!-- [0,5] ui-lang-id: Crisp Rectangular Flag (Indonesia/ID) -->
+  <g transform="translate(0,0)">
+    <g clip-path="url(#flagClipId)">
+      <rect x="328" y="15" width="48" height="17" fill="#DC2626"/>
+      <rect x="328" y="32" width="48" height="17" fill="#FFFFFF"/>
+    </g>
+    <rect x="328" y="15" width="48" height="34" rx="6" stroke="#334155" stroke-width="1.8"/>
+  </g>
+
+  <!-- [0,6] ui-dashboard: Structured 4-Pane Workspace Grid -->
+  <g transform="translate(384,0)">
+    <rect x="13" y="13" width="16" height="16" rx="3.5" fill="#EFF6FF" stroke="#18181B" stroke-width="2.1"/>
+    <rect x="35" y="13" width="16" height="16" rx="3.5" fill="#FEF3C7" stroke="#18181B" stroke-width="2.1"/>
+    <rect x="13" y="35" width="16" height="16" rx="3.5" fill="#DCFCE7" stroke="#18181B" stroke-width="2.1"/>
+    <rect x="35" y="35" width="16" height="16" rx="3.5" fill="#F4F1EA" stroke="#18181B" stroke-width="2.1"/>
+  </g>
+
+  <!-- [0,7] ui-sparkles: Lightning Bolt Crest (Power-Up / Theme Emblem) -->
+  <g transform="translate(448,0)">
+    <path d="M35 12L17 34H30L27 52L47 29H34L35 12Z" fill="#F59E0B" stroke="#18181B" stroke-width="2.2" stroke-linejoin="round"/>
+  </g>
+
+  <!-- ==================== ROW 1 (y=64): Dashboard Actions ==================== -->
+
+  <!-- [1,0] ui-play: Crisp High-Contrast Play Triangle Badge -->
+  <g transform="translate(0,64)">
+    <rect x="13" y="13" width="38" height="38" rx="9" fill="#FFFFFF" stroke="#18181B" stroke-width="2.2"/>
+    <path d="M26 22.5L43 32L26 41.5V22.5Z" fill="#15803D" stroke="#18181B" stroke-width="2" stroke-linejoin="round"/>
+  </g>
+
+  <!-- [1,1] ui-pencil: Editorial Pencil -->
+  <g transform="translate(64,64)">
+    <path d="M39 14L50 25L24 51H13V40L39 14Z" fill="#EFF6FF" stroke="#18181B" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M34 19L45 30" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M13 40L24 51" stroke="#18181B" stroke-width="2"/>
+    <path d="M13 46.5L17.5 51H13V46.5Z" fill="#18181B"/>
+  </g>
+
+  <!-- [1,2] ui-copy: Duplicate Sheets -->
+  <g transform="translate(128,64)">
+    <rect x="23" y="13" width="26" height="30" rx="4" fill="#F4F1EA" stroke="#18181B" stroke-width="2.1"/>
+    <rect x="15" y="21" width="26" height="30" rx="4" fill="#FFFFFF" stroke="#18181B" stroke-width="2.1"/>
+    <path d="M21 31H35M21 38H31" stroke="#2563EB" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+
+  <!-- [1,3] ui-sliders: Activity Settings -->
+  <g transform="translate(192,64)">
+    <path d="M13 20H51M13 32H51M13 44H51" stroke="#18181B" stroke-width="2.3" stroke-linecap="round"/>
+    <rect x="20" y="15.5" width="9" height="9" rx="2.5" fill="#F59E0B" stroke="#18181B" stroke-width="2"/>
+    <rect x="36" y="27.5" width="9" height="9" rx="2.5" fill="#2563EB" stroke="#18181B" stroke-width="2"/>
+    <rect x="23" y="39.5" width="9" height="9" rx="2.5" fill="#16A34A" stroke="#18181B" stroke-width="2"/>
+  </g>
+
+  <!-- [1,4] ui-trash: Recycle Bin -->
+  <g transform="translate(256,64)">
+    <path d="M18 20H46L43.5 48.5C43.3 50.2 41.9 51.5 40.2 51.5H23.8C22.1 51.5 20.7 50.2 20.5 48.5L18 20Z" fill="#FEE2E2" stroke="#18181B" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M14 20H50" stroke="#18181B" stroke-width="2.3" stroke-linecap="round"/>
+    <path d="M26 20V14.5C26 13.7 26.7 13 27.5 13H36.5C37.3 13 38 13.7 38 14.5V20" stroke="#18181B" stroke-width="2.1" stroke-linejoin="round"/>
+    <path d="M27 28V43M32 28V43M37 28V43" stroke="#DC2626" stroke-width="2.1" stroke-linecap="round"/>
+  </g>
+
+  <!-- [1,5] ui-aa: Typography Aa Rename -->
+  <g transform="translate(320,64)">
+    <rect x="10" y="14" width="44" height="36" rx="6" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
+    <path d="M16.5 41L23.5 22L30.5 41M18.8 35.5H28.2" stroke="#18181B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M45 31.5C45 29.2 43 27.8 40.2 27.8C38.1 27.8 36.6 28.5 35.8 29.6M45 31.5V41M45 35.5C45 34.2 42.3 33.5 39.8 34C37.2 34.6 35.8 36.2 35.8 38C35.8 40 37.6 41.2 40 41.2C42.4 41.2 44.3 39.9 45 38.2" stroke="#B45309" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- [1,6] ui-folder: Crisp Folder -->
+  <g transform="translate(384,64)">
+    <path d="M12 19C12 16.8 13.8 15 16 15H26L30.5 20H48C50.2 20 52 21.8 52 24V45C52 47.2 50.2 49 48 49H16C13.8 49 12 47.2 12 45V19Z" fill="#FEF3C7" stroke="#18181B" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M12 25H52" stroke="#D97706" stroke-width="2"/>
+  </g>
+
+  <!-- [1,7] ui-restore: Restore Arrow -->
+  <g transform="translate(448,64)">
+    <path d="M19 23C22.4 17.6 28.4 14 35 14C44.9 14 53 22.1 53 32C53 41.9 44.9 50 35 50C26.9 50 20.1 44.6 17.8 37.2" stroke="#15803D" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M14 15V25.5H24.5" stroke="#18181B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M35 23V32L41 36" stroke="#18181B" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- ==================== ROW 2 (y=128): Auth, Security & User ==================== -->
+
+  <!-- [2,0] ui-user: Educator Profile -->
+  <g transform="translate(0,128)">
+    <circle cx="32" cy="23" r="8.5" fill="#EFF6FF" stroke="#18181B" stroke-width="2.2"/>
+    <path d="M16 49C16 40.9 23.2 35.5 32 35.5C40.8 35.5 48 40.9 48 49" fill="#93C5FD" stroke="#18181B" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+
+  <!-- [2,1] ui-lock: Padlock -->
+  <g transform="translate(64,128)">
+    <path d="M22 27V21.5C22 16 26.5 11.5 32 11.5C37.5 11.5 42 16 42 21.5V27" stroke="#18181B" stroke-width="2.3" stroke-linecap="round"/>
+    <rect x="16" y="27" width="32" height="23" rx="5" fill="#FEF3C7" stroke="#18181B" stroke-width="2.2"/>
+    <circle cx="32" cy="37.5" r="2.6" fill="#D97706"/>
+    <path d="M32 40V44.5" stroke="#18181B" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+
+  <!-- [2,2] ui-eye: Eye Open -->
+  <g transform="translate(128,128)">
+    <path d="M11 32C16 22 23 18 32 18C41 18 48 22 53 32C48 42 41 46 32 46C23 46 16 42 11 32Z" fill="#EFF6FF" stroke="#18181B" stroke-width="2.2" stroke-linejoin="round"/>
+    <circle cx="32" cy="32" r="6" fill="#2563EB" stroke="#18181B" stroke-width="2"/>
+    <circle cx="30" cy="30" r="1.6" fill="#FFFFFF"/>
+  </g>
+
+  <!-- [2,3] ui-eye-off: Eye Crossed Out -->
+  <g transform="translate(192,128)">
+    <path d="M12 32C16.8 22.8 23.8 19 32 19C40.2 19 47.2 22.8 52 32C47.2 41.2 40.2 45 32 45C23.8 45 16.8 41.2 12 32Z" fill="#F4F1EA" stroke="#18181B" stroke-width="2.2" stroke-linejoin="round"/>
+    <circle cx="32" cy="32" r="4.8" fill="#64748B"/>
+    <path d="M14 14L50 50" stroke="#DC2626" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- [2,4] ui-key: Game PIN Key -->
+  <g transform="translate(256,128)">
+    <circle cx="22" cy="32" r="9.5" fill="#FEF3C7" stroke="#18181B" stroke-width="2.2"/>
+    <circle cx="22" cy="32" r="3.2" fill="#FFFFFF" stroke="#18181B" stroke-width="1.8"/>
+    <path d="M31.5 32H51V39.5M43.5 32V37.5" stroke="#18181B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- [2,5] ui-logout: Sign Out -->
+  <g transform="translate(320,128)">
+    <path d="M36 14H19C16.8 14 15 15.8 15 18V46C15 48.2 16.8 50 19 50H36" fill="#FEE2E2" stroke="#18181B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M27 32H49M41.5 24L49.5 32L41.5 40" stroke="#DC2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- [2,6] ui-users-switch: Switch Teacher Accounts -->
+  <g transform="translate(384,128)">
+    <circle cx="23" cy="22" r="6.5" fill="#93C5FD" stroke="#18181B" stroke-width="2"/>
+    <path d="M12.5 41C12.5 35.8 17 32 23 32C29 32 33.5 35.8 33.5 41" fill="#EFF6FF" stroke="#18181B" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="43" cy="24" r="5" fill="#BBF7D0" stroke="#18181B" stroke-width="1.9"/>
+    <path d="M38 48H51L46.5 43.5M51 48L46.5 52.5" stroke="#2563EB" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- [2,7] ui-download: Download / Export CSV -->
+  <g transform="translate(448,128)">
+    <path d="M32 13V37M23.5 29L32 37.5L40.5 29" stroke="#1D4ED8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M14 40V46C14 48.2 15.8 50 18 50H46C48.2 50 50 48.2 50 46V40" stroke="#18181B" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- ==================== ROW 3 (y=192): Education Filters & Controls ==================== -->
+
+  <!-- [3,0] ui-level: Education Level Cap -->
+  <g transform="translate(0,192)">
+    <path d="M32 16L53 25.5L32 35L11 25.5L32 16Z" fill="#DBEAFE" stroke="#18181B" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M20 30.5V41.5C20 45 25.4 48 32 48C38.6 48 44 45 44 41.5V30.5" fill="#EFF6FF" stroke="#18181B" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M50 27V41" stroke="#D97706" stroke-width="2.3" stroke-linecap="round"/>
+  </g>
+
+  <!-- [3,1] ui-subject: Open Book Subject -->
+  <g transform="translate(64,192)">
+    <path d="M12 18C18 16 26 17 32 22C38 17 46 16 52 18V47C46 45 38 46 32 50C26 46 18 45 12 47V18Z" fill="#FAF7F2" stroke="#18181B" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M32 22V50" stroke="#18181B" stroke-width="2"/>
+    <path d="M18 26H26M18 33H26M38 26H46M38 33H46" stroke="#2563EB" stroke-width="2" stroke-linecap="round"/>
+  </g>
+
+  <!-- [3,2] ui-language: Bilingual Cards -->
+  <g transform="translate(128,192)">
+    <rect x="11" y="14" width="31" height="23" rx="4.5" fill="#DCFCE7" stroke="#18181B" stroke-width="2.1"/>
+    <rect x="22" y="27" width="31" height="23" rx="4.5" fill="#EFF6FF" stroke="#18181B" stroke-width="2.1"/>
+    <path d="M18.5 25.5H34.5M29.5 38.5H45.5" stroke="#18181B" stroke-width="2.1" stroke-linecap="round"/>
+  </g>
+
+  <!-- [3,3] ui-search: Search Magnifier -->
+  <g transform="translate(192,192)">
+    <circle cx="28" cy="28" r="13.5" fill="#FAF7F2" stroke="#18181B" stroke-width="2.4"/>
+    <path d="M38.5 38.5L50 50" stroke="#18181B" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- [3,4] ui-plus: High-Contrast Add Plus -->
+  <g transform="translate(256,192)">
+    <rect x="13" y="13" width="38" height="38" rx="9" fill="#FFFFFF" stroke="#18181B" stroke-width="2.1"/>
+    <path d="M32 22V42M22 32H42" stroke="#15803D" stroke-width="2.8" stroke-linecap="round"/>
+  </g>
+
+  <!-- [3,5] ui-close: Crisp Close X -->
+  <g transform="translate(320,192)">
+    <rect x="14" y="14" width="36" height="36" rx="8" fill="#FEE2E2" stroke="#18181B" stroke-width="2.1"/>
+    <path d="M24 24L40 40M40 24L24 40" stroke="#DC2626" stroke-width="2.6" stroke-linecap="round"/>
+  </g>
+
+  <!-- [3,6] ui-check: Crisp Check -->
+  <g transform="translate(384,192)">
+    <rect x="14" y="14" width="36" height="36" rx="8" fill="#DCFCE7" stroke="#18181B" stroke-width="2.1"/>
+    <path d="M22.5 32.5L29 39L42 25" stroke="#15803D" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- [3,7] ui-refresh: Replay / Reset -->
+  <g transform="translate(448,192)">
+    <path d="M47 24C44 17.5 37.5 14 30 15C20.6 16.2 14 24.8 15.2 34.2C16.4 43.6 25 50.2 34.4 49C41.8 48 47.6 42.5 49 35.5" stroke="#2563EB" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M49 14.5V25H38.5" stroke="#18181B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- ==================== ROW 4 (y=256): Game Categories & Player HUD ==================== -->
+
+  <!-- [4,0] ui-gamepad: Standard Games Controller -->
+  <g transform="translate(0,256)">
+    <rect x="11" y="21" width="42" height="23" rx="8" fill="#EFF6FF" stroke="#18181B" stroke-width="2.2"/>
+    <path d="M21 28V37M16.5 32.5H25.5" stroke="#1D4ED8" stroke-width="2.4" stroke-linecap="round"/>
+    <circle cx="39.5" cy="30" r="2.3" fill="#16A34A"/>
+    <circle cx="44.5" cy="35" r="2.3" fill="#DC2626"/>
+  </g>
+
+  <!-- [4,1] ui-camera: Webcam Sensor -->
+  <g transform="translate(64,256)">
+    <rect x="11" y="20" width="30" height="24" rx="5" fill="#DCFCE7" stroke="#18181B" stroke-width="2.2"/>
+    <path d="M41 27L53 21V43L41 37V27Z" fill="#86EFAC" stroke="#18181B" stroke-width="2.1" stroke-linejoin="round"/>
+    <circle cx="26" cy="32" r="4.8" fill="#15803D" stroke="#18181B" stroke-width="1.8"/>
+  </g>
+
+  <!-- [4,2] ui-camera-off: Camera Off -->
+  <g transform="translate(128,256)">
+    <rect x="12" y="21" width="28" height="22" rx="5" fill="#F4F1EA" stroke="#18181B" stroke-width="2.1"/>
+    <path d="M40 27L52 22V42L40 37V27Z" fill="#E2E8F0" stroke="#18181B" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M13 14L51 50" stroke="#DC2626" stroke-width="2.6" stroke-linecap="round"/>
+  </g>
+
+  <!-- [4,3] ui-trophy: Trophy Cup -->
+  <g transform="translate(192,256)">
+    <path d="M20 15H44V29C44 35.6 38.6 41 32 41C25.4 41 20 35.6 20 29V15Z" fill="#FDE68A" stroke="#18181B" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M20 19H13.5C13.5 25.5 16.5 29.5 20 29.5M44 19H50.5C50.5 25.5 47.5 29.5 44 29.5" stroke="#B45309" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M32 41V49M23 50H41" stroke="#18181B" stroke-width="2.3" stroke-linecap="round"/>
+  </g>
+
+  <!-- [4,4] ui-heart: Classic Crimson Heart -->
+  <g transform="translate(256,256)">
+    <path d="M32 50C32 50 13 38.5 13 25C13 19 17.8 14.5 23.8 14.5C27.5 14.5 30.6 16.3 32 19.1C33.4 16.3 36.5 14.5 40.2 14.5C46.2 14.5 51 19 51 25C51 38.5 32 50 32 50Z" fill="#EF4444" stroke="#18181B" stroke-width="2.2" stroke-linejoin="round"/>
+  </g>
+
+  <!-- [4,5] ui-clock: Timer Stopwatch -->
+  <g transform="translate(320,256)">
+    <circle cx="32" cy="34" r="16.5" fill="#EFF6FF" stroke="#18181B" stroke-width="2.2"/>
+    <path d="M27 12.5H37M32 25V34L38 38" stroke="#18181B" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- [4,6] ui-palette: Theme Palette -->
+  <g transform="translate(384,256)">
+    <path d="M32 13C21 13 12 21.5 12 32C12 42.5 21 51 31 51C34.5 51 37 48.8 37 46C37 44.3 36.2 42.9 37.5 41.8C38.8 40.7 41.2 41 44 41C48.5 41 52 37.5 52 32C52 21.5 43 13 32 13Z" fill="#FAF7F2" stroke="#18181B" stroke-width="2.2"/>
+    <circle cx="24" cy="27" r="2.8" fill="#DC2626"/>
+    <circle cx="33" cy="22" r="2.8" fill="#F59E0B"/>
+    <circle cx="42" cy="27" r="2.8" fill="#2563EB"/>
+    <circle cx="23" cy="37" r="2.8" fill="#16A34A"/>
+  </g>
+
+  <!-- [4,7] ui-fullscreen: Fullscreen Corners -->
+  <g transform="translate(448,256)">
+    <rect x="11" y="11" width="42" height="42" rx="7" fill="#FFFFFF" stroke="#18181B" stroke-width="1.8"/>
+    <path d="M18 25V18H25M39 18H46V25M46 39V46H39M25 46H18V39" stroke="#18181B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="26" y="26" width="12" height="12" rx="2" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.8"/>
+  </g>
+
+  <!-- ==================== ROW 5 (y=320): Game Type Icons ==================== -->
+
+  <!-- [5,0] ui-game-quiz -->
+  <g transform="translate(0,320)">
+    <rect x="13" y="13" width="38" height="38" rx="6" fill="#EFF6FF" stroke="#18181B" stroke-width="2.2"/>
+    <path d="M21 25L25 29L33 21M36 26H43M21 38H43" stroke="#1D4ED8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- [5,1] ui-game-slicer -->
+  <g transform="translate(64,320)">
+    <circle cx="30" cy="36" r="13.5" fill="#FCA5A5" stroke="#18181B" stroke-width="2.2"/>
+    <path d="M15 47L49 15" stroke="#0284C7" stroke-width="3.2" stroke-linecap="round"/>
+    <path d="M40 16L49 15L48 24" stroke="#18181B" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- [5,2] ui-game-flashcards -->
+  <g transform="translate(128,320)">
+    <rect x="20" y="13" width="29" height="35" rx="5" fill="#FEF3C7" stroke="#18181B" stroke-width="2.1"/>
+    <rect x="14" y="18" width="29" height="35" rx="5" fill="#FFFFFF" stroke="#18181B" stroke-width="2.1"/>
+    <path d="M21 31H35M24 38H32" stroke="#D97706" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+
+  <!-- [5,3] ui-game-wheel -->
+  <g transform="translate(192,320)">
+    <circle cx="32" cy="34" r="16.5" fill="#FEF3C7" stroke="#18181B" stroke-width="2.2"/>
+    <path d="M32 17.5V50.5M15.5 34H48.5" stroke="#18181B" stroke-width="1.9"/>
+    <circle cx="32" cy="34" r="4.5" fill="#2563EB" stroke="#18181B" stroke-width="1.8"/>
+    <path d="M32 10.5L27.5 18H36.5L32 10.5Z" fill="#DC2626" stroke="#18181B" stroke-width="1.6" stroke-linejoin="round"/>
+  </g>
+
+  <!-- [5,4] ui-game-match -->
+  <g transform="translate(256,320)">
+    <rect x="13" y="16" width="16" height="15" rx="3" fill="#BBF7D0" stroke="#18181B" stroke-width="2.1"/>
+    <rect x="35" y="16" width="16" height="15" rx="3" fill="#BFDBFE" stroke="#18181B" stroke-width="2.1"/>
+    <path d="M29 23.5H35" stroke="#1D4ED8" stroke-width="2.4" stroke-linecap="round"/>
+    <rect x="13" y="36" width="16" height="14" rx="3" fill="#FEF3C7" stroke="#18181B" stroke-width="2.1"/>
+    <rect x="35" y="36" width="16" height="14" rx="3" fill="#FECDD3" stroke="#18181B" stroke-width="2.1"/>
+  </g>
+
+  <!-- [5,5] ui-game-box -->
+  <g transform="translate(320,320)">
+    <rect x="14" y="25" width="36" height="24" rx="4" fill="#FCD34D" stroke="#18181B" stroke-width="2.2"/>
+    <rect x="11" y="17" width="42" height="10" rx="3" fill="#D97706" stroke="#18181B" stroke-width="2.2"/>
+    <path d="M32 17V49" stroke="#18181B" stroke-width="2"/>
+    <circle cx="32" cy="34" r="3.2" fill="#FFFFFF" stroke="#18181B" stroke-width="1.8"/>
+  </g>
+
+  <!-- [5,6] ui-game-word -->
+  <g transform="translate(384,320)">
+    <rect x="13" y="14" width="17" height="17" rx="3" fill="#DBEAFE" stroke="#18181B" stroke-width="2.1"/>
+    <rect x="34" y="14" width="17" height="17" rx="3" fill="#FAF7F2" stroke="#18181B" stroke-width="2.1"/>
+    <rect x="13" y="35" width="17" height="17" rx="3" fill="#DCFCE7" stroke="#18181B" stroke-width="2.1"/>
+    <rect x="34" y="35" width="17" height="17" rx="3" fill="#FEF3C7" stroke="#18181B" stroke-width="2.1"/>
+    <path d="M21.5 19.5V25.5M18.5 22.5H24.5" stroke="#18181B" stroke-width="1.9" stroke-linecap="round"/>
+  </g>
+
+  <!-- [5,7] ui-game-tf -->
+  <g transform="translate(448,320)">
+    <rect x="12" y="16" width="18" height="32" rx="4" fill="#DCFCE7" stroke="#18181B" stroke-width="2.1"/>
+    <rect x="34" y="16" width="18" height="32" rx="4" fill="#FEE2E2" stroke="#18181B" stroke-width="2.1"/>
+    <path d="M16 32L20 36L26 28" stroke="#15803D" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M39 28L47 36M47 28L39 36" stroke="#DC2626" stroke-width="2.3" stroke-linecap="round"/>
+  </g>
+
+  <!-- ==================== ROW 6 (y=384): Camera Games & Flow Arrows ==================== -->
+
+  <!-- [6,0] ui-hand: AI Hand Tracking -->
+  <g transform="translate(0,384)">
+    <path d="M22 36V19C22 17.5 23.3 16 25 16C26.7 16 28 17.5 28 19V29M28 24C28 22.5 29.3 21 31 21C32.7 21 34 22.5 34 24V29M34 25C34 23.5 35.3 22 37 22C38.7 22 40 23.5 40 25V31M40 28C40 26.5 41.3 25 43 25C44.7 25 46 26.5 46 28V39C46 46.2 40.2 51 33 51H30C23.5 51 19 46.5 16 40L13 34C12 32.3 13 30.2 15 29.8C16.8 29.4 18.6 30.3 19.6 31.8L22 36Z" fill="#DBEAFE" stroke="#18181B" stroke-width="2.1" stroke-linejoin="round"/>
+  </g>
+
+  <!-- [6,1] ui-basket: Head Catcher Basket -->
+  <g transform="translate(64,384)">
+    <circle cx="27" cy="21" r="5.5" fill="#EF4444" stroke="#18181B" stroke-width="2"/>
+    <circle cx="38" cy="23" r="4.8" fill="#F59E0B" stroke="#18181B" stroke-width="2"/>
+    <path d="M13 30H51L46 49H18L13 30Z" fill="#FEF3C7" stroke="#18181B" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M11 30H53" stroke="#D97706" stroke-width="2.6" stroke-linecap="round"/>
+  </g>
+
+  <!-- [6,2] ui-brush: Calligraphy Brush -->
+  <g transform="translate(128,384)">
+    <path d="M44 13L51 20L27 44L20 37L44 13Z" fill="#D97706" stroke="#18181B" stroke-width="2.1" stroke-linejoin="round"/>
+    <path d="M20 37C16 39 14 44 14 49C19 49 24 47 27 44L20 37Z" fill="#18181B" stroke="#18181B" stroke-width="2" stroke-linejoin="round"/>
+  </g>
+
+  <!-- [6,3] ui-mole: Target Mole -->
+  <g transform="translate(192,384)">
+    <path d="M18 46C18 33 23 21 32 21C41 21 46 33 46 46" fill="#FDE68A" stroke="#18181B" stroke-width="2.2" stroke-linecap="round"/>
+    <ellipse cx="32" cy="48" rx="19" ry="4.5" fill="#BBF7D0" stroke="#18181B" stroke-width="2.1"/>
+    <circle cx="27" cy="31" r="1.9" fill="#18181B"/>
+    <circle cx="37" cy="31" r="1.9" fill="#18181B"/>
+  </g>
+
+  <!-- [6,4] ui-arrow-left -->
+  <g transform="translate(256,384)">
+    <rect x="11" y="15" width="42" height="34" rx="7" fill="#FFFFFF" stroke="#18181B" stroke-width="1.9"/>
+    <path d="M43 32H21M29 24L20.5 32L29 40" stroke="#18181B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- [6,5] ui-arrow-right -->
+  <g transform="translate(320,384)">
+    <rect x="11" y="15" width="42" height="34" rx="7" fill="#FFFFFF" stroke="#18181B" stroke-width="1.9"/>
+    <path d="M21 32H43M35 24L43.5 32L35 40" stroke="#18181B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- [6,6] ui-cloud: Cloud Sync -->
+  <g transform="translate(384,384)">
+    <path d="M21 44H44C48.4 44 52 40.4 52 36C52 32 49 28.7 45.1 28.1C43.9 22 38.5 17.5 32 17.5C25 17.5 19.3 22.8 18.6 29.6C14.8 30.3 12 33.6 12 37.5C12 41.1 15 44 21 44Z" fill="#EFF6FF" stroke="#18181B" stroke-width="2.2" stroke-linejoin="round"/>
+  </g>
+
+  <!-- [6,7] ui-alert: Info / Notice -->
+  <g transform="translate(448,384)">
+    <path d="M32 14L50 47H14L32 14Z" fill="#FEF3C7" stroke="#18181B" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M32 26V36" stroke="#B45309" stroke-width="2.6" stroke-linecap="round"/>
+    <circle cx="32" cy="41.5" r="1.9" fill="#18181B"/>
+  </g>
+</svg>

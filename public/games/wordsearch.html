@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Word Search — LotusWall</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="common/ui-spritesheet.css">
+  <link rel="stylesheet" href="common/themes.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; user-select: none; }
+    body { background: #f7f5f0; min-height: 100vh; color: #18181b; display: flex; flex-direction: column; overflow-x: hidden; }
+
+    .top-bar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; padding: 12px 24px; background: #ffffff; border-bottom: 1.5px solid #e5dfd3; }
+    .stat-badge { background: #fcfbf8; color: #18181b; border: 1.5px solid #d6cfc2; padding: 7px 14px; border-radius: 8px; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 1px 2px rgba(24, 24, 27, 0.04); }
+
+    .game-area { flex: 1; width: 96%; max-width: 1520px; margin: 0 auto; padding: 20px 28px; display: flex; gap: 36px; align-items: center; justify-content: center; }
+    @media (max-width: 860px) { .game-area { flex-direction: column; align-items: center; width: 100%; padding: 16px; gap: 20px; } }
+
+    /* Word Grid */
+    .grid-container {
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 12px;
+      border: 2px solid #d6cfc2;
+      box-shadow: 0 2px 10px rgba(24, 24, 27, 0.05);
+    }
+    .word-grid {
+      display: grid;
+      gap: 6px;
+      touch-action: none;
+    }
+    .cell {
+      width: clamp(34px, min(5.4vh, 4.4vw), 52px);
+      height: clamp(34px, min(5.4vh, 4.4vw), 52px);
+      background: #fcfbf8;
+      border: 1.5px solid #d6cfc2;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(15px, 2.2vh, 21px);
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.12s ease;
+      color: #18181b;
+    }
+    .cell:hover { background: #eff6ff; border-color: #1d4ed8; }
+    @media (max-width: 520px) { .cell { width: 30px; height: 30px; font-size: 14px; } }
+
+    .cell.selected { background: #1d4ed8 !important; border-color: #1e3a8a !important; color: #ffffff !important; transform: scale(1.05); }
+    .cell.found { background: #15803d !important; border-color: #14532d !important; color: #ffffff !important; }
+
+    /* Target Words List */
+    .words-sidebar {
+      background: #ffffff;
+      border: 2px solid #d6cfc2;
+      border-radius: 12px;
+      padding: 20px;
+      min-width: 280px;
+      width: 100%;
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 2px 10px rgba(24, 24, 27, 0.05);
+    }
+    .sidebar-title { font-size: 14px; font-weight: 800; color: #18181b; text-transform: uppercase; letter-spacing: 1.2px; }
+    .sidebar-hint { font-size: 12px; color: #57534e; margin-bottom: 4px; line-height: 1.4; }
+
+    .target-word-pill {
+      background: #fcfbf8;
+      border: 1.5px solid #d6cfc2;
+      color: #18181b;
+      padding: 9px 14px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.15s;
+    }
+    .target-word-pill.done {
+      background: #f0fdf4;
+      border: 1.5px solid #15803d;
+      color: #15803d;
+      text-decoration: line-through;
+      opacity: 0.9;
+    }
+
+    /* Screen Overlay End */
+    .screen-overlay { position: fixed; inset: 0; background: rgba(24, 24, 27, 0.72); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 200; padding: 24px; }
+    .end-box { background: #ffffff; color: #18181b; border: 2px solid #d6cfc2; border-radius: 14px; padding: 36px; max-width: 500px; width: 100%; text-align: center; box-shadow: 0 20px 45px rgba(24, 24, 27, 0.24); }
+    .end-sub { color: #57534e; margin-bottom: 20px; font-size: 14px; }
+    .end-score-box { background: #fcfbf8; border: 1.5px solid #e5dfd3; padding: 18px; border-radius: 10px; margin-bottom: 18px; }
+    .action-btn { background: #1d4ed8; color: #ffffff; border: none; border-bottom: 3px solid #1e3a8a; padding: 12px 32px; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 12px; display: inline-flex; align-items: center; gap: 8px; }
+    .action-btn:hover { background: #1e40af; }
+  </style>
+</head>
+<body class="theme-white">
+
+  <div class="top-bar">
+    <div class="stat-badge">
+      <span class="ui-sprite ui-sm ui-game-word hud-icon-white"></span>
+      <span id="hdr-title">Word Search</span>
+    </div>
+    <div class="stat-badge" id="timer-badge">
+      <span class="ui-sprite ui-sm ui-clock hud-icon-white"></span>
+      <span><span id="lbl-time">Time</span>: <span id="timer-val">0</span>s</span>
+    </div>
+    <div class="stat-badge" id="found-badge">Found: 0 / 5</div>
+  </div>
+
+  <main class="game-area">
+    <div class="grid-container">
+      <div class="word-grid" id="grid"></div>
+    </div>
+
+    <div class="words-sidebar">
+      <div class="sidebar-title" id="sidebar-title">Words List:</div>
+      <div class="sidebar-hint" id="sidebar-hint">Drag across letters horizontally, vertically, or diagonally.</div>
+      <div id="words-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+  </main>
+
+  <div class="screen-overlay" id="end-screen" style="display: none;">
+    <div class="end-box">
+      <div style="margin-bottom: 14px; display: flex; justify-content: center;">
+        <span class="ui-sprite ui-2xl ui-trophy"></span>
+      </div>
+      <h2 style="font-size: 28px; font-weight: 800; margin-bottom: 8px;" id="end-title">All Words Found!</h2>
+      <p class="end-sub" id="end-sub">Your focus and sharp eyes are amazing!</p>
+
+      <div class="end-score-box">
+        <div style="font-size: 32px; font-weight: 800; color: #0284c7;" id="final-time">Time: 0 Seconds</div>
+      </div>
+
+      <button class="action-btn" onclick="initGame()">
+        <span class="ui-sprite ui-sm ui-refresh hud-icon-white"></span>
+        <span id="play-again-text">Play Again</span>
+      </button>
+    </div>
+  </div>
+
+  <script src="common/sfx.js"></script>
+  <script src="common/confetti.js"></script>
+  <script src="common/i18n.js"></script>
+  <script src="common/themes.js"></script>
+  <script src="common/bridge.js"></script>
+  <script>
+    const tr = (key, vars) => (window.LotusI18n ? window.LotusI18n.t(key, vars) : key);
+
+    let activity = null;
+    let targetWords = [];
+    const GRID_SIZE = 10;
+    let grid = [];
+    let selectedCells = [];
+    let isMouseDown = false;
+    let foundWords = new Set();
+    let timeMode = 'stopwatch';
+    let timerDuration = 90;
+    let timeLeft = 90;
+    let timeSeconds = 0;
+    let timerInterval = null;
+    let lastTimeoutState = false;
+    let hasBootedOnce = false;
+    let lastActivitySig = '';
+    let lastSettingsSyncTs = 0;
+    const processedBridgeMsgs = new WeakSet();
+
+    function applyTranslations() {
+      const titleEl = document.getElementById('page-title');
+      if (titleEl) titleEl.textContent = tr('ws.pageTitle');
+      document.title = tr('ws.pageTitle');
+
+      const hdrTitle = document.getElementById('hdr-title');
+      if (hdrTitle) hdrTitle.textContent = tr('ws.title');
+
+      const lblTime = document.getElementById('lbl-time');
+      if (lblTime) lblTime.textContent = timeMode === 'stopwatch' ? tr('game.stopwatch') : tr('game.time');
+
+      const sidebarTitle = document.getElementById('sidebar-title');
+      if (sidebarTitle) sidebarTitle.textContent = tr('ws.sidebarTitle');
+
+      const sidebarHint = document.getElementById('sidebar-hint');
+      if (sidebarHint) sidebarHint.textContent = tr('ws.hint');
+
+      updateFoundBadge();
+
+      const endTitle = document.getElementById('end-title');
+      if (endTitle) endTitle.textContent = lastTimeoutState ? tr('game.timesUp') : tr('ws.allFoundTitle');
+
+      const endSub = document.getElementById('end-sub');
+      if (endSub) endSub.textContent = tr('ws.allFoundSub');
+
+      const finalTimeEl = document.getElementById('final-time');
+      if (finalTimeEl && (lastTimeoutState || (foundWords.size >= targetWords.length && targetWords.length > 0))) {
+        finalTimeEl.textContent = tr('ws.finalTime', { n: timeSeconds });
+      }
+
+      const playAgainText = document.getElementById('play-again-text');
+      if (playAgainText) playAgainText.textContent = tr('game.playAgain');
+    }
+
+    if (window.LotusI18n) {
+      window.LotusI18n.onChange(() => applyTranslations());
+    }
+
+    const bridge = window.GameBridge || (typeof GameBridge !== 'undefined' ? GameBridge : null);
+
+    function computeActivitySig(act) {
+      if (!act) return '';
+      const qLen = (act.questions || act.content?.items || []).length;
+      return JSON.stringify({
+        id: act.id || '',
+        title: act.title || '',
+        qLen,
+        rules: act.rules || null,
+        settings: act.settings || null,
+        theme: act.theme || ''
+      });
+    }
+
+    function applyMergedSettings(payload) {
+      if (!payload) return;
+      const base = payload.activity ? { ...payload.activity } : { ...(activity || {}) };
+      if (payload.rules) base.rules = { ...(base.rules || {}), ...payload.rules };
+      if (payload.settings) base.settings = { ...(base.settings || {}), ...payload.settings };
+      if (payload.theme) base.theme = payload.theme;
+      if (base.rules) {
+        base.settings = {
+          ...(base.settings || {}),
+          timerSeconds: base.rules.timerSeconds ?? base.settings?.timerSeconds ?? 90,
+          lives: base.rules.hasLives === false ? 0 : (base.rules.livesCount ?? base.settings?.lives ?? 3),
+          hasLives: base.rules.hasLives,
+          timeMode: base.rules.timeMode,
+          shuffle: base.rules.shuffleQuestions,
+          shuffleAnswers: base.rules.shuffleAnswers
+        };
+      }
+      const norm = (bridge && typeof bridge.normalizeActivity === 'function') ? bridge.normalizeActivity(base) : base;
+      activity = norm;
+      if (bridge) bridge.activity = norm;
+      lastActivitySig = computeActivitySig(norm);
+      if (payload.theme && window.LotusThemes) LotusThemes.apply(payload.theme, true);
+      else if (norm.theme && window.LotusThemes) LotusThemes.apply(norm.theme);
+      if (payload.restart !== false) initGame();
+    }
+
+    function handleExternalMessage(data) {
+      if (!data || typeof data !== 'object') return;
+      if (data.type === 'GAME_CMD') {
+        const cmd = data.command || data.cmd;
+        if (cmd === 'RESTART') initGame();
+      } else if (data.type === 'UPDATE_SETTINGS') {
+        lastSettingsSyncTs = Date.now();
+        applyMergedSettings(data);
+      } else if (data.type === 'GAME_SETTINGS') {
+        lastSettingsSyncTs = Date.now();
+        const p = data.payload && typeof data.payload === 'object' ? { ...data, ...data.payload } : data;
+        if (p.rules || p.settings || p.activity || p.theme) applyMergedSettings(p);
+      } else if (data.type === 'INIT_ACTIVITY' && data.activity) {
+        const norm = (bridge && typeof bridge.normalizeActivity === 'function') ? bridge.normalizeActivity(data.activity) : data.activity;
+        const sig = computeActivitySig(norm);
+        if (!hasBootedOnce || sig !== lastActivitySig || data.forceRestart || data.restart === true) {
+          activity = norm;
+          if (bridge) bridge.activity = norm;
+          lastActivitySig = sig;
+          hasBootedOnce = true;
+          initGame();
+        }
+      }
+    }
+
+    if (bridge && typeof bridge.onReady === 'function') {
+      bridge.onReady((act) => {
+        if (hasBootedOnce && (Date.now() - lastSettingsSyncTs) < 50) return;
+        activity = act;
+        lastActivitySig = computeActivitySig(act);
+        hasBootedOnce = true;
+        initGame();
+      });
+      if (typeof bridge.onSettings === 'function') {
+        bridge.onSettings((payload) => {
+          if (payload && typeof payload === 'object') processedBridgeMsgs.add(payload);
+          handleExternalMessage(payload);
+        });
+      }
+    } else {
+      setTimeout(() => { hasBootedOnce = true; initGame(); }, 100);
+    }
+
+    const hasBridgeSettings = Boolean(bridge && typeof bridge.onSettings === 'function');
+    window.addEventListener('message', (event) => {
+      if (!event.data || typeof event.data !== 'object') return;
+      if (processedBridgeMsgs.has(event.data)) return;
+      if (hasBridgeSettings && (event.data.type === 'UPDATE_SETTINGS' || event.data.type === 'GAME_SETTINGS' || event.data.type === 'GAME_CMD')) {
+        return;
+      }
+      processedBridgeMsgs.add(event.data);
+      handleExternalMessage(event.data);
+    });
+
+    function initGame() {
+      clearInterval(timerInterval);
+      isMouseDown = false;
+      lastTimeoutState = false;
+      const lang = window.LotusI18n ? window.LotusI18n.getLang() : 'en';
+      const rawList = activity?.questions || activity?.content?.items || [];
+      targetWords = rawList.map(item => {
+        let raw = item.word || item.correctAnswer || '';
+        if (!raw && Array.isArray(item.options)) {
+          const cOpt = item.options.find(o => o.isCorrect);
+          if (cOpt) raw = cOpt.text;
+        }
+        return raw.toUpperCase().replace(/[^A-Z]/g, '');
+      }).filter(w => w.length >= 3 && w.length <= GRID_SIZE);
+
+      if (targetWords.length === 0) {
+        targetWords = lang === 'id'
+          ? ['MARS', 'BUMI', 'BULAN', 'SURYA', 'PLANET']
+          : ['MARS', 'EARTH', 'MOON', 'SOLAR', 'PLANET'];
+      }
+
+      const rules = activity?.rules || {};
+      const settings = activity?.settings || {};
+
+      if (rules.shuffleQuestions !== false && settings.shuffle !== false) {
+        targetWords.sort(() => Math.random() - 0.5);
+      }
+
+      timeMode = rules.timeMode || (settings.timerSeconds > 0 ? 'timer' : 'stopwatch');
+      timerDuration = Number(rules.timerSeconds ?? settings.timerSeconds ?? 90);
+      if (timerDuration <= 0 && timeMode === 'timer') timerDuration = 90;
+
+      if (window.LotusThemes) LotusThemes.apply(activity?.theme || 'white');
+
+      foundWords.clear();
+      selectedCells = [];
+      timeSeconds = 0;
+      timeLeft = timerDuration;
+
+      const timerBadge = document.getElementById('timer-badge');
+      const timerEl = document.getElementById('timer-val');
+      if (timeMode === 'none') {
+        if (timerBadge) timerBadge.style.setProperty('display', 'none', 'important');
+        timerInterval = setInterval(() => { timeSeconds++; }, 1000);
+      } else if (timeMode === 'timer') {
+        if (timerBadge) {
+          timerBadge.style.removeProperty('display');
+          timerBadge.style.display = 'inline-flex';
+        }
+        if (timerEl) timerEl.innerText = String(timeLeft);
+        timerInterval = setInterval(() => {
+          timeLeft--;
+          timeSeconds++;
+          const el = document.getElementById('timer-val');
+          if (el) el.innerText = String(Math.max(0, timeLeft));
+          if (timeLeft <= 5 && timeLeft > 0 && window.SFX && SFX.tick) SFX.tick();
+          if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            endGame(true);
+          }
+        }, 1000);
+      } else {
+        if (timerBadge) {
+          timerBadge.style.removeProperty('display');
+          timerBadge.style.display = 'inline-flex';
+        }
+        if (timerEl) timerEl.innerText = '0';
+        timerInterval = setInterval(() => {
+          timeSeconds++;
+          const el = document.getElementById('timer-val');
+          if (el) el.innerText = String(timeSeconds);
+        }, 1000);
+      }
+
+      document.getElementById('end-screen').style.display = 'none';
+      updateFoundBadge();
+      renderSidebar();
+      generateGrid();
+      applyTranslations();
+    }
+
+    function updateFoundBadge() {
+      const badge = document.getElementById('found-badge');
+      if (badge) badge.innerText = tr('ws.foundBadge', { found: foundWords.size, total: targetWords.length });
+    }
+
+    function renderSidebar() {
+      const listEl = document.getElementById('words-list');
+      if (!listEl) return;
+      listEl.innerHTML = targetWords.map((word) => `
+        <div class="target-word-pill ${foundWords.has(word) ? 'done' : ''}" id="pill-${word}">
+          <span>${word}</span>
+          <span>${foundWords.has(word) ? '<span class="ui-sprite ui-xs ui-check"></span>' : ''}</span>
+        </div>
+      `).join('');
+    }
+
+    function generateGrid() {
+      const DIRECTIONS = [
+        { dr: 0, dc: 1, name: 'horizontal' },
+        { dr: 1, dc: 0, name: 'vertical' },
+        { dr: 1, dc: 1, name: 'diagonal-down-right' },
+        { dr: -1, dc: 1, name: 'diagonal-up-right' },
+        { dr: 1, dc: -1, name: 'diagonal-down-left' },
+      ];
+
+      const sortedWords = [...targetWords].sort((a, b) => b.length - a.length);
+
+      for (let attempt = 0; attempt < 10; attempt++) {
+        grid = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(''));
+        let allPlaced = true;
+
+        for (const word of sortedWords) {
+          let placed = false;
+          let wordAttempts = 0;
+
+          while (!placed && wordAttempts < 250) {
+            wordAttempts++;
+            const dir = DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
+
+            let minR = 0, maxR = GRID_SIZE - 1;
+            if (dir.dr === 1) maxR = GRID_SIZE - word.length;
+            else if (dir.dr === -1) minR = word.length - 1;
+
+            let minC = 0, maxC = GRID_SIZE - 1;
+            if (dir.dc === 1) maxC = GRID_SIZE - word.length;
+            else if (dir.dc === -1) minC = word.length - 1;
+
+            if (minR > maxR || minC > maxC) continue;
+
+            const r = Math.floor(Math.random() * (maxR - minR + 1)) + minR;
+            const c = Math.floor(Math.random() * (maxC - minC + 1)) + minC;
+
+            let fits = true;
+            for (let i = 0; i < word.length; i++) {
+              const cr = r + i * dir.dr;
+              const cc = c + i * dir.dc;
+              if (grid[cr][cc] !== '' && grid[cr][cc] !== word[i]) {
+                fits = false;
+                break;
+              }
+            }
+
+            if (fits) {
+              for (let i = 0; i < word.length; i++) {
+                const cr = r + i * dir.dr;
+                const cc = c + i * dir.dc;
+                grid[cr][cc] = word[i];
+              }
+              placed = true;
+            }
+          }
+
+          if (!placed) {
+            allPlaced = false;
+            break;
+          }
+        }
+
+        if (allPlaced) break;
+      }
+
+      const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          if (!grid[r][c]) {
+            grid[r][c] = alphabet[Math.floor(Math.random() * alphabet.length)];
+          }
+        }
+      }
+
+      const gridEl = document.getElementById('grid');
+      if (!gridEl) return;
+      gridEl.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 1fr)`;
+      gridEl.innerHTML = '';
+
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          cell.innerText = grid[r][c];
+          cell.dataset = cell.dataset || {};
+          cell.dataset.r = r;
+          cell.dataset.c = c;
+          if (cell.setAttribute) {
+            cell.setAttribute('data-r', r);
+            cell.setAttribute('data-c', c);
+          }
+
+          if (cell.addEventListener) {
+            cell.addEventListener('mousedown', () => startSelect(r, c));
+            cell.addEventListener('mouseenter', () => enterSelect(r, c));
+          }
+          gridEl.appendChild(cell);
+        }
+      }
+    }
+
+    window.addEventListener('mouseup', () => endSelect());
+    window.addEventListener('touchend', () => endSelect());
+
+    const gridContainer = document.getElementById('grid');
+    if (gridContainer && gridContainer.addEventListener) {
+      gridContainer.addEventListener('touchstart', (e) => {
+        const touch = e.touches[0];
+        const target = document.elementFromPoint ? document.elementFromPoint(touch.clientX, touch.clientY) : null;
+        if (target && target.classList && target.classList.contains('cell')) {
+          e.preventDefault();
+          const r = parseInt(target.getAttribute('data-r') ?? target.dataset?.r);
+          const c = parseInt(target.getAttribute('data-c') ?? target.dataset?.c);
+          if (!isNaN(r) && !isNaN(c)) startSelect(r, c);
+        }
+      }, { passive: false });
+
+      gridContainer.addEventListener('touchmove', (e) => {
+        if (!isMouseDown) return;
+        const touch = e.touches[0];
+        const target = document.elementFromPoint ? document.elementFromPoint(touch.clientX, touch.clientY) : null;
+        if (target && target.classList && target.classList.contains('cell')) {
+          e.preventDefault();
+          const r = parseInt(target.getAttribute('data-r') ?? target.dataset?.r);
+          const c = parseInt(target.getAttribute('data-c') ?? target.dataset?.c);
+          if (!isNaN(r) && !isNaN(c)) enterSelect(r, c);
+        }
+      }, { passive: false });
+    }
+
+    function startSelect(r, c) {
+      isMouseDown = true;
+      selectedCells = [{ r, c }];
+      if (window.SFX && SFX.click) SFX.click();
+      updateSelectedUI();
+    }
+
+    function enterSelect(r, c) {
+      if (!isMouseDown || selectedCells.length === 0) return;
+      const start = selectedCells[0];
+      const dr = Math.abs(r - start.r);
+      const dc = Math.abs(c - start.c);
+
+      if (dr === 0 || dc === 0 || dr === dc) {
+        selectedCells = getStraightLine(start, { r, c });
+        updateSelectedUI();
+      }
+    }
+
+    function getStraightLine(start, end) {
+      const line = [];
+      const dr = Math.sign(end.r - start.r);
+      const dc = Math.sign(end.c - start.c);
+      let currR = start.r;
+      let currC = start.c;
+
+      while (true) {
+        line.push({ r: currR, c: currC });
+        if (currR === end.r && currC === end.c) break;
+        currR += dr;
+        currC += dc;
+      }
+      return line;
+    }
+
+    function updateSelectedUI() {
+      const selectedSet = new Set(selectedCells.map(p => `${p.r},${p.c}`));
+      document.querySelectorAll('.cell').forEach(c => {
+        const r = c.getAttribute('data-r') ?? c.dataset?.r;
+        const col = c.getAttribute('data-c') ?? c.dataset?.c;
+        const key = `${r},${col}`;
+        if (selectedSet.has(key)) {
+          c.classList.add('selected');
+        } else {
+          c.classList.remove('selected');
+        }
+      });
+    }
+
+    function endSelect() {
+      if (!isMouseDown) return;
+      isMouseDown = false;
+
+      const formedWord = selectedCells.map(pos => grid[pos.r][pos.c]).join('');
+      const reversedWord = formedWord.split('').reverse().join('');
+
+      let matched = null;
+      if (targetWords.includes(formedWord) && !foundWords.has(formedWord)) {
+        matched = formedWord;
+      } else if (targetWords.includes(reversedWord) && !foundWords.has(reversedWord)) {
+        matched = reversedWord;
+      }
+
+      if (matched) {
+        if (window.SFX && SFX.correct) SFX.correct();
+        foundWords.add(matched);
+        selectedCells.forEach(pos => {
+          const el = document.querySelector(`.cell[data-r="${pos.r}"][data-c="${pos.c}"]`);
+          if (el) el.classList.add('found');
+        });
+        renderSidebar();
+        updateFoundBadge();
+
+        if (foundWords.size >= targetWords.length) {
+          endGame();
+        }
+      }
+
+      selectedCells = [];
+      updateSelectedUI();
+    }
+
+    function endGame(isTimeout = false) {
+      clearInterval(timerInterval);
+      lastTimeoutState = Boolean(isTimeout);
+      if (isTimeout) {
+        if (window.SFX && SFX.wrong) SFX.wrong();
+      } else {
+        if (window.SFX && SFX.win) SFX.win();
+        if (window.launchConfetti) window.launchConfetti();
+      }
+      const pctScore = targetWords.length > 0 ? Math.round((foundWords.size / targetWords.length) * 100) : 100;
+      GameBridge.finishGame(pctScore, 100, Array.from(foundWords));
+      const endTitle = document.getElementById('end-title');
+      if (endTitle) endTitle.innerText = isTimeout ? tr('game.timesUp') : tr('ws.allFoundTitle');
+      const finalTimeEl = document.getElementById('final-time');
+      if (finalTimeEl) finalTimeEl.innerText = tr('ws.finalTime', { n: timeSeconds });
+      const endScreenEl = document.getElementById('end-screen');
+      if (endScreenEl) endScreenEl.style.display = 'flex';
+    }
+  </script>
+</body>
+</html>

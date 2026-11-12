@@ -1,0 +1,11 @@
+ID,Nama Guru,Email Login,Password,Mata Pelajaran,Sekolah
+t-1,"Budi Prasetyo, S.Pd.",budi.prasetyo@sekolah.sch.id,1qaz2wsx,"IPA / Sains","SMP Negeri 1 Bunga Bangsa"
+t-2,"Siti Rahmawati, M.Pd.",siti.rahmawati@sekolah.sch.id,1qaz2wsx,Matematika,"SMP Negeri 1 Bunga Bangsa"
+t-3,"Agus Setiawan, S.Si.",agus.setiawan@sekolah.sch.id,1qaz2wsx,"Fisika / Kimia","SMA Bintang Cemerlang"
+t-4,"Dewi Lestari, S.Pd.",dewi.lestari@sekolah.sch.id,1qaz2wsx,"Bahasa Indonesia","SD Pertiwi 01"
+t-5,"Hendra Wijaya, B.Ed.",hendra.wijaya@sekolah.sch.id,1qaz2wsx,"Bahasa Inggris","SMP Harapan Nusantara"
+t-6,"Rina Marlina, S.Pd.",rina.marlina@sekolah.sch.id,1qaz2wsx,Biologi,"SMA Cendekia Bangsa"
+t-7,"Ahmad Fauzi, S.Ag.",ahmad.fauzi@sekolah.sch.id,1qaz2wsx,"Pendidikan Agama","SMP Al-Hikmah"
+t-8,"Nurul Hidayah, S.Pd.",nurul.hidayah@sekolah.sch.id,1qaz2wsx,"IPS / Geografi","SMP Negeri 2 Merdeka"
+t-9,"Fajar Nugroho, S.Kom.",fajar.nugroho@sekolah.sch.id,1qaz2wsx,"Informatika / TIK","SMK Bintang Juara"
+t-10,"Sri Wahyuni, S.Pd.",sri.wahyuni@sekolah.sch.id,1qaz2wsx,"Seni & Budaya","SD Mandiri Jaya"

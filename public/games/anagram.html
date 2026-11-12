@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Anagram Word Scramble — LotusWall</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="common/ui-spritesheet.css">
+  <link rel="stylesheet" href="common/themes.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; user-select: none; }
+    body { background: #f7f5f0; min-height: 100vh; color: #18181b; display: flex; flex-direction: column; overflow-x: hidden; }
+
+    .top-bar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; padding: 12px 24px; background: #ffffff; border-bottom: 1.5px solid #e5dfd3; }
+    .stat-badge { background: #fcfbf8; color: #18181b; border: 1.5px solid #d6cfc2; padding: 7px 14px; border-radius: 8px; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 1px 2px rgba(24, 24, 27, 0.04); }
+    .hearts { color: #dc2626; font-size: 16px; gap: 4px; }
+    .heart { display: inline-flex; align-items: center; justify-content: center; }
+    .heart.lost { opacity: 0.25; filter: grayscale(1); }
+
+    .game-area { flex: 1; width: 96%; max-width: 1480px; margin: 0 auto; padding: 24px 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+    .clue-card {
+      background: #ffffff;
+      border: 2px solid #d6cfc2;
+      border-radius: 14px;
+      padding: 28px 36px;
+      width: 100%;
+      text-align: center;
+      margin-bottom: 32px;
+      box-shadow: 0 2px 10px rgba(24, 24, 27, 0.05);
+      color: #18181b;
+    }
+    .clue-round { font-size: 12px; text-transform: uppercase; letter-spacing: 1.6px; color: #b45309; font-weight: 800; margin-bottom: 8px; }
+    .clue-text { font-size: clamp(20px, 2.2vw, 26px); max-width: 1040px; margin: 0 auto; font-weight: 700; line-height: 1.4; color: #18181b; }
+
+    /* Tiles Row */
+    .tiles-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      justify-content: center;
+      margin-bottom: 32px;
+      min-height: 80px;
+    }
+
+    /* Classic wooden/ivory letter block */
+    .letter-tile {
+      width: clamp(50px, 5.5vw, 76px);
+      height: clamp(56px, 6.2vw, 82px);
+      background: #fffbeb;
+      border: 2px solid #d6cfc2;
+      border-bottom: 5px solid #c9c1b2;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(24px, 2.8vw, 34px);
+      font-weight: 800;
+      color: #18181b;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(24, 24, 27, 0.08);
+      transition: transform 0.15s ease, background 0.15s, border-color 0.15s, box-shadow 0.15s;
+      position: relative;
+    }
+    @media (max-width: 640px) {
+      .game-area { width: 100%; padding: 16px; }
+      .clue-card { padding: 20px 18px; }
+    }
+    .letter-tile:hover {
+      transform: translateY(-2px);
+      border-color: #18181b;
+    }
+    .letter-tile:active {
+      transform: translateY(1px);
+      border-bottom-width: 2px;
+    }
+    .letter-tile.selected {
+      background: #fef3c7;
+      border-color: #d97706;
+      border-bottom-color: #b45309;
+      transform: translateY(-6px);
+      box-shadow: 0 8px 16px rgba(217, 119, 6, 0.22);
+    }
+    .letter-tile.swapping-active {
+      z-index: 25 !important;
+      transition: transform 0.35s cubic-bezier(0.34, 1.25, 0.64, 1), box-shadow 0.35s ease !important;
+      box-shadow: 0 12px 24px rgba(24, 24, 27, 0.24) !important;
+    }
+    .letter-tile.swapping-target {
+      z-index: 15 !important;
+      transition: transform 0.35s cubic-bezier(0.34, 1.25, 0.64, 1), box-shadow 0.35s ease !important;
+      box-shadow: 0 4px 10px rgba(24, 24, 27, 0.14) !important;
+    }
+    .letter-tile.correct { background: #15803d !important; border-color: #14532d !important; color: #ffffff !important; animation: popTile 0.3s; }
+    .letter-tile.wrong { background: #dc2626 !important; border-color: #991b1b !important; color: #ffffff !important; animation: shakeTile 0.4s ease-in-out; }
+
+    @keyframes popTile { 0% { transform: scale(1); } 50% { transform: scale(1.12); } 100% { transform: scale(1); } }
+    @keyframes shakeTile {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    .btn-action {
+      background: #1d4ed8;
+      color: #ffffff;
+      border: none;
+      border-bottom: 3px solid #1e3a8a;
+      padding: 13px 34px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s;
+    }
+    .btn-action:hover { background: #1e40af; }
+
+    .hint-subtext { font-size: 13px; color: #57534e; margin-top: 16px; font-weight: 600; text-align: center; }
+
+    /* Screen Overlay End */
+    .screen-overlay { position: fixed; inset: 0; background: rgba(24, 24, 27, 0.72); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 200; padding: 24px; }
+    .end-box { background: #ffffff; color: #18181b; border: 2px solid #d6cfc2; border-radius: 14px; padding: 36px; max-width: 500px; width: 100%; text-align: center; box-shadow: 0 20px 45px rgba(24, 24, 27, 0.24); }
+    .end-sub { color: #57534e; margin-bottom: 20px; font-size: 14px; }
+    .end-score-box { background: #fcfbf8; border: 1.5px solid #e5dfd3; padding: 18px; border-radius: 10px; margin-bottom: 18px; }
+  </style>
+</head>
+<body class="theme-white">
+
+  <div class="top-bar">
+    <div class="stat-badge">
+      <span class="ui-sprite ui-sm ui-game-word hud-icon-white"></span>
+      <span id="hdr-title">Anagram</span>
+    </div>
+    <div class="stat-badge" id="score-badge">
+      <span class="ui-sprite ui-sm ui-trophy hud-icon-white"></span>
+      <span><span id="lbl-score">Score</span>: <span id="score-val">0</span></span>
+    </div>
+    <div class="stat-badge" id="timer-badge" style="display: none;">
+      <span class="ui-sprite ui-sm ui-clock hud-icon-white"></span>
+      <span><span id="lbl-time">Time</span>: <span id="timer-val">0</span>s</span>
+    </div>
+    <div class="stat-badge" id="round-badge">Word: 1 / 2</div>
+    <div class="stat-badge hearts" id="lives-container" style="display: none;"></div>
+  </div>
+
+  <main class="game-area">
+    <div class="clue-card">
+      <div class="clue-round" id="clue-round">Word 1 of 2</div>
+      <div class="clue-text" id="clue-text">...</div>
+    </div>
+
+    <div class="tiles-container" id="tiles-container"></div>
+
+    <button class="btn-action" onclick="checkWord()">
+      <span class="ui-sprite ui-sm ui-check hud-icon-white"></span>
+      <span id="check-btn-text">Check Spelling</span>
+    </button>
+    <div class="hint-subtext" id="swap-hint">Click one letter tile, then another to swap their positions!</div>
+  </main>
+
+  <div class="screen-overlay" id="end-screen" style="display: none;">
+    <div class="end-box">
+      <div style="margin-bottom: 14px; display: flex; justify-content: center;">
+        <span class="ui-sprite ui-2xl ui-trophy"></span>
+      </div>
+      <h2 style="font-size: 28px; font-weight: 800; margin-bottom: 8px;" id="end-title">All Words Solved!</h2>
+      <p class="end-sub" id="end-sub">Your word-unscrambling skills are fantastic!</p>
+
+      <div class="end-score-box">
+        <div style="font-size: 36px; font-weight: 800; color: #15803d;" id="final-score">0 Points</div>
+      </div>
+
+      <button class="btn-action" onclick="initGame()">
+        <span class="ui-sprite ui-sm ui-refresh hud-icon-white"></span>
+        <span id="play-again-text">Play Again</span>
+      </button>
+    </div>
+  </div>
+
+  <script src="common/sfx.js"></script>
+  <script src="common/confetti.js"></script>
+  <script src="common/i18n.js"></script>
+  <script src="common/themes.js"></script>
+  <script src="common/bridge.js"></script>
+  <script>
+    const tr = (key, vars) => (window.LotusI18n ? window.LotusI18n.t(key, vars) : key);
+
+    let activity = null;
+    let questions = [];
+    let currentIndex = 0;
+    let currentWord = '';
+    let letters = [];
+    let selectedTileIndex = null;
+    let score = 0;
+    let isRoundSolved = false;
+    let isSwapping = false;
+    let maxLives = 0;
+    let lives = 0;
+    let timeMode = 'none';
+    let timerDuration = 30;
+    let timeLeft = 30;
+    let stopwatchSeconds = 0;
+    let timerInterval = null;
+    let nextRoundTimeout = null;
+    let wrongFlashTimeout = null;
+    let swapTimeout = null;
+    let lastEndMode = 'win';
+    let hasBootedOnce = false;
+    let lastActivitySig = '';
+    let lastSettingsSyncTs = 0;
+    const processedBridgeMsgs = new WeakSet();
+
+    function applyTranslations() {
+      const titleEl = document.getElementById('page-title');
+      if (titleEl) titleEl.textContent = tr('ana.pageTitle');
+      document.title = tr('ana.pageTitle');
+
+      const hdrTitle = document.getElementById('hdr-title');
+      if (hdrTitle) hdrTitle.textContent = tr('ana.title');
+
+      const lblScore = document.getElementById('lbl-score');
+      if (lblScore) lblScore.textContent = tr('game.score');
+
+      const lblTime = document.getElementById('lbl-time');
+      if (lblTime) lblTime.textContent = timeMode === 'stopwatch' ? tr('game.stopwatch') : tr('game.time');
+
+      if (questions.length > 0 && currentIndex < questions.length) {
+        const rb = document.getElementById('round-badge');
+        if (rb) rb.textContent = tr('ana.wordBadge', { cur: currentIndex + 1, tot: questions.length });
+        const cr = document.getElementById('clue-round');
+        if (cr) cr.textContent = tr('ana.wordRound', { cur: currentIndex + 1, tot: questions.length });
+      }
+
+      const checkText = document.getElementById('check-btn-text');
+      if (checkText) checkText.textContent = tr('ana.check');
+
+      const swapHint = document.getElementById('swap-hint');
+      if (swapHint) swapHint.textContent = tr('ana.swapHint');
+
+      const endTitle = document.getElementById('end-title');
+      if (endTitle) {
+        endTitle.textContent = lastEndMode === 'lives'
+          ? tr('game.outOfLivesTitle')
+          : lastEndMode === 'timeout'
+            ? tr('game.timesUp')
+            : tr('ana.allSolvedTitle');
+      }
+
+      const endSub = document.getElementById('end-sub');
+      if (endSub) endSub.textContent = lastEndMode === 'lives' ? tr('game.outOfLivesSub') : tr('ana.allSolvedSub');
+
+      const finalScore = document.getElementById('final-score');
+      if (finalScore) finalScore.textContent = tr('game.totalPoints', { n: score });
+
+      const playAgainText = document.getElementById('play-again-text');
+      if (playAgainText) playAgainText.textContent = tr('game.playAgain');
+    }
+
+    if (window.LotusI18n) {
+      window.LotusI18n.onChange(() => applyTranslations());
+    }
+
+    const bridge = window.GameBridge || (typeof GameBridge !== 'undefined' ? GameBridge : null);
+
+    function computeActivitySig(act) {
+      if (!act) return '';
+      const qLen = (act.questions || act.content?.items || []).length;
+      return JSON.stringify({
+        id: act.id || '',
+        title: act.title || '',
+        qLen,
+        rules: act.rules || null,
+        settings: act.settings || null,
+        theme: act.theme || ''
+      });
+    }
+
+    function applyMergedSettings(payload) {
+      if (!payload) return;
+      const base = payload.activity ? { ...payload.activity } : { ...(activity || {}) };
+      if (payload.rules) base.rules = { ...(base.rules || {}), ...payload.rules };
+      if (payload.settings) base.settings = { ...(base.settings || {}), ...payload.settings };
+      if (payload.theme) base.theme = payload.theme;
+      if (base.rules) {
+        base.settings = {
+          ...(base.settings || {}),
+          timerSeconds: base.rules.timerSeconds ?? base.settings?.timerSeconds ?? 30,
+          lives: base.rules.hasLives === false ? 0 : (base.rules.livesCount ?? base.settings?.lives ?? 3),
+          hasLives: base.rules.hasLives,
+          timeMode: base.rules.timeMode,
+          shuffle: base.rules.shuffleQuestions,
+          shuffleAnswers: base.rules.shuffleAnswers
+        };
+      }
+      const norm = (bridge && typeof bridge.normalizeActivity === 'function') ? bridge.normalizeActivity(base) : base;
+      activity = norm;
+      if (bridge) bridge.activity = norm;
+      lastActivitySig = computeActivitySig(norm);
+      if (payload.theme && window.LotusThemes) LotusThemes.apply(payload.theme, true);
+      else if (norm.theme && window.LotusThemes) LotusThemes.apply(norm.theme);
+      if (payload.restart !== false) initGame();
+    }
+
+    function handleExternalMessage(data) {
+      if (!data || typeof data !== 'object') return;
+      if (data.type === 'GAME_CMD') {
+        const cmd = data.command || data.cmd;
+        if (cmd === 'RESTART') initGame();
+      } else if (data.type === 'UPDATE_SETTINGS') {
+        lastSettingsSyncTs = Date.now();
+        applyMergedSettings(data);
+      } else if (data.type === 'GAME_SETTINGS') {
+        lastSettingsSyncTs = Date.now();
+        const p = data.payload && typeof data.payload === 'object' ? { ...data, ...data.payload } : data;
+        if (p.rules || p.settings || p.activity || p.theme) applyMergedSettings(p);
+      } else if (data.type === 'INIT_ACTIVITY' && data.activity) {
+        const norm = (bridge && typeof bridge.normalizeActivity === 'function') ? bridge.normalizeActivity(data.activity) : data.activity;
+        const sig = computeActivitySig(norm);
+        if (!hasBootedOnce || sig !== lastActivitySig || data.forceRestart || data.restart === true) {
+          activity = norm;
+          if (bridge) bridge.activity = norm;
+          lastActivitySig = sig;
+          hasBootedOnce = true;
+          initGame();
+        }
+      }
+    }
+
+    if (bridge && typeof bridge.onReady === 'function') {
+      bridge.onReady((act) => {
+        if (hasBootedOnce && (Date.now() - lastSettingsSyncTs) < 50) return;
+        activity = act;
+        lastActivitySig = computeActivitySig(act);
+        hasBootedOnce = true;
+        initGame();
+      });
+      if (typeof bridge.onSettings === 'function') {
+        bridge.onSettings((payload) => {
+          if (payload && typeof payload === 'object') processedBridgeMsgs.add(payload);
+          handleExternalMessage(payload);
+        });
+      }
+    } else {
+      setTimeout(() => { hasBootedOnce = true; initGame(); }, 100);
+    }
+
+    const hasBridgeSettings = Boolean(bridge && typeof bridge.onSettings === 'function');
+    window.addEventListener('message', (event) => {
+      if (!event.data || typeof event.data !== 'object') return;
+      if (processedBridgeMsgs.has(event.data)) return;
+      if (hasBridgeSettings && (event.data.type === 'UPDATE_SETTINGS' || event.data.type === 'GAME_SETTINGS' || event.data.type === 'GAME_CMD')) {
+        return;
+      }
+      processedBridgeMsgs.add(event.data);
+      handleExternalMessage(event.data);
+    });
+
+    function initGame() {
+      clearInterval(timerInterval);
+      clearTimeout(nextRoundTimeout);
+      clearTimeout(wrongFlashTimeout);
+      clearTimeout(swapTimeout);
+      const lang = window.LotusI18n ? window.LotusI18n.getLang() : 'en';
+      const rawItems = activity?.questions || activity?.content?.items || [];
+      questions = rawItems.map(item => {
+        const cOpt = Array.isArray(item.options) ? item.options.find(o => o.isCorrect) : null;
+        const raw = item.word || item.correctAnswer || (cOpt ? cOpt.text : '') || '';
+        return {
+          question: item.question || item.text || '',
+          correctAnswer: raw,
+          word: raw
+        };
+      }).filter(item => item.word.trim().length >= 2);
+
+      if (questions.length === 0) {
+        questions = lang === 'id'
+          ? [
+              { question: "Planet Terdekat dari Matahari", correctAnswer: "MERKURIUS", word: "MERKURIUS" },
+              { question: "Satelit alami planet Bumi", correctAnswer: "BULAN", word: "BULAN" }
+            ]
+          : [
+              { question: "Closest Planet to the Sun", correctAnswer: "MERCURY", word: "MERCURY" },
+              { question: "Earth's Natural Satellite", correctAnswer: "MOON", word: "MOON" }
+            ];
+      }
+
+      const rules = activity?.rules || {};
+      const settings = activity?.settings || {};
+
+      if (rules.shuffleQuestions !== false && settings.shuffle !== false) {
+        questions.sort(() => Math.random() - 0.5);
+      }
+
+      timeMode = rules.timeMode || settings.timeMode || (settings.timerSeconds > 0 ? 'timer' : 'none');
+      timerDuration = Number(rules.timerSeconds ?? settings.timerSeconds ?? 30);
+      if (timerDuration <= 0 && timeMode === 'timer') timerDuration = 30;
+      timeLeft = timerDuration;
+      stopwatchSeconds = 0;
+
+      const hasLives = rules.hasLives !== undefined
+        ? Boolean(rules.hasLives)
+        : (settings.hasLives !== undefined ? Boolean(settings.hasLives) : (settings.lives !== undefined ? Number(settings.lives) > 0 : false));
+      maxLives = hasLives ? (Number(rules.livesCount ?? settings.lives ?? 3) || 3) : 0;
+      lives = maxLives;
+
+      if (window.LotusThemes) LotusThemes.apply(activity?.theme || 'white');
+
+      currentIndex = 0;
+      score = 0;
+      lastEndMode = 'win';
+      isRoundSolved = false;
+      isSwapping = false;
+      document.getElementById('score-val').innerText = score;
+      document.getElementById('end-screen').style.display = 'none';
+
+      const timerBadge = document.getElementById('timer-badge');
+      const timerVal = document.getElementById('timer-val');
+      if (timeMode === 'none') {
+        if (timerBadge) timerBadge.style.setProperty('display', 'none', 'important');
+      } else if (timeMode === 'stopwatch') {
+        if (timerBadge) {
+          timerBadge.style.removeProperty('display');
+          timerBadge.style.display = 'inline-flex';
+        }
+        if (timerVal) timerVal.innerText = '0';
+        timerInterval = setInterval(() => {
+          stopwatchSeconds++;
+          if (timerVal) timerVal.innerText = String(stopwatchSeconds);
+        }, 1000);
+      } else {
+        if (timerBadge) {
+          timerBadge.style.removeProperty('display');
+          timerBadge.style.display = 'inline-flex';
+        }
+      }
+
+      updateHearts();
+      loadRound(0);
+      applyTranslations();
+    }
+
+    function updateHearts() {
+      const container = document.getElementById('lives-container');
+      if (!container) return;
+      if (maxLives <= 0) {
+        container.style.setProperty('display', 'none', 'important');
+        container.innerHTML = '';
+        return;
+      }
+      container.style.removeProperty('display');
+      container.style.display = 'inline-flex';
+      let str = '';
+      for (let i = 0; i < maxLives; i++) {
+        const lostCls = i < lives ? '' : ' lost';
+        str += `<span class="heart${lostCls}"><span class="ui-sprite ui-sm ui-heart hud-icon-white"></span></span>`;
+      }
+      container.innerHTML = str;
+    }
+
+    function startRoundTimer() {
+      if (timeMode !== 'timer') return;
+      clearInterval(timerInterval);
+      timeLeft = timerDuration;
+      const timerVal = document.getElementById('timer-val');
+      if (timerVal) timerVal.innerText = String(timeLeft);
+      timerInterval = setInterval(() => {
+        if (isRoundSolved) return;
+        timeLeft--;
+        if (timerVal) timerVal.innerText = String(Math.max(0, timeLeft));
+        if (timeLeft <= 5 && timeLeft > 0 && window.SFX && SFX.tick) SFX.tick();
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          handleRoundTimeout();
+        }
+      }, 1000);
+    }
+
+    function handleRoundTimeout() {
+      if (isRoundSolved) return;
+      isRoundSolved = true;
+      if (window.SFX) SFX.wrong();
+      document.querySelectorAll('.letter-tile').forEach(t => t.classList.add('wrong'));
+      if (maxLives > 0) {
+        lives = Math.max(0, lives - 1);
+        updateHearts();
+      }
+      clearTimeout(nextRoundTimeout);
+      nextRoundTimeout = setTimeout(() => {
+        if (maxLives > 0 && lives <= 0) {
+          endGame('lives');
+        } else {
+          currentIndex++;
+          loadRound(currentIndex);
+        }
+      }, 900);
+    }
+
+    function loadRound(index) {
+      if (maxLives > 0 && lives <= 0) {
+        endGame('lives');
+        return;
+      }
+      if (index >= questions.length) {
+        endGame('win');
+        return;
+      }
+
+      isRoundSolved = false;
+      isSwapping = false;
+      const q = questions[index];
+      currentWord = (q.word || q.correctAnswer).toUpperCase().replace(/\s+/g, '');
+      document.getElementById('round-badge').innerText = tr('ana.wordBadge', { cur: index + 1, tot: questions.length });
+      document.getElementById('clue-round').innerText = tr('ana.wordRound', { cur: index + 1, tot: questions.length });
+      document.getElementById('clue-text').innerText = q.question || '';
+
+      letters = currentWord.split('');
+      let attempts = 0;
+      while (letters.join('') === currentWord && attempts < 10) {
+        letters.sort(() => Math.random() - 0.5);
+        attempts++;
+      }
+
+      selectedTileIndex = null;
+      renderTiles();
+      startRoundTimer();
+    }
+
+    function renderTiles() {
+      const container = document.getElementById('tiles-container');
+      container.innerHTML = '';
+
+      letters.forEach((char, idx) => {
+        const tile = document.createElement('div');
+        tile.className = 'letter-tile';
+        if (selectedTileIndex === idx) tile.classList.add('selected');
+        tile.innerText = char;
+        tile.onclick = () => handleTileClick(idx);
+        container.appendChild(tile);
+      });
+    }
+
+    function handleTileClick(idx) {
+      if (isRoundSolved || isSwapping) return;
+
+      if (selectedTileIndex === null) {
+        selectedTileIndex = idx;
+        if (window.SFX) SFX.click();
+        renderTiles();
+      } else if (selectedTileIndex === idx) {
+        selectedTileIndex = null;
+        if (window.SFX) SFX.click();
+        renderTiles();
+      } else {
+        const fromIdx = selectedTileIndex;
+        selectedTileIndex = null;
+        swapTiles(fromIdx, idx);
+      }
+    }
+
+    function swapTiles(i, j) {
+      if (isRoundSolved || isSwapping || i === j) return;
+
+      const container = document.getElementById('tiles-container');
+      const tiles = container.querySelectorAll('.letter-tile');
+      const tileA = tiles[i];
+      const tileB = tiles[j];
+
+      if (!tileA || !tileB) {
+        const temp = letters[i];
+        letters[i] = letters[j];
+        letters[j] = temp;
+        renderTiles();
+        return;
+      }
+
+      isSwapping = true;
+      if (window.SFX) SFX.flip();
+
+      const deltaXA = tileB.offsetLeft - tileA.offsetLeft;
+      const deltaYA = tileB.offsetTop - tileA.offsetTop;
+      const deltaXB = -deltaXA;
+      const deltaYB = -deltaYA;
+
+      tileA.classList.add('swapping-active');
+      tileB.classList.add('swapping-target');
+
+      tileA.style.transform = `translate(${deltaXA}px, ${deltaYA}px) scale(1.1)`;
+      tileB.style.transform = `translate(${deltaXB}px, ${deltaYB}px) scale(0.92)`;
+
+      clearTimeout(swapTimeout);
+      swapTimeout = setTimeout(() => {
+        const temp = letters[i];
+        letters[i] = letters[j];
+        letters[j] = temp;
+
+        isSwapping = false;
+        renderTiles();
+      }, 350);
+    }
+
+    function checkWord() {
+      if (isRoundSolved || isSwapping) return;
+
+      if (letters.join('') === currentWord) {
+        isRoundSolved = true;
+        if (timeMode === 'timer') clearInterval(timerInterval);
+        if (window.SFX) SFX.correct();
+        document.querySelectorAll('.letter-tile').forEach(t => t.classList.add('correct'));
+        score += 100;
+        document.getElementById('score-val').innerText = score;
+
+        clearTimeout(nextRoundTimeout);
+        nextRoundTimeout = setTimeout(() => {
+          currentIndex++;
+          loadRound(currentIndex);
+        }, 1200);
+      } else {
+        if (window.SFX) SFX.wrong();
+        const tiles = document.querySelectorAll('.letter-tile');
+        tiles.forEach(t => t.classList.add('wrong'));
+        if (maxLives > 0) {
+          lives = Math.max(0, lives - 1);
+          updateHearts();
+          if (lives <= 0) {
+            isRoundSolved = true;
+            clearInterval(timerInterval);
+            clearTimeout(nextRoundTimeout);
+            nextRoundTimeout = setTimeout(() => endGame('lives'), 650);
+            return;
+          }
+        }
+        clearTimeout(wrongFlashTimeout);
+        wrongFlashTimeout = setTimeout(() => {
+          tiles.forEach(t => t.classList.remove('wrong'));
+        }, 500);
+      }
+    }
+
+    function endGame(mode = 'win') {
+      clearInterval(timerInterval);
+      clearTimeout(nextRoundTimeout);
+      clearTimeout(wrongFlashTimeout);
+      clearTimeout(swapTimeout);
+      lastEndMode = mode || 'win';
+      if (lastEndMode === 'win') {
+        if (window.SFX) SFX.win();
+        if (window.launchConfetti) window.launchConfetti();
+      } else {
+        if (window.SFX) SFX.wrong();
+      }
+      GameBridge.finishGame(score, questions.length * 100);
+      applyTranslations();
+      document.getElementById('final-score').innerText = tr('game.totalPoints', { n: score });
+      document.getElementById('end-screen').style.display = 'flex';
+    }
+  </script>
+</body>
+</html>

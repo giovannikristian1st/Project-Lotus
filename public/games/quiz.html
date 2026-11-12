@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Quiz — LotusWall</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="common/ui-spritesheet.css">
+  <link rel="stylesheet" href="common/themes.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; user-select: none; }
+    body { background: #f7f5f0; min-height: 100vh; color: #18181b; display: flex; flex-direction: column; overflow-x: hidden; }
+    
+    /* Top Bar */
+    .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 28px; background: #ffffff; border-bottom: 1.5px solid #e5dfd3; color: #18181b; gap: 8px; flex-wrap: wrap; }
+    .stat-badge { background: #fcfbf8; border: 1.5px solid #d6cfc2; color: #18181b; padding: 7px 14px; border-radius: 8px; font-weight: 700; display: flex; align-items: center; gap: 8px; font-size: 13px; box-shadow: 0 1px 2px rgba(24,24,27,0.04); }
+    .hearts { color: #dc2626; font-size: 18px; letter-spacing: 2px; gap: 4px; }
+    .heart { display: inline-flex; align-items: center; justify-content: center; transition: opacity 0.2s, transform 0.2s; }
+    .heart.lost { opacity: 0.25; filter: grayscale(1); }
+    
+    /* Timer Bar */
+    .timer-container { width: 100%; height: 6px; background: #e5dfd3; position: relative; }
+    .timer-bar { height: 100%; background: #15803d; width: 100%; transition: width 0.1s linear; }
+
+    /* Main Container */
+    .game-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 1480px; width: 96%; margin: 0 auto; padding: 18px 24px; }
+    
+    /* Question Box */
+    .question-card { background: #ffffff; border: 2px solid #d6cfc2; border-radius: 14px; padding: 26px 36px; width: 100%; text-align: center; box-shadow: 0 2px 10px rgba(24,24,27,0.05); margin-bottom: 20px; animation: popIn 0.25s ease-out; }
+    .q-number { font-size: 12px; text-transform: uppercase; letter-spacing: 1.4px; color: #57534e; font-weight: 800; margin-bottom: 8px; }
+    .q-text { font-size: clamp(19px, 2vw, 24px); font-weight: 700; line-height: 1.4; color: #18181b; max-width: 1080px; margin: 0 auto; }
+    .q-image { max-height: 200px; max-width: 100%; border-radius: 10px; margin-top: 14px; object-fit: contain; border: 1.5px solid #e5dfd3; }
+    .q-audio-box { margin-top: 12px; }
+
+    /* Options Grid (1 to 6 Options) */
+    .options-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; width: 100%; }
+    @media (min-width: 1024px) { .options-grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 640px) { .options-grid { grid-template-columns: 1fr; } }
+
+    .opt-btn { background: #ffffff; border: 2px solid #d6cfc2; border-bottom-width: 4px; border-radius: 12px; padding: 15px 18px; color: #18181b; font-size: 16px; font-weight: 600; text-align: left; cursor: pointer; transition: all 0.12s ease; display: flex; align-items: center; gap: 14px; }
+    .opt-btn:hover:not(:disabled) { background: #fcfbf8; border-color: #18181b; transform: translateY(-1px); }
+    .opt-btn:active:not(:disabled) { transform: translateY(1px); border-bottom-width: 2px; }
+    .opt-btn.selected-multi { border-color: #1d4ed8; background: #eff6ff; }
+    .opt-key { width: 34px; height: 34px; border-radius: 8px; background: #f3efe6; border: 1px solid #d6cfc2; color: #18181b; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex-shrink: 0; }
+    .opt-img { width: 44px; height: 44px; object-fit: cover; border-radius: 8px; }
+    
+    .opt-btn.correct { background: #15803d !important; border-color: #14532d !important; color: white !important; animation: pulseSuccess 0.35s; }
+    .opt-btn.wrong { background: #dc2626 !important; border-color: #991b1b !important; color: white !important; animation: shake 0.35s; }
+    .opt-btn.correct .opt-key, .opt-btn.wrong .opt-key { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.35); color: white; }
+
+    /* Multi-Submit Bar */
+    .multi-submit-container { width: 100%; display: flex; justify-content: center; margin-top: 18px; }
+    .multi-submit-btn { background: #15803d; color: white; border: none; border-bottom: 3px solid #14532d; padding: 13px 40px; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+    .multi-submit-btn:hover { background: #166534; }
+
+    /* Overlay / Modals */
+    .screen-overlay { position: fixed; inset: 0; background: rgba(24, 24, 27, 0.7); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50; padding: 24px; }
+    .modal-box { background: #ffffff; border: 2px solid #d6cfc2; color: #18181b; border-radius: 14px; padding: 32px; max-width: 520px; width: 100%; text-align: center; box-shadow: 0 20px 40px rgba(24,24,27,0.22); }
+    .end-sub { color: #57534e; margin-bottom: 18px; font-size: 14px; }
+    .end-score-box { background: #fcfbf8; border: 1.5px solid #e5dfd3; padding: 16px; border-radius: 10px; margin-bottom: 16px; }
+    .end-score-num { font-size: 32px; font-weight: 800; color: #15803d; }
+    .end-score-time { font-size: 13px; color: #57534e; margin-top: 4px; font-weight: 600; }
+    .lb-submit-card { background: #fcfbf8; padding: 16px; border-radius: 10px; border: 1.5px solid #e5dfd3; margin-bottom: 16px; text-align: left; }
+    .lb-submit-label { display: block; font-size: 13px; font-weight: 700; color: #18181b; margin-bottom: 8px; }
+    .lb-input { flex: 1; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #d6cfc2; background: #ffffff; color: #18181b; font-size: 14px; font-weight: 600; outline: none; }
+    .lb-input:focus { border-color: #18181b; }
+    .action-btn { background: #1d4ed8; color: white; border: none; border-bottom: 3px solid #1e3a8a; padding: 12px 32px; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 18px; transition: all 0.15s; }
+    .action-btn:hover { background: #1e40af; }
+
+    /* Leaderboard Table */
+    .leaderboard-list { margin-top: 10px; max-height: 170px; overflow-y: auto; text-align: left; }
+    .lb-row { display: flex; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid #e5dfd3; font-size: 14px; color: #18181b; }
+    .lb-row.active { background: #eff6ff; border-radius: 6px; font-weight: 700; color: #1d4ed8; }
+
+    @keyframes popIn { 0% { transform: scale(0.96); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+    @keyframes pulseSuccess { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+  </style>
+</head>
+<body class="theme-white">
+
+  <!-- Top Info Bar -->
+  <div class="top-bar">
+    <div class="stat-badge" id="score-badge">
+      <span class="ui-sprite ui-sm ui-trophy hud-icon-white"></span>
+      <span><span data-i18n="game.score">Score</span>: <span id="score-val">0</span></span>
+    </div>
+    <div class="stat-badge" id="timer-badge">
+      <span class="ui-sprite ui-sm ui-clock hud-icon-white"></span>
+      <span><span id="timer-label" data-i18n="game.time">Time</span>: <span id="timer-val">30</span>s</span>
+    </div>
+    <div class="stat-badge hearts" id="lives-container"></div>
+  </div>
+
+  <div class="timer-container" id="timer-bar-wrapper">
+    <div class="timer-bar" id="timer-bar"></div>
+  </div>
+
+  <!-- Game Area -->
+  <main class="game-area">
+    <div class="question-card" id="q-card">
+      <div class="q-number" id="q-num">Question</div>
+      <div class="q-text" id="q-text">Preparing quiz...</div>
+      <img id="q-img" class="q-image" style="display:none;" src="" alt="Question image" onerror="this.style.display='none'">
+      <div id="q-audio-box" class="q-audio-box" style="display:none;">
+        <audio id="q-audio" controls style="max-width:320px; height:36px;"></audio>
+      </div>
+    </div>
+
+    <div class="options-grid" id="options-grid"></div>
+
+    <div class="multi-submit-container" id="multi-submit-box" style="display:none;">
+      <button class="multi-submit-btn" onclick="submitMultiAnswer()" data-i18n="quiz.submitMulti">Submit Selected Answers</button>
+    </div>
+  </main>
+
+  <!-- Game Over Screen -->
+  <div class="screen-overlay" id="game-over-screen" style="display: none;">
+    <div class="modal-box">
+      <div style="margin-bottom: 12px; display:flex; justify-content:center;" id="end-icon">
+        <span class="ui-sprite ui-2xl ui-trophy"></span>
+      </div>
+      <h2 style="font-size: 26px; font-weight: 800; margin-bottom: 6px;" id="end-title">Game Over!</h2>
+      <p class="end-sub" id="end-subtitle">Awesome work! You completed the challenge!</p>
+      
+      <div class="end-score-box">
+        <div class="end-score-num" id="final-score">0 pts</div>
+        <div class="end-score-time" id="final-time">Total Time: 0s</div>
+      </div>
+
+      <!-- Student Name Input for Leaderboard -->
+      <div id="score-submit-box" class="lb-submit-card">
+        <label for="player-name-input" class="lb-submit-label" data-i18n="game.lbNamePrompt">
+          Write your name for the Leaderboard:
+        </label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="player-name-input" class="lb-input" data-i18n-placeholder="game.namePlaceholder" placeholder="Your name (e.g. Budi, Siti, Andi)..." onkeydown="if(event.key==='Enter') submitPlayerScore();">
+          <button id="btn-submit-score" onclick="submitPlayerScore()" style="background: #15803d; color: #ffffff; border: none; border-bottom: 3px solid #14532d; padding: 11px 18px; border-radius: 8px; font-weight: 800; font-size: 14px; cursor: pointer; white-space: nowrap; transition: transform 0.12s;" data-i18n="game.send">
+            Submit
+          </button>
+        </div>
+        <div id="score-submitted-alert" style="display: none; margin-top: 8px; color: #15803d; font-size: 13px; font-weight: 700;"></div>
+      </div>
+
+      <div style="text-align: left; font-weight: 700; font-size: 15px; color: #18181b; margin-bottom: 4px;" data-i18n="game.leaderboard">Leaderboard</div>
+      <div class="leaderboard-list" id="lb-list"></div>
+
+      <button class="action-btn" onclick="restartGame()" data-i18n="game.playAgain">Play Again</button>
+    </div>
+  </div>
+
+  <script src="common/i18n.js"></script>
+  <script src="common/sfx.js"></script>
+  <script src="common/confetti.js"></script>
+  <script src="common/themes.js"></script>
+  <script src="common/bridge.js"></script>
+  <script>
+    const tr = (k, v) => (window.LotusI18n ? LotusI18n.t(k, v) : k);
+
+    let activity = null;
+    let questions = [];
+    let currentIndex = 0;
+    let score = 0;
+    let lives = 3;
+    let maxLives = 3;
+    let timerDuration = 30;
+    let timeLeft = 30;
+    let timeMode = 'timer'; // 'timer', 'stopwatch', 'none'
+    let stopwatchSeconds = 0;
+    let timerInterval = null;
+    let isAnswering = false;
+    let answersSummary = [];
+
+    let currentOptions = [];
+    let selectedOptionIndices = new Set();
+    let hasSubmittedScore = false;
+    let lastPlayerName = '';
+    let lastTimeSpent = 0;
+    let nextQuestionTimeout = null;
+    let hasBootedOnce = false;
+    let lastActivitySig = '';
+    let lastSettingsSyncTs = 0;
+    const processedBridgeMsgs = new WeakSet();
+
+    function updateStaticTitle() {
+      document.title = tr('quiz.pageTitle');
+      if (window.LotusI18n) LotusI18n.applyDomTranslations(document);
+    }
+
+    const bridge = window.GameBridge || (typeof GameBridge !== 'undefined' ? GameBridge : null);
+
+    function computeActivitySig(act) {
+      if (!act) return '';
+      const qLen = (act.questions || act.content?.items || []).length;
+      return JSON.stringify({
+        id: act.id || '',
+        title: act.title || '',
+        qLen,
+        rules: act.rules || null,
+        settings: act.settings || null,
+        theme: act.theme || ''
+      });
+    }
+
+    function applyMergedSettings(payload) {
+      if (!payload) return;
+      const base = payload.activity ? { ...payload.activity } : { ...(activity || {}) };
+      if (payload.rules) base.rules = { ...(base.rules || {}), ...payload.rules };
+      if (payload.settings) base.settings = { ...(base.settings || {}), ...payload.settings };
+      if (payload.theme) base.theme = payload.theme;
+      if (base.rules) {
+        base.settings = {
+          ...(base.settings || {}),
+          timerSeconds: base.rules.timerSeconds ?? base.settings?.timerSeconds ?? 30,
+          lives: base.rules.hasLives === false ? 0 : (base.rules.livesCount ?? base.settings?.lives ?? 3),
+          hasLives: base.rules.hasLives,
+          timeMode: base.rules.timeMode,
+          shuffle: base.rules.shuffleQuestions,
+          shuffleAnswers: base.rules.shuffleAnswers
+        };
+      }
+      const norm = (bridge && typeof bridge.normalizeActivity === 'function') ? bridge.normalizeActivity(base) : base;
+      activity = norm;
+      if (bridge) bridge.activity = norm;
+      lastActivitySig = computeActivitySig(norm);
+      if (payload.theme && window.LotusThemes) LotusThemes.apply(payload.theme, true);
+      else if (norm.theme && window.LotusThemes) LotusThemes.apply(norm.theme);
+      if (payload.restart !== false) initGame();
+    }
+
+    function handleExternalMessage(data) {
+      if (!data || typeof data !== 'object') return;
+      if (data.type === 'GAME_CMD') {
+        const cmd = data.command || data.cmd;
+        if (cmd === 'RESTART') initGame();
+      } else if (data.type === 'UPDATE_SETTINGS') {
+        lastSettingsSyncTs = Date.now();
+        applyMergedSettings(data);
+      } else if (data.type === 'GAME_SETTINGS') {
+        lastSettingsSyncTs = Date.now();
+        const p = data.payload && typeof data.payload === 'object' ? { ...data, ...data.payload } : data;
+        if (p.rules || p.settings || p.activity || p.theme) applyMergedSettings(p);
+      } else if (data.type === 'INIT_ACTIVITY' && data.activity) {
+        const norm = (bridge && typeof bridge.normalizeActivity === 'function') ? bridge.normalizeActivity(data.activity) : data.activity;
+        const sig = computeActivitySig(norm);
+        if (!hasBootedOnce || sig !== lastActivitySig || data.forceRestart || data.restart === true) {
+          activity = norm;
+          if (bridge) bridge.activity = norm;
+          lastActivitySig = sig;
+          hasBootedOnce = true;
+          initGame();
+        }
+      }
+    }
+
+    if (bridge && typeof bridge.onReady === 'function') {
+      bridge.onReady((act) => {
+        if (hasBootedOnce && (Date.now() - lastSettingsSyncTs) < 50) return;
+        activity = act;
+        lastActivitySig = computeActivitySig(act);
+        hasBootedOnce = true;
+        initGame();
+      });
+      if (typeof bridge.onSettings === 'function') {
+        bridge.onSettings((payload) => {
+          if (payload && typeof payload === 'object') processedBridgeMsgs.add(payload);
+          handleExternalMessage(payload);
+        });
+      }
+    } else {
+      setTimeout(() => { hasBootedOnce = true; initGame(); }, 100);
+    }
+
+    const hasBridgeSettings = Boolean(bridge && typeof bridge.onSettings === 'function');
+
+    window.addEventListener('message', (event) => {
+      if (!event.data || typeof event.data !== 'object') return;
+      if (processedBridgeMsgs.has(event.data)) return;
+      if (hasBridgeSettings && (event.data.type === 'UPDATE_SETTINGS' || event.data.type === 'GAME_SETTINGS' || event.data.type === 'GAME_CMD')) {
+        return;
+      }
+      processedBridgeMsgs.add(event.data);
+      handleExternalMessage(event.data);
+    });
+
+    if (window.LotusI18n) {
+      LotusI18n.onChange(() => {
+        updateStaticTitle();
+        if (questions.length > 0 && currentIndex < questions.length) {
+          document.getElementById('q-num').innerText = tr('game.questionOf', { n: currentIndex + 1, total: questions.length });
+        }
+        document.getElementById('timer-label').innerText = timeMode === 'stopwatch' ? tr('game.stopwatch') : tr('game.time');
+        if (document.getElementById('game-over-screen').style.display !== 'none') {
+          refreshEndTexts();
+          renderLeaderboardUI(lastPlayerName);
+        }
+      });
+    }
+
+    function initGame() {
+      clearInterval(timerInterval);
+      clearTimeout(nextQuestionTimeout);
+      updateStaticTitle();
+
+      const rawList = activity?.questions || activity?.content?.items || [];
+      questions = rawList.map((item, idx) => {
+        let opts = [];
+        if (Array.isArray(item.options) && item.options.length > 0) {
+          opts = item.options.map(o => typeof o === 'string' ? { text: o, isCorrect: false } : o);
+        } else if (item.correctAnswer) {
+          opts = [
+            { text: item.correctAnswer, isCorrect: true },
+            ...(item.wrongAnswers || []).map(w => ({ text: w, isCorrect: false }))
+          ];
+        } else {
+          opts = [
+            { text: tr('game.defaultOpt', { n: 1 }), isCorrect: true },
+            { text: tr('game.defaultOpt', { n: 2 }), isCorrect: false }
+          ];
+        }
+
+        return {
+          id: item.id || String(idx + 1),
+          text: item.text || item.question || tr('game.defaultQuestion', { n: idx + 1 }),
+          image: item.image || '',
+          audio: item.audio || '',
+          options: opts
+        };
+      });
+
+      if (questions.length === 0) {
+        const isId = (window.LotusI18n && LotusI18n.getLang() === 'id');
+        questions = [{
+          id: 'demo-1',
+          text: isId ? "Planet manakah yang dijuluki 'Planet Merah'?" : "Which planet is known as the 'Red Planet'?",
+          options: [
+            { text: "Mars", isCorrect: true },
+            { text: "Venus", isCorrect: false },
+            { text: "Jupiter", isCorrect: false }
+          ]
+        }];
+      }
+
+      const rules = activity?.rules || {};
+      const settings = activity?.settings || {};
+
+      timeMode = rules.timeMode || (settings.timerSeconds ? 'timer' : 'timer');
+      timerDuration = rules.timerSeconds ?? settings.timerSeconds ?? 30;
+      if (timerDuration <= 0 && timeMode === 'timer') timerDuration = 30;
+
+      const hasLives = rules.hasLives !== undefined ? rules.hasLives : (settings.lives !== 0);
+      maxLives = hasLives ? (Number(rules.livesCount ?? settings.lives ?? 3) || 3) : 0;
+      lives = maxLives;
+
+      score = 0;
+      currentIndex = 0;
+      stopwatchSeconds = 0;
+      answersSummary = [];
+
+      if (rules.shuffleQuestions !== false && settings.shuffle !== false) {
+        questions.sort(() => Math.random() - 0.5);
+      }
+
+      const themeToApply = activity?.theme || 'white';
+      if (window.LotusThemes) LotusThemes.apply(themeToApply);
+
+      updateHearts();
+      document.getElementById('score-val').innerText = score;
+      document.getElementById('game-over-screen').style.display = 'none';
+
+      loadQuestion(0);
+    }
+
+    function updateHearts() {
+      const heartsContainer = document.getElementById('lives-container');
+      if (maxLives <= 0) {
+        heartsContainer.style.setProperty('display', 'none', 'important');
+        return;
+      }
+      heartsContainer.style.removeProperty('display');
+      heartsContainer.style.display = 'flex';
+      let heartsStr = '';
+      for (let i = 0; i < maxLives; i++) {
+        const lostCls = i < lives ? '' : ' lost';
+        heartsStr += `<span class="heart${lostCls}"><span class="ui-sprite ui-sm ui-heart hud-icon-white"></span></span>`;
+      }
+      heartsContainer.innerHTML = heartsStr;
+    }
+
+    function loadQuestion(index) {
+      if (index >= questions.length || (maxLives > 0 && lives <= 0)) {
+        endGame();
+        return;
+      }
+
+      isAnswering = false;
+      selectedOptionIndices.clear();
+      const q = questions[index];
+
+      document.getElementById('q-num').innerText = tr('game.questionOf', { n: index + 1, total: questions.length });
+      document.getElementById('q-text').innerText = q.text;
+
+      const imgEl = document.getElementById('q-img');
+      imgEl.style.display = 'none';
+      if (q.image) {
+        imgEl.onload = () => { imgEl.style.display = 'inline-block'; };
+        imgEl.onerror = () => { imgEl.style.display = 'none'; };
+        imgEl.src = q.image;
+      }
+
+      const audioBox = document.getElementById('q-audio-box');
+      const audioEl = document.getElementById('q-audio');
+      if (q.audio) {
+        audioEl.src = q.audio;
+        audioBox.style.display = 'block';
+      } else {
+        audioBox.style.display = 'none';
+      }
+
+      currentOptions = [...q.options];
+      if (activity?.rules?.shuffleAnswers !== false && activity?.settings?.shuffleAnswers !== false) {
+        currentOptions.sort(() => Math.random() - 0.5);
+      }
+
+      const correctCount = currentOptions.filter(o => o.isCorrect).length;
+      const isMulti = correctCount > 1;
+      document.getElementById('multi-submit-box').style.display = isMulti ? 'flex' : 'none';
+
+      const optionsGrid = document.getElementById('options-grid');
+      optionsGrid.innerHTML = '';
+      optionsGrid.classList.toggle('cols-3', currentOptions.length >= 5);
+
+      const keys = ['A', 'B', 'C', 'D', 'E', 'F'];
+      currentOptions.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.id = `opt-btn-${idx}`;
+        btn.innerHTML = `
+          <span class="opt-key">${keys[idx] || (idx + 1)}</span>
+          ${opt.image ? `<img src="${opt.image}" class="opt-img" alt="option" onerror="this.style.display='none'">` : ''}
+          <span style="flex:1;">${opt.text || ''}</span>
+          ${isMulti ? `<span id="multi-check-${idx}" class="multi-check-dot" style="width:18px;height:18px;border-radius:5px;border:2px solid #a89f91;display:inline-block;"></span>` : ''}
+        `;
+
+        btn.onclick = () => {
+          if (isMulti) toggleMultiSelect(idx);
+          else handleSingleAnswer(idx);
+        };
+
+        optionsGrid.appendChild(btn);
+      });
+
+      startTimer();
+    }
+
+    function toggleMultiSelect(idx) {
+      if (isAnswering) return;
+      SFX.click();
+      const btn = document.getElementById(`opt-btn-${idx}`);
+      const check = document.getElementById(`multi-check-${idx}`);
+
+      if (selectedOptionIndices.has(idx)) {
+        selectedOptionIndices.delete(idx);
+        btn.classList.remove('selected-multi');
+        if (check) {
+          check.style.background = 'transparent';
+          check.style.borderColor = '#94a3b8';
+        }
+      } else {
+        selectedOptionIndices.add(idx);
+        btn.classList.add('selected-multi');
+        if (check) {
+          check.style.background = '#2563eb';
+          check.style.borderColor = '#2563eb';
+        }
+      }
+    }
+
+    function submitMultiAnswer() {
+      if (isAnswering || selectedOptionIndices.size === 0) return;
+      isAnswering = true;
+      clearInterval(timerInterval);
+
+      let isAllCorrect = true;
+      currentOptions.forEach((opt, idx) => {
+        const isSelected = selectedOptionIndices.has(idx);
+        if (opt.isCorrect && !isSelected) isAllCorrect = false;
+        if (!opt.isCorrect && isSelected) isAllCorrect = false;
+
+        const btn = document.getElementById(`opt-btn-${idx}`);
+        if (opt.isCorrect) btn.classList.add('correct');
+        else if (isSelected) btn.classList.add('wrong');
+      });
+
+      resolveAnswer(isAllCorrect);
+    }
+
+    function handleSingleAnswer(selectedIdx) {
+      if (isAnswering) return;
+      isAnswering = true;
+      clearInterval(timerInterval);
+
+      const opt = currentOptions[selectedIdx];
+      const btn = document.getElementById(`opt-btn-${selectedIdx}`);
+
+      currentOptions.forEach((o, i) => {
+        const b = document.getElementById(`opt-btn-${i}`);
+        if (o.isCorrect) b.classList.add('correct');
+      });
+
+      if (!opt.isCorrect) {
+        btn.classList.add('wrong');
+      }
+
+      resolveAnswer(Boolean(opt.isCorrect));
+    }
+
+    function resolveAnswer(isCorrect) {
+      const q = questions[currentIndex];
+      if (isCorrect) {
+        SFX.correct();
+        const points = 100 + (timeMode === 'timer' ? Math.round(timeLeft * 5) : 0);
+        score += points;
+        document.getElementById('score-val').innerText = score;
+        answersSummary.push({ questionId: q.id, correct: true });
+      } else {
+        SFX.wrong();
+        if (maxLives > 0) {
+          lives--;
+          updateHearts();
+        }
+        answersSummary.push({ questionId: q.id, correct: false });
+      }
+
+      clearTimeout(nextQuestionTimeout);
+      nextQuestionTimeout = setTimeout(() => {
+        currentIndex++;
+        loadQuestion(currentIndex);
+      }, 1500);
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      const timerBadge = document.getElementById('timer-badge');
+      const timerBarWrapper = document.getElementById('timer-bar-wrapper');
+
+      if (timeMode === 'none') {
+        timerBadge.style.setProperty('display', 'none', 'important');
+        timerBarWrapper.style.display = 'none';
+        return;
+      }
+
+      timerBadge.style.removeProperty('display');
+      timerBadge.style.display = 'flex';
+
+      if (timeMode === 'stopwatch') {
+        timerBarWrapper.style.display = 'none';
+        document.getElementById('timer-label').innerText = tr('game.stopwatch');
+        document.getElementById('timer-val').innerText = stopwatchSeconds;
+
+        timerInterval = setInterval(() => {
+          stopwatchSeconds++;
+          document.getElementById('timer-val').innerText = stopwatchSeconds;
+        }, 1000);
+      } else {
+        timerBarWrapper.style.display = 'block';
+        document.getElementById('timer-label').innerText = tr('game.time');
+        timeLeft = timerDuration;
+        updateTimerDisplay();
+
+        timerInterval = setInterval(() => {
+          timeLeft -= 0.1;
+          if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            timeLeft = 0;
+            updateTimerDisplay();
+            handleTimeout();
+          } else {
+            updateTimerDisplay();
+            if (Math.round(timeLeft) <= 5 && Math.round(timeLeft * 10) % 10 === 0) {
+              SFX.tick();
+            }
+          }
+        }, 100);
+      }
+    }
+
+    function updateTimerDisplay() {
+      document.getElementById('timer-val').innerText = Math.max(0, Math.ceil(timeLeft));
+      const percentage = Math.max(0, (timeLeft / timerDuration) * 100);
+      document.getElementById('timer-bar').style.width = percentage + '%';
+    }
+
+    function handleTimeout() {
+      if (isAnswering) return;
+      isAnswering = true;
+      SFX.wrong();
+
+      currentOptions.forEach((o, i) => {
+        const b = document.getElementById(`opt-btn-${i}`);
+        if (o.isCorrect) b.classList.add('correct');
+      });
+
+      if (maxLives > 0) {
+        lives--;
+        updateHearts();
+      }
+
+      answersSummary.push({ questionId: questions[currentIndex].id, correct: false, timeout: true });
+
+      clearTimeout(nextQuestionTimeout);
+      nextQuestionTimeout = setTimeout(() => {
+        currentIndex++;
+        loadQuestion(currentIndex);
+      }, 1500);
+    }
+
+    function refreshEndTexts() {
+      document.getElementById('final-score').innerText = tr('game.totalPoints', { n: score });
+      document.getElementById('final-time').innerText = tr('game.finalTimeStats', { time: lastTimeSpent, score });
+
+      const iconBox = document.getElementById('end-icon');
+      if (maxLives > 0 && lives <= 0) {
+        if (iconBox) iconBox.innerHTML = '<span class="ui-sprite ui-2xl ui-alert"></span>';
+        document.getElementById('end-title').innerText = tr('game.outOfLivesTitle');
+        document.getElementById('end-subtitle').innerText = tr('game.outOfLivesSub');
+      } else {
+        if (iconBox) iconBox.innerHTML = '<span class="ui-sprite ui-2xl ui-trophy"></span>';
+        document.getElementById('end-title').innerText = tr('game.greatFinishTitle');
+        document.getElementById('end-subtitle').innerText = tr('game.quizDoneSub');
+      }
+
+      const submitBtn = document.getElementById('btn-submit-score');
+      const alertBox = document.getElementById('score-submitted-alert');
+      if (submitBtn) {
+        submitBtn.innerText = hasSubmittedScore ? tr('game.savedBtn') : tr('game.send');
+      }
+      if (alertBox && hasSubmittedScore) {
+        alertBox.innerText = tr('game.scoreSavedBanner', { name: lastPlayerName, score });
+      }
+    }
+
+    function endGame() {
+      clearInterval(timerInterval);
+      hasSubmittedScore = false;
+      lastPlayerName = '';
+
+      if (score > 0 && (maxLives === 0 || lives > 0)) {
+        SFX.win();
+        window.launchConfetti();
+      } else {
+        SFX.wrong();
+      }
+
+      lastTimeSpent = timeMode === 'stopwatch'
+        ? stopwatchSeconds
+        : Math.max(1, Math.round((Date.now() - (window.GameBridge?.startTime || Date.now())) / 1000));
+
+      refreshEndTexts();
+
+      const nameInput = document.getElementById('player-name-input');
+      const submitBtn = document.getElementById('btn-submit-score');
+      const alertBox = document.getElementById('score-submitted-alert');
+      if (nameInput) {
+        nameInput.value = '';
+        nameInput.disabled = false;
+      }
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+      }
+      if (alertBox) alertBox.style.display = 'none';
+
+      renderLeaderboardUI();
+      document.getElementById('game-over-screen').style.display = 'flex';
+    }
+
+    function submitPlayerScore() {
+      if (hasSubmittedScore) return;
+      const nameInput = document.getElementById('player-name-input');
+      const playerName = (nameInput?.value || '').trim();
+      if (!playerName) {
+        alert(tr('game.enterNameAlert'));
+        if (nameInput) nameInput.focus();
+        return;
+      }
+
+      hasSubmittedScore = true;
+      lastPlayerName = playerName;
+      const maxScore = questions.length * 100;
+      GameBridge.finishGame(score, maxScore, answersSummary, playerName);
+
+      const submitBtn = document.getElementById('btn-submit-score');
+      const alertBox = document.getElementById('score-submitted-alert');
+      if (nameInput) nameInput.disabled = true;
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.6';
+        submitBtn.innerText = tr('game.savedBtn');
+      }
+      if (alertBox) {
+        alertBox.innerText = tr('game.scoreSavedBanner', { name: playerName, score });
+        alertBox.style.display = 'block';
+      }
+
+      SFX.click();
+      renderLeaderboardUI(playerName);
+    }
+
+    function renderLeaderboardUI(highlightName = '') {
+      const lb = (window.GameBridge && GameBridge.getLeaderboard) ? GameBridge.getLeaderboard() : [];
+      const lbList = document.getElementById('lb-list');
+      if (!lb || lb.length === 0) {
+        lbList.innerHTML = `<div style="text-align: center; color: #64748b; font-size: 13px; padding: 12px;">${tr('game.emptyLb')}</div>`;
+        return;
+      }
+      lbList.innerHTML = lb.slice(0, 10).map((row, i) => `
+        <div class="lb-row ${row.student_name === highlightName ? 'active' : ''}">
+          <span>#${i + 1} ${row.student_name}</span>
+          <span>${tr('game.ptsShort', { n: row.score })} (${tr('game.timeSec', { n: row.time_taken_seconds })})</span>
+        </div>
+      `).join('');
+    }
+
+    function restartGame() {
+      initGame();
+    }
+  </script>
+</body>
+</html>

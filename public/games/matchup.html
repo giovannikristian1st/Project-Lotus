@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Match Up Pairs — LotusWall</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="common/ui-spritesheet.css">
+  <link rel="stylesheet" href="common/themes.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; user-select: none; }
+    body { background: #f7f5f0; min-height: 100vh; color: #18181b; display: flex; flex-direction: column; overflow-x: hidden; }
+
+    .top-bar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; padding: 12px 24px; background: #ffffff; border-bottom: 1.5px solid #e5dfd3; }
+    .stat-badge { background: #fcfbf8; color: #18181b; border: 1.5px solid #d6cfc2; padding: 7px 14px; border-radius: 8px; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 1px 2px rgba(24, 24, 27, 0.04); }
+
+    .game-area { flex: 1; width: 96%; max-width: 1520px; margin: 0 auto; padding: 20px 28px; display: flex; flex-direction: column; gap: 20px; }
+
+    .instruction-card { background: #ffffff; color: #18181b; padding: 14px 22px; border-radius: 10px; text-align: center; font-weight: 600; font-size: 14px; border: 1.5px solid #d6cfc2; box-shadow: 0 1px 3px rgba(24, 24, 27, 0.04); max-width: 1080px; width: 100%; margin: 0 auto; }
+
+    /* Pairs Container */
+    .pairs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; width: 100%; }
+    @media (max-width: 640px) {
+      .game-area { width: 100%; padding: 14px; }
+      .pairs-grid { grid-template-columns: 1fr; }
+    }
+
+    .target-slot {
+      background: #ffffff;
+      border: 2px dashed #c9c1b2;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: all 0.15s;
+      color: #18181b;
+    }
+    .target-slot.drag-over { background: #f0fdf4; border-color: #15803d; }
+    .target-desc { font-size: 15px; font-weight: 700; line-height: 1.4; color: #18181b; }
+
+    .drop-zone {
+      min-height: 58px;
+      background: #f3efe6;
+      color: #57534e;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid #e5dfd3;
+      padding: 6px;
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+    .drop-placeholder { font-size: 13px; color: #57534e; font-weight: 600; pointer-events: none; }
+
+    /* Draggable Item Bank */
+    .bank-area {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 18px;
+      border: 1.5px solid #d6cfc2;
+    }
+    .bank-title { font-size: 12px; text-transform: uppercase; letter-spacing: 1.4px; color: #15803d; font-weight: 800; margin-bottom: 12px; }
+    .items-bank { display: flex; flex-wrap: wrap; gap: 12px; min-height: 48px; justify-content: center; }
+
+    .drag-item {
+      background: #15803d;
+      color: #ffffff;
+      font-weight: 700;
+      padding: 10px 18px;
+      border-radius: 9px;
+      cursor: grab;
+      border: 1.5px solid #14532d;
+      border-bottom: 3px solid #14532d;
+      transition: all 0.12s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+    .drag-item:hover { background: #166534; }
+    .drag-item:active { cursor: grabbing; transform: translateY(1px); }
+    .drag-item.selected { outline: 3px solid #d97706; outline-offset: 2px; }
+
+    .bottom-bar { display: flex; justify-content: center; padding-top: 8px; }
+    .submit-btn {
+      background: #d97706;
+      color: #ffffff;
+      border: none;
+      border-bottom: 3px solid #92400e;
+      padding: 13px 36px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.15s;
+    }
+    .submit-btn:hover { background: #b45309; }
+
+    .correct-match { border-color: #15803d !important; background: #f0fdf4 !important; }
+    .wrong-match { border-color: #dc2626 !important; background: #fef2f2 !important; }
+
+    /* Overlay / Modals */
+    .screen-overlay { position: fixed; inset: 0; background: rgba(24, 24, 27, 0.7); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50; padding: 24px; }
+    .modal-box { background: #ffffff; color: #18181b; border: 2px solid #d6cfc2; border-radius: 14px; padding: 36px; max-width: 500px; width: 100%; text-align: center; box-shadow: 0 20px 40px rgba(24, 24, 27, 0.22); }
+    .modal-sub { color: #57534e; margin-bottom: 20px; font-size: 14px; }
+    .modal-score-box { background: #fcfbf8; border: 1.5px solid #e5dfd3; padding: 18px; border-radius: 10px; margin-bottom: 18px; }
+    .action-btn { background: #1d4ed8; color: #ffffff; border: none; border-bottom: 3px solid #1e3a8a; padding: 12px 32px; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 12px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.15s; }
+    .action-btn:hover { background: #1e40af; }
+  </style>
+</head>
+<body class="theme-white">
+
+  <div class="top-bar">
+    <div class="stat-badge">
+      <span class="ui-sprite ui-sm ui-game-match hud-icon-white"></span>
+      <span id="hdr-title">Match Up</span>
+    </div>
+    <div class="stat-badge" id="timer-badge">
+      <span class="ui-sprite ui-sm ui-clock hud-icon-white"></span>
+      <span><span id="lbl-time">Time</span>: <span id="timer-val">0</span>s</span>
+    </div>
+  </div>
+
+  <main class="game-area">
+    <div class="instruction-card" id="instruction-banner">
+      Drag or tap an answer card below, then place it into the matching prompt box!
+    </div>
+
+    <!-- Target Slots Grid -->
+    <div class="pairs-grid" id="slots-grid"></div>
+
+    <!-- Item Bank -->
+    <div class="bank-area">
+      <div class="bank-title" id="bank-title">Answer Cards Bank:</div>
+      <div class="items-bank" id="bank-container"></div>
+    </div>
+
+    <div class="bottom-bar">
+      <button class="submit-btn" id="submit-btn" onclick="submitAnswers()">
+        <span class="ui-sprite ui-sm ui-check hud-icon-white"></span>
+        <span id="submit-btn-text">Submit & Check Matches</span>
+      </button>
+    </div>
+  </main>
+
+  <!-- Game Over Screen -->
+  <div class="screen-overlay" id="game-over-screen" style="display: none;">
+    <div class="modal-box">
+      <div style="margin-bottom: 14px; display: flex; justify-content: center;">
+        <span class="ui-sprite ui-2xl ui-trophy" id="end-icon"></span>
+      </div>
+      <h2 style="font-size: 26px; font-weight: 800; margin-bottom: 8px;" id="end-title">Match Results!</h2>
+      <p class="modal-sub" id="end-subtitle">All card pairs have been evaluated!</p>
+
+      <div class="modal-score-box">
+        <div style="font-size: 28px; font-weight: 800; color: #059669;" id="final-score">0 of 0 Correct (0 pts)</div>
+        <div style="font-size: 14px; color: #475569; margin-top: 6px; font-weight: 600;" id="final-time">Total Time: 0s</div>
+      </div>
+
+      <button class="action-btn" id="play-again-btn" onclick="initGame()">
+        <span class="ui-sprite ui-sm ui-refresh hud-icon-white"></span>
+        <span id="play-again-text">Play Again</span>
+      </button>
+    </div>
+  </div>
+
+  <script src="common/sfx.js"></script>
+  <script src="common/confetti.js"></script>
+  <script src="common/i18n.js"></script>
+  <script src="common/themes.js"></script>
+  <script src="common/bridge.js"></script>
+  <script>
+    const tr = (key, vars) => (window.LotusI18n ? window.LotusI18n.t(key, vars) : key);
+
+    let activity = null;
+    let questions = [];
+    let selectedItem = null;
+    let timeMode = 'stopwatch';
+    let timerDuration = 60;
+    let timeLeft = 60;
+    let timeSeconds = 0;
+    let timerInterval = null;
+    let endModalTimeout = null;
+    let hasSubmitted = false;
+    let lastCorrectCount = 0;
+    let lastScore = 0;
+    let hasBootedOnce = false;
+    let lastActivitySig = '';
+    let lastSettingsSyncTs = 0;
+    const processedBridgeMsgs = new WeakSet();
+
+    function applyTranslations() {
+      const titleEl = document.getElementById('page-title');
+      if (titleEl) titleEl.textContent = tr('match.pageTitle');
+      document.title = tr('match.pageTitle');
+
+      const hdrTitle = document.getElementById('hdr-title');
+      if (hdrTitle) hdrTitle.textContent = tr('match.badgeTitle');
+
+      const lblTime = document.getElementById('lbl-time');
+      if (lblTime) lblTime.textContent = timeMode === 'stopwatch' ? tr('game.stopwatch') : tr('game.time');
+
+      const instEl = document.getElementById('instruction-banner');
+      if (instEl) instEl.textContent = tr('match.instructionBanner');
+
+      const bankTitle = document.getElementById('bank-title');
+      if (bankTitle) bankTitle.textContent = tr('match.bankTitle');
+
+      const submitText = document.getElementById('submit-btn-text');
+      if (submitText) submitText.textContent = tr('match.submit');
+
+      document.querySelectorAll('.drop-placeholder').forEach(el => {
+        el.textContent = tr('match.dropHere');
+      });
+
+      const endTitle = document.getElementById('end-title');
+      if (endTitle) endTitle.textContent = tr('match.endTitle');
+
+      const endSub = document.getElementById('end-subtitle');
+      if (endSub) endSub.textContent = tr('match.endSub');
+
+      const playText = document.getElementById('play-again-text');
+      if (playText) playText.textContent = tr('game.playAgain');
+
+      if (hasSubmitted) {
+        const finalScoreEl = document.getElementById('final-score');
+        if (finalScoreEl) {
+          finalScoreEl.textContent = tr('match.scoreSummary', {
+            ok: lastCorrectCount,
+            tot: questions.length,
+            pts: lastScore
+          });
+        }
+        const finalTimeEl = document.getElementById('final-time');
+        if (finalTimeEl) finalTimeEl.textContent = tr('game.totalTime', { n: timeSeconds });
+      }
+    }
+
+    if (window.LotusI18n) {
+      window.LotusI18n.onChange(() => applyTranslations());
+    }
+
+    const bridge = window.GameBridge || (typeof GameBridge !== 'undefined' ? GameBridge : null);
+
+    function computeActivitySig(act) {
+      if (!act) return '';
+      const qLen = (act.questions || act.content?.items || []).length;
+      return JSON.stringify({
+        id: act.id || '',
+        title: act.title || '',
+        qLen,
+        rules: act.rules || null,
+        settings: act.settings || null,
+        theme: act.theme || ''
+      });
+    }
+
+    function applyMergedSettings(payload) {
+      if (!payload) return;
+      const base = payload.activity ? { ...payload.activity } : { ...(activity || {}) };
+      if (payload.rules) base.rules = { ...(base.rules || {}), ...payload.rules };
+      if (payload.settings) base.settings = { ...(base.settings || {}), ...payload.settings };
+      if (payload.theme) base.theme = payload.theme;
+      if (base.rules) {
+        base.settings = {
+          ...(base.settings || {}),
+          timerSeconds: base.rules.timerSeconds ?? base.settings?.timerSeconds ?? 60,
+          lives: base.rules.hasLives === false ? 0 : (base.rules.livesCount ?? base.settings?.lives ?? 3),
+          hasLives: base.rules.hasLives,
+          timeMode: base.rules.timeMode,
+          shuffle: base.rules.shuffleQuestions,
+          shuffleAnswers: base.rules.shuffleAnswers
+        };
+      }
+      const norm = (bridge && typeof bridge.normalizeActivity === 'function') ? bridge.normalizeActivity(base) : base;
+      activity = norm;
+      if (bridge) bridge.activity = norm;
+      lastActivitySig = computeActivitySig(norm);
+      if (payload.theme && window.LotusThemes) LotusThemes.apply(payload.theme, true);
+      else if (norm.theme && window.LotusThemes) LotusThemes.apply(norm.theme);
+      if (payload.restart !== false) initGame();
+    }
+
+    function handleExternalMessage(data) {
+      if (!data || typeof data !== 'object') return;
+      if (data.type === 'GAME_CMD') {
+        const cmd = data.command || data.cmd;
+        if (cmd === 'RESTART') initGame();
+      } else if (data.type === 'UPDATE_SETTINGS') {
+        lastSettingsSyncTs = Date.now();
+        applyMergedSettings(data);
+      } else if (data.type === 'GAME_SETTINGS') {
+        lastSettingsSyncTs = Date.now();
+        const p = data.payload && typeof data.payload === 'object' ? { ...data, ...data.payload } : data;
+        if (p.rules || p.settings || p.activity || p.theme) applyMergedSettings(p);
+      } else if (data.type === 'INIT_ACTIVITY' && data.activity) {
+        const norm = (bridge && typeof bridge.normalizeActivity === 'function') ? bridge.normalizeActivity(data.activity) : data.activity;
+        const sig = computeActivitySig(norm);
+        if (!hasBootedOnce || sig !== lastActivitySig || data.forceRestart || data.restart === true) {
+          activity = norm;
+          if (bridge) bridge.activity = norm;
+          lastActivitySig = sig;
+          hasBootedOnce = true;
+          initGame();
+        }
+      }
+    }
+
+    if (bridge && typeof bridge.onReady === 'function') {
+      bridge.onReady((act) => {
+        if (hasBootedOnce && (Date.now() - lastSettingsSyncTs) < 50) return;
+        activity = act;
+        lastActivitySig = computeActivitySig(act);
+        hasBootedOnce = true;
+        initGame();
+      });
+      if (typeof bridge.onSettings === 'function') {
+        bridge.onSettings((payload) => {
+          if (payload && typeof payload === 'object') processedBridgeMsgs.add(payload);
+          handleExternalMessage(payload);
+        });
+      }
+    } else {
+      setTimeout(() => { hasBootedOnce = true; initGame(); }, 100);
+    }
+
+    const hasBridgeSettings = Boolean(bridge && typeof bridge.onSettings === 'function');
+    window.addEventListener('message', (event) => {
+      if (!event.data || typeof event.data !== 'object') return;
+      if (processedBridgeMsgs.has(event.data)) return;
+      if (hasBridgeSettings && (event.data.type === 'UPDATE_SETTINGS' || event.data.type === 'GAME_SETTINGS' || event.data.type === 'GAME_CMD')) {
+        return;
+      }
+      processedBridgeMsgs.add(event.data);
+      handleExternalMessage(event.data);
+    });
+
+    function initGame() {
+      clearInterval(timerInterval);
+      clearTimeout(endModalTimeout);
+
+      const rawItems = activity?.questions || activity?.content?.items || [];
+      questions = rawItems.map(q => {
+        let ans = q.correctAnswer || q.pairTarget || '';
+        if (!ans && Array.isArray(q.options) && q.options.length > 0) {
+          const cOpt = q.options.find(o => o.isCorrect);
+          ans = cOpt ? cOpt.text : (q.options[0].text || q.options[0] || '');
+        }
+        return {
+          question: q.question || q.text || '',
+          correctAnswer: ans
+        };
+      }).filter(q => q.question && q.correctAnswer);
+
+      if (questions.length === 0) {
+        const lang = window.LotusI18n ? window.LotusI18n.getLang() : 'en';
+        questions = lang === 'id'
+          ? [
+              { question: "Planet yang dijuluki Planet Merah", correctAnswer: "Mars" },
+              { question: "Pusat tata surya kita", correctAnswer: "Matahari" },
+              { question: "Satelit alami planet Bumi", correctAnswer: "Bulan" },
+              { question: "Gas utama penyusun atmosfer Bumi", correctAnswer: "Nitrogen" }
+            ]
+          : [
+              { question: "Planet known as the Red Planet", correctAnswer: "Mars" },
+              { question: "Center star of our Solar System", correctAnswer: "Sun" },
+              { question: "Earth's natural satellite", correctAnswer: "Moon" },
+              { question: "Main gas in Earth's atmosphere", correctAnswer: "Nitrogen" }
+            ];
+      }
+
+      const rules = activity?.rules || {};
+      const settings = activity?.settings || {};
+
+      if (rules.shuffleQuestions !== false && settings.shuffle !== false) {
+        questions.sort(() => Math.random() - 0.5);
+      }
+
+      timeMode = rules.timeMode || (settings.timerSeconds > 0 ? 'timer' : 'stopwatch');
+      timerDuration = Number(rules.timerSeconds ?? settings.timerSeconds ?? 60);
+      if (timerDuration <= 0 && timeMode === 'timer') timerDuration = 60;
+
+      if (window.LotusThemes) LotusThemes.apply(activity?.theme || 'white');
+
+      document.getElementById('game-over-screen').style.display = 'none';
+      selectedItem = null;
+      hasSubmitted = false;
+      timeSeconds = 0;
+      timeLeft = timerDuration;
+
+      const submitBtn = document.getElementById('submit-btn');
+      if (submitBtn) submitBtn.disabled = false;
+
+      const timerBadge = document.getElementById('timer-badge');
+      const timerValEl = document.getElementById('timer-val');
+      if (timeMode === 'none') {
+        if (timerBadge) timerBadge.style.setProperty('display', 'none', 'important');
+        timerInterval = setInterval(() => { timeSeconds++; }, 1000);
+      } else if (timeMode === 'timer') {
+        if (timerBadge) {
+          timerBadge.style.removeProperty('display');
+          timerBadge.style.display = 'inline-flex';
+        }
+        if (timerValEl) timerValEl.innerText = String(timeLeft);
+        timerInterval = setInterval(() => {
+          timeLeft--;
+          timeSeconds++;
+          if (timerValEl) timerValEl.innerText = String(Math.max(0, timeLeft));
+          if (timeLeft <= 5 && timeLeft > 0 && window.SFX && SFX.tick) SFX.tick();
+          if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            submitAnswers();
+          }
+        }, 1000);
+      } else {
+        if (timerBadge) {
+          timerBadge.style.removeProperty('display');
+          timerBadge.style.display = 'inline-flex';
+        }
+        if (timerValEl) timerValEl.innerText = '0';
+        timerInterval = setInterval(() => {
+          timeSeconds++;
+          if (timerValEl) timerValEl.innerText = String(timeSeconds);
+        }, 1000);
+      }
+
+      renderBoard();
+      applyTranslations();
+    }
+
+    function renderBoard() {
+      const slotsGrid = document.getElementById('slots-grid');
+      const bankContainer = document.getElementById('bank-container');
+      slotsGrid.innerHTML = '';
+      bankContainer.innerHTML = '';
+
+      questions.forEach((q, idx) => {
+        const slot = document.createElement('div');
+        slot.className = 'target-slot';
+        slot.id = `slot-${idx}`;
+        slot.dataset.correct = q.correctAnswer;
+        slot.innerHTML = `
+          <div class="target-desc">#${idx + 1}. ${q.question}</div>
+          <div class="drop-zone" id="drop-zone-${idx}" onclick="handleZoneClick(${idx})">
+            <span class="drop-placeholder">${tr('match.dropHere')}</span>
+          </div>
+        `;
+
+        slot.addEventListener('dragover', (e) => {
+          if (hasSubmitted) return;
+          e.preventDefault();
+          slot.classList.add('drag-over');
+        });
+        slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+        slot.addEventListener('drop', (e) => {
+          if (hasSubmitted) return;
+          e.preventDefault();
+          slot.classList.remove('drag-over');
+          const itemId = e.dataTransfer.getData('text/plain');
+          const el = document.getElementById(itemId);
+          if (el) placeItemIntoZone(el, idx);
+        });
+
+        slotsGrid.appendChild(slot);
+      });
+
+      const answers = questions.map((q, idx) => ({ id: `card-${idx}`, text: q.correctAnswer }));
+      const shouldShuffleAns = activity?.rules?.shuffleAnswers !== false && activity?.settings?.shuffleAnswers !== false;
+      if (shouldShuffleAns) {
+        answers.sort(() => Math.random() - 0.5);
+      }
+
+      answers.forEach((ans) => {
+        const item = document.createElement('div');
+        item.className = 'drag-item';
+        item.id = ans.id;
+        item.draggable = true;
+        item.innerText = ans.text;
+
+        item.addEventListener('dragstart', (e) => {
+          if (hasSubmitted) return;
+          if (window.SFX) SFX.click();
+          e.dataTransfer.setData('text/plain', item.id);
+        });
+
+        item.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (hasSubmitted) return;
+          if (window.SFX) SFX.click();
+          if (selectedItem === item) {
+            item.classList.remove('selected');
+            selectedItem = null;
+          } else {
+            document.querySelectorAll('.drag-item').forEach(i => i.classList.remove('selected'));
+            item.classList.add('selected');
+            selectedItem = item;
+          }
+        });
+
+        bankContainer.appendChild(item);
+      });
+    }
+
+    function handleZoneClick(slotIdx) {
+      if (hasSubmitted) return;
+      if (selectedItem) {
+        placeItemIntoZone(selectedItem, slotIdx);
+        selectedItem.classList.remove('selected');
+        selectedItem = null;
+      }
+    }
+
+    function placeItemIntoZone(itemEl, slotIdx) {
+      const zone = document.getElementById(`drop-zone-${slotIdx}`);
+      if (!zone) return;
+      if (window.SFX) SFX.flip();
+
+      const prevParent = itemEl.parentNode;
+      const existingChild = zone.querySelector('.drag-item');
+      if (existingChild && existingChild !== itemEl) {
+        document.getElementById('bank-container').appendChild(existingChild);
+      }
+
+      zone.innerHTML = '';
+      zone.appendChild(itemEl);
+
+      // Restore placeholder in previous drop-zone if vacated
+      if (prevParent && prevParent.classList && prevParent.classList.contains('drop-zone') && prevParent !== zone && prevParent.children.length === 0) {
+        prevParent.innerHTML = `<span class="drop-placeholder">${tr('match.dropHere')}</span>`;
+      }
+    }
+
+    document.getElementById('bank-container').addEventListener('click', () => {
+      if (hasSubmitted) return;
+      const bank = document.getElementById('bank-container');
+      if (selectedItem && selectedItem.parentNode !== bank) {
+        const prevParent = selectedItem.parentNode;
+        bank.appendChild(selectedItem);
+        if (prevParent && prevParent.classList && prevParent.classList.contains('drop-zone') && prevParent.children.length === 0) {
+          prevParent.innerHTML = `<span class="drop-placeholder">${tr('match.dropHere')}</span>`;
+        }
+        selectedItem.classList.remove('selected');
+        selectedItem = null;
+        if (window.SFX) SFX.flip();
+      }
+    });
+
+    function submitAnswers() {
+      if (hasSubmitted) return;
+      hasSubmitted = true;
+      clearInterval(timerInterval);
+      const submitBtn = document.getElementById('submit-btn');
+      if (submitBtn) submitBtn.disabled = true;
+
+      let correctCount = 0;
+      const total = questions.length;
+      const answersSummary = [];
+
+      questions.forEach((q, idx) => {
+        const slot = document.getElementById(`slot-${idx}`);
+        const zone = document.getElementById(`drop-zone-${idx}`);
+        const placedItem = zone.querySelector('.drag-item');
+        const correctText = slot.dataset.correct;
+
+        if (placedItem && placedItem.innerText.trim() === correctText.trim()) {
+          slot.classList.add('correct-match');
+          placedItem.style.background = '#059669';
+          correctCount++;
+          answersSummary.push({ question: q.question, isCorrect: true });
+        } else {
+          slot.classList.add('wrong-match');
+          if (placedItem) placedItem.style.background = '#dc2626';
+          answersSummary.push({ question: q.question, isCorrect: false });
+        }
+      });
+
+      const score = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+      lastCorrectCount = correctCount;
+      lastScore = score;
+      GameBridge.finishGame(score, 100, answersSummary);
+
+      if (correctCount === total && total > 0) {
+        if (window.SFX) SFX.win();
+        if (window.launchConfetti) window.launchConfetti();
+      } else if (correctCount > 0) {
+        if (window.SFX) SFX.correct();
+      } else {
+        if (window.SFX) SFX.wrong();
+      }
+
+      clearTimeout(endModalTimeout);
+      endModalTimeout = setTimeout(() => {
+        document.getElementById('final-score').innerText = tr('match.scoreSummary', {
+          ok: correctCount,
+          tot: total,
+          pts: score
+        });
+        document.getElementById('final-time').innerText = tr('game.totalTime', { n: timeSeconds });
+        document.getElementById('game-over-screen').style.display = 'flex';
+      }, 900);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+[
+  { "id": "t-1", "name": "Budi Prasetyo, S.Pd.", "email": "budi.prasetyo@sekolah.sch.id", "password": "1qaz2wsx", "subject": "IPA / Sains", "school": "SMP Negeri 1 Bunga Bangsa" },
+  { "id": "t-2", "name": "Siti Rahmawati, M.Pd.", "email": "siti.rahmawati@sekolah.sch.id", "password": "1qaz2wsx", "subject": "Matematika", "school": "SMP Negeri 1 Bunga Bangsa" },
+  { "id": "t-3", "name": "Agus Setiawan, S.Si.", "email": "agus.setiawan@sekolah.sch.id", "password": "1qaz2wsx", "subject": "Fisika / Kimia", "school": "SMA Bintang Cemerlang" },
+  { "id": "t-4", "name": "Dewi Lestari, S.Pd.", "email": "dewi.lestari@sekolah.sch.id", "password": "1qaz2wsx", "subject": "Bahasa Indonesia", "school": "SD Pertiwi 01" },
+  { "id": "t-5", "name": "Hendra Wijaya, B.Ed.", "email": "hendra.wijaya@sekolah.sch.id", "password": "1qaz2wsx", "subject": "Bahasa Inggris", "school": "SMP Harapan Nusantara" },
+  { "id": "t-6", "name": "Rina Marlina, S.Pd.", "email": "rina.marlina@sekolah.sch.id", "password": "1qaz2wsx", "subject": "Biologi", "school": "SMA Cendekia Bangsa" },
+  { "id": "t-7", "name": "Ahmad Fauzi, S.Ag.", "email": "ahmad.fauzi@sekolah.sch.id", "password": "1qaz2wsx", "subject": "Pendidikan Agama", "school": "SMP Al-Hikmah" },
+  { "id": "t-8", "name": "Nurul Hidayah, S.Pd.", "email": "nurul.hidayah@sekolah.sch.id", "password": "1qaz2wsx", "subject": "IPS / Geografi", "school": "SMP Negeri 2 Merdeka" },
+  { "id": "t-9", "name": "Fajar Nugroho, S.Kom.", "email": "fajar.nugroho@sekolah.sch.id", "password": "1qaz2wsx", "subject": "Informatika / TIK", "school": "SMK Bintang Juara" },
+  { "id": "t-10", "name": "Sri Wahyuni, S.Pd.", "email": "sri.wahyuni@sekolah.sch.id", "password": "1qaz2wsx", "subject": "Seni & Budaya", "school": "SD Mandiri Jaya" }
+]

@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 2-Player Head Catcher — LotusWall</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;800;900&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="common/ui-spritesheet.css">
+
+  <!-- MediaPipe Face Detection CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js" crossorigin="anonymous" defer></script>
+
+  <script src="common/i18n.js"></script>
+  <script src="common/sfx.js"></script>
+  <script src="common/confetti.js"></script>
+  <script src="common/themes.js"></script>
+  <script src="common/bridge.js"></script>
+
+  <style>
+    :root {
+      --bg-main: #f7f5f0;
+      --card-bg: #ffffff;
+      --p1-blue: #1d4ed8;
+      --p1-light: #eff6ff;
+      --p2-pink: #be123c;
+      --p2-light: #fff1f2;
+      --accent-green: #15803d;
+      --accent-yellow: #d97706;
+      --text-dark: #18181b;
+      --text-muted: #57534e;
+      --border: #d6cfc2;
+      --shadow-sm: 0 2px 0 #e5dfd3;
+      --shadow-md: 0 6px 18px rgba(24, 24, 27, 0.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    body.theme-magical {
+      background: radial-gradient(circle at 50% 15%, #fdf4ff 0%, #faf5ff 55%, #f3e8ff 100%);
+      color: #2e1065;
+    }
+    body.theme-magical .stage-card,
+    body.theme-magical .card,
+    body.theme-magical header {
+      border-color: #d8b4fe;
+      box-shadow: 0 10px 30px rgba(126, 34, 206, 0.12);
+    }
+
+    header {
+      background: #fcfbf8;
+      border-bottom: 1.5px solid var(--border);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand { display: flex; align-items: center; gap: 10px; }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-bottom: 3px solid #c9c1b2;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-title h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-dark);
+      letter-spacing: -0.3px;
+    }
+
+    .brand-title p { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+
+    .header-pills { display: flex; align-items: center; gap: 8px; }
+
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 8px;
+      font-size: 12px; font-weight: 700; background: #ffffff; color: var(--text-muted); border: 1.5px solid var(--border);
+    }
+    .status-badge.active { background: #f0fdf4; color: #15803d; border-color: #86efac; }
+    .status-badge.locked { background: #eff6ff; color: #1d4ed8; border-color: #93c5fd; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+    main {
+      flex: 1;
+      width: 96%;
+      max-width: 1760px;
+      margin: 0 auto;
+      padding: 14px 18px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 310px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    @media (max-width: 1080px) { main { grid-template-columns: 1fr; } }
+
+    /* EMBEDDED & FULLSCREEN CLEAN 16:9 STAGE (ZERO SETTINGS INSIDE GAME WINDOW) */
+    body.is-embedded,
+    body.is-fullscreen,
+    :fullscreen body,
+    :-webkit-full-screen body {
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden !important;
+      margin: 0;
+      padding: 0;
+    }
+
+    html:has(body.is-embedded),
+    html:has(body.is-fullscreen),
+    html:fullscreen,
+    html:-webkit-full-screen {
+      height: 100%;
+      width: 100%;
+      overflow: hidden !important;
+    }
+
+    body.is-embedded header,
+    body.is-embedded .controls-bar,
+    body.is-embedded .settings-row,
+    body.is-embedded aside.side-panel,
+    body.is-embedded aside.sidebar,
+    body.is-fullscreen header,
+    body.is-fullscreen .controls-bar,
+    body.is-fullscreen .settings-row,
+    body.is-fullscreen aside.side-panel,
+    body.is-fullscreen aside.sidebar,
+    :fullscreen header,
+    :fullscreen .controls-bar,
+    :fullscreen .settings-row,
+    :fullscreen aside.side-panel,
+    :fullscreen aside.sidebar,
+    :-webkit-full-screen header,
+    :-webkit-full-screen .controls-bar,
+    :-webkit-full-screen .settings-row,
+    :-webkit-full-screen aside.side-panel,
+    :-webkit-full-screen aside.sidebar {
+      display: none !important;
+    }
+
+    body.is-embedded main,
+    body.is-fullscreen main,
+    :fullscreen main,
+    :-webkit-full-screen main {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 8px 10px;
+      gap: 0;
+      overflow: hidden;
+    }
+
+    body.is-embedded .stage-card,
+    body.is-fullscreen .stage-card,
+    :fullscreen .stage-card,
+    :-webkit-full-screen .stage-card {
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      height: 100%;
+      padding: 8px 10px;
+      gap: 6px;
+      border-radius: 10px;
+    }
+
+    body.is-embedded .split-hud-row,
+    body.is-fullscreen .split-hud-row,
+    :fullscreen .split-hud-row,
+    :-webkit-full-screen .split-hud-row {
+      flex-shrink: 0;
+      gap: 8px;
+    }
+
+    body.is-embedded .p-hud-card,
+    body.is-fullscreen .p-hud-card,
+    :fullscreen .p-hud-card,
+    :-webkit-full-screen .p-hud-card {
+      padding: 5px 12px;
+    }
+
+    body.is-embedded .p-score,
+    body.is-fullscreen .p-score,
+    :fullscreen .p-score,
+    :-webkit-full-screen .p-score {
+      font-size: 22px;
+    }
+
+    body.is-embedded .viewport,
+    body.is-fullscreen .viewport,
+    :fullscreen .viewport,
+    :-webkit-full-screen .viewport {
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      height: 100%;
+      aspect-ratio: auto;
+    }
+
+    body.is-embedded .question-banner-bottom,
+    body.is-fullscreen .question-banner-bottom,
+    :fullscreen .question-banner-bottom,
+    :-webkit-full-screen .question-banner-bottom {
+      flex-shrink: 0;
+      padding: 7px 14px;
+    }
+
+    body.is-embedded .q-text,
+    body.is-fullscreen .q-text,
+    :fullscreen .q-text,
+    :-webkit-full-screen .q-text {
+      font-size: 15px;
+      line-height: 1.25;
+    }
+
+    body.is-embedded .camera-placeholder,
+    body.is-fullscreen .camera-placeholder,
+    :fullscreen .camera-placeholder,
+    :-webkit-full-screen .camera-placeholder {
+      padding: 12px 16px;
+      gap: 8px;
+    }
+
+    body.is-embedded .placeholder-icon,
+    body.is-fullscreen .placeholder-icon,
+    :fullscreen .placeholder-icon,
+    :-webkit-full-screen .placeholder-icon {
+      width: 48px;
+      height: 48px;
+    }
+
+    body.is-embedded .placeholder-text h3,
+    body.is-fullscreen .placeholder-text h3,
+    :fullscreen .placeholder-text h3,
+    :-webkit-full-screen .placeholder-text h3 {
+      font-size: 17px;
+      margin-bottom: 2px;
+    }
+
+    body.is-embedded .placeholder-text p,
+    body.is-fullscreen .placeholder-text p,
+    :fullscreen .placeholder-text p,
+    :-webkit-full-screen .placeholder-text p {
+      font-size: 12.5px;
+      line-height: 1.4;
+    }
+
+    .viewport-start-bar {
+      display: none;
+      position: absolute;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 12;
+      align-items: center;
+      justify-content: center;
+    }
+
+    body.is-embedded .viewport-start-bar.active,
+    body.is-fullscreen .viewport-start-bar.active,
+    :fullscreen .viewport-start-bar.active,
+    :-webkit-full-screen .viewport-start-bar.active {
+      display: flex !important;
+    }
+
+    .cam-error-note {
+      display: none;
+      max-width: 480px;
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1.5px solid #fecaca;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 12.5px;
+      font-weight: 700;
+    }
+
+    .stage-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      border: 1.5px solid var(--border);
+      padding: 14px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .split-hud-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .p-hud-card {
+      border-radius: 10px;
+      padding: 8px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1.5px solid transparent;
+      box-shadow: var(--shadow-sm);
+    }
+    .p-hud-card.p1 { background: var(--p1-light); border-color: #93c5fd; }
+    .p-hud-card.p2 { background: var(--p2-light); border-color: #fda4af; }
+
+    .p-hud-info { display: flex; align-items: center; gap: 10px; }
+    .p-badge {
+      width: 32px; height: 32px; border-radius: 7px; display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 13px; color: #ffffff;
+    }
+    .p-badge.p1 { background: var(--p1-blue); }
+    .p-badge.p2 { background: var(--p2-pink); }
+
+    .p-name { font-weight: 800; font-size: 13.5px; color: var(--text-dark); }
+    .p-desc { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+
+    .p-score { font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 900; line-height: 1; }
+    .p-score.p1 { color: var(--p1-blue); }
+    .p-score.p2 { color: var(--p2-pink); }
+
+    .viewport {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #141920;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1.5px solid var(--border);
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.18);
+    }
+
+    video#webcam { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: none; }
+    canvas#catcher_canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 2; }
+
+    .camera-placeholder {
+      position: absolute;
+      inset: 0;
+      background: #fcfbf8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      text-align: center;
+      padding: 20px;
+      z-index: 5;
+    }
+
+    .placeholder-icon {
+      width: 64px; height: 64px; background: #fffbeb; border: 2px solid #d97706; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 0 #fde68a;
+    }
+    .placeholder-text h3 { font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 800; color: var(--text-dark); margin-bottom: 4px; }
+    .placeholder-text p { font-size: 13px; color: var(--text-muted); max-width: 480px; line-height: 1.5; }
+    .placeholder-actions { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+
+    .question-banner-bottom {
+      background: #1e242b;
+      border-radius: 10px;
+      padding: 12px 18px;
+      text-align: center;
+      color: #ffffff;
+      box-shadow: 0 3px 10px rgba(24, 24, 27, 0.1);
+      border-top: 3px solid #d97706;
+    }
+
+    .q-num {
+      font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.3px; color: #fbbf24;
+      margin-bottom: 3px; display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+
+    .q-text {
+      font-family: 'Poppins', sans-serif; font-size: 18px; font-weight: 700; line-height: 1.35;
+      color: #ffffff; max-width: 960px; margin: 0 auto;
+    }
+
+    .controls-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .btn-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    .btn {
+      padding: 9px 16px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer;
+      border: none; display: inline-flex; align-items: center; gap: 7px; transition: all 0.15s ease;
+    }
+    .btn-primary { background: var(--p1-blue); color: #ffffff; border-bottom: 3px solid #1e3a8a; }
+    .btn-primary:hover { background: #1e40af; transform: translateY(-1px); }
+    .btn-start { background: #15803d; color: #ffffff; border-bottom: 3px solid #14532d; }
+    .btn-start:hover { background: #166534; transform: translateY(-1px); }
+    .btn-stop { background: #dc2626; color: #ffffff; border-bottom: 3px solid #991b1b; }
+    .btn-secondary { background: #ffffff; color: var(--text-dark); border: 1.5px solid var(--border); border-bottom: 3px solid #c9c1b2; }
+    .btn-secondary:hover { background: #fcfbf8; border-color: #a89f91; }
+
+    .speed-btn {
+      cursor: pointer; background: #fcfbf8; border: 1.5px solid var(--border); padding: 6px 12px;
+      border-radius: 8px; font-weight: 700; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s;
+    }
+    .speed-btn:hover { background: #fffbeb; border-color: #d97706; }
+
+    .toggle-label {
+      display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--text-dark);
+      cursor: pointer; background: #fcfbf8; border: 1.5px solid var(--border); padding: 6px 12px; border-radius: 8px;
+    }
+    .toggle-input { width: 15px; height: 15px; accent-color: #1d4ed8; cursor: pointer; }
+
+    .side-panel { display: flex; flex-direction: column; gap: 14px; }
+    .card { background: var(--card-bg); border-radius: 14px; border: 1.5px solid var(--border); padding: 16px; box-shadow: var(--shadow-sm); }
+    .card-title { font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 800; color: var(--text-dark); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .metric-list { display: flex; flex-direction: column; gap: 8px; }
+    .metric-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #fcfbf8; border-radius: 8px; border: 1px solid #e5dfd3; font-size: 12px; }
+    .metric-label { color: var(--text-muted); font-weight: 600; }
+    .metric-val { font-weight: 800; font-family: monospace; font-size: 12.5px; }
+
+    .step-item { display: flex; gap: 10px; margin-bottom: 10px; font-size: 12.5px; line-height: 1.45; color: var(--text-dark); }
+    .step-item:last-child { margin-bottom: 0; }
+    .step-num { width: 22px; height: 22px; border-radius: 6px; background: #eff6ff; color: var(--p1-blue); border: 1px solid #bfdbfe; font-weight: 800; font-size: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+    .screen-overlay {
+      position: absolute; inset: 0; background: rgba(24, 24, 27, 0.78);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 60; padding: 16px; border-radius: 12px;
+    }
+    .modal-box {
+      background: #ffffff; border-radius: 14px; padding: 24px 28px; max-width: 460px; width: 100%;
+      text-align: center; box-shadow: 0 20px 45px rgba(24, 24, 27, 0.25); border: 1.5px solid var(--border); border-bottom: 4px solid #c9c1b2;
+    }
+    .winner-banner {
+      background: #fef3c7; border: 1.5px solid #d97706; padding: 12px 16px; border-radius: 10px;
+      font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 900; color: #b45309; margin-bottom: 14px;
+    }
+    .score-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .compare-card { padding: 12px; border-radius: 10px; border: 1.5px solid var(--border); }
+    .compare-card.p1 { background: var(--p1-light); border-color: #93c5fd; }
+    .compare-card.p2 { background: var(--p2-light); border-color: #fda4af; }
+    .score-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    .score-input-row input { flex: 1; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-weight: 600; outline: none; }
+    .action-btn {
+      background: #1d4ed8; color: white; border: none; border-bottom: 3px solid #1e3a8a; padding: 11px 26px;
+      border-radius: 9px; font-size: 14px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    (function () {
+      try {
+        var embedded = (window.self !== window.top) || new URLSearchParams(window.location.search).get('embedded') === '1';
+        if (embedded) document.body.classList.add('is-embedded');
+      } catch (e) {
+        document.body.classList.add('is-embedded');
+      }
+    })();
+  </script>
+
+  <header>
+    <div class="brand">
+      <div class="brand-icon"><span class="ui-sprite ui-lg ui-basket"></span></div>
+      <div class="brand-title">
+        <h1 data-i18n="hc.title">AI 2-Player Head Catcher</h1>
+        <p data-i18n="hc.sub">Catch Answer Fruits in Head Baskets (Split-Screen)</p>
+      </div>
+    </div>
+
+    <div class="header-pills">
+      <div class="status-badge" id="fpsBadge"><span class="dot"></span><span id="fpsText">0 FPS</span></div>
+      <div class="status-badge" id="statusBadge"><span class="dot"></span><span id="statusText">Camera Ready</span></div>
+    </div>
+  </header>
+
+  <main>
+    <div class="stage-card">
+      <div class="split-hud-row">
+        <div class="p-hud-card p1">
+          <div class="p-hud-info">
+            <div class="p-badge p1">P1</div>
+            <div>
+              <div class="p-name" data-i18n="hc.p1Name">Player 1 (Left)</div>
+              <div class="p-desc" id="p1-status">Ready on Left</div>
+            </div>
+          </div>
+          <div class="p-score p1" id="p1-score">0</div>
+        </div>
+
+        <div class="p-hud-card p2">
+          <div class="p-hud-info">
+            <div class="p-badge p2">P2</div>
+            <div>
+              <div class="p-name" data-i18n="hc.p2Name">Player 2 (Right)</div>
+              <div class="p-desc" id="p2-status">Ready on Right</div>
+            </div>
+          </div>
+          <div class="p-score p2" id="p2-score">0</div>
+        </div>
+      </div>
+
+      <div class="viewport" id="viewport">
+        <video id="webcam" playsinline autoplay muted></video>
+        <canvas id="catcher_canvas"></canvas>
+
+        <div class="camera-placeholder" id="placeholder">
+          <div class="placeholder-icon"><span class="ui-sprite ui-xl ui-basket"></span></div>
+          <div class="placeholder-text">
+            <h3 data-i18n="hc.placeholderTitle">2-Player Split-Screen Head Catcher</h3>
+            <p data-i18n="hc.placeholderDesc">Stand together in front of the webcam (Player 1 Left, Player 2 Right) and press Start Game to lock both players—or test with Mouse!</p>
+          </div>
+          <div class="placeholder-actions">
+            <button class="btn btn-primary" id="btnHeroStart" style="padding: 11px 22px; font-size: 14px;">
+              <span class="ui-sprite ui-sm ui-camera"></span>
+              <span data-i18n="aiSlicer.startCam">Enable Camera</span>
+            </button>
+            <button class="btn btn-secondary" id="btnMouseMode" style="padding: 11px 22px; font-size: 14px;">
+              <span class="ui-sprite ui-sm ui-gamepad"></span>
+              <span data-i18n="aiSlicer.playMouse">Play with Mouse</span>
+            </button>
+          </div>
+          <div class="cam-error-note" id="camErrorNote"></div>
+        </div>
+
+        <div class="viewport-start-bar" id="viewportStartBar">
+          <button class="btn btn-start" id="btnViewportStartGame" style="padding: 11px 22px; font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.45);">
+            <span class="ui-sprite ui-sm ui-play"></span>
+            <span data-i18n="hc.startGame">Start Game (Lock Players)</span>
+          </button>
+        </div>
+
+        <div class="screen-overlay" id="end-screen" style="display: none;">
+          <div class="modal-box">
+            <div style="margin-bottom: 8px;"><span class="ui-sprite ui-2xl ui-trophy"></span></div>
+            <div class="winner-banner" id="winner-text">PLAYER 1 WINS!</div>
+
+            <div class="score-compare">
+              <div class="compare-card p1">
+                <div style="font-weight: 800; font-size: 13px; color: #1d4ed8;" data-i18n="hc.p1Name">Player 1 (Left)</div>
+                <div style="font-size: 28px; font-weight: 900; color: #1d4ed8;" id="final-p1-score">0</div>
+                <div style="font-size: 11.5px; color: #57534e;" id="final-p1-fruits">0 Caught</div>
+              </div>
+              <div class="compare-card p2">
+                <div style="font-weight: 800; font-size: 13px; color: #be123c;" data-i18n="hc.p2Name">Player 2 (Right)</div>
+                <div style="font-size: 28px; font-weight: 900; color: #be123c;" id="final-p2-score">0</div>
+                <div style="font-size: 11.5px; color: #57534e;" id="final-p2-fruits">0 Caught</div>
+              </div>
+            </div>
+
+            <div id="score-submit-box" class="score-input-row">
+              <input type="text" id="student-name-input" data-i18n-placeholder="game.yourName" placeholder="Enter your name...">
+              <button class="btn btn-primary" id="btnSubmitScore" data-i18n="game.submitScore">Save Score</button>
+            </div>
+            <div id="score-saved-msg" style="display:none; color:#059669; font-weight:700; font-size:13px; margin-bottom:10px;" data-i18n="game.scoreSaved">Saved!</div>
+
+            <button class="action-btn" onclick="resetToStandby()">
+              <span class="ui-sprite ui-sm ui-refresh"></span>
+              <span data-i18n="game.playAgain">Play Again</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="question-banner-bottom" id="questionBanner">
+        <div class="q-num" id="q-num">
+          <span id="q-num-text">Standby Mode</span>
+          <span id="countdown-badge" style="display: none; background: #d97706; padding: 2px 10px; border-radius: 6px; font-size: 11px; color: #18181b; font-weight: 800;"></span>
+          <span id="timer-badge" style="display: none; background: #334155; padding: 2px 9px; border-radius: 6px; font-size: 11px; color: #f8fafc; font-weight: 800;">30s</span>
+        </div>
+        <div class="q-text" id="q-text">Position P1 (Left) & P2 (Right) or enter Mouse Mode, then click "Start Game"!</div>
+      </div>
+
+      <div class="controls-bar">
+        <div class="btn-group">
+          <button class="btn btn-primary" id="btnToggleCamera">
+            <span class="ui-sprite ui-sm ui-camera"></span>
+            <span data-i18n="aiSlicer.startCam">Enable Camera</span>
+          </button>
+          <button class="btn btn-start" id="btnStartGame" style="display: none;">
+            <span class="ui-sprite ui-sm ui-play"></span>
+            <span data-i18n="hc.startGame">Start Game (Lock Players)</span>
+          </button>
+          <button class="btn btn-secondary" id="btnRecalibrate" style="display: none;">
+            <span class="ui-sprite ui-sm ui-refresh"></span>
+            <span data-i18n="hc.recalibrate">Recalibrate Players</span>
+          </button>
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          <label class="toggle-label">
+            <input type="checkbox" id="checkSkeleton" class="toggle-input" checked>
+            <span data-i18n="hc.aiOverlay">AI Skeleton & Zones</span>
+          </label>
+          <div class="speed-btn" id="speed-badge" onclick="toggleSpeed()">
+            <span class="ui-sprite ui-sm ui-refresh"></span>
+            <span data-i18n="game.speedLabel">Speed</span>:
+            <span id="speed-label" style="color: #15803d; font-weight: 800;">Relaxed</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="side-panel">
+      <div class="card">
+        <h3 class="card-title"><span class="ui-sprite ui-sm ui-dashboard"></span> <span data-i18n="hc.panelTitle">2-Player Tracking & Lock</span></h3>
+        <div class="metric-list">
+          <div class="metric-row"><span class="metric-label" data-i18n="hc.lblAi">AI Vision Status</span><span class="metric-val" id="valAiStatus" style="color:#57534e;">-</span></div>
+          <div class="metric-row"><span class="metric-label" data-i18n="hc.lblLock">2-Player Lock</span><span class="metric-val" id="valLockStatus" style="color:#d97706;" data-i18n="hc.unlocked">Standby (Unlocked)</span></div>
+          <div class="metric-row"><span class="metric-label" data-i18n="hc.lblP1">P1 Target (Left)</span><span class="metric-val" id="valP1Head" style="color:#1d4ed8;">-</span></div>
+          <div class="metric-row"><span class="metric-label" data-i18n="hc.lblP2">P2 Target (Right)</span><span class="metric-val" id="valP2Head" style="color:#be123c;">-</span></div>
+          <div class="metric-row"><span class="metric-label" data-i18n="hc.lblCaught">Fruits Caught</span><span class="metric-val" id="valTotalCaught">0</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title"><span class="ui-sprite ui-sm ui-subject"></span> <span data-i18n="hc.guideTitle">Rules & Player Lock</span></h3>
+        <div class="step-item"><div class="step-num">1</div><div data-i18n-html="hc.step1"><strong>Position Two Players:</strong> Stand P1 on the left half and P2 on the right half before starting.</div></div>
+        <div class="step-item"><div class="step-num">2</div><div data-i18n-html="hc.step2"><strong>Lock 2 Players:</strong> Once started, AI locks onto both players and ignores background passersby.</div></div>
+        <div class="step-item"><div class="step-num">3</div><div data-i18n-html="hc.step3"><strong>2s Reading Break:</strong> Each question gives a 2-second countdown before answer fruits fall.</div></div>
+        <div class="step-item"><div class="step-num">4</div><div data-i18n-html="hc.step4"><strong>Catch vs Explode:</strong> Right fruits settle in your basket (+100). Wrong fruits explode (-50)!</div></div>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const T = (k, v) => (window.LotusI18n ? window.LotusI18n.t(k, v) : k);
+
+    const AudioEngine = {
+      correct() { if (window.SFX && SFX.correct) SFX.correct(); else this.beep(659.25, 0.15); },
+      explode() {
+        if (window.SFX && SFX.wrong) SFX.wrong();
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) return;
+          const ctx = new AudioCtx();
+          const bufferSize = ctx.sampleRate * 0.3;
+          const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.08));
+          const noise = ctx.createBufferSource(); noise.buffer = buffer;
+          const gain = ctx.createGain(); gain.gain.setValueAtTime(0.3, ctx.currentTime);
+          noise.connect(gain); gain.connect(ctx.destination); noise.start();
+        } catch (e) {}
+      },
+      tick(freq = 440) { this.beep(freq, 0.09); },
+      beep(freq, duration = 0.1) {
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) return;
+          const ctx = new AudioCtx(); const osc = ctx.createOscillator(); const gain = ctx.createGain();
+          osc.type = 'sine'; osc.frequency.setValueAtTime(freq, ctx.currentTime);
+          gain.gain.setValueAtTime(0.18, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+          osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + duration);
+        } catch (e) {}
+      }
+    };
+
+    let QUESTIONS = [];
+    const SPEED_CONFIGS = {
+      relaxed: { id: 'relaxed', key: 'game.speed.relaxed', color: '#15803d', minVy: 1.6, maxVy: 2.4, spawnInterval: 1650 },
+      medium:  { id: 'medium',  key: 'game.speed.medium',  color: '#d97706', minVy: 2.5, maxVy: 3.4, spawnInterval: 1350 },
+      fast:    { id: 'fast',    key: 'game.speed.fast',    color: '#dc2626', minVy: 3.6, maxVy: 4.6, spawnInterval: 1050 }
+    };
+    let currentSpeed = 'relaxed';
+
+    function normalizeSpeedValue(val) {
+      const v = String(val || '').toLowerCase().trim();
+      if (v === 'relaxed' || v === 'santai' || v === 'slow') return 'relaxed';
+      if (v === 'normal' || v === 'medium' || v === 'sedang') return 'medium';
+      if (v === 'fast' || v === 'cepat' || v === 'high') return 'fast';
+      return null;
+    }
+
+    function toExternalSpeedValue(internalKey) {
+      return internalKey === 'medium' ? 'normal' : internalKey;
+    }
+
+    function updateSpeedLabel() {
+      const cfg = SPEED_CONFIGS[currentSpeed];
+      const lbl = document.getElementById('speed-label');
+      if (lbl) { lbl.innerText = T(cfg.key); lbl.style.color = cfg.color; }
+    }
+
+    function setSpeed(val, shouldEmit = true) {
+      const norm = normalizeSpeedValue(val);
+      if (!norm) return false;
+      currentSpeed = norm;
+      updateSpeedLabel();
+      if (gameState === 'playing') {
+        clearInterval(spawnTimer);
+        spawnTimer = setInterval(spawnFruitsForBoth, SPEED_CONFIGS[currentSpeed].spawnInterval);
+      }
+      if (shouldEmit) emitGameState();
+      return true;
+    }
+
+    function toggleSpeed() {
+      if (currentSpeed === 'relaxed') currentSpeed = 'medium';
+      else if (currentSpeed === 'medium') currentSpeed = 'fast';
+      else currentSpeed = 'relaxed';
+      updateSpeedLabel();
+      if (gameState === 'playing') {
+        clearInterval(spawnTimer);
+        spawnTimer = setInterval(spawnFruitsForBoth, SPEED_CONFIGS[currentSpeed].spawnInterval);
+      }
+      emitGameState();
+    }
+
+    const FRUIT_EMOJIS = ['🍉', '🍊', '🍎', '🍌', '🍓', '🍍', '🥥'];
+    let currentActivity = null;
+    let lastActivitySig = '';
+    let timeMode = 'none';
+    let timerSeconds = 30;
+    let timeRemaining = 30;
+    let totalTimeElapsed = 0;
+    let roundTimerInterval = null;
+
+    let gameState = 'standby';
+    let currentQIndex = 0;
+    let countdownVal = 0;
+    let countdownTimer = null;
+    let nextQTimeout = null;
+    let isPlayersLocked = false;
+    let isMouseMode = false;
+
+    const P1 = {
+      id: 1, name: 'P1', score: 0, detected: false, basketX: 0, basketY: 0, basketW: 130, basketTilt: 0,
+      lockedWidth: 0, lastHeadX: 0, lastHeadY: 0, lastHeadW: 0, lastHeadH: 0, landmarks: null, lostFrames: 0, caughtFruits: [],
+      colorTheme: { accent: '#0284c7', body: '#fef3c7', rim: '#0284c7', weave: '#d97706', rimFill: '#bae6fd' }
+    };
+    const P2 = {
+      id: 2, name: 'P2', score: 0, detected: false, basketX: 0, basketY: 0, basketW: 130, basketTilt: 0,
+      lockedWidth: 0, lastHeadX: 0, lastHeadY: 0, lastHeadW: 0, lastHeadH: 0, landmarks: null, lostFrames: 0, caughtFruits: [],
+      colorTheme: { accent: '#ec4899', body: '#fef3c7', rim: '#ec4899', weave: '#d97706', rimFill: '#fbcfe8' }
+    };
+
+    let p1Fruits = [], p2Fruits = [], explosions = [], popups = [], spawnTimer = null, detectedBackgroundFaces = [];
+
+    const canvas = document.getElementById('catcher_canvas');
+    const ctx = canvas.getContext('2d');
+    const videoElement = document.getElementById('webcam');
+    const placeholder = document.getElementById('placeholder');
+    const btnToggleCamera = document.getElementById('btnToggleCamera');
+    const btnHeroStart = document.getElementById('btnHeroStart');
+    const btnMouseMode = document.getElementById('btnMouseMode');
+    const btnStartGame = document.getElementById('btnStartGame');
+    const btnRecalibrate = document.getElementById('btnRecalibrate');
+    const checkSkeleton = document.getElementById('checkSkeleton');
+    const statusBadge = document.getElementById('statusBadge');
+    const statusText = document.getElementById('statusText');
+    const fpsText = document.getElementById('fpsText');
+    const p1ScoreEl = document.getElementById('p1-score');
+    const p2ScoreEl = document.getElementById('p2-score');
+    const p1StatusEl = document.getElementById('p1-status');
+    const p2StatusEl = document.getElementById('p2-status');
+    const valAiStatus = document.getElementById('valAiStatus');
+    const valLockStatus = document.getElementById('valLockStatus');
+    const valP1Head = document.getElementById('valP1Head');
+    const valP2Head = document.getElementById('valP2Head');
+    const valTotalCaught = document.getElementById('valTotalCaught');
+    const qNumTextEl = document.getElementById('q-num-text');
+    const qTextEl = document.getElementById('q-text');
+    const countdownBadge = document.getElementById('countdown-badge');
+
+    let mediaStream = null, faceDetector = null, isCameraRunning = false, isDetecting = false, frameCount = 0, lastFpsTime = performance.now();
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0 && (canvas.width !== Math.round(rect.width) || canvas.height !== Math.round(rect.height))) {
+        canvas.width = Math.round(rect.width);
+        canvas.height = Math.round(rect.height);
+        if (!P1.detected) { P1.basketX = canvas.width * 0.25; P1.basketY = canvas.height * 0.72; }
+        if (!P2.detected) { P2.basketX = canvas.width * 0.75; P2.basketY = canvas.height * 0.72; }
+      }
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    function updateViewportStartBar() {
+      const bar = document.getElementById('viewportStartBar');
+      if (!bar) return;
+      const shouldShow = (isCameraRunning || isMouseMode) && gameState === 'standby';
+      bar.classList.toggle('active', shouldShow);
+    }
+
+    function computeActivitySig(act) {
+      if (!act) return '';
+      const r = act.rules || act.settings || {};
+      const qs = act.questions || act.content?.items || [];
+      return JSON.stringify({
+        id: act.id || '',
+        hasLives: r.hasLives,
+        livesCount: r.livesCount ?? r.lives,
+        timeMode: r.timeMode,
+        timerSeconds: r.timerSeconds,
+        shuffleQuestions: r.shuffleQuestions ?? r.shuffle,
+        shuffleAnswers: r.shuffleAnswers,
+        qCount: qs.length,
+        firstQ: qs[0] ? (qs[0].text || qs[0].question || '') : ''
+      });
+    }
+
+    function applyActivityToGame(act) {
+      currentActivity = act;
+      lastActivitySig = computeActivitySig(act);
+      const rules = act?.rules || act?.settings || {};
+      timerSeconds = Number(rules.timerSeconds ?? 30);
+      timeMode = rules.timeMode || (timerSeconds > 0 ? 'timer' : 'none');
+      if (timeMode === 'timer' && timerSeconds <= 0) timerSeconds = 30;
+
+      let list = (act?.questions || act?.content?.items || []).map(q => {
+        let opts = Array.isArray(q.options) && q.options.length > 0
+          ? q.options.map(o => ({ text: o.text, isCorrect: Boolean(o.isCorrect) }))
+          : [{ text: q.correctAnswer || 'Yes', isCorrect: true }, ...(q.wrongAnswers || ['No']).map(w => ({ text: w, isCorrect: false }))];
+        if (rules.shuffleAnswers && opts.length > 1) {
+          opts = [...opts].sort(() => Math.random() - 0.5);
+        }
+        return { text: q.text || q.question || '', options: opts };
+      }).filter(q => q.text && q.options.length > 0);
+      if (rules.shuffleQuestions && list.length > 1) list = [...list].sort(() => Math.random() - 0.5);
+      if (list.length > 0) QUESTIONS = list;
+      else if (QUESTIONS.length === 0) {
+        QUESTIONS = [{
+          text: T('aiSlicer.questionPrompt'),
+          options: [{ text: 'Mars', isCorrect: true }, { text: 'Venus', isCorrect: false }]
+        }];
+      }
+    }
+
+    function updateTimerBadgeUI() {
+      const badge = document.getElementById('timer-badge');
+      if (!badge) return;
+      if (timeMode === 'none' || gameState === 'standby') {
+        badge.style.display = 'none';
+        return;
+      }
+      badge.style.display = 'inline-block';
+      badge.textContent = (timeMode === 'stopwatch' ? totalTimeElapsed : timeRemaining) + 's';
+    }
+
+    function startRoundTimerLoop() {
+      clearInterval(roundTimerInterval);
+      updateTimerBadgeUI();
+      if (timeMode === 'none') return;
+      roundTimerInterval = setInterval(() => {
+        if (gameState !== 'playing') return;
+        totalTimeElapsed++;
+        if (timeMode === 'stopwatch') {
+          updateTimerBadgeUI();
+        } else if (timeRemaining > 0) {
+          timeRemaining--;
+          updateTimerBadgeUI();
+          if (timeRemaining <= 5 && timeRemaining > 0) AudioEngine.tick(392);
+        } else {
+          AudioEngine.explode();
+          clearInterval(roundTimerInterval);
+          startQuestionWithCountdown(currentQIndex + 1);
+        }
+      }, 1000);
+    }
+
+    function handleStartGame() {
+      if (QUESTIONS.length === 0) applyActivityToGame(currentActivity);
+      if (!isCameraRunning && !isMouseMode) {
+        enableMouseMode();
+      }
+      clearTimeout(nextQTimeout);
+      isPlayersLocked = true;
+      totalTimeElapsed = 0;
+      btnStartGame.style.display = 'none';
+      btnRecalibrate.style.display = 'inline-flex';
+      valLockStatus.textContent = T('hc.locked');
+      valLockStatus.style.color = '#0284c7';
+      statusBadge.className = 'status-badge locked';
+      statusText.textContent = T('hc.locked');
+
+      currentQIndex = 0;
+      P1.score = 0; P2.score = 0; P1.caughtFruits = []; P2.caughtFruits = [];
+      valTotalCaught.textContent = '0';
+      updateScoreUI();
+      document.getElementById('end-screen').style.display = 'none';
+      document.getElementById('score-submit-box').style.display = 'flex';
+      document.getElementById('score-saved-msg').style.display = 'none';
+      const nameInput = document.getElementById('student-name-input');
+      if (nameInput && window.GameBridge && GameBridge.playerName && !nameInput.value) {
+        nameInput.value = GameBridge.playerName;
+      }
+
+      startQuestionWithCountdown(0);
+    }
+
+    function resetToStandby() {
+      isPlayersLocked = false;
+      gameState = 'standby';
+      clearInterval(spawnTimer); clearInterval(countdownTimer); clearInterval(roundTimerInterval); clearTimeout(nextQTimeout);
+      p1Fruits = []; p2Fruits = []; explosions = []; popups = [];
+
+      btnStartGame.style.display = (isCameraRunning || isMouseMode) ? 'inline-flex' : 'none';
+      btnRecalibrate.style.display = 'none';
+      valLockStatus.textContent = T('hc.unlocked');
+      valLockStatus.style.color = '#d97706';
+      if (isCameraRunning) {
+        statusBadge.className = 'status-badge active';
+        statusText.textContent = T('aiSlicer.statusActive');
+      } else if (isMouseMode) {
+        statusBadge.className = 'status-badge active';
+        statusText.textContent = T('aiSlicer.statusMouse');
+      } else {
+        statusBadge.className = 'status-badge';
+        statusText.textContent = T('aiSlicer.statusReady');
+      }
+
+      qNumTextEl.textContent = T('hc.standbyNum');
+      qTextEl.textContent = T('hc.standbyBanner');
+      countdownBadge.style.display = 'none';
+      updateTimerBadgeUI();
+      updateViewportStartBar();
+      document.getElementById('end-screen').style.display = 'none';
+    }
+
+    function startQuestionWithCountdown(idx) {
+      if (idx >= QUESTIONS.length) { endGame(); return; }
+      currentQIndex = idx;
+      const q = QUESTIONS[idx];
+      qNumTextEl.textContent = T('game.questionOf', { n: idx + 1, total: QUESTIONS.length });
+      qTextEl.textContent = q.text;
+
+      p1Fruits = []; p2Fruits = [];
+      clearInterval(spawnTimer); clearInterval(countdownTimer); clearInterval(roundTimerInterval); clearTimeout(nextQTimeout);
+
+      gameState = 'countdown';
+      updateViewportStartBar();
+      timeRemaining = timeMode === 'stopwatch' ? totalTimeElapsed : timerSeconds;
+      updateTimerBadgeUI();
+
+      countdownVal = 2;
+      countdownBadge.style.display = 'inline-block';
+      countdownBadge.textContent = T('hc.countdown', { n: countdownVal });
+      AudioEngine.tick(440);
+
+      countdownTimer = setInterval(() => {
+        countdownVal--;
+        if (countdownVal > 0) {
+          countdownBadge.textContent = T('hc.countdown', { n: countdownVal });
+          AudioEngine.tick(554.37);
+        } else {
+          clearInterval(countdownTimer);
+          countdownBadge.style.display = 'none';
+          gameState = 'playing';
+          AudioEngine.beep(659.25, 0.2);
+          spawnFruitsForBoth();
+          spawnTimer = setInterval(spawnFruitsForBoth, SPEED_CONFIGS[currentSpeed].spawnInterval);
+          startRoundTimerLoop();
+        }
+      }, 1000);
+    }
+
+    function endGame() {
+      gameState = 'gameover';
+      clearInterval(spawnTimer); clearInterval(countdownTimer); clearInterval(roundTimerInterval); clearTimeout(nextQTimeout);
+      updateTimerBadgeUI();
+      updateViewportStartBar();
+
+      const winnerText = document.getElementById('winner-text');
+      if (P1.score > P2.score) { winnerText.textContent = T('hc.p1Win'); winnerText.style.color = '#0284c7'; }
+      else if (P2.score > P1.score) { winnerText.textContent = T('hc.p2Win'); winnerText.style.color = '#ec4899'; }
+      else { winnerText.textContent = T('hc.drawWin'); winnerText.style.color = '#10b981'; }
+
+      document.getElementById('final-p1-score').textContent = T('game.totalPoints', { n: P1.score });
+      document.getElementById('final-p2-score').textContent = T('game.totalPoints', { n: P2.score });
+      document.getElementById('final-p1-fruits').textContent = T('hc.fruitsCollected', { n: P1.caughtFruits.length });
+      document.getElementById('final-p2-fruits').textContent = T('hc.fruitsCollected', { n: P2.caughtFruits.length });
+
+      document.getElementById('end-screen').style.display = 'flex';
+      if (window.confetti) { try { window.confetti({ particleCount: 90, spread: 80, origin: { y: 0.6 } }); } catch (e) {} }
+    }
+
+    document.getElementById('btnSubmitScore').addEventListener('click', () => {
+      const val = document.getElementById('student-name-input').value.trim();
+      const topScore = Math.max(P1.score, P2.score);
+      if (window.GameBridge) {
+        GameBridge.finishGame(topScore, Math.max(100, QUESTIONS.length * 100), [], val || `P1 (${P1.score}) vs P2 (${P2.score})`);
+      }
+      document.getElementById('score-submit-box').style.display = 'none';
+      document.getElementById('score-saved-msg').style.display = 'block';
+    });
+
+    function spawnFruitsForBoth() {
+      if (gameState !== 'playing') return;
+      const q = QUESTIONS[currentQIndex];
+      if (!q || !q.options) return;
+      const cfg = SPEED_CONFIGS[currentSpeed];
+      const midX = (canvas.width || 960) / 2;
+      if (p1Fruits.length < 3) spawnSingleFruit(p1Fruits, 65, midX - 65, q.options, cfg);
+      if (p2Fruits.length < 3) spawnSingleFruit(p2Fruits, midX + 65, (canvas.width || 960) - 65, q.options, cfg);
+    }
+
+    function spawnSingleFruit(fruitArray, minX, maxX, options, cfg) {
+      const activeTexts = fruitArray.map(f => f.text);
+      const available = options.filter(o => !activeTexts.includes(o.text));
+      const hasCorrect = fruitArray.some(f => f.isCorrect);
+      let chosen = (!hasCorrect && (Math.random() < 0.6 || available.length === 0))
+        ? (options.find(o => o.isCorrect) || options[0])
+        : (available.length > 0 ? available[Math.floor(Math.random() * available.length)] : options[Math.floor(Math.random() * options.length)]);
+      const emoji = FRUIT_EMOJIS[Math.floor(Math.random() * FRUIT_EMOJIS.length)];
+      const x = Math.random() * Math.max(40, maxX - minX) + minX;
+      const vy = Math.random() * (cfg.maxVy - cfg.minVy) + cfg.minVy;
+      fruitArray.push({ x, y: -42, vy, radius: 38, emoji, text: chosen.text, isCorrect: Boolean(chosen.isCorrect), caught: false });
+    }
+
+    function checkBasketCatch(fruitList, player) {
+      if (gameState !== 'playing') return;
+      const catchWidth = player.basketW * 0.9;
+      for (let i = fruitList.length - 1; i >= 0; i--) {
+        const f = fruitList[i];
+        if (f.caught) continue;
+        if (Math.abs(f.x - player.basketX) <= catchWidth * 0.58 && f.y >= player.basketY - 18 && f.y <= player.basketY + 34) {
+          f.caught = true;
+          if (f.isCorrect) {
+            AudioEngine.correct();
+            player.score += 100;
+            updateScoreUI();
+            player.caughtFruits.push({ emoji: f.emoji, text: f.text });
+            valTotalCaught.textContent = String(P1.caughtFruits.length + P2.caughtFruits.length);
+            popups.push({ x: player.basketX, y: player.basketY - 56, text: T('hc.rightCatch', { name: player.name }), color: player.id === 1 ? '#0284c7' : '#ec4899', alpha: 1, vy: -1.5 });
+            fruitList.splice(i, 1);
+            clearTimeout(nextQTimeout);
+            nextQTimeout = setTimeout(() => { if (gameState !== 'gameover' && gameState !== 'standby') startQuestionWithCountdown(currentQIndex + 1); }, 950);
+            return;
+          } else {
+            AudioEngine.explode();
+            player.score = Math.max(0, player.score - 50);
+            updateScoreUI();
+            createExplosion(f.x, f.y);
+            popups.push({ x: player.basketX, y: player.basketY - 56, text: T('hc.wrongBoom'), color: '#ef4444', alpha: 1, vy: -1.5 });
+            fruitList.splice(i, 1);
+          }
+        }
+      }
+    }
+
+    function updateScoreUI() {
+      p1ScoreEl.textContent = P1.score;
+      p2ScoreEl.textContent = P2.score;
+    }
+
+    function createExplosion(x, y) {
+      const colors = ['#f97316', '#ef4444', '#facc15', '#334155', '#ffffff'];
+      for (let i = 0; i < 24; i++) {
+        const a = Math.random() * Math.PI * 2, spd = Math.random() * 8 + 3;
+        explosions.push({ x, y, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd, radius: Math.random() * 6 + 3, color: colors[Math.floor(Math.random() * colors.length)], alpha: 1 });
+      }
+    }
+
+    function gameLoop() {
+      resizeCanvas();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const midX = canvas.width / 2;
+
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([12, 10]);
+      ctx.beginPath(); ctx.moveTo(midX, 0); ctx.lineTo(midX, canvas.height); ctx.stroke();
+      ctx.restore();
+
+      ctx.font = '800 13px Outfit, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.85)';
+      ctx.fillText(T('hc.p1Name').toUpperCase(), midX * 0.5, canvas.height - 18);
+      ctx.fillStyle = 'rgba(244, 114, 182, 0.85)';
+      ctx.fillText(T('hc.p2Name').toUpperCase(), midX * 1.5, canvas.height - 18);
+
+      if (checkSkeleton && checkSkeleton.checked && isCameraRunning) {
+        if ((P1.detected || P1.lastHeadX > 0) && P1.lastHeadX < midX) drawPlayerSkeleton(ctx, P1, P1.colorTheme, 'P1');
+        if ((P2.detected || P2.lastHeadX > 0) && P2.lastHeadX >= midX) drawPlayerSkeleton(ctx, P2, P2.colorTheme, 'P2');
+      }
+
+      P1.basketX = Math.max(50, Math.min(midX - 35, P1.basketX));
+      P2.basketX = Math.max(midX + 35, Math.min(canvas.width - 50, P2.basketX));
+
+      if (gameState === 'playing') {
+        updateAndDrawFruits(p1Fruits);
+        updateAndDrawFruits(p2Fruits);
+        checkBasketCatch(p1Fruits, P1);
+        checkBasketCatch(p2Fruits, P2);
+      }
+
+      drawHeadBasket(ctx, P1);
+      drawHeadBasket(ctx, P2);
+
+      if (gameState === 'countdown') drawCountdownBadge(ctx);
+
+      for (let i = explosions.length - 1; i >= 0; i--) {
+        const p = explosions[i]; p.x += p.vx; p.y += p.vy; p.alpha -= 0.035;
+        if (p.alpha <= 0) { explosions.splice(i, 1); continue; }
+        ctx.save(); ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      }
+
+      for (let i = popups.length - 1; i >= 0; i--) {
+        const pop = popups[i]; pop.y += pop.vy; pop.alpha -= 0.022;
+        if (pop.alpha <= 0) { popups.splice(i, 1); continue; }
+        ctx.save(); ctx.globalAlpha = Math.max(0, pop.alpha);
+        ctx.font = '800 18px Outfit, sans-serif'; ctx.fillStyle = pop.color; ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 8; ctx.fillText(pop.text, pop.x, pop.y); ctx.restore();
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    function drawCountdownBadge(ctx) {
+      ctx.save();
+      const midX = canvas.width / 2, midY = canvas.height / 2 - 20, radius = 56;
+      ctx.beginPath(); ctx.arc(midX, midY, radius, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.88)'; ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 5;
+      ctx.fill(); ctx.stroke();
+      ctx.font = '900 50px Outfit, sans-serif'; ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(String(countdownVal), midX, midY);
+      ctx.restore();
+    }
+
+    function updateAndDrawFruits(list) {
+      for (let i = list.length - 1; i >= 0; i--) {
+        const f = list[i]; f.y += f.vy;
+        if (f.y > canvas.height + 70) { list.splice(i, 1); continue; }
+
+        ctx.save();
+        ctx.font = '50px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = 10; ctx.fillText(f.emoji, f.x, f.y);
+
+        ctx.font = 'bold 15px Plus Jakarta Sans, sans-serif';
+        const txtW = ctx.measureText(f.text).width || 80;
+        const bW = Math.max(96, txtW + 26), bH = 34, bY = f.y + 34;
+        ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#18181b'; ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(f.x - bW / 2, bY, bW, bH, 8);
+        else ctx.rect(f.x - bW / 2, bY, bW, bH);
+        ctx.fill(); ctx.stroke();
+
+        ctx.shadowBlur = 0; ctx.fillStyle = '#18181b'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(f.text, f.x, bY + bH / 2);
+        ctx.restore();
+      }
+    }
+
+    function drawPlayerSkeleton(ctx, player, theme, label) {
+      if (!player.lastHeadX || !player.lastHeadY) return;
+      const cx = player.lastHeadX, cy = player.lastHeadY, hw = player.lastHeadW || 75, hh = player.lastHeadH || 90;
+      ctx.save();
+      ctx.strokeStyle = theme.accent; ctx.lineWidth = 2.5; ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(cx, cy - hh * 0.45); ctx.lineTo(player.basketX, player.basketY + 20); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.strokeRect(cx - hw * 0.55, cy - hh * 0.55, hw * 1.1, hh * 1.1);
+      ctx.fillStyle = theme.accent; ctx.font = 'bold 12px Outfit, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(label, cx, cy - hh * 0.65);
+      ctx.restore();
+    }
+
+    function drawHeadBasket(ctx, player) {
+      const x = player.basketX, y = player.basketY, w = player.basketW, h = 46;
+      const theme = player.colorTheme;
+      ctx.save(); ctx.translate(x, y); ctx.rotate(player.basketTilt);
+
+      ctx.font = '800 12px Outfit, sans-serif'; ctx.fillStyle = theme.accent; ctx.textAlign = 'center';
+      ctx.fillText(player.id === 1 ? T('hc.basketP1') : T('hc.basketP2'), 0, -h - 10);
+
+      player.caughtFruits.forEach((f, idx) => {
+        const offsetX = (idx - (player.caughtFruits.length - 1) / 2) * 22;
+        ctx.font = '28px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(f.emoji, offsetX, -8 - (idx % 2) * 8);
+      });
+
+      const rimW = w * 0.95, baseW = w * 0.65;
+      ctx.fillStyle = theme.body; ctx.strokeStyle = theme.rim; ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(-rimW / 2, 0); ctx.lineTo(-baseW / 2, h); ctx.quadraticCurveTo(0, h + 10, baseW / 2, h);
+      ctx.lineTo(rimW / 2, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = theme.rimFill;
+      ctx.beginPath(); ctx.ellipse(0, 0, rimW / 2, 9, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.restore();
+    }
+
+    function videoNormToScreen(normX, normY) {
+      const cw = canvas.width || 1280;
+      const ch = canvas.height || 720;
+      const vw = videoElement.videoWidth || 0;
+      const vh = videoElement.videoHeight || 0;
+      if (vw > 0 && vh > 0) {
+        const scale = Math.max(cw / vw, ch / vh);
+        const scaledW = vw * scale;
+        const scaledH = vh * scale;
+        const offsetX = (cw - scaledW) / 2;
+        const offsetY = (ch - scaledH) / 2;
+        return { x: offsetX + (1 - normX) * scaledW, y: offsetY + normY * scaledH, scaleX: scaledW, scaleY: scaledH };
+      }
+      return { x: (1 - normX) * cw, y: normY * ch, scaleX: cw, scaleY: ch };
+    }
+
+    function onFaceResults(results) {
+      frameCount++;
+      const now = performance.now();
+      if (now - lastFpsTime >= 1000) { fpsText.textContent = `${frameCount} FPS`; frameCount = 0; lastFpsTime = now; }
+      valAiStatus.textContent = T('aiSlicer.aiActive'); valAiStatus.style.color = '#059669';
+
+      const midX = canvas.width / 2;
+      if (results.detections && results.detections.length > 0) {
+        const faces = results.detections.map(d => {
+          const bb = d.boundingBox;
+          const xC = bb.xCenter !== undefined ? bb.xCenter : (bb.xmin + bb.width / 2);
+          const yC = bb.yCenter !== undefined ? bb.yCenter : (bb.ymin + bb.height / 2);
+          const scr = videoNormToScreen(xC, yC);
+          const w = bb.width * scr.scaleX, h = bb.height * scr.scaleY;
+          return { x: scr.x, y: scr.y, width: w, height: h, area: w * h };
+        });
+
+        const left = faces.filter(f => f.x < midX).sort((a, b) => b.area - a.area);
+        const right = faces.filter(f => f.x >= midX).sort((a, b) => b.area - a.area);
+
+        if (left[0]) {
+          P1.detected = true; P1.lastHeadX = left[0].x; P1.lastHeadY = left[0].y; P1.lastHeadW = left[0].width; P1.lastHeadH = left[0].height;
+          P1.basketX += (left[0].x - P1.basketX) * 0.5;
+          P1.basketY += (Math.max(45, left[0].y - left[0].height * 0.65 - 10) - P1.basketY) * 0.5;
+          valP1Head.textContent = T('hb.p1Tracked');
+        }
+        if (right[0]) {
+          P2.detected = true; P2.lastHeadX = right[0].x; P2.lastHeadY = right[0].y; P2.lastHeadW = right[0].width; P2.lastHeadH = right[0].height;
+          P2.basketX += (right[0].x - P2.basketX) * 0.5;
+          P2.basketY += (Math.max(45, right[0].y - right[0].height * 0.65 - 10) - P2.basketY) * 0.5;
+          valP2Head.textContent = T('hb.p2Tracked');
+        }
+      }
+    }
+
+    function initFaceDetection() {
+      valAiStatus.textContent = T('aiSlicer.aiLoading'); valAiStatus.style.color = '#d97706';
+      if (typeof FaceDetection === 'undefined') return;
+      try {
+        faceDetector = new FaceDetection({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}` });
+        faceDetector.setOptions({ model: 'full', minDetectionConfidence: 0.22 });
+        faceDetector.onResults(onFaceResults);
+      } catch (e) {
+        valAiStatus.textContent = T('aiSlicer.aiFail'); valAiStatus.style.color = '#ef4444';
+      }
+    }
+
+    async function detectionLoop() {
+      if (!isCameraRunning) return;
+      if (!faceDetector && typeof FaceDetection !== 'undefined') initFaceDetection();
+      if (videoElement.readyState >= 2 && faceDetector && !isDetecting) {
+        isDetecting = true;
+        try { await faceDetector.send({ image: videoElement }); } catch (e) {}
+        isDetecting = false;
+      }
+      requestAnimationFrame(detectionLoop);
+    }
+
+    function emitGameState() {
+      try {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({
+            type: 'GAME_STATE',
+            gameId: 'head-catcher',
+            cameraActive: Boolean(isCameraRunning),
+            mouseMode: Boolean(isMouseMode),
+            speed: toExternalSpeedValue(currentSpeed),
+            skeleton: checkSkeleton ? Boolean(checkSkeleton.checked) : true
+          }, '*');
+        }
+      } catch (e) {}
+    }
+
+    function showCamError(msg) {
+      const note = document.getElementById('camErrorNote');
+      if (note) {
+        note.textContent = msg;
+        note.style.display = msg ? 'block' : 'none';
+      }
+    }
+
+    async function startCamera() {
+      showCamError('');
+      statusBadge.className = 'status-badge active';
+      statusText.textContent = T('aiSlicer.statusOpening');
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' }, audio: false });
+        videoElement.srcObject = mediaStream; await videoElement.play();
+        videoElement.style.display = 'block'; placeholder.style.display = 'none';
+        isCameraRunning = true; isMouseMode = false;
+        btnToggleCamera.innerHTML = `<span class="ui-sprite ui-sm ui-camera-off"></span><span>${T('aiSlicer.stopCam')}</span>`;
+        btnToggleCamera.className = 'btn btn-stop';
+        btnStartGame.style.display = 'inline-flex';
+        updateViewportStartBar();
+        statusBadge.className = 'status-badge active';
+        statusText.textContent = T('aiSlicer.statusActive');
+        if (!faceDetector) initFaceDetection();
+        requestAnimationFrame(detectionLoop);
+        emitGameState();
+      } catch (err) {
+        isCameraRunning = false;
+        statusBadge.className = 'status-badge';
+        statusText.textContent = T('aiSlicer.statusDenied');
+        showCamError(T('aiSlicer.camAlert'));
+        emitGameState();
+      }
+    }
+
+    function stopCamera() {
+      if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+      isCameraRunning = false; videoElement.style.display = 'none';
+      if (!isMouseMode) placeholder.style.display = 'flex';
+      btnToggleCamera.innerHTML = `<span class="ui-sprite ui-sm ui-camera"></span><span>${T('aiSlicer.startCam')}</span>`;
+      btnToggleCamera.className = 'btn btn-primary';
+      fpsText.textContent = '0 FPS';
+      resetToStandby();
+      emitGameState();
+    }
+
+    function enableMouseMode() {
+      if (isCameraRunning) stopCamera();
+      showCamError('');
+      isMouseMode = true;
+      placeholder.style.display = 'none';
+      btnStartGame.style.display = 'inline-flex';
+      updateViewportStartBar();
+      statusBadge.className = 'status-badge active';
+      statusText.textContent = T('aiSlicer.statusMouse');
+      valAiStatus.textContent = T('aiSlicer.statusMouse');
+      valAiStatus.style.color = '#0284c7';
+      emitGameState();
+    }
+
+    btnToggleCamera.addEventListener('click', () => isCameraRunning ? stopCamera() : startCamera());
+    btnHeroStart.addEventListener('click', startCamera);
+    btnMouseMode.addEventListener('click', enableMouseMode);
+    btnStartGame.addEventListener('click', handleStartGame);
+    const btnViewportStartGame = document.getElementById('btnViewportStartGame');
+    if (btnViewportStartGame) btnViewportStartGame.addEventListener('click', handleStartGame);
+    btnRecalibrate.addEventListener('click', resetToStandby);
+    if (checkSkeleton) checkSkeleton.addEventListener('change', emitGameState);
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (isPlayersLocked && isCameraRunning) return;
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = (e.clientX - rect.left) * (canvas.width / Math.max(1, rect.width));
+      const mouseY = (e.clientY - rect.top) * (canvas.height / Math.max(1, rect.height));
+      const midX = canvas.width / 2;
+      if (mouseX < midX) {
+        P1.basketX = Math.min(midX - 35, Math.max(50, mouseX));
+        P1.basketY = mouseY;
+        P1.detected = true;
+      } else {
+        P2.basketX = Math.max(midX + 35, Math.min(canvas.width - 50, mouseX));
+        P2.basketY = mouseY;
+        P2.detected = true;
+      }
+    });
+
+    function syncDynamicStatusLabels() {
+      statusText.textContent = isCameraRunning
+        ? T('aiSlicer.statusActive')
+        : (isMouseMode ? T('aiSlicer.statusMouse') : T('aiSlicer.statusReady'));
+      if (isMouseMode && !isCameraRunning) {
+        valAiStatus.textContent = T('aiSlicer.statusMouse');
+      }
+      if (gameState === 'standby') {
+        qNumTextEl.textContent = T('hc.standbyNum');
+        qTextEl.textContent = T('hc.standbyBanner');
+        p1StatusEl.textContent = T('hc.p1Ready');
+        p2StatusEl.textContent = T('hc.p2Ready');
+      }
+    }
+
+    if (window.LotusI18n) {
+      LotusI18n.onChange(() => {
+        updateSpeedLabel();
+        syncDynamicStatusLabels();
+        if (gameState !== 'standby' && QUESTIONS[currentQIndex]) {
+          qNumTextEl.textContent = T('game.questionOf', { n: currentQIndex + 1, total: QUESTIONS.length });
+        }
+        btnToggleCamera.innerHTML = isCameraRunning
+          ? `<span class="ui-sprite ui-sm ui-camera-off"></span><span>${T('aiSlicer.stopCam')}</span>`
+          : `<span class="ui-sprite ui-sm ui-camera"></span><span>${T('aiSlicer.startCam')}</span>`;
+      });
+    }
+    syncDynamicStatusLabels();
+
+    function syncFullscreenClass() {
+      const isFs = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+      document.body.classList.toggle('is-fullscreen', isFs);
+      resizeCanvas();
+    }
+    document.addEventListener('fullscreenchange', syncFullscreenClass);
+    document.addEventListener('webkitfullscreenchange', syncFullscreenClass);
+
+    window.addEventListener('message', (event) => {
+      const data = event.data;
+      if (!data || typeof data !== 'object') return;
+
+      if (data.type === 'GAME_CMD') {
+        const cmd = String(data.command || data.cmd || data.action || '').toUpperCase();
+        if (cmd === 'TOGGLE_CAMERA') {
+          if (isCameraRunning) stopCamera();
+          else startCamera();
+        } else if (cmd === 'MOUSE_MODE') {
+          enableMouseMode();
+        } else if (cmd === 'START_GAME') {
+          handleStartGame();
+        } else if (cmd === 'RESTART') {
+          if (isCameraRunning || isMouseMode) handleStartGame();
+          else resetToStandby();
+        } else if (cmd === 'SET_SPEED') {
+          const val = data.value ?? data.speed ?? data.payload?.speed;
+          if (!setSpeed(val)) toggleSpeed();
+        }
+      } else if (data.type === 'GAME_SETTINGS') {
+        const p = data.payload || data;
+        if (p.skeleton !== undefined && checkSkeleton) {
+          checkSkeleton.checked = Boolean(p.skeleton);
+        }
+        if (p.speed !== undefined) {
+          setSpeed(p.speed, false);
+        }
+        emitGameState();
+      } else if (data.type === 'UPDATE_SETTINGS') {
+        if (data.theme && window.LotusThemes) {
+          window.LotusThemes.apply(data.theme, true);
+        }
+        const incomingAct = data.activity
+          ? (window.GameBridge && GameBridge.normalizeActivity ? GameBridge.normalizeActivity(data.activity) : data.activity)
+          : null;
+        if (incomingAct) {
+          if (data.rules) incomingAct.rules = { ...(incomingAct.rules || {}), ...data.rules };
+          applyActivityToGame(incomingAct);
+        } else if (data.rules || data.settings) {
+          const baseAct = (window.GameBridge && GameBridge.activity) || currentActivity || {};
+          const mergedRules = { ...(baseAct.rules || baseAct.settings || {}), ...(data.rules || data.settings) };
+          applyActivityToGame({ ...baseAct, rules: mergedRules, settings: mergedRules });
+        }
+        if (data.restart !== false) {
+          if (isCameraRunning || isMouseMode) handleStartGame();
+          else resetToStandby();
+        } else {
+          if (timeMode === 'none') {
+            clearInterval(roundTimerInterval);
+            updateTimerBadgeUI();
+          } else {
+            timeRemaining = timeMode === 'stopwatch' ? totalTimeElapsed : timerSeconds;
+            if (gameState === 'playing') startRoundTimerLoop();
+            else updateTimerBadgeUI();
+          }
+        }
+        emitGameState();
+      } else if (data.type === 'INIT_ACTIVITY' && data.activity) {
+        const norm = (window.GameBridge && GameBridge.normalizeActivity) ? GameBridge.normalizeActivity(data.activity) : data.activity;
+        const sig = computeActivitySig(norm);
+        if (sig !== lastActivitySig) {
+          applyActivityToGame(norm);
+          resetToStandby();
+        }
+        emitGameState();
+      }
+    });
+
+    if (window.GameBridge) {
+      if (typeof GameBridge.onSettings === 'function') {
+        GameBridge.onSettings(() => {});
+      }
+      GameBridge.onReady((act) => {
+        applyActivityToGame(act);
+        resetToStandby();
+      });
+    } else {
+      resetToStandby();
+    }
+    emitGameState();
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>

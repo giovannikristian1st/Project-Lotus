@@ -1,0 +1,3353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LotusWall — Teacher Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="games/common/ui-spritesheet.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Plus Jakarta Sans', 'Poppins', 'sans-serif'] },
+          colors: {
+            brand: {
+              50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc',
+              400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca',
+              800: '#3730a3', 900: '#312e81'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { font-family: 'Plus Jakarta Sans', 'Poppins', sans-serif; }
+    body {
+      overflow-x: hidden;
+      background-color: #f7f5f0;
+      color: #18181b;
+    }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #efebe2; }
+    ::-webkit-scrollbar-thumb { background: #c9c1b2; border-radius: 4px; }
+
+    /* Pure 16:9 Game-Only Fullscreen Container */
+    #game-window-container:fullscreen,
+    #game-window-container:-webkit-full-screen {
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+      border-radius: 0 !important;
+      border: none !important;
+      background: #090d16 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    #game-window-container:fullscreen #game-iframe,
+    #game-window-container:-webkit-full-screen #game-iframe {
+      width: 100% !important;
+      height: 100% !important;
+      aspect-ratio: 16 / 9;
+      max-width: 100vw;
+      max-height: 100vh;
+      margin: auto;
+    }
+  </style>
+</head>
+<body class="bg-[#f7f5f0] text-[#18181b] min-h-screen flex flex-col">
+
+  <!-- =========================================================================
+       TOP HEADER: Brand + Community Link + Clickable Username Menu + Flag Toggle
+       ========================================================================= -->
+  <header class="sticky top-0 z-40 bg-white border-b border-[#e5dfd3]">
+    <div class="w-full max-w-[1840px] mx-auto px-3 sm:px-8 lg:px-10 h-16 flex items-center justify-between gap-2 sm:gap-3">
+
+      <!-- Brand Logo -->
+      <a href="index.html#tab=home" class="flex items-center gap-2 sm:gap-2.5 shrink-0">
+        <span class="ui-sprite ui-lg ui-lotus"></span>
+        <div class="leading-tight">
+          <div class="font-extrabold text-base sm:text-xl tracking-tight text-[#18181b]">
+            LotusWall
+          </div>
+          <p class="hidden sm:block text-[11px] font-medium text-[#78716c]" data-i18n="brand.teacherHub">
+            Teacher Hub
+          </p>
+        </div>
+      </a>
+
+      <!-- Right Controls -->
+      <div class="flex items-center gap-1.5 sm:gap-3 min-w-0">
+        <a href="index.html#tab=community"
+          class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] text-[#18181b] text-xs font-semibold transition-colors shrink-0">
+          <span class="ui-sprite ui-sm ui-community"></span>
+          <span data-i18n="nav.community">Community</span>
+        </a>
+
+        <!-- Clickable Teacher Username Dropdown Trigger -->
+        <div id="dash-user-menu-wrapper" class="relative min-w-0">
+          <button type="button" id="dash-user-menu-btn" onclick="toggleDashUserMenu(event)"
+            aria-haspopup="menu" aria-expanded="false" aria-controls="dash-user-dropdown"
+            class="flex items-center gap-1.5 sm:gap-2 bg-[#fcfbf8] hover:bg-[#f4f1ea] border border-[#d6cfc2] px-2 sm:px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer min-w-0 max-w-full">
+            <div id="teacher-avatar" class="w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-[#1e242b] text-white font-bold flex items-center justify-center text-xs shrink-0">
+              T
+            </div>
+            <div class="text-left max-w-[78px] sm:max-w-[190px] min-w-0">
+              <div class="text-xs font-bold text-[#18181b] truncate" id="teacher-name">Teacher</div>
+              <div class="hidden sm:block text-[10px] text-[#78716c] truncate" id="teacher-sub">Subject • School</div>
+            </div>
+            <svg id="dash-user-chevron" class="w-3.5 h-3.5 text-[#57534e] shrink-0 transition-transform duration-150" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m6 9 6 6 6-6"/>
+            </svg>
+          </button>
+
+          <div id="dash-user-dropdown" role="menu" aria-labelledby="dash-user-menu-btn"
+            class="hidden absolute right-0 mt-2 w-64 bg-white rounded-xl border border-[#d6cfc2] shadow-xl py-1.5 z-50">
+            <div class="px-3.5 py-2.5 border-b border-[#eee9df]">
+              <div id="dash-dropdown-name" class="text-xs font-bold text-[#18181b] truncate">Teacher</div>
+              <div id="dash-dropdown-sub" class="text-[11px] text-[#78716c] truncate">Subject • School</div>
+            </div>
+
+            <a href="index.html#tab=community" role="menuitem" onclick="closeDashUserMenu()"
+              class="w-full px-3.5 py-2 text-left text-xs font-semibold text-[#18181b] hover:bg-[#f4f1ea] flex items-center gap-2.5 transition-colors">
+              <span class="ui-sprite ui-xs ui-community"></span>
+              <span id="dash-menu-community-text">Community Library</span>
+            </a>
+
+            <button type="button" role="menuitem" onclick="closeDashUserMenu(); openSwitchAccountModal()"
+              class="w-full px-3.5 py-2 text-left text-xs font-semibold text-[#18181b] hover:bg-[#f4f1ea] flex items-center gap-2.5 transition-colors cursor-pointer">
+              <span class="ui-sprite ui-xs ui-users-switch"></span>
+              <span data-i18n="login.switchAccount">Switch Teacher</span>
+            </button>
+
+            <div class="my-1 border-t border-[#eee9df]"></div>
+
+            <button type="button" id="dash-logout-btn" role="menuitem" onclick="closeDashUserMenu(); logoutTeacher()"
+              data-i18n-title="login.signOut" title="Sign Out"
+              class="w-full px-3.5 py-2 text-left text-xs font-bold text-red-700 hover:bg-red-50 flex items-center gap-2.5 transition-colors cursor-pointer">
+              <span class="ui-sprite ui-xs ui-logout"></span>
+              <span id="dash-logout-text">Log Out</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Icon-Only EN / ID Flag Toggle (Zero text inside button) -->
+        <button type="button" id="dash-lang-toggle" onclick="LotusI18n.toggleLang()" class="lang-toggle-btn" title="Switch Language (English / Bahasa Indonesia)" aria-label="Switch Language (English / Bahasa Indonesia)">
+          <span class="lang-flag-chip active" data-lang-flag="en">
+            <span class="ui-sprite ui-sm ui-lang-en"></span>
+          </span>
+          <span class="lang-flag-chip" data-lang-flag="id">
+            <span class="ui-sprite ui-sm ui-lang-id"></span>
+          </span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       MAIN CONTENT
+       ========================================================================= -->
+  <main class="w-full max-w-[1840px] mx-auto px-4 sm:px-8 lg:px-10 py-6 sm:py-8 flex-1 space-y-6">
+
+    <!-- =======================================================================
+         VIEW 1: DASHBOARD (MY PROJECTS & RECYCLE BIN)
+         ======================================================================= -->
+    <section id="view-dashboard" class="space-y-5">
+
+      <!-- Top Action Bar -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-[#e5dfd3]">
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" id="tab-btn-projects" onclick="switchDashboardTab('projects')"
+            class="px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#18181b] text-white transition-colors flex items-center gap-2 cursor-pointer">
+            <span class="ui-sprite ui-sm ui-folder"></span>
+            <span data-i18n="dash.myProjects">My Projects</span>
+            <span id="badge-projects-count" class="px-1.5 py-0.5 rounded bg-white/15 text-white text-[11px] font-bold">0</span>
+          </button>
+
+          <button type="button" id="tab-btn-recycle" onclick="switchDashboardTab('recycle')"
+            class="px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#f4f1ea] text-[#57534e] hover:bg-[#e7e2d8] transition-colors flex items-center gap-2 cursor-pointer">
+            <span class="ui-sprite ui-sm ui-trash"></span>
+            <span data-i18n="dash.recycleBin">Recycle Bin</span>
+            <span id="badge-recycle-count" class="px-1.5 py-0.5 rounded bg-[#e5dfd3] text-[#18181b] text-[11px] font-bold">0</span>
+          </button>
+        </div>
+
+        <button type="button" id="dash-new-btn" onclick="openQuestionStudio()"
+          class="px-5 py-2.5 bg-[#15803d] hover:bg-[#166534] text-white font-bold text-xs sm:text-sm rounded-lg border-b-[3px] border-[#14532d] flex items-center justify-center gap-2 transition-colors cursor-pointer">
+          <span class="ui-sprite ui-sm ui-plus"></span>
+          <span data-i18n="dash.newActivity">New Activity</span>
+        </button>
+      </div>
+
+      <!-- Tab 1: My Projects -->
+      <div id="tab-content-projects" class="space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-[#e5dfd3]">
+          <p class="text-xs font-medium text-[#57534e]" data-i18n="dash.activeSubtitle">
+            Click Play to launch, or use the 5 quick icons on each card.
+          </p>
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div class="relative flex items-center">
+              <span class="ui-sprite ui-xs ui-search absolute left-3"></span>
+              <input type="text" id="dash-search-input" oninput="renderDashboard()"
+                data-i18n-placeholder="dash.searchPlaceholder" placeholder="Search my activities..."
+                class="w-full sm:w-56 pl-9 pr-3 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-xs font-medium focus:outline-none focus:border-[#1d4ed8]">
+            </div>
+            <select id="dash-filter-template" onchange="renderDashboard()"
+              class="px-3 py-2 rounded-lg border border-[#d6cfc2] bg-white text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+              <!-- Populated by JS -->
+            </select>
+          </div>
+        </div>
+
+        <div id="projects-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Tab 2: Recycle Bin -->
+      <div id="tab-content-recycle" class="hidden space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-3 bg-[#fef3c7] border border-[#f59e0b]/40 p-4 rounded-xl text-xs text-[#92400e] font-semibold">
+          <div class="flex items-center gap-2">
+            <span class="ui-sprite ui-sm ui-alert"></span>
+            <span data-i18n="dash.binSubtitle">Deleted activities can be restored or permanently removed.</span>
+          </div>
+          <button type="button" onclick="emptyRecycleBinWithConfirm()"
+            class="px-3.5 py-2 bg-[#b91c1c] hover:bg-[#991b1b] text-white font-bold rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer">
+            <span class="ui-sprite ui-xs ui-trash"></span>
+            <span data-i18n="dash.emptyBin">Empty Recycle Bin</span>
+          </button>
+        </div>
+
+        <div id="recycle-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- =======================================================================
+         VIEW 2: QUESTION STUDIO
+         ======================================================================= -->
+    <section id="view-question-studio" class="hidden space-y-6">
+
+      <!-- Studio Header -->
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#e5dfd3] pb-4">
+        <div class="flex items-center gap-3">
+          <button type="button" onclick="cancelQuestionStudio()"
+            class="px-3.5 py-2 bg-white border border-[#d6cfc2] hover:bg-[#f4f1ea] rounded-lg text-[#18181b] font-semibold text-xs flex items-center gap-1.5 cursor-pointer">
+            <span class="ui-sprite ui-sm ui-arrow-left"></span>
+            <span data-i18n="dash.cancelStudio">Back</span>
+          </button>
+          <div>
+            <h2 class="text-xl sm:text-2xl font-bold text-[#18181b]" id="studio-mode-title" data-i18n="studio.titleNew">Create New Activity</h2>
+            <p class="text-xs text-[#57534e]" data-i18n="studio.correctHint">Mark the correct answer(s)</p>
+          </div>
+        </div>
+
+        <button type="button" onclick="saveQuestionsAndProceed()"
+          class="px-5 py-2.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-xs sm:text-sm rounded-lg border-b-2 border-[#1e3a8a] flex items-center gap-2 cursor-pointer">
+          <span data-i18n="dash.saveProceed">Next: Activity Settings</span>
+          <span class="ui-sprite ui-sm ui-arrow-right"></span>
+        </button>
+      </div>
+
+      <!-- Metadata Form (Title, Subject, Level TK-SMK, Language, Visibility) -->
+      <div class="bg-white p-5 sm:p-6 rounded-xl border border-[#e5dfd3] space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4">
+          <div class="lg:col-span-5">
+            <label for="project-title" class="block text-xs font-bold text-[#3f3f46] mb-1" data-i18n="studio.activityTitle">Activity Title</label>
+            <input type="text" id="project-title" required placeholder="e.g. Solar System Quiz"
+              class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white font-medium text-sm focus:outline-none focus:border-[#1d4ed8]">
+          </div>
+
+          <div class="lg:col-span-3">
+            <label for="project-subject" class="block text-xs font-bold text-[#3f3f46] mb-1" data-i18n="studio.subject">Subject</label>
+            <input type="text" id="project-subject" list="subject-datalist"
+              class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white font-medium text-sm focus:outline-none focus:border-[#1d4ed8]">
+            <datalist id="subject-datalist">
+              <option value="IPA / Sains"></option>
+              <option value="Science"></option>
+              <option value="Matematika"></option>
+              <option value="Mathematics"></option>
+              <option value="Bahasa Indonesia"></option>
+              <option value="Bahasa Inggris"></option>
+              <option value="English"></option>
+              <option value="Mandarin"></option>
+              <option value="IPS / Geografi"></option>
+              <option value="Fisika / Kimia"></option>
+              <option value="Biologi"></option>
+              <option value="Informatika / TIK"></option>
+              <option value="Pendidikan Agama"></option>
+              <option value="Seni & Budaya"></option>
+            </datalist>
+          </div>
+
+          <div class="lg:col-span-2">
+            <label for="project-level" class="block text-xs font-bold text-[#3f3f46] mb-1" data-i18n="studio.level">Education Level</label>
+            <select id="project-level" class="w-full px-3 py-2.5 rounded-lg border border-[#d6cfc2] font-semibold text-sm bg-white focus:outline-none focus:border-[#1d4ed8]">
+              <option value="TK" data-i18n="level.TK">Kindergarten (TK)</option>
+              <option value="SD" data-i18n="level.SD">Elementary (SD)</option>
+              <option value="SMP" data-i18n="level.SMP">Junior High (SMP)</option>
+              <option value="SMA" data-i18n="level.SMA">Senior High (SMA)</option>
+              <option value="SMK" data-i18n="level.SMK">Vocational (SMK)</option>
+            </select>
+          </div>
+
+          <div class="lg:col-span-2">
+            <label for="project-language" class="block text-xs font-bold text-[#3f3f46] mb-1" data-i18n="studio.lang">Content Language</label>
+            <select id="project-language" class="w-full px-3 py-2.5 rounded-lg border border-[#d6cfc2] font-semibold text-sm bg-white focus:outline-none focus:border-[#1d4ed8]">
+              <option value="en" data-i18n="langTag.en">English</option>
+              <option value="id" data-i18n="langTag.id">Indonesian</option>
+              <option value="zh" data-i18n="langTag.zh">Mandarin</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#eee9df]">
+          <div class="flex items-center gap-2 text-xs font-bold text-[#3f3f46]">
+            <span class="ui-sprite ui-sm ui-community"></span>
+            <span data-i18n="studio.visibility">Community Visibility</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-4 text-xs font-semibold text-[#18181b]">
+            <label class="inline-flex items-center gap-1.5 cursor-pointer">
+              <input type="radio" name="project-visibility" value="public" checked class="accent-[#1d4ed8] cursor-pointer">
+              <span data-i18n="studio.visPublic">Share in Community Hub</span>
+            </label>
+            <label class="inline-flex items-center gap-1.5 cursor-pointer">
+              <input type="radio" name="project-visibility" value="private" class="accent-[#1d4ed8] cursor-pointer">
+              <span data-i18n="studio.visPrivate">Private (My Dashboard Only)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Questions List -->
+      <div id="question-list-container" class="space-y-4">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Bottom Studio Bar -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-xl border border-[#e5dfd3]">
+        <button type="button" onclick="addNewQuestionCard()"
+          class="w-full sm:w-auto px-5 py-2.5 border-2 border-dashed border-[#1d4ed8] text-[#1d4ed8] font-bold text-sm rounded-lg hover:bg-[#eff6ff] transition-colors flex items-center justify-center gap-2 cursor-pointer">
+          <span class="ui-sprite ui-sm ui-plus"></span>
+          <span data-i18n="studio.addQuestion">+ Add Question</span>
+        </button>
+
+        <div class="flex gap-2 w-full sm:w-auto justify-end">
+          <button type="button" onclick="cancelQuestionStudio()"
+            class="px-5 py-2.5 bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] text-[#18181b] font-semibold text-xs sm:text-sm rounded-lg cursor-pointer" data-i18n="dash.btnCancel">
+            Cancel
+          </button>
+          <button type="button" onclick="saveQuestionsAndProceed()"
+            class="px-6 py-2.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-xs sm:text-sm rounded-lg border-b-2 border-[#1e3a8a] flex items-center gap-2 cursor-pointer">
+            <span data-i18n="dash.saveProceed">Next: Activity Settings</span>
+            <span class="ui-sprite ui-sm ui-arrow-right"></span>
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- =======================================================================
+         VIEW 3: EDIT ACTIVITY (ALL 15 TEMPLATES + VISUAL THEMES + RULES)
+         ======================================================================= -->
+    <section id="view-edit-activity" class="hidden space-y-6">
+
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#e5dfd3] pb-4">
+        <div class="flex items-center gap-3">
+          <button type="button" onclick="backToQuestionStudio()"
+            class="px-3.5 py-2 bg-white border border-[#d6cfc2] hover:bg-[#f4f1ea] rounded-lg text-[#18181b] font-semibold text-xs flex items-center gap-1.5 cursor-pointer">
+            <span class="ui-sprite ui-sm ui-arrow-left"></span>
+            <span data-i18n="dash.backToStudio">Edit Questions</span>
+          </button>
+          <div>
+            <h2 class="text-xl sm:text-2xl font-bold text-[#18181b]" data-i18n="editAct.title">Activity Settings &amp; Game Mode</h2>
+            <p class="text-xs text-[#57534e]" data-i18n="home.showcaseSub">12 classic interactive formats and 3 webcam motion games included with every project.</p>
+          </div>
+        </div>
+
+        <button type="button" onclick="saveActivityAndOpenPlayer()"
+          class="px-5 py-2.5 bg-[#15803d] hover:bg-[#166534] text-white font-bold text-xs sm:text-sm rounded-lg border-b-2 border-[#14532d] flex items-center gap-2 cursor-pointer">
+          <span class="ui-sprite ui-sm ui-play"></span>
+          <span data-i18n="dash.saveAndPlay">Save &amp; Open Player</span>
+        </button>
+      </div>
+
+      <!-- 1. Game Mode Picker (12 Standard + 3 AI Camera) -->
+      <div class="bg-white p-5 sm:p-6 rounded-xl border border-[#e5dfd3] space-y-4">
+        <h3 class="text-base font-bold text-[#18181b] flex items-center gap-2">
+          <span class="ui-sprite ui-md ui-gamepad"></span>
+          <span data-i18n="editAct.templateSection">Choose Game Mode</span>
+        </h3>
+        <div id="game-types-grid" class="space-y-5">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- 2. Visual Theme Picker (#themes-selector-grid properly present!) -->
+      <div class="bg-white p-5 sm:p-6 rounded-xl border border-[#e5dfd3] space-y-4">
+        <h3 class="text-base font-bold text-[#18181b] flex items-center gap-2">
+          <span class="ui-sprite ui-md ui-palette"></span>
+          <span data-i18n="editAct.themeSection">Visual Theme</span>
+        </h3>
+        <div id="themes-selector-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- 3. Gameplay Rules -->
+      <div class="bg-white p-5 sm:p-6 rounded-xl border border-[#e5dfd3] space-y-4">
+        <h3 class="text-base font-bold text-[#18181b] flex items-center gap-2">
+          <span class="ui-sprite ui-md ui-sliders"></span>
+          <span data-i18n="editAct.rulesSection">Gameplay Rules</span>
+        </h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="space-y-2 p-4 bg-[#fcfbf8] rounded-lg border border-[#e5dfd3]">
+            <div class="text-xs font-bold text-[#18181b] flex items-center gap-1.5">
+              <span class="ui-sprite ui-xs ui-heart"></span>
+              <span data-i18n="editAct.livesLabel">Lives Limit</span>
+            </div>
+            <div class="space-y-1.5 text-xs font-medium text-[#3f3f46]">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="rule-lives" value="3" checked onchange="handleLivesChange(true, 3)" class="accent-[#1d4ed8]">
+                <span data-i18n="dash.lives3">3 Hearts (Standard)</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="rule-lives" value="5" onchange="handleLivesChange(true, 5)" class="accent-[#1d4ed8]">
+                <span data-i18n="dash.lives5">5 Hearts (Relaxed)</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="rule-lives" value="0" onchange="handleLivesChange(false, 0)" class="accent-[#1d4ed8]">
+                <span data-i18n="dash.lives0">Unlimited Lives</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="space-y-2 p-4 bg-[#fcfbf8] rounded-lg border border-[#e5dfd3]">
+            <div class="text-xs font-bold text-[#18181b] flex items-center gap-1.5">
+              <span class="ui-sprite ui-xs ui-clock"></span>
+              <span data-i18n="editAct.timerLabel">Time Mode</span>
+            </div>
+            <div class="space-y-1.5 text-xs font-medium text-[#3f3f46]">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="rule-time" value="timer" checked onchange="handleTimeModeChange('timer')" class="accent-[#1d4ed8]">
+                <span data-i18n="editAct.timerTimer">Countdown Timer</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="rule-time" value="stopwatch" onchange="handleTimeModeChange('stopwatch')" class="accent-[#1d4ed8]">
+                <span data-i18n="editAct.timerStopwatch">Stopwatch (No Limit)</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="rule-time" value="none" onchange="handleTimeModeChange('none')" class="accent-[#1d4ed8]">
+                <span data-i18n="editAct.timerNone">Relaxed (No Timer)</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="space-y-2 p-4 bg-[#fcfbf8] rounded-lg border border-[#e5dfd3]">
+            <div class="text-xs font-bold text-[#18181b] flex items-center gap-1.5">
+              <span class="ui-sprite ui-xs ui-refresh"></span>
+              <span>Shuffle</span>
+            </div>
+            <div class="space-y-2 text-xs font-medium text-[#3f3f46] pt-1">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="rule-shuffle-q" checked class="w-4 h-4 rounded accent-[#1d4ed8]">
+                <span data-i18n="editAct.shuffleQ">Shuffle Questions</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="rule-shuffle-a" checked class="w-4 h-4 rounded accent-[#1d4ed8]">
+                <span data-i18n="editAct.shuffleA">Shuffle Answer Choices</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Action Bar -->
+      <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-xl border border-[#e5dfd3]">
+        <button type="button" onclick="backToQuestionStudio()"
+          class="px-5 py-2.5 bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] text-[#18181b] font-semibold text-xs rounded-lg flex items-center gap-1.5 cursor-pointer">
+          <span class="ui-sprite ui-sm ui-pencil"></span>
+          <span data-i18n="dash.backToStudio">Edit Questions</span>
+        </button>
+
+        <button type="button" onclick="saveActivityAndOpenPlayer()"
+          class="px-6 py-2.5 bg-[#15803d] hover:bg-[#166534] text-white font-bold text-sm rounded-lg border-b-2 border-[#14532d] flex items-center gap-2 cursor-pointer">
+          <span class="ui-sprite ui-sm ui-play"></span>
+          <span data-i18n="dash.saveAndPlay">Save &amp; Open Player</span>
+        </button>
+      </div>
+
+    </section>
+
+    <!-- =======================================================================
+         VIEW 4: EMBEDDED GAME WINDOW PLAYER
+         ======================================================================= -->
+    <section id="view-game-player" class="hidden space-y-4">
+
+      <!-- Player Header Bar -->
+      <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-xl border border-[#e5dfd3]">
+        <div class="flex items-center gap-3 min-w-0">
+          <button type="button" onclick="closeGamePlayer()"
+            class="px-3 py-2 bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] rounded-lg text-[#18181b] font-semibold text-xs flex items-center gap-1.5 cursor-pointer shrink-0">
+            <span class="ui-sprite ui-xs ui-arrow-left"></span>
+            <span data-i18n="player.backToProjects">Back to Projects</span>
+          </button>
+          <div class="min-w-0">
+            <h3 class="text-base sm:text-lg font-bold text-[#18181b] truncate" id="player-title">Game Title</h3>
+            <div class="text-xs font-medium text-[#78716c] truncate" id="player-game-badge">Quiz</div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" onclick="resetToPlayScreen()"
+            class="px-3 py-2 bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] text-[#18181b] font-semibold text-xs rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer">
+            <span class="ui-sprite ui-xs ui-refresh"></span>
+            <span class="hidden sm:inline" data-i18n="player.replay">Restart</span>
+          </button>
+
+          <button type="button" id="player-fullscreen-btn" onclick="togglePlayerFullscreen()"
+            data-i18n-title="player.openFullscreenPure" title="Fullscreen (Game Only)"
+            class="px-3 py-2 bg-[#18181b] hover:bg-[#27272a] text-white font-semibold text-xs rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer">
+            <span class="ui-sprite ui-xs ui-fullscreen"></span>
+            <span class="hidden sm:inline" data-i18n="player.fullscreen">Fullscreen</span>
+          </button>
+
+          <button type="button" onclick="editCurrentActiveProject()"
+            class="px-3 py-2 bg-[#eff6ff] hover:bg-[#dbeafe] border border-[#bfdbfe] text-[#1d4ed8] font-semibold text-xs rounded-lg flex items-center gap-1.5 cursor-pointer">
+            <span class="ui-sprite ui-xs ui-sliders"></span>
+            <span data-i18n="player.editSettings">Edit Settings</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Frame + Side Switcher Grid (Fluid 16:9 Stage Layout) -->
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+
+        <div class="xl:col-span-9 2xl:col-span-10 space-y-5">
+          <!-- Pure 16:9 Window Container (Only this container enters fullscreen) -->
+          <div id="game-window-container" class="relative bg-[#18181b] rounded-xl overflow-hidden shadow-lg border-4 border-[#27303a] aspect-video w-full flex items-center justify-center">
+
+            <!-- Play Splash Screen -->
+            <div id="player-splash-screen" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#1e242b] p-6 text-center space-y-5">
+              <div class="w-16 h-16 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center">
+                <span id="splash-icon" class="ui-sprite ui-xl ui-gamepad"></span>
+              </div>
+              <div class="space-y-1.5 max-w-lg">
+                <span id="splash-game-badge" class="inline-block px-2.5 py-0.5 rounded-md text-xs font-bold bg-[#27303a] text-[#cbd5e1] border border-[#3d4856]">Quiz</span>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white" id="splash-title">Ready to Play?</h2>
+                <p class="text-xs sm:text-sm text-[#cbd5e1]" id="splash-sub">Click Play below to start!</p>
+              </div>
+              <button type="button" onclick="startActualGame()"
+                class="px-8 py-3.5 bg-[#15803d] hover:bg-[#166534] text-white font-bold text-base sm:text-lg rounded-lg border-b-[3px] border-[#14532d] active:translate-y-[1px] transition-colors flex items-center gap-3 cursor-pointer">
+                <span class="ui-sprite ui-md ui-play"></span>
+                <span class="tracking-wide" data-i18n="player.playBtn">PLAY GAME</span>
+              </button>
+            </div>
+
+            <!-- Real Game Iframe (Supports AI Camera games!) -->
+            <iframe id="game-iframe" class="w-full h-full border-none bg-white" allow="camera; microphone; autoplay; fullscreen"></iframe>
+          </div>
+
+          <!-- Collapsible Game Settings Panel (Right Above Leaderboard, Outside Fullscreen Container) -->
+          <div id="player-settings-card" class="bg-white rounded-xl border border-[#e5dfd3] overflow-hidden">
+            <div id="player-settings-accordion">
+              <button type="button" id="player-settings-toggle-btn" onclick="togglePlayerSettingsAccordion()"
+                aria-expanded="false" aria-controls="player-settings-body"
+                class="w-full px-5 py-3.5 flex flex-wrap items-center justify-between gap-3 text-left hover:bg-[#fcfbf8] transition-colors cursor-pointer">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-9 h-9 rounded-lg bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-center shrink-0">
+                    <span class="ui-sprite ui-sm ui-sliders"></span>
+                  </div>
+                  <div class="min-w-0">
+                    <div class="text-sm sm:text-base font-bold text-[#18181b] truncate" data-i18n="player.settingsTitle">Game Settings</div>
+                    <div class="text-[11px] font-medium text-[#78716c] truncate" data-i18n="player.settingsHint">Adjust rules, theme, or AI camera controls outside the game screen</div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2.5 ml-auto shrink-0">
+                  <span id="player-settings-summary" class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-[#f4f1ea] text-[#3f3f46] border border-[#d6cfc2]">
+                    3 Lives • 30s
+                  </span>
+                  <svg id="player-settings-chevron" class="w-4 h-4 text-[#57534e] transition-transform duration-150" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m6 9 6 6 6-6"/>
+                  </svg>
+                </div>
+              </button>
+
+              <div id="player-settings-body" class="hidden border-t border-[#eee9df] p-5 sm:p-6 bg-[#fcfbf8] space-y-5">
+                <!-- Gameplay Rules (All 15 Games) -->
+                <div class="space-y-3">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-[#57534e] flex items-center gap-1.5">
+                      <span class="ui-sprite ui-xs ui-sliders"></span>
+                      <span data-i18n="player.settingsRulesHead">Gameplay Rules</span>
+                    </h4>
+                    <button type="button" id="ps-apply-rules-btn" onclick="applyPlayerRulesAndRestart()"
+                      class="px-4 py-2 bg-[#15803d] hover:bg-[#166534] text-white font-bold text-xs rounded-lg border-b-2 border-[#14532d] flex items-center gap-1.5 transition-colors cursor-pointer">
+                      <span class="ui-sprite ui-xs ui-refresh"></span>
+                      <span data-i18n="player.settingsApply">Apply &amp; Restart Game</span>
+                    </button>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
+                      <label for="ps-lives-select" class="block text-[11px] font-bold text-[#3f3f46] mb-1" data-i18n="editAct.livesLabel">Lives Limit</label>
+                      <select id="ps-lives-select" class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                        <option value="1" id="ps-opt-lives1">1 Heart</option>
+                        <option value="3" data-i18n="dash.lives3">3 Hearts (Standard)</option>
+                        <option value="5" data-i18n="dash.lives5">5 Hearts (Relaxed)</option>
+                        <option value="0" data-i18n="dash.lives0">Unlimited Lives</option>
+                      </select>
+                    </div>
+
+                    <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
+                      <label for="ps-time-mode" class="block text-[11px] font-bold text-[#3f3f46] mb-1" data-i18n="editAct.timerLabel">Time Mode</label>
+                      <select id="ps-time-mode" onchange="onPlayerTimeModeChange()" class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                        <option value="timer" data-i18n="editAct.timerTimer">Countdown Timer</option>
+                        <option value="stopwatch" data-i18n="editAct.timerStopwatch">Stopwatch (No Limit)</option>
+                        <option value="none" data-i18n="editAct.timerNone">Relaxed (No Timer)</option>
+                      </select>
+                    </div>
+
+                    <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
+                      <label for="ps-timer-seconds" class="block text-[11px] font-bold text-[#3f3f46] mb-1" data-i18n="editAct.secondsLabel">Seconds per Question</label>
+                      <input type="number" id="ps-timer-seconds" min="5" max="300" step="5" value="30"
+                        class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                    </div>
+
+                    <div class="bg-white p-3 rounded-lg border border-[#e5dfd3] flex flex-col justify-center gap-2 text-xs font-semibold text-[#18181b]">
+                      <label class="inline-flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="ps-shuffle-q" checked class="w-4 h-4 rounded accent-[#1d4ed8]">
+                        <span data-i18n="editAct.shuffleQ">Shuffle Questions</span>
+                      </label>
+                      <label class="inline-flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="ps-shuffle-a" checked class="w-4 h-4 rounded accent-[#1d4ed8]">
+                        <span data-i18n="editAct.shuffleA">Shuffle Answer Choices</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Mode-Specific Live Controls (3 AI Camera Games + Fruit Slicer) -->
+                <div id="ps-mode-controls" class="hidden border-t border-[#e5dfd3] pt-4 space-y-3">
+                  <!-- Rendered dynamically by JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Leaderboard Panel Below Window -->
+          <div class="bg-white rounded-xl p-5 sm:p-6 border border-[#e5dfd3] space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#eee9df] pb-3.5">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-[#fef3c7] border border-[#f59e0b]/40 flex items-center justify-center shrink-0">
+                  <span class="ui-sprite ui-sm ui-trophy"></span>
+                </div>
+                <div>
+                  <h4 class="text-base font-bold text-[#18181b] flex items-center gap-2">
+                    <span data-i18n="player.lbTitle">Activity Leaderboard</span>
+                    <span id="leaderboard-count-badge" class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#f4f1ea] text-[#57534e] border border-[#e5dfd3]">0 Players</span>
+                  </h4>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="renderDashboardLeaderboard()"
+                  class="px-3 py-1.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] hover:bg-[#f4f1ea] text-xs font-semibold text-[#18181b] flex items-center gap-1.5 transition-colors cursor-pointer">
+                  <span class="ui-sprite ui-xs ui-refresh"></span>
+                  <span data-i18n="player.lbRefresh">Refresh</span>
+                </button>
+                <button type="button" onclick="promptClearAllLeaderboard()"
+                  class="px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 text-xs font-semibold text-red-700 flex items-center gap-1.5 transition-colors cursor-pointer">
+                  <span class="ui-sprite ui-xs ui-trash"></span>
+                  <span data-i18n="player.lbClearAll">Clear All</span>
+                </button>
+              </div>
+            </div>
+
+            <div id="dashboard-leaderboard-container">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Side Switcher: Game Modes + Theme -->
+        <div class="xl:col-span-3 2xl:col-span-2 bg-white rounded-xl p-4 border border-[#e5dfd3] space-y-3 xl:sticky xl:top-24">
+          <div class="border-b border-[#eee9df] pb-3 flex items-center justify-between">
+            <h4 class="text-xs font-bold text-[#18181b] uppercase tracking-wider flex items-center gap-1.5">
+              <span class="ui-sprite ui-xs ui-gamepad"></span>
+              <span data-i18n="player.switchModeHeader">Switch Game</span>
+            </h4>
+            <button type="button" onclick="openAllGamesModal()"
+              class="text-[11px] px-2 py-0.5 rounded font-semibold bg-[#eff6ff] hover:bg-[#dbeafe] text-[#1d4ed8] border border-[#bfdbfe] transition-colors cursor-pointer" data-i18n="player.moreGames">
+              All 15 Games
+            </button>
+          </div>
+
+          <div id="player-sidebar-game-list" class="space-y-1.5">
+            <!-- Rendered by JS -->
+          </div>
+
+          <button type="button" onclick="openAllGamesModal()"
+            class="w-full py-2 px-3 rounded-lg border border-dashed border-[#c9c1b2] hover:border-[#1d4ed8] bg-[#fcfbf8] hover:bg-[#eff6ff] text-[#18181b] hover:text-[#1d4ed8] transition-colors flex items-center justify-between gap-2 text-xs font-bold cursor-pointer">
+            <span class="flex items-center gap-2">
+              <span class="ui-sprite ui-sm ui-dashboard"></span>
+              <span data-i18n="player.moreGames">All 15 Games</span>
+            </span>
+            <span class="ui-sprite ui-xs ui-arrow-right"></span>
+          </button>
+
+          <!-- Theme Selector -->
+          <div class="border-t border-[#eee9df] pt-3 mt-2">
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="text-xs font-bold text-[#18181b] uppercase tracking-wider flex items-center gap-1.5">
+                <span class="ui-sprite ui-xs ui-palette"></span>
+                <span data-i18n="editAct.themeSection">Visual Theme</span>
+              </h4>
+              <span id="player-active-theme-label" class="text-[10px] px-2 py-0.5 rounded font-bold bg-[#f4f1ea] text-[#57534e] border border-[#d6cfc2]">
+                White
+              </span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="switchPlayerGameTheme('white')" id="theme-btn-white"
+                class="p-2.5 rounded-lg border-2 transition-colors flex flex-col items-center justify-center gap-1 cursor-pointer text-center bg-[#fcfbf8] border-[#18181b]">
+                <span class="w-7 h-7 rounded-md bg-white border border-[#d6cfc2] flex items-center justify-center">
+                  <span class="ui-sprite ui-sm ui-palette"></span>
+                </span>
+                <span class="text-[11px] font-bold text-[#18181b]" data-i18n="player.themeWhite">Crisp White</span>
+                <span class="text-[9px] text-[#78716c]" data-i18n="player.themeCrispDesc">Classic crisp UI</span>
+              </button>
+
+              <button type="button" onclick="switchPlayerGameTheme('magical')" id="theme-btn-magical"
+                class="p-2.5 rounded-lg border-2 transition-colors flex flex-col items-center justify-center gap-1 cursor-pointer text-center bg-white border-[#e5dfd3] hover:border-[#7e22ce]">
+                <span class="w-7 h-7 rounded-md bg-[#faf5ff] border border-[#d8b4fe] flex items-center justify-center">
+                  <span class="ui-sprite ui-sm ui-sparkles"></span>
+                </span>
+                <span class="text-[11px] font-bold text-[#6b21a8]" data-i18n="player.themeMagical">Magical World</span>
+                <span class="text-[9px] text-[#7e22ce] font-medium" data-i18n="player.themeMagicDesc">Sparkling violet</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       MODALS: RENAME (Aa), CONFIRM DELETE, SWITCH TEACHER, ALL 15 GAMES
+       ========================================================================= -->
+
+  <!-- Rename Modal -->
+  <div id="modal-rename" class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center p-4" onclick="closeRenameModal()">
+    <div class="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl border border-[#d6cfc2] space-y-4" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between border-b border-[#eee9df] pb-3">
+        <h3 class="text-base font-bold text-[#18181b] flex items-center gap-2">
+          <span class="ui-sprite ui-md ui-aa"></span>
+          <span data-i18n="rename.title">Rename Activity</span>
+        </h3>
+        <button type="button" onclick="closeRenameModal()" class="p-1.5 rounded-md bg-[#f4f1ea] hover:bg-[#e7e2d8] cursor-pointer">
+          <span class="ui-sprite ui-xs ui-close"></span>
+        </button>
+      </div>
+      <div>
+        <label for="rename-input" class="block text-xs font-bold text-[#3f3f46] mb-1" data-i18n="rename.label">New Title</label>
+        <input type="text" id="rename-input" class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
+      </div>
+      <div class="flex justify-end gap-2">
+        <button type="button" onclick="closeRenameModal()" class="px-4 py-2 bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] font-semibold text-xs rounded-lg text-[#18181b] cursor-pointer" data-i18n="dash.btnCancel">Cancel</button>
+        <button type="button" onclick="confirmRenameProject()" class="px-5 py-2 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-xs rounded-lg cursor-pointer" data-i18n="rename.save">Save Name</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Move to Recycle Bin Modal -->
+  <div id="modal-delete-confirm" class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center p-4" onclick="closeDeleteModal()">
+    <div class="bg-white rounded-xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-[#d6cfc2] text-center space-y-4" onclick="event.stopPropagation()">
+      <div class="w-12 h-12 bg-red-50 border border-red-200 rounded-lg flex items-center justify-center mx-auto">
+        <span class="ui-sprite ui-lg ui-trash"></span>
+      </div>
+      <div>
+        <h3 class="text-lg font-bold text-[#18181b]" data-i18n="dash.confirmDeleteTitle">Move to Recycle Bin?</h3>
+        <p class="text-xs text-[#57534e] mt-1" id="delete-confirm-text">Will be moved to Recycle Bin.</p>
+      </div>
+      <div class="flex gap-2 pt-2">
+        <button type="button" onclick="closeDeleteModal()" class="flex-1 py-2.5 bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] font-semibold text-xs rounded-lg text-[#18181b] cursor-pointer" data-i18n="dash.btnCancel">
+          Cancel
+        </button>
+        <button type="button" onclick="confirmDeleteProject()" class="flex-1 py-2.5 bg-[#b91c1c] hover:bg-[#991b1b] text-white font-bold text-xs rounded-lg cursor-pointer" data-i18n="dash.deleteConfirmBtn">
+          Move to Bin
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Switch Teacher Modal -->
+  <div id="modal-switch-teacher" class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center p-4" onclick="closeSwitchAccountModal()">
+    <div class="bg-white rounded-xl p-6 max-w-lg w-full max-h-[85vh] overflow-y-auto shadow-2xl border border-[#d6cfc2] space-y-4" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between border-b border-[#eee9df] pb-3">
+        <h3 class="text-base font-bold text-[#18181b] flex items-center gap-2">
+          <span class="ui-sprite ui-md ui-users-switch"></span>
+          <span data-i18n="login.switchAccount">Switch Teacher</span>
+        </h3>
+        <button type="button" onclick="closeSwitchAccountModal()" class="p-1.5 rounded-md bg-[#f4f1ea] hover:bg-[#e7e2d8] cursor-pointer">
+          <span class="ui-sprite ui-xs ui-close"></span>
+        </button>
+      </div>
+      <div class="text-xs text-[#78716c]" data-i18n="login.demoPasswordNote">All demo accounts share password: 1qaz2wsx</div>
+      <div class="space-y-2" id="teachers-list-container">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- All 15 Game Templates Modal -->
+  <div id="modal-all-games" class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center p-4" onclick="closeAllGamesModal()">
+    <div class="bg-white rounded-xl p-6 sm:p-7 max-w-6xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-[#d6cfc2] space-y-4" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between border-b border-[#eee9df] pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-[#f4f1ea] border border-[#e5dfd3] flex items-center justify-center">
+            <span class="ui-sprite ui-md ui-gamepad"></span>
+          </div>
+          <div>
+            <h3 class="text-base sm:text-lg font-bold text-[#18181b]" data-i18n="player.chooseTemplateTitle">Choose Game Mode</h3>
+            <p class="text-xs text-[#57534e]" data-i18n="home.showcaseSub">12 classic interactive formats and 3 webcam motion games included with every project.</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeAllGamesModal()" class="w-8 h-8 rounded-md bg-[#f4f1ea] hover:bg-[#e7e2d8] flex items-center justify-center cursor-pointer" aria-label="Close">
+          <span class="ui-sprite ui-xs ui-close"></span>
+        </button>
+      </div>
+
+      <div id="all-games-modal-grid" class="overflow-y-auto max-h-[65vh] pr-1 py-1 space-y-5">
+        <!-- Rendered by JS -->
+      </div>
+
+      <div class="flex justify-end pt-3 border-t border-[#eee9df]">
+        <button type="button" onclick="closeAllGamesModal()" class="px-5 py-2 bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] text-[#18181b] font-semibold text-xs rounded-lg cursor-pointer" data-i18n="player.close">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3-Mode Question Image & GIF Picker Modal -->
+  <div id="modal-media-picker" class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center p-4" onclick="closeMediaPickerModal()">
+    <div class="bg-white rounded-xl p-5 sm:p-6 max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-[#d6cfc2] space-y-4" onclick="event.stopPropagation()">
+      <!-- Modal Header -->
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#eee9df] pb-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-lg bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-center shrink-0">
+            <span class="ui-sprite ui-md ui-palette"></span>
+          </div>
+          <div class="min-w-0">
+            <h3 class="text-base sm:text-lg font-bold text-[#18181b] truncate" id="media-picker-title" data-i18n="studio.mediaModalTitle">Choose Question Image or GIF</h3>
+            <p class="text-[11px] font-medium text-[#78716c] truncate" id="media-picker-target-label">Question #1</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <button type="button" id="media-api-toggle-btn" onclick="toggleMediaApiDrawer()"
+            class="px-3 py-1.5 rounded-lg bg-[#fcfbf8] hover:bg-[#f4f1ea] border border-[#d6cfc2] text-[11px] font-bold text-[#3f3f46] flex items-center gap-1.5 cursor-pointer">
+            <span class="ui-sprite ui-xs ui-key"></span>
+            <span data-i18n="studio.mediaApiBtn">Google API Key (Optional)</span>
+          </button>
+          <button type="button" onclick="closeMediaPickerModal()" class="w-8 h-8 rounded-md bg-[#f4f1ea] hover:bg-[#e7e2d8] flex items-center justify-center cursor-pointer" aria-label="Close">
+            <span class="ui-sprite ui-xs ui-close"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Optional Google CSE Key Drawer -->
+      <div id="media-api-drawer" class="hidden bg-[#fcfbf8] border border-[#e5dfd3] rounded-lg p-3.5 space-y-2.5">
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
+          <div class="sm:col-span-5">
+            <label for="media-cse-key-input" class="block text-[11px] font-bold text-[#3f3f46] mb-1" data-i18n="studio.mediaApiKeyLabel">Google Custom Search API Key</label>
+            <input type="text" id="media-cse-key-input" placeholder="AIza..."
+              class="w-full px-3 py-1.5 rounded-md border border-[#d6cfc2] bg-white text-xs font-medium focus:outline-none focus:border-[#1d4ed8]">
+          </div>
+          <div class="sm:col-span-4">
+            <label for="media-cse-cx-input" class="block text-[11px] font-bold text-[#3f3f46] mb-1" data-i18n="studio.mediaApiCxLabel">Search Engine ID (cx)</label>
+            <input type="text" id="media-cse-cx-input" placeholder="a1b2c3d4..."
+              class="w-full px-3 py-1.5 rounded-md border border-[#d6cfc2] bg-white text-xs font-medium focus:outline-none focus:border-[#1d4ed8]">
+          </div>
+          <div class="sm:col-span-3 flex gap-1.5">
+            <button type="button" id="media-cse-save-btn" onclick="saveMediaCseConfig()"
+              class="flex-1 px-3 py-1.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-xs rounded-md cursor-pointer" data-i18n="studio.mediaApiSave">
+              Save Key
+            </button>
+            <button type="button" onclick="clearMediaCseConfig()"
+              class="px-2.5 py-1.5 bg-white hover:bg-[#f4f1ea] border border-[#d6cfc2] text-[#57534e] font-semibold text-xs rounded-md cursor-pointer">
+              Reset
+            </button>
+          </div>
+        </div>
+        <p class="text-[11px] text-[#57534e]" data-i18n="studio.mediaApiNote">
+          Leave blank to use free public educational image &amp; GIF search automatically. Enter Google CSE Key + CX to search Google Custom Search directly.
+        </p>
+      </div>
+
+      <!-- 3 Mode Tabs -->
+      <div class="flex flex-wrap items-center gap-2 border-b border-[#e5dfd3] pb-3">
+        <button type="button" id="media-tab-images" onclick="switchMediaPickerTab('images')"
+          class="px-4 py-2 rounded-lg text-xs font-bold bg-[#18181b] text-white flex items-center gap-2 transition-colors cursor-pointer">
+          <span class="ui-sprite ui-xs ui-search"></span>
+          <span data-i18n="studio.mediaTabGoogleImg">Google Images Search</span>
+        </button>
+        <button type="button" id="media-tab-gif" onclick="switchMediaPickerTab('gif')"
+          class="px-4 py-2 rounded-lg text-xs font-semibold bg-[#f4f1ea] text-[#57534e] hover:bg-[#e7e2d8] flex items-center gap-2 transition-colors cursor-pointer">
+          <span class="ui-sprite ui-xs ui-refresh"></span>
+          <span data-i18n="studio.mediaTabGoogleGif">Google GIF Search</span>
+        </button>
+        <button type="button" id="media-tab-upload" onclick="switchMediaPickerTab('upload')"
+          class="px-4 py-2 rounded-lg text-xs font-semibold bg-[#f4f1ea] text-[#57534e] hover:bg-[#e7e2d8] flex items-center gap-2 transition-colors cursor-pointer">
+          <span class="ui-sprite ui-xs ui-download"></span>
+          <span data-i18n="studio.mediaTabUpload">Upload File</span>
+        </button>
+      </div>
+
+      <!-- Search Tab Body (Images & GIF) -->
+      <div id="media-search-panel" class="flex-1 min-h-0 flex flex-col space-y-3">
+        <div class="flex flex-col sm:flex-row gap-2">
+          <div class="relative flex-1 flex items-center">
+            <span class="ui-sprite ui-xs ui-search absolute left-3"></span>
+            <input type="text" id="media-search-input"
+              data-i18n-placeholder="studio.mediaSearchPh" placeholder="Type keyword (e.g. Mars planet, volcano)..."
+              onkeydown="if(event.key==='Enter'){event.preventDefault();executeMediaSearch();}"
+              class="w-full pl-9 pr-3 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-xs sm:text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button type="button" id="media-search-btn" onclick="executeMediaSearch()"
+              class="px-4 py-2 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-xs rounded-lg border-b-2 border-[#1e3a8a] cursor-pointer" data-i18n="studio.mediaSearchBtn">
+              Search
+            </button>
+            <button type="button" id="media-open-google-btn" onclick="openGoogleImagesNewTab()"
+              class="px-3 py-2 bg-[#fcfbf8] hover:bg-[#f4f1ea] border border-[#d6cfc2] text-[#18181b] font-semibold text-xs rounded-lg cursor-pointer" data-i18n="studio.mediaOpenGoogle">
+              Open Google Images in New Tab
+            </button>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-2 text-[11px]">
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button type="button" onclick="quickMediaSearch('Mars')" class="px-2.5 py-0.5 rounded-md bg-[#f4f1ea] hover:bg-[#e7e2d8] text-[#3f3f46] font-semibold cursor-pointer">Mars</button>
+            <button type="button" onclick="quickMediaSearch('Volcano')" class="px-2.5 py-0.5 rounded-md bg-[#f4f1ea] hover:bg-[#e7e2d8] text-[#3f3f46] font-semibold cursor-pointer">Volcano</button>
+            <button type="button" onclick="quickMediaSearch('Space')" class="px-2.5 py-0.5 rounded-md bg-[#f4f1ea] hover:bg-[#e7e2d8] text-[#3f3f46] font-semibold cursor-pointer">Space</button>
+            <button type="button" onclick="quickMediaSearch('Planet')" class="px-2.5 py-0.5 rounded-md bg-[#f4f1ea] hover:bg-[#e7e2d8] text-[#3f3f46] font-semibold cursor-pointer">Planet</button>
+            <button type="button" onclick="quickMediaSearch('Science')" class="px-2.5 py-0.5 rounded-md bg-[#f4f1ea] hover:bg-[#e7e2d8] text-[#3f3f46] font-semibold cursor-pointer">Science</button>
+          </div>
+          <span id="media-search-status" class="font-semibold text-[#57534e]">Free Public Search</span>
+        </div>
+
+        <div id="media-results-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 overflow-y-auto max-h-[42vh] pr-1 py-1">
+          <!-- Search results rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Upload File Tab Body -->
+      <div id="media-upload-panel" class="hidden py-4">
+        <label id="media-upload-dropzone" for="media-upload-input"
+          class="flex flex-col items-center justify-center gap-3 p-8 rounded-xl border-2 border-dashed border-[#c9c1b2] hover:border-[#1d4ed8] bg-[#fcfbf8] hover:bg-[#eff6ff]/40 text-center transition-colors cursor-pointer">
+          <span class="w-12 h-12 rounded-xl bg-white border border-[#d6cfc2] flex items-center justify-center">
+            <span class="ui-sprite ui-md ui-download"></span>
+          </span>
+          <div class="space-y-1">
+            <div class="text-sm font-bold text-[#18181b]" data-i18n="studio.mediaTabUpload">Upload File</div>
+            <div class="text-xs text-[#57534e]">PNG, JPG, WEBP, GIF — stored offline in your activity DB</div>
+          </div>
+          <span class="px-4 py-2 rounded-lg bg-[#1d4ed8] text-white text-xs font-bold">Choose Image / GIF</span>
+          <input type="file" id="media-upload-input" accept="image/*,image/gif" class="hidden" onchange="handleMediaPickerFileUpload(this.files[0])">
+        </label>
+      </div>
+
+      <!-- Footer: Paste Direct Image / GIF URL -->
+      <div class="pt-3 border-t border-[#eee9df] flex flex-col sm:flex-row gap-2">
+        <input type="url" id="media-direct-url-input"
+          data-i18n-placeholder="studio.mediaUrlPh" placeholder="Or paste direct image / GIF URL (https://...)"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();applyDirectMediaUrl();}"
+          class="flex-1 px-3.5 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-xs font-medium focus:outline-none focus:border-[#1d4ed8]">
+        <button type="button" id="media-direct-url-btn" onclick="applyDirectMediaUrl()"
+          class="px-4 py-2 bg-[#15803d] hover:bg-[#166534] text-white font-bold text-xs rounded-lg border-b-2 border-[#14532d] cursor-pointer shrink-0" data-i18n="studio.mediaUrlUse">
+          Use URL
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       SCRIPTS
+       ========================================================================= -->
+  <script src="games/common/i18n.js"></script>
+  <script src="games/common/db-local.js"></script>
+  <script src="games/common/themes.js"></script>
+  <script>
+    const GAME_TEMPLATES_CONFIG = [
+      { id: 'quiz', category: 'standard', sprite: 'ui-game-quiz' },
+      { id: 'quiz-powerup', category: 'standard', sprite: 'ui-sparkles' },
+      { id: 'fruitninja', category: 'standard', sprite: 'ui-game-slicer' },
+      { id: 'flashcards', category: 'standard', sprite: 'ui-game-flashcards' },
+      { id: 'wheel', category: 'standard', sprite: 'ui-game-wheel' },
+      { id: 'matchup', category: 'standard', sprite: 'ui-game-match' },
+      { id: 'openbox', category: 'standard', sprite: 'ui-game-box' },
+      { id: 'wordsearch', category: 'standard', sprite: 'ui-game-word' },
+      { id: 'anagram', category: 'standard', sprite: 'ui-aa' },
+      { id: 'truefalse', category: 'standard', sprite: 'ui-game-tf' },
+      { id: 'whackamole', category: 'standard', sprite: 'ui-mole' },
+      { id: 'groupsort', category: 'standard', sprite: 'ui-folder' },
+      { id: 'ai-slicer', category: 'camera', sprite: 'ui-hand' },
+      { id: 'head-catcher', category: 'camera', sprite: 'ui-basket' },
+      { id: 'hanzi-battle', category: 'camera', sprite: 'ui-brush' }
+    ];
+
+    let currentTeacher = null;
+    let editingProject = null;
+    let projectQuestions = [];
+    let selectedProjectIdForAction = null;
+    let currentActiveTab = 'projects';
+    let activePlayerProject = null;
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/[&<>"']/g, s => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[s]));
+    }
+
+    function getTplMeta(tplId) {
+      return GAME_TEMPLATES_CONFIG.find(g => g.id === tplId) || GAME_TEMPLATES_CONFIG[0];
+    }
+
+    // -------------------------------------------------------------------------
+    // STATE PERSISTENCE (WITH STRICT TEACHER OWNERSHIP CHECK)
+    // -------------------------------------------------------------------------
+    let suppressHashChangeNav = false;
+
+    function saveCurrentNavigation(state) {
+      try {
+        localStorage.setItem('lotus_active_navigation', JSON.stringify(state));
+        sessionStorage.setItem('lotus_active_navigation', JSON.stringify(state));
+      } catch (e) {}
+
+      const parts = [];
+      if (state.view) parts.push(`view=${state.view}`);
+      if (state.projectId) parts.push(`id=${state.projectId}`);
+      if (state.templateId) parts.push(`tpl=${state.templateId}`);
+      if (state.isPlaying) parts.push('play=1');
+      if (state.dashboardTab) parts.push(`tab=${state.dashboardTab}`);
+      const hashStr = '#' + parts.join('&');
+
+      if (window.location.hash !== hashStr) {
+        suppressHashChangeNav = true;
+        try {
+          if (window.history && typeof window.history.replaceState === 'function') {
+            window.history.replaceState(null, '', hashStr);
+          } else {
+            window.location.replace(hashStr);
+          }
+        } catch (e) {
+          try { window.location.hash = hashStr; } catch (err) {}
+        }
+        setTimeout(() => { suppressHashChangeNav = false; }, 50);
+      }
+    }
+
+    function getSavedNavigation() {
+      let state = {};
+      if (window.location.hash && window.location.hash.length > 1) {
+        try {
+          const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+          if (params.get('view')) state.view = params.get('view');
+          if (params.get('id') || params.get('game')) state.projectId = params.get('id') || params.get('game');
+          if (params.get('tpl')) state.templateId = params.get('tpl');
+          if (params.get('play') === '1') state.isPlaying = true;
+          if (params.get('tab')) state.dashboardTab = params.get('tab');
+        } catch (e) {}
+      }
+
+      if (!state.view) {
+        try {
+          const stored = localStorage.getItem('lotus_active_navigation') || sessionStorage.getItem('lotus_active_navigation');
+          if (stored) state = { ...JSON.parse(stored), ...state };
+        } catch (e) {}
+      }
+      return state;
+    }
+
+    function restoreSavedNavigation() {
+      if (!currentTeacher) return;
+      const state = getSavedNavigation();
+
+      if (state.view === 'view-game-player' && state.projectId) {
+        const proj = LotusDB.getProjectById(state.projectId);
+        if (proj && proj.teacher_id === currentTeacher.id && !proj.is_deleted) {
+          if (state.templateId) proj.template_type = state.templateId;
+          openGamePlayer(state.projectId, !!state.isPlaying, false);
+          return;
+        }
+      }
+
+      if (state.view === 'view-edit-activity' && state.projectId) {
+        const proj = LotusDB.getProjectById(state.projectId);
+        if (proj && proj.teacher_id === currentTeacher.id) {
+          openEditActivityView(proj.id, null, false);
+          return;
+        }
+      }
+
+      if (state.view === 'view-question-studio') {
+        const proj = state.projectId ? LotusDB.getProjectById(state.projectId) : null;
+        if (!state.projectId || (proj && proj.teacher_id === currentTeacher.id)) {
+          openQuestionStudio(proj, false);
+          return;
+        }
+      }
+
+      showView('view-dashboard');
+      switchDashboardTab(state.dashboardTab === 'recycle' ? 'recycle' : 'projects', false);
+    }
+
+    // -------------------------------------------------------------------------
+    // SAFE I18N FALLBACK HELPERS & TOP-RIGHT USERNAME DROPDOWN
+    // -------------------------------------------------------------------------
+    function tx(key, enFallback, idFallback, vars) {
+      const val = LotusI18n.t(key, vars);
+      if (val && val !== key) return val;
+      return LotusI18n.getLang() === 'id' ? (idFallback || enFallback || key) : (enFallback || key);
+    }
+
+    function syncDashI18nFallbacks() {
+      const isId = LotusI18n.getLang() === 'id';
+      const commText = document.getElementById('dash-menu-community-text');
+      if (commText) commText.textContent = isId ? 'Perpustakaan Komunitas' : 'Community Library';
+      const logoutText = document.getElementById('dash-logout-text');
+      if (logoutText) logoutText.textContent = isId ? 'Keluar' : 'Log Out';
+      const lives1 = document.getElementById('ps-opt-lives1');
+      if (lives1) lives1.textContent = isId ? '1 Nyawa' : '1 Heart';
+    }
+
+    function openDashUserMenu() {
+      const dd = document.getElementById('dash-user-dropdown');
+      const btn = document.getElementById('dash-user-menu-btn');
+      const chev = document.getElementById('dash-user-chevron');
+      if (!dd || !btn) return;
+      dd.classList.remove('hidden');
+      btn.setAttribute('aria-expanded', 'true');
+      if (chev) chev.style.transform = 'rotate(180deg)';
+    }
+
+    function closeDashUserMenu() {
+      const dd = document.getElementById('dash-user-dropdown');
+      const btn = document.getElementById('dash-user-menu-btn');
+      const chev = document.getElementById('dash-user-chevron');
+      if (!dd || !btn) return;
+      dd.classList.add('hidden');
+      btn.setAttribute('aria-expanded', 'false');
+      if (chev) chev.style.transform = '';
+    }
+
+    function toggleDashUserMenu(event) {
+      if (event) event.stopPropagation();
+      const dd = document.getElementById('dash-user-dropdown');
+      if (!dd) return;
+      if (dd.classList.contains('hidden')) openDashUserMenu();
+      else closeDashUserMenu();
+    }
+
+    document.addEventListener('click', (e) => {
+      const wrapper = document.getElementById('dash-user-menu-wrapper');
+      if (wrapper && !wrapper.contains(e.target)) {
+        closeDashUserMenu();
+      }
+    });
+
+    // -------------------------------------------------------------------------
+    // BOOT & STRICT AUTH GUARD
+    // -------------------------------------------------------------------------
+    document.addEventListener('DOMContentLoaded', () => {
+      currentTeacher = LotusDB.getCurrentTeacherStrict();
+      if (!currentTeacher) {
+        window.location.replace('index.html#tab=login');
+        return;
+      }
+
+      LotusI18n.applyDomTranslations(document);
+      syncDashI18nFallbacks();
+      updateTeacherUI();
+      populateDashboardTemplateFilter();
+      renderDashboard();
+      initMediaUploadDropzone();
+      restoreSavedNavigation();
+    });
+
+    window.addEventListener('hashchange', () => {
+      if (suppressHashChangeNav) return;
+      if (currentTeacher) restoreSavedNavigation();
+    });
+
+    function updateTeacherUI() {
+      if (!currentTeacher) return;
+      const subText = `${currentTeacher.subject || ''} • ${currentTeacher.school || ''}`;
+      document.getElementById('teacher-name').textContent = currentTeacher.name;
+      document.getElementById('teacher-sub').textContent = subText;
+      const ddName = document.getElementById('dash-dropdown-name');
+      const ddSub = document.getElementById('dash-dropdown-sub');
+      if (ddName) ddName.textContent = currentTeacher.name;
+      if (ddSub) ddSub.textContent = subText;
+      const initials = currentTeacher.name.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+      document.getElementById('teacher-avatar').textContent = initials || 'T';
+    }
+
+    function logoutTeacher() {
+      try {
+        localStorage.removeItem('lotus_active_navigation');
+        sessionStorage.removeItem('lotus_active_navigation');
+      } catch (e) {}
+      LotusDB.logoutTeacher();
+      window.location.href = 'index.html#tab=login';
+    }
+
+    function populateDashboardTemplateFilter() {
+      const sel = document.getElementById('dash-filter-template');
+      if (!sel) return;
+      const prev = sel.value || 'all';
+      const std = GAME_TEMPLATES_CONFIG.filter(t => t.category === 'standard');
+      const cam = GAME_TEMPLATES_CONFIG.filter(t => t.category === 'camera');
+
+      sel.innerHTML = `<option value="all">${escapeHtml(LotusI18n.t('dash.allTemplates'))}</option>
+        <optgroup label="${escapeHtml(LotusI18n.t('cat.standard'))}">
+          ${std.map(t => `<option value="${t.id}">${escapeHtml(LotusI18n.getTemplateName(t.id))}</option>`).join('')}
+        </optgroup>
+        <optgroup label="${escapeHtml(LotusI18n.t('cat.camera'))}">
+          ${cam.map(t => `<option value="${t.id}">${escapeHtml(LotusI18n.getTemplateName(t.id))}</option>`).join('')}
+        </optgroup>`;
+      sel.value = (prev && sel.querySelector(`option[value="${prev}"]`)) ? prev : 'all';
+    }
+
+    // -------------------------------------------------------------------------
+    // VIEWS & DASHBOARD RENDERING (NO 3-DOT MENU: Play icon + 5 Direct Sprites)
+    // -------------------------------------------------------------------------
+    function showView(viewId) {
+      ['view-dashboard', 'view-question-studio', 'view-edit-activity', 'view-game-player'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      });
+      const target = document.getElementById(viewId);
+      if (target) target.classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function switchDashboardTab(tab, updateNav = true) {
+      currentActiveTab = tab === 'recycle' ? 'recycle' : 'projects';
+      const btnProjects = document.getElementById('tab-btn-projects');
+      const btnRecycle = document.getElementById('tab-btn-recycle');
+      const contentProjects = document.getElementById('tab-content-projects');
+      const contentRecycle = document.getElementById('tab-content-recycle');
+
+      if (currentActiveTab === 'projects') {
+        btnProjects.className = 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#18181b] text-white transition-colors flex items-center gap-2 cursor-pointer';
+        btnRecycle.className = 'px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#f4f1ea] text-[#57534e] hover:bg-[#e7e2d8] transition-colors flex items-center gap-2 cursor-pointer';
+        contentProjects.classList.remove('hidden');
+        contentRecycle.classList.add('hidden');
+      } else {
+        btnRecycle.className = 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#b91c1c] text-white transition-colors flex items-center gap-2 cursor-pointer';
+        btnProjects.className = 'px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#f4f1ea] text-[#57534e] hover:bg-[#e7e2d8] transition-colors flex items-center gap-2 cursor-pointer';
+        contentRecycle.classList.remove('hidden');
+        contentProjects.classList.add('hidden');
+      }
+
+      renderDashboard();
+      if (updateNav) {
+        saveCurrentNavigation({ view: 'view-dashboard', dashboardTab: currentActiveTab });
+      }
+    }
+
+    function renderDashboard() {
+      if (!currentTeacher) return;
+      const allActive = LotusDB.getTeacherActiveProjects(currentTeacher.id);
+      const deletedProjects = LotusDB.getTeacherRecycleBin(currentTeacher.id);
+
+      document.getElementById('badge-projects-count').textContent = allActive.length;
+      document.getElementById('badge-recycle-count').textContent = deletedProjects.length;
+
+      const searchQ = (document.getElementById('dash-search-input')?.value || '').trim().toLowerCase();
+      const filterTpl = document.getElementById('dash-filter-template')?.value || 'all';
+
+      const activeProjects = allActive.filter(p => {
+        if (filterTpl !== 'all' && (p.template_type || 'quiz') !== filterTpl) return false;
+        if (searchQ) {
+          const hay = `${p.title} ${p.subject} ${p.level} ${p.pin || ''}`.toLowerCase();
+          if (!hay.includes(searchQ)) return false;
+        }
+        return true;
+      });
+
+      const projectsGrid = document.getElementById('projects-grid');
+      if (activeProjects.length === 0) {
+        projectsGrid.innerHTML = `
+          <div class="col-span-full py-14 text-center bg-white rounded-xl border border-[#e5dfd3] p-8 space-y-3">
+            <div class="w-12 h-12 mx-auto rounded-lg bg-[#f4f1ea] border border-[#e5dfd3] flex items-center justify-center">
+              <span class="ui-sprite ui-md ui-folder"></span>
+            </div>
+            <h3 class="text-base font-bold text-[#18181b]">${escapeHtml(LotusI18n.t('dash.noProjectsTitle'))}</h3>
+            <p class="text-xs text-[#57534e] max-w-sm mx-auto">${escapeHtml(LotusI18n.t('dash.noProjectsDesc'))}</p>
+            <button type="button" onclick="openQuestionStudio()"
+              class="px-5 py-2.5 bg-[#15803d] hover:bg-[#166534] text-white font-bold text-xs rounded-lg border-b-2 border-[#14532d] inline-flex items-center gap-1.5 cursor-pointer">
+              <span class="ui-sprite ui-xs ui-plus"></span>
+              <span>${escapeHtml(LotusI18n.t('dash.newActivity'))}</span>
+            </button>
+          </div>
+        `;
+      } else {
+        const playTitle = LotusI18n.t('dash.actPlay');
+        const editQTitle = LotusI18n.t('dash.actEditQ');
+        const dupTitle = LotusI18n.t('dash.actDuplicate');
+        const editActTitle = LotusI18n.t('dash.actEditAct');
+        const delTitle = LotusI18n.t('dash.actDelete');
+        const renameTitle = LotusI18n.t('dash.actRename');
+
+        projectsGrid.innerHTML = activeProjects.map(proj => {
+          const meta = getTplMeta(proj.template_type);
+          const tplName = LotusI18n.getTemplateName(meta.id);
+          const themeName = proj.theme === 'magical' ? LotusI18n.t('player.themeMagical') : LotusI18n.t('player.themeWhite');
+          const levelCode = (proj.level || 'SD').toUpperCase();
+          const langCode = (proj.language || 'id').toUpperCase();
+          const isPublic = proj.is_public !== false;
+          const visBadge = isPublic ? LotusI18n.t('dash.publicBadge') : LotusI18n.t('dash.privateBadge');
+
+          return `
+            <article class="bg-white rounded-xl border border-[#e5dfd3] hover:border-[#1d4ed8] shadow-[0_2px_8px_rgba(24,24,27,0.04)] hover:shadow-[0_4px_14px_rgba(24,24,27,0.08)] p-5 flex flex-col justify-between gap-4 transition-all">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between gap-2 text-[11px] font-semibold text-[#57534e]">
+                  <div class="truncate">
+                    <span class="text-[#1d4ed8] font-bold">${escapeHtml(levelCode)}</span>
+                    <span class="text-[#c9c1b2] mx-1">·</span>
+                    <span>${escapeHtml(proj.subject || 'General')}</span>
+                    <span class="text-[#c9c1b2] mx-1">·</span>
+                    <span class="uppercase">${escapeHtml(langCode)}</span>
+                    <span class="text-[#c9c1b2] mx-1">·</span>
+                    <span class="${isPublic ? 'text-[#15803d]' : 'text-[#78716c]'}">${escapeHtml(visBadge)}</span>
+                  </div>
+                  <span class="text-[#78716c] shrink-0">${escapeHtml(LotusI18n.t('comm.questionsCount', { n: proj.questions?.length || 0 }))}</span>
+                </div>
+
+                <h3 onclick="openGamePlayer('${escapeHtml(proj.id)}')" class="font-bold text-base text-[#18181b] cursor-pointer hover:text-[#1d4ed8] transition-colors leading-snug line-clamp-2">
+                  ${escapeHtml(proj.title)}
+                </h3>
+
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="px-2 py-1 rounded-md text-[11px] font-semibold bg-[#f4f1ea] text-[#3f3f46] inline-flex items-center gap-1.5">
+                      <span class="ui-sprite ui-xs ${meta.sprite}"></span>
+                      <span>${escapeHtml(tplName)}</span>
+                    </span>
+                    <span class="px-2 py-1 rounded-md text-[11px] font-medium bg-[#fcfbf8] border border-[#e5dfd3] text-[#57534e]">
+                      ${escapeHtml(themeName)}
+                    </span>
+                  </div>
+                  <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-[#fcfbf8] text-[#57534e] border border-[#e5dfd3]">
+                    ${escapeHtml(LotusI18n.t('dash.pinBadge', { pin: proj.pin || '' }))}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Direct Card Controls: Icon-Only Play + 5 Spritesheet Action Buttons (NO 3-dots) -->
+              <div class="pt-3.5 border-t border-[#eee9df] flex items-center justify-between gap-2">
+                <!-- Play Icon Only -->
+                <button type="button" onclick="openGamePlayer('${escapeHtml(proj.id)}')"
+                  class="w-10 h-10 rounded-lg bg-[#15803d] hover:bg-[#166534] border-b-2 border-[#14532d] text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                  title="${escapeHtml(playTitle)}" aria-label="${escapeHtml(playTitle)}">
+                  <span class="ui-sprite ui-md ui-play"></span>
+                </button>
+
+                <!-- 5 Quick Action Icons: Pencil (Edit Questions), Copy (Duplicate), Sliders (Edit Activity), Trash (Delete), Aa (Rename) -->
+                <div class="flex items-center gap-1">
+                  <button type="button" data-card-action="edit-questions" onclick="openQuestionStudioById('${escapeHtml(proj.id)}')"
+                    class="w-9 h-9 rounded-lg bg-[#fcfbf8] hover:bg-[#eff6ff] border border-[#e5dfd3] hover:border-[#1d4ed8] flex items-center justify-center transition-colors cursor-pointer"
+                    title="${escapeHtml(editQTitle)}" aria-label="${escapeHtml(editQTitle)}">
+                    <span class="ui-sprite ui-sm ui-pencil"></span>
+                  </button>
+
+                  <button type="button" data-card-action="duplicate" onclick="duplicateProjectAction('${escapeHtml(proj.id)}')"
+                    class="w-9 h-9 rounded-lg bg-[#fcfbf8] hover:bg-[#ecfdf5] border border-[#e5dfd3] hover:border-[#15803d] flex items-center justify-center transition-colors cursor-pointer"
+                    title="${escapeHtml(dupTitle)}" aria-label="${escapeHtml(dupTitle)}">
+                    <span class="ui-sprite ui-sm ui-copy"></span>
+                  </button>
+
+                  <button type="button" data-card-action="edit-activity" onclick="openEditActivityView('${escapeHtml(proj.id)}')"
+                    class="w-9 h-9 rounded-lg bg-[#fcfbf8] hover:bg-[#f0f9ff] border border-[#e5dfd3] hover:border-[#0369a1] flex items-center justify-center transition-colors cursor-pointer"
+                    title="${escapeHtml(editActTitle)}" aria-label="${escapeHtml(editActTitle)}">
+                    <span class="ui-sprite ui-sm ui-sliders"></span>
+                  </button>
+
+                  <button type="button" data-card-action="delete" onclick="promptDeleteProjectById('${escapeHtml(proj.id)}')"
+                    class="w-9 h-9 rounded-lg bg-[#fcfbf8] hover:bg-red-50 border border-[#e5dfd3] hover:border-red-300 flex items-center justify-center transition-colors cursor-pointer"
+                    title="${escapeHtml(delTitle)}" aria-label="${escapeHtml(delTitle)}">
+                    <span class="ui-sprite ui-sm ui-trash"></span>
+                  </button>
+
+                  <button type="button" data-card-action="rename" onclick="openRenameModalById('${escapeHtml(proj.id)}')"
+                    class="w-9 h-9 rounded-lg bg-[#fcfbf8] hover:bg-[#fef3c7] border border-[#e5dfd3] hover:border-[#d97706] flex items-center justify-center transition-colors cursor-pointer"
+                    title="${escapeHtml(renameTitle)}" aria-label="${escapeHtml(renameTitle)}">
+                    <span class="ui-sprite ui-sm ui-aa"></span>
+                  </button>
+                </div>
+              </div>
+            </article>
+          `;
+        }).join('');
+      }
+
+      // Recycle Bin Grid
+      const recycleGrid = document.getElementById('recycle-grid');
+      if (deletedProjects.length === 0) {
+        recycleGrid.innerHTML = `
+          <div class="col-span-full py-14 text-center bg-white rounded-xl border border-[#e5dfd3] p-8 space-y-2">
+            <div class="w-12 h-12 mx-auto rounded-lg bg-[#f4f1ea] border border-[#e5dfd3] flex items-center justify-center">
+              <span class="ui-sprite ui-md ui-trash"></span>
+            </div>
+            <h3 class="text-base font-bold text-[#18181b]">${escapeHtml(LotusI18n.t('dash.noBinTitle'))}</h3>
+            <p class="text-xs text-[#78716c]">${escapeHtml(LotusI18n.t('dash.noBinDesc'))}</p>
+          </div>
+        `;
+      } else {
+        const resLabel = LotusI18n.t('dash.actRestore');
+        const permLabel = LotusI18n.t('dash.actPermDelete');
+        recycleGrid.innerHTML = deletedProjects.map(proj => `
+          <div class="bg-white rounded-xl border border-[#e5dfd3] p-5 flex flex-col justify-between gap-4">
+            <div>
+              <h3 class="font-bold text-base text-[#18181b]">${escapeHtml(proj.title)}</h3>
+              <p class="text-xs text-[#57534e] mt-1">${escapeHtml(LotusI18n.t('comm.questionsCount', { n: proj.questions?.length || 0 }))} · ${escapeHtml(proj.subject || '')}</p>
+            </div>
+            <div class="pt-3 border-t border-[#eee9df] flex gap-2">
+              <button type="button" onclick="restoreProjectAction('${escapeHtml(proj.id)}')"
+                class="flex-1 py-2 px-3 bg-[#ecfdf5] hover:bg-[#d1fae5] border border-[#a7f3d0] text-[#065f46] font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 cursor-pointer">
+                <span class="ui-sprite ui-xs ui-restore"></span>
+                <span>${escapeHtml(resLabel)}</span>
+              </button>
+              <button type="button" onclick="permanentDeleteAction('${escapeHtml(proj.id)}')"
+                class="py-2 px-3 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 cursor-pointer">
+                <span class="ui-sprite ui-xs ui-trash"></span>
+                <span>${escapeHtml(permLabel)}</span>
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // VIEW 2: QUESTION STUDIO
+    // -------------------------------------------------------------------------
+    function openQuestionStudioById(projectId) {
+      const proj = LotusDB.getProjectById(projectId);
+      if (proj) openQuestionStudio(proj);
+    }
+
+    function openQuestionStudio(existingProj = null, updateNav = true) {
+      editingProject = existingProj ? JSON.parse(JSON.stringify(existingProj)) : {
+        id: 'proj-' + Date.now(),
+        teacher_id: currentTeacher.id,
+        pin: LotusDB.generatePin(),
+        title: '',
+        subject: currentTeacher.subject || 'IPA / Sains',
+        level: 'SD',
+        language: LotusI18n.getLang() === 'id' ? 'id' : 'en',
+        is_public: true,
+        template_type: 'quiz',
+        theme: 'white',
+        rules: { hasLives: true, livesCount: 3, timeMode: 'timer', timerSeconds: 30, shuffleQuestions: true, shuffleAnswers: true },
+        questions: []
+      };
+
+      document.getElementById('project-title').value = editingProject.title || '';
+      document.getElementById('project-subject').value = editingProject.subject || 'IPA / Sains';
+      document.getElementById('project-level').value = editingProject.level || 'SD';
+      document.getElementById('project-language').value = editingProject.language || 'en';
+
+      const visRadios = document.getElementsByName('project-visibility');
+      const isPub = editingProject.is_public !== false;
+      visRadios.forEach(r => { r.checked = (r.value === (isPub ? 'public' : 'private')); });
+
+      document.getElementById('studio-mode-title').textContent = existingProj
+        ? LotusI18n.t('studio.titleEdit')
+        : LotusI18n.t('studio.titleNew');
+
+      projectQuestions = (editingProject.questions && editingProject.questions.length > 0)
+        ? JSON.parse(JSON.stringify(editingProject.questions))
+        : [createBlankQuestion(1)];
+
+      renderQuestionCards();
+      showView('view-question-studio');
+
+      if (updateNav) {
+        saveCurrentNavigation({
+          view: 'view-question-studio',
+          projectId: existingProj ? existingProj.id : null
+        });
+      }
+    }
+
+    function createBlankQuestion(num) {
+      return {
+        id: 'q-' + Date.now() + '-' + num,
+        text: '',
+        image: '',
+        audio: '',
+        options: [
+          { text: '', isCorrect: true, image: '' },
+          { text: '', isCorrect: false, image: '' }
+        ]
+      };
+    }
+
+    function addNewQuestionCard() {
+      projectQuestions.push(createBlankQuestion(projectQuestions.length + 1));
+      renderQuestionCards();
+    }
+
+    function removeQuestionCard(idx) {
+      if (projectQuestions.length <= 1) return;
+      projectQuestions.splice(idx, 1);
+      renderQuestionCards();
+    }
+
+    function getImageMediaKindLabel(src) {
+      if (!src) return '';
+      if (String(src).startsWith('data:')) return LotusI18n.getLang() === 'id' ? 'Berkas' : 'Uploaded';
+      if (/\.gif($|\?)/i.test(src) || /image\/gif/i.test(src)) return 'GIF';
+      return LotusI18n.getLang() === 'id' ? 'Tautan' : 'Image URL';
+    }
+
+    function renderQuestionCards() {
+      const container = document.getElementById('question-list-container');
+      const delText = escapeHtml(LotusI18n.t('studio.deleteQuestion'));
+      const rmMediaText = escapeHtml(LotusI18n.t('studio.removeMedia'));
+      const addOptText = escapeHtml(LotusI18n.t('studio.addOption'));
+      const okText = escapeHtml(LotusI18n.t('studio.optCorrect'));
+      const wrongText = escapeHtml(LotusI18n.t('studio.optWrong'));
+      const chooseImgText = escapeHtml(tx('studio.mediaChooseBtn', 'Search / Upload Image', 'Cari / Unggah Gambar'));
+      const optImgHint = escapeHtml(tx('studio.addImgHint', 'Add option image', 'Tambah gambar opsi'));
+
+      container.innerHTML = projectQuestions.map((q, qIdx) => {
+        const keys = ['A', 'B', 'C', 'D', 'E', 'F'];
+        const imgBadge = getImageMediaKindLabel(q.image);
+        return `
+          <div class="bg-white p-5 sm:p-6 rounded-xl border border-[#e5dfd3] space-y-4">
+            <div class="flex items-center justify-between border-b border-[#eee9df] pb-3">
+              <span class="font-bold text-sm text-[#18181b] flex items-center gap-2">
+                <span class="w-7 h-7 rounded-md bg-[#f4f1ea] border border-[#e5dfd3] text-[#1d4ed8] flex items-center justify-center text-xs font-bold">${qIdx + 1}</span>
+                <span>${escapeHtml(LotusI18n.t('studio.questionLabel', { n: qIdx + 1 }))}</span>
+              </span>
+              ${projectQuestions.length > 1 ? `
+                <button type="button" onclick="removeQuestionCard(${qIdx})" class="text-xs text-red-700 hover:text-red-800 font-semibold flex items-center gap-1 cursor-pointer">
+                  <span class="ui-sprite ui-xs ui-trash"></span>
+                  <span>${delText}</span>
+                </button>
+              ` : ''}
+            </div>
+
+            <div>
+              <textarea rows="2" placeholder="${escapeHtml(LotusI18n.t('studio.questionPlaceholder'))}"
+                oninput="projectQuestions[${qIdx}].text=this.value"
+                class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">${escapeHtml(q.text || '')}</textarea>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#fcfbf8] p-3.5 rounded-lg border border-[#e5dfd3]">
+              <div class="space-y-2">
+                <label class="block text-xs font-bold text-[#3f3f46]">${escapeHtml(LotusI18n.t('studio.uploadImage'))}</label>
+                <div class="flex flex-wrap items-center gap-2.5">
+                  ${q.image ? `
+                    <div class="flex items-center gap-2.5 bg-white p-1.5 pr-2.5 rounded-lg border border-[#d6cfc2]">
+                      <img src="${escapeHtml(q.image)}" class="w-16 h-12 object-cover rounded border border-[#e5dfd3] bg-[#f4f1ea] shrink-0" alt="question media">
+                      <div class="flex flex-col items-start gap-0.5">
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#eff6ff] text-[#1d4ed8] border border-[#bfdbfe]">${escapeHtml(imgBadge)}</span>
+                        <button type="button" onclick="removeQuestionImage(${qIdx})" class="text-xs text-red-700 font-semibold hover:underline cursor-pointer">${rmMediaText}</button>
+                      </div>
+                    </div>
+                  ` : ''}
+                  <button type="button" id="q-choose-img-${qIdx}" onclick="openMediaPickerModal(${qIdx}, 'question')"
+                    class="px-3.5 py-2 rounded-lg border border-[#bfdbfe] bg-[#eff6ff] hover:bg-[#dbeafe] text-[#1d4ed8] text-xs font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer">
+                    <span class="ui-sprite ui-xs ui-search"></span>
+                    <span>${chooseImgText}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="space-y-2">
+                <label class="block text-xs font-bold text-[#3f3f46]">${escapeHtml(LotusI18n.t('studio.uploadAudio'))}</label>
+                ${q.audio ? `
+                  <div class="flex items-center gap-2 bg-white p-2 rounded-lg border border-[#e5dfd3]">
+                    <audio controls src="${escapeHtml(q.audio)}" class="h-8 w-44"></audio>
+                    <button type="button" onclick="projectQuestions[${qIdx}].audio=''; renderQuestionCards();" class="text-xs text-red-700 font-semibold hover:underline cursor-pointer">${rmMediaText}</button>
+                  </div>
+                ` : `
+                  <input type="file" accept="audio/*" onchange="handleQuestionMediaUpload(${qIdx}, 'audio', this.files[0])" class="w-full max-w-full text-xs text-[#57534e]">
+                `}
+              </div>
+            </div>
+
+            <div class="space-y-2.5 pt-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-[#57534e]">${escapeHtml(LotusI18n.t('studio.correctHint'))}</span>
+                ${q.options.length < 6 ? `
+                  <button type="button" onclick="addOptionToQuestion(${qIdx})" class="text-xs font-bold text-[#1d4ed8] hover:underline cursor-pointer">
+                    ${addOptText}
+                  </button>
+                ` : ''}
+              </div>
+
+              <div class="space-y-2">
+                ${q.options.map((opt, oIdx) => `
+                  <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 p-2 rounded-lg border ${opt.isCorrect ? 'border-[#86efac] bg-[#f0fdf4]' : 'border-[#e5dfd3] bg-white'}">
+                    <span class="w-7 h-7 rounded-md bg-[#f4f1ea] text-[#18181b] font-bold text-xs flex items-center justify-center shrink-0">
+                      ${keys[oIdx]}
+                    </span>
+                    <input type="text" placeholder="${escapeHtml(LotusI18n.t('studio.answerOptPlaceholder', { key: keys[oIdx] }))}"
+                      value="${escapeHtml(opt.text || '')}" oninput="projectQuestions[${qIdx}].options[${oIdx}].text=this.value"
+                      class="flex-1 min-w-[140px] px-3 py-1.5 rounded-md border border-[#d6cfc2] text-xs font-medium focus:outline-none focus:border-[#1d4ed8]">
+
+                    ${opt.image ? `
+                      <div class="flex items-center gap-1 bg-[#fcfbf8] border border-[#d6cfc2] rounded-md p-0.5 shrink-0">
+                        <img src="${escapeHtml(opt.image)}" class="w-7 h-7 object-cover rounded cursor-pointer" onclick="openMediaPickerModal(${qIdx}, 'option', ${oIdx})" alt="option media" title="${optImgHint}">
+                        <button type="button" onclick="removeOptionImage(${qIdx}, ${oIdx})" class="px-1 text-[11px] font-bold text-red-700 hover:bg-red-50 rounded cursor-pointer" title="${rmMediaText}">&times;</button>
+                      </div>
+                    ` : `
+                      <button type="button" onclick="openMediaPickerModal(${qIdx}, 'option', ${oIdx})"
+                        class="p-1.5 rounded-md border border-[#e5dfd3] bg-[#fcfbf8] hover:bg-[#eff6ff] hover:border-[#bfdbfe] cursor-pointer shrink-0" title="${optImgHint}" aria-label="${optImgHint}">
+                        <span class="ui-sprite ui-xs ui-palette"></span>
+                      </button>
+                    `}
+
+                    <button type="button" onclick="toggleOptionCorrect(${qIdx}, ${oIdx})"
+                      class="px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer shrink-0 ${opt.isCorrect ? 'bg-[#15803d] text-white' : 'bg-[#f4f1ea] text-[#57534e] hover:bg-[#e7e2d8]'}">
+                      <span>${opt.isCorrect ? okText : wrongText}</span>
+                    </button>
+
+                    ${q.options.length > 1 ? `
+                      <button type="button" onclick="removeOptionFromQuestion(${qIdx}, ${oIdx})" class="p-1 rounded-md hover:bg-red-50 cursor-pointer shrink-0" title="${delText}">
+                        <span class="ui-sprite ui-xs ui-close"></span>
+                      </button>
+                    ` : ''}
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function removeQuestionImage(qIdx) {
+      if (!projectQuestions[qIdx]) return;
+      projectQuestions[qIdx].image = '';
+      renderQuestionCards();
+    }
+
+    function removeOptionImage(qIdx, oIdx) {
+      if (!projectQuestions[qIdx]?.options?.[oIdx]) return;
+      projectQuestions[qIdx].options[oIdx].image = '';
+      renderQuestionCards();
+    }
+
+    async function handleQuestionMediaUpload(qIdx, type, file) {
+      if (!file) return;
+      const dataUrl = await LotusDB.saveMedia(file);
+      projectQuestions[qIdx][type] = dataUrl;
+      renderQuestionCards();
+    }
+
+    // -------------------------------------------------------------------------
+    // 3-MODE QUESTION IMAGE & GIF PICKER (IMAGES / GIF / UPLOAD)
+    // -------------------------------------------------------------------------
+    const CSE_KEY_STORAGE = 'lotus_google_cse_key';
+    const CSE_CX_STORAGE = 'lotus_google_cse_cx';
+    let mediaPickerTarget = { qIdx: 0, mode: 'question', oIdx: -1 };
+    let mediaPickerTab = 'images';
+    let mediaLastSearchItems = [];
+    let mediaSearchSeq = 0;
+
+    function openMediaPickerModal(qIdx, targetMode = 'question', oIdx = -1) {
+      mediaPickerTarget = { qIdx: Number(qIdx) || 0, mode: targetMode === 'option' ? 'option' : 'question', oIdx: Number(oIdx) };
+      const q = projectQuestions[mediaPickerTarget.qIdx];
+      const keys = ['A', 'B', 'C', 'D', 'E', 'F'];
+      const targetLabel = document.getElementById('media-picker-target-label');
+      if (targetLabel) {
+        const qNumLabel = LotusI18n.t('studio.questionLabel', { n: mediaPickerTarget.qIdx + 1 });
+        targetLabel.textContent = mediaPickerTarget.mode === 'option'
+          ? `${qNumLabel} · ${keys[mediaPickerTarget.oIdx] || 'A'}`
+          : qNumLabel;
+      }
+
+      loadMediaCseInputs();
+
+      const existingVal = mediaPickerTarget.mode === 'option'
+        ? (q?.options?.[mediaPickerTarget.oIdx]?.image || '')
+        : (q?.image || '');
+      const urlInput = document.getElementById('media-direct-url-input');
+      if (urlInput) {
+        urlInput.value = existingVal && !existingVal.startsWith('data:') ? existingVal : '';
+      }
+
+      const searchInput = document.getElementById('media-search-input');
+      if (searchInput && !searchInput.value.trim()) {
+        const hint = (mediaPickerTarget.mode === 'option'
+          ? (q?.options?.[mediaPickerTarget.oIdx]?.text || '')
+          : (q?.text || '')).trim();
+        if (hint && hint.length <= 45 && !hint.includes('?')) {
+          searchInput.value = hint;
+        }
+      }
+
+      switchMediaPickerTab('images');
+      if (mediaLastSearchItems.length === 0) {
+        renderMediaResultsGrid([], false, '');
+      }
+      document.getElementById('modal-media-picker').classList.remove('hidden');
+      setTimeout(() => {
+        if (mediaPickerTab !== 'upload') searchInput?.focus();
+      }, 40);
+    }
+
+    function closeMediaPickerModal() {
+      document.getElementById('modal-media-picker').classList.add('hidden');
+    }
+
+    function switchMediaPickerTab(tab) {
+      mediaPickerTab = (tab === 'gif' || tab === 'upload') ? tab : 'images';
+      const tabs = {
+        images: document.getElementById('media-tab-images'),
+        gif: document.getElementById('media-tab-gif'),
+        upload: document.getElementById('media-tab-upload')
+      };
+      Object.entries(tabs).forEach(([id, btn]) => {
+        if (!btn) return;
+        const active = id === mediaPickerTab;
+        btn.className = active
+          ? 'px-4 py-2 rounded-lg text-xs font-bold bg-[#18181b] text-white flex items-center gap-2 transition-colors cursor-pointer'
+          : 'px-4 py-2 rounded-lg text-xs font-semibold bg-[#f4f1ea] text-[#57534e] hover:bg-[#e7e2d8] flex items-center gap-2 transition-colors cursor-pointer';
+      });
+
+      const searchPanel = document.getElementById('media-search-panel');
+      const uploadPanel = document.getElementById('media-upload-panel');
+      if (mediaPickerTab === 'upload') {
+        searchPanel?.classList.add('hidden');
+        uploadPanel?.classList.remove('hidden');
+      } else {
+        uploadPanel?.classList.add('hidden');
+        searchPanel?.classList.remove('hidden');
+        updateMediaSearchStatusLabel();
+        const currentQ = (document.getElementById('media-search-input')?.value || '').trim();
+        if (currentQ) executeMediaSearch();
+      }
+    }
+
+    function toggleMediaApiDrawer() {
+      const drawer = document.getElementById('media-api-drawer');
+      if (!drawer) return;
+      drawer.classList.toggle('hidden');
+      if (!drawer.classList.contains('hidden')) loadMediaCseInputs();
+    }
+
+    function getMediaCseConfig() {
+      try {
+        return {
+          key: (localStorage.getItem(CSE_KEY_STORAGE) || '').trim(),
+          cx: (localStorage.getItem(CSE_CX_STORAGE) || '').trim()
+        };
+      } catch (e) {
+        return { key: '', cx: '' };
+      }
+    }
+
+    function loadMediaCseInputs() {
+      const { key, cx } = getMediaCseConfig();
+      const kEl = document.getElementById('media-cse-key-input');
+      const cxEl = document.getElementById('media-cse-cx-input');
+      if (kEl) kEl.value = key;
+      if (cxEl) cxEl.value = cx;
+      updateMediaSearchStatusLabel();
+    }
+
+    function saveMediaCseConfig() {
+      const key = (document.getElementById('media-cse-key-input')?.value || '').trim();
+      const cx = (document.getElementById('media-cse-cx-input')?.value || '').trim();
+      try {
+        if (key) localStorage.setItem(CSE_KEY_STORAGE, key);
+        else localStorage.removeItem(CSE_KEY_STORAGE);
+        if (cx) localStorage.setItem(CSE_CX_STORAGE, cx);
+        else localStorage.removeItem(CSE_CX_STORAGE);
+      } catch (e) {}
+      document.getElementById('media-api-drawer')?.classList.add('hidden');
+      updateMediaSearchStatusLabel();
+      const q = (document.getElementById('media-search-input')?.value || '').trim();
+      if (q && mediaPickerTab !== 'upload') executeMediaSearch();
+    }
+
+    function clearMediaCseConfig() {
+      try {
+        localStorage.removeItem(CSE_KEY_STORAGE);
+        localStorage.removeItem(CSE_CX_STORAGE);
+      } catch (e) {}
+      loadMediaCseInputs();
+    }
+
+    function updateMediaSearchStatusLabel(extraNote = '') {
+      const statusEl = document.getElementById('media-search-status');
+      if (!statusEl) return;
+      if (extraNote) {
+        statusEl.textContent = extraNote;
+        return;
+      }
+      const { key, cx } = getMediaCseConfig();
+      const isId = LotusI18n.getLang() === 'id';
+      if (key && cx) {
+        statusEl.textContent = isId ? 'Google Custom Search API aktif' : 'Google Custom Search API active';
+      } else {
+        statusEl.textContent = isId
+          ? 'Pencarian Publik Gratis (Wikimedia & Wikipedia)'
+          : 'Free Public Educational Search (Wikimedia & Wikipedia)';
+      }
+    }
+
+    function quickMediaSearch(term) {
+      const input = document.getElementById('media-search-input');
+      if (input) input.value = term;
+      if (mediaPickerTab === 'upload') switchMediaPickerTab('images');
+      else executeMediaSearch();
+    }
+
+    function openGoogleImagesNewTab() {
+      const q = (document.getElementById('media-search-input')?.value || '').trim() || 'science quiz';
+      const suffix = mediaPickerTab === 'gif' ? ' animated gif' : '';
+      window.open(`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(q + suffix)}`, '_blank', 'noopener');
+    }
+
+    async function searchGoogleCse(query, isGif, key, cx) {
+      const params = new URLSearchParams({
+        key,
+        cx,
+        searchType: 'image',
+        safe: 'active',
+        num: '10',
+        q: query
+      });
+      if (isGif) {
+        params.set('fileType', 'gif');
+        params.set('hq', 'animated');
+      }
+      const resp = await fetch(`https://www.googleapis.com/customsearch/v1?${params.toString()}`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+      if (data.error) throw new Error(data.error.message || 'CSE error');
+      return (data.items || []).map(item => ({
+        url: item.link,
+        thumb: item.image?.thumbnailLink || item.link,
+        title: item.title || query,
+        width: item.image?.width || 0,
+        height: item.image?.height || 0,
+        source: isGif ? 'Google GIF' : 'Google CSE'
+      })).filter(it => it.url);
+    }
+
+    async function searchWikipediaPageImages(query) {
+      const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=12&prop=pageimages&piprop=thumbnail|original&pithumbsize=480&format=json&origin=*`;
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`Wikipedia HTTP ${resp.status}`);
+      const data = await resp.json();
+      const pages = Object.values(data?.query?.pages || {});
+      return pages.map(page => {
+        const th = page.thumbnail;
+        if (!th || !th.source) return null;
+        if (/\.(svg|tif|tiff|ogv|webm)$/i.test(th.source)) return null;
+        return {
+          url: th.source,
+          thumb: th.source,
+          fallbackThumb: page.original?.source || '',
+          title: page.title || query,
+          width: th.width || 0,
+          height: th.height || 0,
+          source: 'Wikipedia'
+        };
+      }).filter(Boolean);
+    }
+
+    async function searchWikimediaCommons(query, isGif) {
+      const gsr = isGif ? `filemime:image/gif ${query}` : `${query} filetype:bitmap`;
+      const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${encodeURIComponent(gsr)}&gsrlimit=16&prop=imageinfo&iiprop=url|mime|size|thumburl&iiurlwidth=480&format=json&origin=*`;
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`Wikimedia HTTP ${resp.status}`);
+      const data = await resp.json();
+      const pages = Object.values(data?.query?.pages || {});
+      return pages.map(page => {
+        const ii = page.imageinfo?.[0];
+        if (!ii) return null;
+        if (isGif) {
+          if (ii.mime !== 'image/gif') return null;
+          const safePreview = (ii.size && ii.size <= 4500000) ? ii.url : (ii.thumburl || ii.url);
+          return {
+            url: ii.url,
+            thumb: safePreview,
+            fallbackThumb: ii.thumburl || ii.url,
+            title: String(page.title || query).replace(/^File:/i, '').replace(/\.[^.]+$/, ''),
+            width: ii.width || 0,
+            height: ii.height || 0,
+            source: 'GIF'
+          };
+        }
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(ii.mime)) return null;
+        if (ii.width && ii.width < 120) return null;
+        const cleanUrl = ii.thumburl || ii.url;
+        return {
+          url: cleanUrl,
+          thumb: cleanUrl,
+          fallbackThumb: ii.url,
+          title: String(page.title || query).replace(/^File:/i, '').replace(/\.[^.]+$/, ''),
+          width: ii.width || 0,
+          height: ii.height || 0,
+          source: 'Wikimedia'
+        };
+      }).filter(Boolean);
+    }
+
+    async function executeMediaSearch() {
+      const input = document.getElementById('media-search-input');
+      const rawQuery = (input?.value || '').trim();
+      if (!rawQuery) {
+        input?.focus();
+        return;
+      }
+
+      const seq = ++mediaSearchSeq;
+      const isGif = mediaPickerTab === 'gif';
+      renderMediaResultsGrid([], true, tx('studio.mediaSearching', 'Searching...', 'Mencari...'));
+      updateMediaSearchStatusLabel(tx('studio.mediaSearching', 'Searching...', 'Mencari...'));
+
+      let items = [];
+      let sourceNote = '';
+      const { key, cx } = getMediaCseConfig();
+
+      if (key && cx) {
+        try {
+          items = await searchGoogleCse(rawQuery, isGif, key, cx);
+          sourceNote = isGif ? 'Google CSE GIF' : 'Google Custom Search';
+        } catch (err) {
+          sourceNote = `Google CSE fallback (${err.message})`;
+        }
+      }
+
+      if (items.length === 0) {
+        if (isGif) {
+          try {
+            items = await searchWikimediaCommons(rawQuery, true);
+            if (items.length < 3) {
+              const more = await searchWikimediaCommons(`${rawQuery} animation`, true);
+              const seen = new Set(items.map(i => i.url));
+              more.forEach(m => { if (!seen.has(m.url)) { seen.add(m.url); items.push(m); } });
+            }
+          } catch (e) {}
+          if (!sourceNote) {
+            sourceNote = LotusI18n.getLang() === 'id'
+              ? `${items.length} GIF ditemukan`
+              : `${items.length} GIFs found`;
+          }
+        } else {
+          const seen = new Set();
+          const addAll = (arr) => {
+            (arr || []).forEach(it => {
+              if (it && it.url && !seen.has(it.url)) {
+                seen.add(it.url);
+                items.push(it);
+              }
+            });
+          };
+          try {
+            const wmItems = await searchWikimediaCommons(rawQuery, false);
+            addAll(wmItems);
+          } catch (e) {}
+          if (items.length < 4) {
+            try {
+              const wpItems = await searchWikipediaPageImages(rawQuery);
+              addAll(wpItems);
+            } catch (e) {}
+          }
+          if (!sourceNote) {
+            sourceNote = LotusI18n.getLang() === 'id'
+              ? `${items.length} gambar ditemukan`
+              : `${items.length} images found`;
+          }
+        }
+      }
+
+      if (seq !== mediaSearchSeq) return;
+      mediaLastSearchItems = items.slice(0, 24);
+      updateMediaSearchStatusLabel(sourceNote);
+      renderMediaResultsGrid(
+        mediaLastSearchItems,
+        false,
+        mediaLastSearchItems.length === 0 ? tx('studio.mediaEmpty', 'No results found. Try another keyword or paste an image URL.', 'Tidak ada hasil. Coba kata kunci lain atau tempel URL gambar.') : ''
+      );
+    }
+
+    function renderMediaResultsGrid(items, isLoading, emptyMsg) {
+      const grid = document.getElementById('media-results-grid');
+      if (!grid) return;
+
+      if (isLoading) {
+        grid.innerHTML = Array.from({ length: 8 }).map(() => `
+          <div class="rounded-lg border border-[#e5dfd3] bg-[#fcfbf8] p-2 animate-pulse space-y-2">
+            <div class="w-full h-24 rounded bg-[#eee9df]"></div>
+            <div class="h-3 w-3/4 rounded bg-[#eee9df]"></div>
+          </div>
+        `).join('');
+        return;
+      }
+
+      if (!items || items.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-10 px-4 text-center bg-[#fcfbf8] rounded-lg border border-dashed border-[#d6cfc2] space-y-2">
+            <div class="text-xs font-semibold text-[#57534e]">${escapeHtml(emptyMsg || tx('studio.mediaSearchPh', 'Type a keyword above and press Search.', 'Ketik kata kunci di atas lalu tekan Cari.'))}</div>
+          </div>
+        `;
+        return;
+      }
+
+      const useBtnLabel = escapeHtml(tx('studio.mediaSelectCard', 'Use Image', 'Pakai Gambar'));
+      grid.innerHTML = items.map((item, idx) => {
+        const dims = (item.width && item.height) ? `${item.width}×${item.height}` : item.source;
+        const fallbackAttr = item.fallbackThumb ? `data-fallback="${escapeHtml(item.fallbackThumb)}"` : '';
+        return `
+          <button type="button" onclick="selectMediaSearchResult(${idx})"
+            class="group text-left bg-white hover:bg-[#eff6ff]/40 rounded-lg border border-[#e5dfd3] hover:border-[#1d4ed8] p-2 flex flex-col justify-between gap-1.5 transition-colors cursor-pointer">
+            <div class="w-full h-28 rounded bg-[#f4f1ea] overflow-hidden flex items-center justify-center relative">
+              <img src="${escapeHtml(item.thumb)}" ${fallbackAttr}
+                onerror="if(this.dataset.fallback && this.src!==this.dataset.fallback){this.src=this.dataset.fallback;this.dataset.fallback='';}else{this.closest('button').style.display='none';}"
+                alt="${escapeHtml(item.title || 'result')}" class="w-full h-full object-cover">
+              <span class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded bg-[#18181b]/80 text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                ${useBtnLabel}
+              </span>
+            </div>
+            <div class="px-0.5 flex items-center justify-between gap-1 text-[10px] text-[#57534e] font-medium">
+              <span class="truncate">${escapeHtml(item.title || item.source)}</span>
+              <span class="shrink-0 font-bold text-[#1d4ed8]">${escapeHtml(dims)}</span>
+            </div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectMediaSearchResult(idx) {
+      const item = mediaLastSearchItems[idx];
+      if (!item || !item.url) return;
+      applyPickedMediaUrl(item.url);
+    }
+
+    function applyDirectMediaUrl() {
+      const input = document.getElementById('media-direct-url-input');
+      const raw = (input?.value || '').trim();
+      if (!raw) {
+        input?.focus();
+        return;
+      }
+      if (!/^https?:\/\//i.test(raw) && !/^data:image\//i.test(raw)) {
+        alert(LotusI18n.getLang() === 'id' ? 'Mohon masukkan URL gambar http:// atau https:// yang valid.' : 'Please enter a valid http:// or https:// image URL.');
+        return;
+      }
+      applyPickedMediaUrl(raw);
+    }
+
+    function applyPickedMediaUrl(url) {
+      const q = projectQuestions[mediaPickerTarget.qIdx];
+      if (!q) return;
+      if (mediaPickerTarget.mode === 'option' && q.options?.[mediaPickerTarget.oIdx]) {
+        q.options[mediaPickerTarget.oIdx].image = url;
+      } else {
+        q.image = url;
+      }
+      closeMediaPickerModal();
+      renderQuestionCards();
+    }
+
+    async function handleMediaPickerFileUpload(file) {
+      if (!file) return;
+      const dataUrl = await LotusDB.saveMedia(file);
+      applyPickedMediaUrl(dataUrl);
+      const input = document.getElementById('media-upload-input');
+      if (input) input.value = '';
+    }
+
+    function initMediaUploadDropzone() {
+      const dz = document.getElementById('media-upload-dropzone');
+      if (!dz || dz.dataset.bound) return;
+      dz.dataset.bound = '1';
+      dz.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dz.classList.add('border-[#1d4ed8]', 'bg-[#eff6ff]/60');
+      });
+      dz.addEventListener('dragleave', () => {
+        dz.classList.remove('border-[#1d4ed8]', 'bg-[#eff6ff]/60');
+      });
+      dz.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dz.classList.remove('border-[#1d4ed8]', 'bg-[#eff6ff]/60');
+        const file = e.dataTransfer?.files?.[0];
+        if (file) handleMediaPickerFileUpload(file);
+      });
+    }
+
+    function addOptionToQuestion(qIdx) {
+      if (projectQuestions[qIdx].options.length >= 6) return;
+      projectQuestions[qIdx].options.push({ text: '', isCorrect: false, image: '' });
+      renderQuestionCards();
+    }
+
+    function removeOptionFromQuestion(qIdx, oIdx) {
+      if (projectQuestions[qIdx].options.length <= 1) return;
+      projectQuestions[qIdx].options.splice(oIdx, 1);
+      renderQuestionCards();
+    }
+
+    function toggleOptionCorrect(qIdx, oIdx) {
+      projectQuestions[qIdx].options[oIdx].isCorrect = !projectQuestions[qIdx].options[oIdx].isCorrect;
+      renderQuestionCards();
+    }
+
+    function cancelQuestionStudio() {
+      saveCurrentNavigation({ view: 'view-dashboard', dashboardTab: 'projects' });
+      showView('view-dashboard');
+      renderDashboard();
+    }
+
+    function saveQuestionsAndProceed() {
+      const title = document.getElementById('project-title').value.trim();
+      const subject = document.getElementById('project-subject').value.trim() || 'General';
+      const level = document.getElementById('project-level').value || 'SD';
+      const language = document.getElementById('project-language').value || 'en';
+      const visEl = document.querySelector('input[name="project-visibility"]:checked');
+      const isPublic = visEl ? (visEl.value === 'public') : true;
+
+      if (!title) {
+        alert(LotusI18n.t('studio.titleAlert'));
+        return;
+      }
+
+      const hasValidQuestion = projectQuestions.some(q => (q.text || '').trim().length > 0);
+      if (!hasValidQuestion) {
+        alert(LotusI18n.t('studio.minQuestionAlert'));
+        return;
+      }
+
+      editingProject.title = title;
+      editingProject.subject = subject;
+      editingProject.level = level;
+      editingProject.language = language;
+      editingProject.is_public = isPublic;
+      editingProject.questions = projectQuestions;
+
+      openEditActivityView(null, editingProject);
+    }
+
+    // -------------------------------------------------------------------------
+    // VIEW 3: EDIT ACTIVITY (ALL 15 TEMPLATES + VISUAL THEMES + RULES)
+    // -------------------------------------------------------------------------
+    function openEditActivityView(projectId = null, projectObject = null, updateNav = true) {
+      if (projectId) {
+        const fetched = LotusDB.getProjectById(projectId);
+        editingProject = fetched ? JSON.parse(JSON.stringify(fetched)) : null;
+      } else if (projectObject) {
+        editingProject = projectObject;
+      }
+
+      if (!editingProject) return;
+
+      renderGameTypesGrid();
+      renderThemesSelectorGrid();
+      renderRulesInputs();
+      showView('view-edit-activity');
+
+      if (updateNav) {
+        saveCurrentNavigation({ view: 'view-edit-activity', projectId: editingProject.id });
+      }
+    }
+
+    function renderGameTypesGrid() {
+      const grid = document.getElementById('game-types-grid');
+      if (!grid || !editingProject) return;
+      const activeType = editingProject.template_type || 'quiz';
+
+      const renderGroup = (titleKey, list) => `
+        <div class="space-y-2.5">
+          <div class="text-xs font-bold uppercase tracking-wider text-[#78716c]">${escapeHtml(LotusI18n.t(titleKey))}</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
+            ${list.map(gt => {
+              const isSel = gt.id === activeType;
+              const name = LotusI18n.getTemplateName(gt.id);
+              const desc = LotusI18n.getTemplateDesc(gt.id);
+              return `
+                <button type="button" onclick="selectGameType('${gt.id}')"
+                  class="p-3.5 rounded-lg border-2 text-left flex flex-col justify-between gap-2 transition-colors cursor-pointer ${isSel ? 'border-[#1d4ed8] bg-[#eff6ff]/70' : 'border-[#e5dfd3] bg-white hover:bg-[#fcfbf8] hover:border-[#c9c1b2]'}">
+                  <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-md ${isSel ? 'bg-[#dbeafe]' : 'bg-[#f4f1ea]'} flex items-center justify-center shrink-0">
+                      <span class="ui-sprite ui-sm ${gt.sprite}"></span>
+                    </span>
+                    <span class="font-bold text-xs text-[#18181b]">${escapeHtml(name)}</span>
+                  </div>
+                  <p class="text-[11px] text-[#57534e] leading-snug">${escapeHtml(desc)}</p>
+                </button>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+
+      grid.innerHTML =
+        renderGroup('cat.standard', GAME_TEMPLATES_CONFIG.filter(g => g.category === 'standard')) +
+        renderGroup('cat.camera', GAME_TEMPLATES_CONFIG.filter(g => g.category === 'camera'));
+    }
+
+    function selectGameType(id) {
+      editingProject.template_type = id;
+      renderGameTypesGrid();
+    }
+
+    function renderThemesSelectorGrid() {
+      const grid = document.getElementById('themes-selector-grid');
+      if (!grid || !editingProject) return;
+      const activeTheme = editingProject.theme === 'magical' ? 'magical' : 'white';
+
+      const themesMeta = [
+        {
+          id: 'white',
+          name: LotusI18n.t('player.themeWhite'),
+          desc: LotusI18n.t('theme.whiteDesc'),
+          sprite: 'ui-palette',
+          bg: 'bg-[#f4f1ea] border-[#d6cfc2]'
+        },
+        {
+          id: 'magical',
+          name: LotusI18n.t('player.themeMagical'),
+          desc: LotusI18n.t('theme.magicalDesc'),
+          sprite: 'ui-sparkles',
+          bg: 'bg-[#faf5ff] border-[#d8b4fe]'
+        }
+      ];
+
+      grid.innerHTML = themesMeta.map(t => {
+        const isSel = t.id === activeTheme;
+        return `
+          <button type="button" onclick="selectTheme('${t.id}')"
+            class="p-4 rounded-lg border-2 text-left flex items-start gap-3 transition-colors cursor-pointer ${isSel ? 'border-[#1d4ed8] bg-[#eff6ff]/60' : 'border-[#e5dfd3] bg-white hover:bg-[#fcfbf8]'}">
+            <div class="w-10 h-10 rounded-md border ${t.bg} flex items-center justify-center shrink-0">
+              <span class="ui-sprite ui-md ${t.sprite}"></span>
+            </div>
+            <div>
+              <div class="font-bold text-sm text-[#18181b]">${escapeHtml(t.name)}</div>
+              <p class="text-xs text-[#57534e] mt-0.5">${escapeHtml(t.desc)}</p>
+            </div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectTheme(id) {
+      editingProject.theme = (id === 'magical') ? 'magical' : 'white';
+      renderThemesSelectorGrid();
+    }
+
+    function renderRulesInputs() {
+      const rules = editingProject.rules || { hasLives: true, livesCount: 3, timeMode: 'timer', timerSeconds: 30, shuffleQuestions: true, shuffleAnswers: true };
+      document.getElementsByName('rule-lives').forEach(r => {
+        if (!rules.hasLives && r.value === '0') r.checked = true;
+        else if (rules.hasLives && Number(r.value) === Number(rules.livesCount || 3)) r.checked = true;
+      });
+      document.getElementsByName('rule-time').forEach(r => {
+        r.checked = (r.value === (rules.timeMode || 'timer'));
+      });
+      document.getElementById('rule-shuffle-q').checked = rules.shuffleQuestions !== false;
+      document.getElementById('rule-shuffle-a').checked = rules.shuffleAnswers !== false;
+    }
+
+    function handleLivesChange(hasLives, count) {
+      if (!editingProject.rules) editingProject.rules = {};
+      editingProject.rules.hasLives = hasLives;
+      editingProject.rules.livesCount = count;
+    }
+
+    function handleTimeModeChange(mode) {
+      if (!editingProject.rules) editingProject.rules = {};
+      editingProject.rules.timeMode = mode;
+      editingProject.rules.timerSeconds = mode === 'timer' ? 30 : 0;
+    }
+
+    function backToQuestionStudio() {
+      openQuestionStudio(editingProject);
+    }
+
+    function saveActivityAndOpenPlayer() {
+      if (!editingProject.rules) editingProject.rules = {};
+      editingProject.rules.shuffleQuestions = document.getElementById('rule-shuffle-q').checked;
+      editingProject.rules.shuffleAnswers = document.getElementById('rule-shuffle-a').checked;
+      editingProject.teacher_id = editingProject.teacher_id || currentTeacher.id;
+      LotusDB.saveProject(editingProject);
+      renderDashboard();
+      openGamePlayer(editingProject.id);
+    }
+
+    // -------------------------------------------------------------------------
+    // VIEW 4: EMBEDDED GAME WINDOW PLAYER & COLLAPSIBLE GAME SETTINGS PANEL
+    // -------------------------------------------------------------------------
+    let isPlayerSettingsOpen = false;
+    let isPlayerGameStarted = false;
+    let playerIframeReady = false;
+    let hasPlayerSentInit = false;
+    let playerLoadFallbackTimer = null;
+    let pendingPlayerMessages = [];
+    let playerLiveState = {
+      cameraActive: false,
+      mouseMode: false,
+      speed: 'relaxed',
+      hand: 'auto',
+      bladePoint: 'finger',
+      skeleton: true,
+      trackingMode: 'hands',
+      hanziChapters: [],
+      activeChapterId: ''
+    };
+
+    function resetPlayerLiveState() {
+      playerLiveState = {
+        cameraActive: false,
+        mouseMode: false,
+        speed: normalizeSpeedKey(localStorage.getItem('lotus_fruit_speed')) || 'relaxed',
+        hand: 'auto',
+        bladePoint: 'finger',
+        skeleton: true,
+        trackingMode: 'hands',
+        hanziChapters: [],
+        activeChapterId: ''
+      };
+    }
+
+    function normalizeSpeedKey(val) {
+      const s = String(val || '').toLowerCase().trim();
+      if (s === 'fast' || s === 'cepat') return 'fast';
+      if (s === 'normal' || s === 'medium' || s === 'sedang') return 'normal';
+      if (s === 'relaxed' || s === 'santai' || s === 'slow') return 'relaxed';
+      return '';
+    }
+
+    function setPlayerSettingsOpen(isOpen) {
+      isPlayerSettingsOpen = Boolean(isOpen);
+      const body = document.getElementById('player-settings-body');
+      const btn = document.getElementById('player-settings-toggle-btn');
+      const chev = document.getElementById('player-settings-chevron');
+      if (body) body.classList.toggle('hidden', !isPlayerSettingsOpen);
+      if (btn) btn.setAttribute('aria-expanded', isPlayerSettingsOpen ? 'true' : 'false');
+      if (chev) chev.style.transform = isPlayerSettingsOpen ? 'rotate(180deg)' : '';
+    }
+
+    function togglePlayerSettingsAccordion() {
+      setPlayerSettingsOpen(!isPlayerSettingsOpen);
+    }
+
+    function getSpeedLabelText(speedKey) {
+      if (speedKey === 'fast') return tx('player.speedFast', 'Fast', 'Cepat');
+      if (speedKey === 'normal') return tx('player.speedNormal', 'Normal', 'Normal');
+      return tx('player.speedRelaxed', 'Relaxed', 'Santai');
+    }
+
+    function updatePlayerSettingsSummary() {
+      const chip = document.getElementById('player-settings-summary');
+      if (!chip || !activePlayerProject) return;
+      const rules = activePlayerProject.rules || {};
+      const isId = LotusI18n.getLang() === 'id';
+      const hasLives = rules.hasLives !== undefined ? Boolean(rules.hasLives) : true;
+      const livesCount = Number(rules.livesCount ?? 3);
+      const livesStr = (!hasLives || livesCount <= 0)
+        ? (isId ? 'Nyawa ∞' : 'Unlimited Lives')
+        : (isId ? `${livesCount} Nyawa` : `${livesCount} ${livesCount === 1 ? 'Life' : 'Lives'}`);
+
+      const timeMode = rules.timeMode || 'timer';
+      const secs = Number(rules.timerSeconds || 30);
+      const timeStr = timeMode === 'timer'
+        ? (isId ? `Timer ${secs}d` : `Timer ${secs}s`)
+        : (timeMode === 'stopwatch' ? 'Stopwatch' : (isId ? 'Santai' : 'Relaxed'));
+
+      const tplId = activePlayerProject.template_type || 'quiz';
+      const parts = [livesStr, timeStr];
+
+      if (['ai-slicer', 'head-catcher', 'hanzi-battle'].includes(tplId)) {
+        if (playerLiveState.cameraActive) {
+          parts.push(isId ? 'Kamera Aktif' : 'Camera On');
+        } else if (playerLiveState.mouseMode) {
+          parts.push(isId ? 'Mode Mouse' : 'Mouse Mode');
+        } else {
+          parts.push(isId ? 'Siaga' : 'Standby');
+        }
+      } else if (tplId === 'fruitninja') {
+        parts.push(getSpeedLabelText(playerLiveState.speed));
+      }
+
+      chip.textContent = parts.join(' • ');
+    }
+
+    function populatePlayerRulesInputs() {
+      if (!activePlayerProject) return;
+      const rules = activePlayerProject.rules || {
+        hasLives: true, livesCount: 3, timeMode: 'timer', timerSeconds: 30, shuffleQuestions: true, shuffleAnswers: true
+      };
+      const livesSel = document.getElementById('ps-lives-select');
+      if (livesSel) {
+        if (!rules.hasLives || Number(rules.livesCount) === 0) livesSel.value = '0';
+        else if ([1, 3, 5].includes(Number(rules.livesCount))) livesSel.value = String(rules.livesCount);
+        else livesSel.value = '3';
+      }
+      const timeSel = document.getElementById('ps-time-mode');
+      if (timeSel) {
+        timeSel.value = rules.timeMode || 'timer';
+      }
+      const secsInput = document.getElementById('ps-timer-seconds');
+      if (secsInput) {
+        secsInput.value = Number(rules.timerSeconds || 30) || 30;
+      }
+      const shufQ = document.getElementById('ps-shuffle-q');
+      const shufA = document.getElementById('ps-shuffle-a');
+      if (shufQ) shufQ.checked = rules.shuffleQuestions !== false;
+      if (shufA) shufA.checked = rules.shuffleAnswers !== false;
+
+      onPlayerTimeModeChange();
+    }
+
+    function onPlayerTimeModeChange() {
+      const timeSel = document.getElementById('ps-time-mode');
+      const secsInput = document.getElementById('ps-timer-seconds');
+      if (!timeSel || !secsInput) return;
+      const isTimer = timeSel.value === 'timer';
+      secsInput.disabled = !isTimer;
+      secsInput.classList.toggle('opacity-50', !isTimer);
+      secsInput.classList.toggle('bg-[#f4f1ea]', !isTimer);
+    }
+
+    function applyPlayerRulesAndRestart() {
+      if (!activePlayerProject) return;
+      const livesVal = Number(document.getElementById('ps-lives-select')?.value ?? 3);
+      const timeMode = document.getElementById('ps-time-mode')?.value || 'timer';
+      const rawSecs = Number(document.getElementById('ps-timer-seconds')?.value || 30);
+      const timerSeconds = timeMode === 'timer' ? Math.max(5, Math.min(300, rawSecs || 30)) : 0;
+      const shuffleQuestions = Boolean(document.getElementById('ps-shuffle-q')?.checked);
+      const shuffleAnswers = Boolean(document.getElementById('ps-shuffle-a')?.checked);
+
+      const newRules = {
+        hasLives: livesVal > 0,
+        livesCount: livesVal > 0 ? livesVal : 0,
+        timeMode,
+        timerSeconds,
+        shuffleQuestions,
+        shuffleAnswers
+      };
+
+      activePlayerProject.rules = newRules;
+      activePlayerProject.settings = {
+        ...(activePlayerProject.settings || {}),
+        lives: livesVal > 0 ? livesVal : 0,
+        hasLives: livesVal > 0,
+        timeMode,
+        timerSeconds,
+        shuffle: shuffleQuestions,
+        shuffleAnswers
+      };
+
+      LotusDB.saveProject(activePlayerProject);
+      try {
+        localStorage.setItem(`activity_${activePlayerProject.id}`, JSON.stringify(activePlayerProject));
+        localStorage.setItem('current_game_activity', JSON.stringify(activePlayerProject));
+      } catch (e) {}
+
+      updatePlayerSettingsSummary();
+      renderDashboard();
+
+      const themeId = activePlayerProject.theme === 'magical' ? 'magical' : 'white';
+      const iframe = document.getElementById('game-iframe');
+      if (isPlayerGameStarted && iframe && iframe.src && !iframe.src.endsWith('about:blank') && iframe.contentWindow) {
+        try {
+          iframe.contentWindow.postMessage({
+            type: 'UPDATE_SETTINGS',
+            activity: activePlayerProject,
+            rules: newRules,
+            settings: activePlayerProject.settings,
+            theme: themeId,
+            restart: true
+          }, '*');
+        } catch (e) {}
+      } else {
+        startActualGame();
+      }
+    }
+
+    function flushPendingPlayerMessages() {
+      const iframe = document.getElementById('game-iframe');
+      if (!iframe || !iframe.contentWindow) return;
+      if (playerLoadFallbackTimer) {
+        clearTimeout(playerLoadFallbackTimer);
+        playerLoadFallbackTimer = null;
+      }
+      if (!playerIframeReady) {
+        playerIframeReady = true;
+        const tplId = activePlayerProject?.template_type || 'quiz';
+        if (['ai-slicer', 'head-catcher', 'hanzi-battle', 'fruitninja'].includes(tplId)) {
+          try {
+            iframe.contentWindow.postMessage({
+              type: 'GAME_SETTINGS',
+              payload: {
+                speed: playerLiveState.speed,
+                hand: playerLiveState.hand,
+                bladePoint: playerLiveState.bladePoint,
+                skeleton: playerLiveState.skeleton,
+                trackingMode: playerLiveState.trackingMode
+              },
+              speed: playerLiveState.speed
+            }, '*');
+          } catch (e) {}
+        }
+      }
+      while (pendingPlayerMessages.length > 0) {
+        const msg = pendingPlayerMessages.shift();
+        try {
+          iframe.contentWindow.postMessage(msg, '*');
+        } catch (e) {}
+      }
+    }
+
+    function dispatchPlayerMessage(msg) {
+      if (!activePlayerProject) return;
+      const iframe = document.getElementById('game-iframe');
+      const splashVisible = document.getElementById('player-splash-screen')?.style.display !== 'none';
+      if (isPlayerGameStarted && !splashVisible && playerIframeReady && iframe && iframe.contentWindow && iframe.src && !iframe.src.endsWith('about:blank')) {
+        try {
+          iframe.contentWindow.postMessage(msg, '*');
+        } catch (e) {}
+      } else {
+        pendingPlayerMessages.push(msg);
+        if (!isPlayerGameStarted || splashVisible) {
+          startActualGame();
+        }
+      }
+    }
+
+    function sendPlayerGameCmd(command, extra = {}) {
+      dispatchPlayerMessage({ type: 'GAME_CMD', command, ...extra });
+    }
+
+    function sendPlayerGameSettings(partial = {}) {
+      Object.assign(playerLiveState, partial);
+      updatePlayerSettingsSummary();
+      dispatchPlayerMessage({
+        type: 'GAME_SETTINGS',
+        payload: { ...partial },
+        ...partial
+      });
+    }
+
+    function sendPlayerSpeedChange(speedVal) {
+      const norm = normalizeSpeedKey(speedVal) || 'relaxed';
+      playerLiveState.speed = norm;
+      if ((activePlayerProject?.template_type || '') === 'fruitninja') {
+        const storedMap = { relaxed: 'santai', normal: 'sedang', fast: 'cepat' };
+        try { localStorage.setItem('lotus_fruit_speed', storedMap[norm] || 'santai'); } catch (e) {}
+      }
+      renderPlayerModeControls();
+      updatePlayerSettingsSummary();
+      dispatchPlayerMessage({
+        type: 'GAME_CMD',
+        command: 'SET_SPEED',
+        value: norm,
+        speed: norm,
+        payload: { speed: norm }
+      });
+    }
+
+    function sendPlayerHanziDeckChange(chapterId) {
+      if (!chapterId) return;
+      playerLiveState.activeChapterId = chapterId;
+      sendPlayerGameSettings({ hanziChapterId: chapterId });
+    }
+
+    function renderPlayerModeControls() {
+      const box = document.getElementById('ps-mode-controls');
+      if (!box || !activePlayerProject) return;
+      const tplId = activePlayerProject.template_type || 'quiz';
+      const isCameraGame = ['ai-slicer', 'head-catcher', 'hanzi-battle'].includes(tplId);
+
+      if (!isCameraGame && tplId !== 'fruitninja') {
+        box.classList.add('hidden');
+        box.innerHTML = '';
+        return;
+      }
+
+      box.classList.remove('hidden');
+
+      if (tplId === 'fruitninja') {
+        const speedOptions = [
+          { id: 'relaxed', dot: '#16a34a', label: getSpeedLabelText('relaxed') },
+          { id: 'normal', dot: '#d97706', label: getSpeedLabelText('normal') },
+          { id: 'fast', dot: '#dc2626', label: getSpeedLabelText('fast') }
+        ];
+        box.innerHTML = `
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-[#57534e] flex items-center gap-1.5">
+              <span class="ui-sprite ui-xs ui-game-slicer"></span>
+              <span data-i18n="player.settingsSpeedHead">${escapeHtml(tx('player.settingsSpeedHead', 'Speed & Flow', 'Kecepatan & Alur'))}</span>
+            </h4>
+            <div class="flex flex-wrap items-center gap-2">
+              ${speedOptions.map(opt => {
+                const active = playerLiveState.speed === opt.id;
+                return `
+                  <button type="button" data-speed-btn="${opt.id}" onclick="sendPlayerSpeedChange('${opt.id}')"
+                    class="px-3.5 py-2 rounded-lg border-2 text-xs font-bold inline-flex items-center gap-2 transition-colors cursor-pointer ${active ? 'border-[#1d4ed8] bg-[#eff6ff] text-[#1d4ed8]' : 'border-[#d6cfc2] bg-white hover:bg-[#f4f1ea] text-[#18181b]'}">
+                    <span class="w-2.5 h-2.5 rounded-full" style="background:${opt.dot};"></span>
+                    <span>${escapeHtml(opt.label)}</span>
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 3 AI Motion Camera Games
+      const isId = LotusI18n.getLang() === 'id';
+      const camActive = Boolean(playerLiveState.cameraActive);
+      const mouseActive = Boolean(playerLiveState.mouseMode) && !camActive;
+      const camBtnLabel = camActive
+        ? tx('player.camDisable', 'Stop Camera', 'Matikan Kamera')
+        : tx('player.camEnable', 'Enable Camera', 'Aktifkan Kamera');
+      const mouseBtnLabel = tx('player.mousePlay', 'Play with Mouse', 'Main dengan Mouse');
+      const restartLabel = LotusI18n.t('player.replay');
+      const statePill = camActive
+        ? (isId ? 'Kamera Aktif' : 'Camera Active')
+        : (mouseActive ? (isId ? 'Mode Mouse' : 'Mouse Mode') : (isId ? 'Siap' : 'Standby'));
+
+      let extraFieldsHtml = '';
+
+      if (tplId === 'ai-slicer') {
+        extraFieldsHtml = `
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
+              <label for="ps-ai-hand" class="block text-[11px] font-bold text-[#3f3f46] mb-1">${escapeHtml(LotusI18n.t('aiSlicer.handLabel'))}</label>
+              <select id="ps-ai-hand" onchange="sendPlayerGameSettings({ hand: this.value })"
+                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                <option value="auto" ${playerLiveState.hand === 'auto' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('aiSlicer.handAuto'))}</option>
+                <option value="right" ${playerLiveState.hand === 'right' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('aiSlicer.handRight'))}</option>
+                <option value="left" ${playerLiveState.hand === 'left' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('aiSlicer.handLeft'))}</option>
+              </select>
+            </div>
+
+            <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
+              <label for="ps-ai-blade" class="block text-[11px] font-bold text-[#3f3f46] mb-1">${escapeHtml(LotusI18n.t('aiSlicer.pointLabel'))}</label>
+              <select id="ps-ai-blade" onchange="sendPlayerGameSettings({ bladePoint: this.value })"
+                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                <option value="finger" ${playerLiveState.bladePoint === 'finger' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('aiSlicer.pointFinger'))}</option>
+                <option value="palm" ${playerLiveState.bladePoint === 'palm' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('aiSlicer.pointPalm'))}</option>
+              </select>
+            </div>
+
+            <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
+              <label for="ps-speed-select" class="block text-[11px] font-bold text-[#3f3f46] mb-1">${escapeHtml(tx('player.settingsSpeedHead', 'Speed', 'Kecepatan'))}</label>
+              <select id="ps-speed-select" onchange="sendPlayerSpeedChange(this.value)"
+                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                <option value="relaxed" ${playerLiveState.speed === 'relaxed' ? 'selected' : ''}>${escapeHtml(getSpeedLabelText('relaxed'))}</option>
+                <option value="normal" ${playerLiveState.speed === 'normal' ? 'selected' : ''}>${escapeHtml(getSpeedLabelText('normal'))}</option>
+                <option value="fast" ${playerLiveState.speed === 'fast' ? 'selected' : ''}>${escapeHtml(getSpeedLabelText('fast'))}</option>
+              </select>
+            </div>
+
+            <div class="bg-white p-3 rounded-lg border border-[#e5dfd3] flex items-center">
+              <label class="inline-flex items-center gap-2 text-xs font-semibold text-[#18181b] cursor-pointer">
+                <input type="checkbox" id="ps-ai-skeleton" ${playerLiveState.skeleton !== false ? 'checked' : ''} onchange="sendPlayerGameSettings({ skeleton: this.checked })"
+                  class="w-4 h-4 rounded accent-[#1d4ed8]">
+                <span>${escapeHtml(LotusI18n.t('aiSlicer.skeleton'))}</span>
+              </label>
+            </div>
+          </div>
+        `;
+      } else if (tplId === 'head-catcher') {
+        extraFieldsHtml = `
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
+              <label for="ps-speed-select" class="block text-[11px] font-bold text-[#3f3f46] mb-1">${escapeHtml(tx('player.settingsSpeedHead', 'Speed', 'Kecepatan'))}</label>
+              <select id="ps-speed-select" onchange="sendPlayerSpeedChange(this.value)"
+                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                <option value="relaxed" ${playerLiveState.speed === 'relaxed' ? 'selected' : ''}>${escapeHtml(getSpeedLabelText('relaxed'))}</option>
+                <option value="normal" ${playerLiveState.speed === 'normal' ? 'selected' : ''}>${escapeHtml(getSpeedLabelText('normal'))}</option>
+                <option value="fast" ${playerLiveState.speed === 'fast' ? 'selected' : ''}>${escapeHtml(getSpeedLabelText('fast'))}</option>
+              </select>
+            </div>
+
+            <div class="bg-white p-3 rounded-lg border border-[#e5dfd3] flex items-center">
+              <label class="inline-flex items-center gap-2 text-xs font-semibold text-[#18181b] cursor-pointer">
+                <input type="checkbox" id="ps-ai-skeleton" ${playerLiveState.skeleton !== false ? 'checked' : ''} onchange="sendPlayerGameSettings({ skeleton: this.checked })"
+                  class="w-4 h-4 rounded accent-[#1d4ed8]">
+                <span>${escapeHtml(LotusI18n.t('hc.aiOverlay'))}</span>
+              </label>
+            </div>
+          </div>
+        `;
+      } else if (tplId === 'hanzi-battle') {
+        const chapters = Array.isArray(playerLiveState.hanziChapters) ? playerLiveState.hanziChapters : [];
+        const chaptersOptionsHtml = chapters.length > 0
+          ? chapters.map(ch => {
+              const id = typeof ch === 'string' ? ch : (ch.id || ch.value || '');
+              const label = typeof ch === 'string' ? ch : (ch.label || id);
+              return `<option value="${escapeHtml(id)}" ${id === playerLiveState.activeChapterId ? 'selected' : ''}>${escapeHtml(label)}</option>`;
+            }).join('')
+          : `<option value="">${escapeHtml(isId ? 'Mulai game untuk memuat daftar unit Hanzi...' : 'Start game to load Hanzi units...')}</option>`;
+
+        extraFieldsHtml = `
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+            <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
+              <label for="ps-hb-tracking" class="block text-[11px] font-bold text-[#3f3f46] mb-1">${escapeHtml(isId ? 'Mode Pelacakan' : 'Tracking Mode')}</label>
+              <select id="ps-hb-tracking" onchange="sendPlayerGameSettings({ trackingMode: this.value })"
+                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                <option value="hands" ${playerLiveState.trackingMode !== 'pose' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('hb.trackingNear'))}</option>
+                <option value="pose" ${playerLiveState.trackingMode === 'pose' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('hb.trackingFar'))}</option>
+              </select>
+            </div>
+
+            <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
+              <label for="ps-ai-hand" class="block text-[11px] font-bold text-[#3f3f46] mb-1">${escapeHtml(LotusI18n.t('aiSlicer.handLabel'))}</label>
+              <select id="ps-ai-hand" onchange="sendPlayerGameSettings({ hand: this.value })"
+                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                <option value="auto" ${playerLiveState.hand === 'auto' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('hb.handAuto'))}</option>
+                <option value="right" ${playerLiveState.hand === 'right' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('hb.handRight'))}</option>
+                <option value="left" ${playerLiveState.hand === 'left' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('hb.handLeft'))}</option>
+              </select>
+            </div>
+
+            <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
+              <label for="ps-hb-chapter" class="block text-[11px] font-bold text-[#3f3f46] mb-1">${escapeHtml(tx('player.hanziDeck', 'Hanzi Unit / Deck', 'Unit / Dek Hanzi'))}</label>
+              <select id="ps-hb-chapter" onchange="sendPlayerHanziDeckChange(this.value)" ${chapters.length === 0 ? 'disabled' : ''}
+                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8] disabled:opacity-60">
+                ${chaptersOptionsHtml}
+              </select>
+            </div>
+
+            <div>
+              <button type="button" id="ps-hb-skip-btn" onclick="sendPlayerGameCmd('SKIP_WORD')"
+                class="w-full px-3.5 py-2.5 rounded-lg bg-[#d97706] hover:bg-[#b45309] text-white font-bold text-xs border-b-2 border-[#92400e] inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+                <span class="ui-sprite ui-xs ui-arrow-right"></span>
+                <span>${escapeHtml(tx('player.hanziSkip', 'Next Character', 'Karakter Berikutnya'))}</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      box.innerHTML = `
+        <div class="space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-[#57534e] flex items-center gap-1.5">
+              <span class="ui-sprite ui-xs ui-camera"></span>
+              <span>${escapeHtml(tx('player.settingsCameraHead', 'AI Motion & Live Controls', 'Kontrol Gerak AI & Kamera'))}</span>
+            </h4>
+            <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-md border ${camActive ? 'bg-[#ecfdf5] text-[#15803d] border-[#86efac]' : (mouseActive ? 'bg-[#eff6ff] text-[#1d4ed8] border-[#bfdbfe]' : 'bg-white text-[#57534e] border-[#d6cfc2]')}">
+              ${escapeHtml(statePill)}
+            </span>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" id="ps-btn-camera" onclick="sendPlayerGameCmd('TOGGLE_CAMERA')"
+              class="px-4 py-2 rounded-lg font-bold text-xs border-b-2 inline-flex items-center gap-2 transition-colors cursor-pointer ${camActive ? 'bg-[#b91c1c] hover:bg-[#991b1b] text-white border-[#7f1d1d]' : 'bg-[#1d4ed8] hover:bg-[#1e40af] text-white border-[#1e3a8a]'}">
+              <span class="ui-sprite ui-xs ${camActive ? 'ui-camera-off' : 'ui-camera'}"></span>
+              <span>${escapeHtml(camBtnLabel)}</span>
+            </button>
+
+            <button type="button" id="ps-btn-mouse" onclick="sendPlayerGameCmd('MOUSE_MODE')"
+              class="px-4 py-2 rounded-lg font-bold text-xs border inline-flex items-center gap-2 transition-colors cursor-pointer ${mouseActive ? 'bg-[#eff6ff] border-[#1d4ed8] text-[#1d4ed8]' : 'bg-white hover:bg-[#f4f1ea] border-[#d6cfc2] text-[#18181b]'}">
+              <span class="ui-sprite ui-xs ui-gamepad"></span>
+              <span>${escapeHtml(mouseBtnLabel)}</span>
+            </button>
+
+            ${tplId === 'head-catcher' ? `
+              <button type="button" id="ps-btn-hc-start" onclick="sendPlayerGameCmd('START_GAME')"
+                class="px-4 py-2 rounded-lg font-bold text-xs bg-[#15803d] hover:bg-[#166534] text-white border-b-2 border-[#14532d] inline-flex items-center gap-2 transition-colors cursor-pointer">
+                <span class="ui-sprite ui-xs ui-play"></span>
+                <span>${escapeHtml(LotusI18n.t('hc.startGame'))}</span>
+              </button>
+            ` : ''}
+
+            <button type="button" id="ps-btn-restart" onclick="sendPlayerGameCmd('RESTART')"
+              class="px-4 py-2 rounded-lg font-bold text-xs bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] text-[#18181b] inline-flex items-center gap-2 transition-colors cursor-pointer">
+              <span class="ui-sprite ui-xs ui-refresh"></span>
+              <span>${escapeHtml(restartLabel)}</span>
+            </button>
+          </div>
+
+          ${extraFieldsHtml}
+        </div>
+      `;
+    }
+
+    function openGamePlayer(projectId, autoStart = false, updateNav = true) {
+      activePlayerProject = LotusDB.getProjectById(projectId);
+      if (!activePlayerProject) return;
+
+      const meta = getTplMeta(activePlayerProject.template_type);
+      const tplName = LotusI18n.getTemplateName(meta.id);
+
+      document.getElementById('player-title').textContent = activePlayerProject.title;
+      document.getElementById('player-game-badge').textContent = tplName;
+
+      const splashIcon = document.getElementById('splash-icon');
+      if (splashIcon) splashIcon.className = `ui-sprite ui-2xl ${meta.sprite}`;
+
+      document.getElementById('splash-game-badge').textContent = tplName;
+      document.getElementById('splash-title').textContent = activePlayerProject.title;
+      document.getElementById('splash-sub').textContent = LotusI18n.t('player.readySub', {
+        tpl: tplName,
+        n: activePlayerProject.questions?.length || 0
+      });
+
+      resetPlayerLiveState();
+      pendingPlayerMessages = [];
+      playerIframeReady = false;
+      hasPlayerSentInit = false;
+      isPlayerGameStarted = Boolean(autoStart);
+
+      renderPlayerSidebarGameList();
+      updatePlayerThemeUI(activePlayerProject.theme || 'white');
+      populatePlayerRulesInputs();
+      renderPlayerModeControls();
+      updatePlayerSettingsSummary();
+      setPlayerSettingsOpen(false);
+      renderDashboardLeaderboard();
+      showView('view-game-player');
+
+      if (updateNav) {
+        saveCurrentNavigation({
+          view: 'view-game-player',
+          projectId: activePlayerProject.id,
+          templateId: activePlayerProject.template_type || 'quiz',
+          isPlaying: autoStart
+        });
+      }
+
+      if (autoStart) {
+        startActualGame();
+      } else {
+        const iframe = document.getElementById('game-iframe');
+        if (iframe) iframe.src = 'about:blank';
+        document.getElementById('player-splash-screen').style.display = 'flex';
+      }
+    }
+
+    function switchPlayerGameTemplate(newTplId) {
+      if (!activePlayerProject) return;
+      activePlayerProject.template_type = newTplId;
+      LotusDB.saveProject(activePlayerProject);
+      openGamePlayer(activePlayerProject.id, false, true);
+    }
+
+    function resetToPlayScreen() {
+      if (!activePlayerProject) return;
+      openGamePlayer(activePlayerProject.id, false, true);
+    }
+
+    function switchPlayerGameTheme(themeId) {
+      if (!activePlayerProject) return;
+      const t = (themeId === 'magical') ? 'magical' : 'white';
+      activePlayerProject.theme = t;
+      LotusDB.saveProject(activePlayerProject);
+      try {
+        localStorage.setItem(`activity_${activePlayerProject.id}`, JSON.stringify(activePlayerProject));
+        localStorage.setItem('current_game_activity', JSON.stringify(activePlayerProject));
+      } catch (e) {}
+      updatePlayerThemeUI(t);
+      updatePlayerSettingsSummary();
+
+      const iframe = document.getElementById('game-iframe');
+      if (iframe && iframe.contentWindow) {
+        try {
+          iframe.contentWindow.postMessage({ type: 'THEME_CHANGE', theme: t }, '*');
+        } catch (e) {}
+      }
+    }
+
+    function updatePlayerThemeUI(themeId) {
+      const isMag = (themeId === 'magical');
+      const label = document.getElementById('player-active-theme-label');
+      if (label) {
+        label.className = isMag
+          ? 'text-[10px] px-2 py-0.5 rounded font-bold bg-[#faf5ff] text-[#6b21a8] border border-[#d8b4fe]'
+          : 'text-[10px] px-2 py-0.5 rounded font-bold bg-[#f4f1ea] text-[#57534e] border border-[#d6cfc2]';
+        label.textContent = isMag ? LotusI18n.t('player.themeMagical') : LotusI18n.t('player.themeWhite');
+      }
+
+      const btnW = document.getElementById('theme-btn-white');
+      const btnM = document.getElementById('theme-btn-magical');
+      if (btnW && btnM) {
+        btnW.className = !isMag
+          ? 'p-2.5 rounded-lg border-2 transition-colors flex flex-col items-center justify-center gap-1 cursor-pointer text-center bg-[#fcfbf8] border-[#18181b]'
+          : 'p-2.5 rounded-lg border-2 transition-colors flex flex-col items-center justify-center gap-1 cursor-pointer text-center bg-white border-[#e5dfd3] hover:border-[#a8a29e]';
+        btnM.className = isMag
+          ? 'p-2.5 rounded-lg border-2 transition-colors flex flex-col items-center justify-center gap-1 cursor-pointer text-center bg-[#faf5ff] border-[#7e22ce]'
+          : 'p-2.5 rounded-lg border-2 transition-colors flex flex-col items-center justify-center gap-1 cursor-pointer text-center bg-white border-[#e5dfd3] hover:border-[#c084fc]';
+      }
+    }
+
+    function renderPlayerSidebarGameList() {
+      const container = document.getElementById('player-sidebar-game-list');
+      if (!container || !activePlayerProject) return;
+      const currentTpl = activePlayerProject.template_type || 'quiz';
+      const maxQuick = 4;
+      const activeIdx = GAME_TEMPLATES_CONFIG.findIndex(t => t.id === currentTpl);
+      const quickList = (activeIdx >= maxQuick)
+        ? [GAME_TEMPLATES_CONFIG[activeIdx], ...GAME_TEMPLATES_CONFIG.filter((_, i) => i !== activeIdx).slice(0, maxQuick - 1)]
+        : GAME_TEMPLATES_CONFIG.slice(0, maxQuick);
+
+      container.innerHTML = quickList.map(tpl => {
+        const isActive = tpl.id === currentTpl;
+        const name = LotusI18n.getTemplateName(tpl.id);
+        return `
+          <button type="button" onclick="switchPlayerGameTemplate('${tpl.id}')"
+            class="w-full text-left p-2.5 rounded-lg border-2 transition-colors flex items-center justify-between gap-2 cursor-pointer ${isActive ? 'bg-[#eff6ff]/80 border-[#1d4ed8]' : 'bg-white border-[#e5dfd3] hover:bg-[#fcfbf8]'}">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="w-8 h-8 rounded-md ${isActive ? 'bg-[#dbeafe]' : 'bg-[#f4f1ea]'} flex items-center justify-center shrink-0">
+                <span class="ui-sprite ui-sm ${tpl.sprite}"></span>
+              </span>
+              <span class="text-xs font-bold truncate ${isActive ? 'text-[#1d4ed8]' : 'text-[#18181b]'}">${escapeHtml(name)}</span>
+            </div>
+            ${isActive ? '<span class="ui-sprite ui-xs ui-check shrink-0"></span>' : ''}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function openAllGamesModal() {
+      closeDashUserMenu();
+      renderAllGamesModal();
+      document.getElementById('modal-all-games').classList.remove('hidden');
+    }
+
+    function closeAllGamesModal() {
+      document.getElementById('modal-all-games').classList.add('hidden');
+    }
+
+    function renderAllGamesModal() {
+      const grid = document.getElementById('all-games-modal-grid');
+      if (!grid || !activePlayerProject) return;
+      const currentTpl = activePlayerProject.template_type || 'quiz';
+
+      const buildSection = (titleKey, list) => `
+        <div class="space-y-2">
+          <div class="text-xs font-bold uppercase tracking-wider text-[#78716c]">${escapeHtml(LotusI18n.t(titleKey))}</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
+            ${list.map(tpl => {
+              const isActive = tpl.id === currentTpl;
+              return `
+                <button type="button" onclick="closeAllGamesModal(); switchPlayerGameTemplate('${tpl.id}')"
+                  class="text-left p-3.5 rounded-lg border-2 transition-colors flex flex-col justify-between gap-2 cursor-pointer ${isActive ? 'bg-[#eff6ff]/70 border-[#1d4ed8]' : 'bg-white border-[#e5dfd3] hover:border-[#1d4ed8] hover:bg-[#fcfbf8]'}">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="w-9 h-9 rounded-md ${isActive ? 'bg-[#dbeafe]' : 'bg-[#f4f1ea]'} flex items-center justify-center">
+                      <span class="ui-sprite ui-sm ${tpl.sprite}"></span>
+                    </span>
+                    ${isActive ? '<span class="ui-sprite ui-sm ui-check"></span>' : '<span class="ui-sprite ui-xs ui-arrow-right"></span>'}
+                  </div>
+                  <div>
+                    <div class="text-xs font-bold text-[#18181b]">${escapeHtml(LotusI18n.getTemplateName(tpl.id))}</div>
+                    <div class="text-[10px] text-[#57534e] line-clamp-2 mt-0.5">${escapeHtml(LotusI18n.getTemplateDesc(tpl.id))}</div>
+                  </div>
+                </button>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+
+      grid.innerHTML =
+        buildSection('cat.standard', GAME_TEMPLATES_CONFIG.filter(g => g.category === 'standard')) +
+        buildSection('cat.camera', GAME_TEMPLATES_CONFIG.filter(g => g.category === 'camera'));
+    }
+
+    function startActualGame() {
+      if (!activePlayerProject) return;
+      document.getElementById('player-splash-screen').style.display = 'none';
+
+      isPlayerGameStarted = true;
+      playerIframeReady = false;
+      hasPlayerSentInit = false;
+      if (playerLoadFallbackTimer) {
+        clearTimeout(playerLoadFallbackTimer);
+        playerLoadFallbackTimer = null;
+      }
+
+      const tplId = activePlayerProject.template_type || 'quiz';
+      const themeId = activePlayerProject.theme === 'magical' ? 'magical' : 'white';
+      const lang = LotusI18n.getLang();
+      const iframe = document.getElementById('game-iframe');
+
+      localStorage.setItem(`activity_${activePlayerProject.id}`, JSON.stringify(activePlayerProject));
+      localStorage.setItem('current_game_activity', JSON.stringify(activePlayerProject));
+
+      saveCurrentNavigation({
+        view: 'view-game-player',
+        projectId: activePlayerProject.id,
+        templateId: tplId,
+        isPlaying: true
+      });
+
+      iframe.onload = () => {
+        if (!hasPlayerSentInit && activePlayerProject && iframe.contentWindow) {
+          hasPlayerSentInit = true;
+          const liveTheme = activePlayerProject.theme === 'magical' ? 'magical' : 'white';
+          const liveLang = LotusI18n.getLang();
+          try {
+            iframe.contentWindow.postMessage({
+              type: 'INIT_ACTIVITY',
+              activity: activePlayerProject,
+              playerName: '',
+              playerClass: ''
+            }, '*');
+            iframe.contentWindow.postMessage({ type: 'THEME_CHANGE', theme: liveTheme }, '*');
+            iframe.contentWindow.postMessage({ type: 'LANG_CHANGE', lang: liveLang }, '*');
+          } catch (e) {}
+        }
+        playerLoadFallbackTimer = setTimeout(() => {
+          flushPendingPlayerMessages();
+        }, 120);
+      };
+
+      iframe.src = `games/${tplId}.html?id=${encodeURIComponent(activePlayerProject.id)}&theme=${themeId}&lang=${lang}&embedded=1`;
+    }
+
+    window.addEventListener('message', (event) => {
+      if (!event.data || typeof event.data !== 'object') return;
+      if (event.data.type === 'GAME_READY' && activePlayerProject) {
+        const iframe = document.getElementById('game-iframe');
+        const tplId = activePlayerProject.template_type || 'quiz';
+        if (iframe && iframe.contentWindow && !hasPlayerSentInit) {
+          hasPlayerSentInit = true;
+          try {
+            iframe.contentWindow.postMessage({
+              type: 'INIT_ACTIVITY',
+              activity: activePlayerProject,
+              playerName: '',
+              playerClass: ''
+            }, '*');
+            iframe.contentWindow.postMessage({ type: 'THEME_CHANGE', theme: activePlayerProject.theme === 'magical' ? 'magical' : 'white' }, '*');
+            iframe.contentWindow.postMessage({ type: 'LANG_CHANGE', lang: LotusI18n.getLang() }, '*');
+          } catch (e) {}
+        }
+        const isCamTpl = ['ai-slicer', 'head-catcher', 'hanzi-battle'].includes(tplId);
+        let readyState = '';
+        try { readyState = iframe?.contentDocument?.readyState || ''; } catch (e) {}
+        if (!isCamTpl || (readyState && readyState !== 'loading')) {
+          flushPendingPlayerMessages();
+        }
+      } else if (event.data.type === 'GAME_STATE') {
+        const st = event.data;
+        if (st.cameraActive !== undefined) playerLiveState.cameraActive = Boolean(st.cameraActive);
+        if (st.mouseMode !== undefined) playerLiveState.mouseMode = Boolean(st.mouseMode);
+        if (st.speed !== undefined) {
+          const norm = normalizeSpeedKey(st.speed);
+          if (norm) playerLiveState.speed = norm;
+        }
+        if (st.hand !== undefined) playerLiveState.hand = st.hand;
+        if (st.bladePoint !== undefined) playerLiveState.bladePoint = st.bladePoint;
+        if (st.skeleton !== undefined) playerLiveState.skeleton = Boolean(st.skeleton);
+        if (st.trackingMode !== undefined) playerLiveState.trackingMode = st.trackingMode;
+        if (Array.isArray(st.hanziChapters)) playerLiveState.hanziChapters = st.hanziChapters;
+        if (st.activeChapterId !== undefined || st.hanziChapterId !== undefined) {
+          playerLiveState.activeChapterId = st.activeChapterId || st.hanziChapterId || '';
+        }
+        if (!playerIframeReady || pendingPlayerMessages.length > 0) {
+          flushPendingPlayerMessages();
+        }
+        renderPlayerModeControls();
+        updatePlayerSettingsSummary();
+      } else if (event.data.type === 'GAME_OVER') {
+        renderDashboardLeaderboard();
+      }
+    });
+
+    function togglePlayerFullscreen() {
+      const container = document.getElementById('game-window-container');
+      if (!document.fullscreenElement) container?.requestFullscreen?.();
+      else document.exitFullscreen?.();
+    }
+
+    function closeGamePlayer() {
+      isPlayerGameStarted = false;
+      playerIframeReady = false;
+      hasPlayerSentInit = false;
+      pendingPlayerMessages = [];
+      if (playerLoadFallbackTimer) {
+        clearTimeout(playerLoadFallbackTimer);
+        playerLoadFallbackTimer = null;
+      }
+      saveCurrentNavigation({ view: 'view-dashboard', dashboardTab: 'projects' });
+      const iframe = document.getElementById('game-iframe');
+      if (iframe) iframe.src = 'about:blank';
+      showView('view-dashboard');
+      renderDashboard();
+    }
+
+    function editCurrentActiveProject() {
+      if (activePlayerProject) openEditActivityView(activePlayerProject.id);
+    }
+
+    function renderDashboardLeaderboard() {
+      const container = document.getElementById('dashboard-leaderboard-container');
+      const countBadge = document.getElementById('leaderboard-count-badge');
+      if (!container || !activePlayerProject) return;
+
+      const entries = LotusDB.getLeaderboard(activePlayerProject.id);
+      if (countBadge) countBadge.textContent = LotusI18n.t('player.lbPlayersCount', { n: entries.length });
+
+      if (!entries || entries.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 px-4 bg-[#fcfbf8] rounded-lg border border-dashed border-[#d6cfc2] text-[#78716c] space-y-1.5">
+            <div class="w-10 h-10 mx-auto rounded-md bg-[#fef3c7] border border-[#f59e0b]/40 flex items-center justify-center">
+              <span class="ui-sprite ui-sm ui-trophy"></span>
+            </div>
+            <div class="text-xs font-semibold text-[#57534e]">${escapeHtml(LotusI18n.t('player.lbEmpty'))}</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="text-[#78716c] uppercase tracking-wider text-[10px] border-b border-[#e5dfd3]">
+                <th class="py-2.5 px-3">${escapeHtml(LotusI18n.t('player.lbRank'))}</th>
+                <th class="py-2.5 px-3">${escapeHtml(LotusI18n.t('player.lbPlayer'))}</th>
+                <th class="py-2.5 px-3 text-center">${escapeHtml(LotusI18n.t('player.lbScore'))}</th>
+                <th class="py-2.5 px-3 text-center">${escapeHtml(LotusI18n.t('player.lbTime'))}</th>
+                <th class="py-2.5 px-3">${escapeHtml(LotusI18n.t('player.lbDate'))}</th>
+                <th class="py-2.5 px-3 text-right">${escapeHtml(LotusI18n.t('player.lbAction'))}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#eee9df]">
+              ${entries.map((row, idx) => {
+                const dateStr = row.completed_at ? new Date(row.completed_at).toLocaleDateString(LotusI18n.getLang() === 'id' ? 'id-ID' : 'en-US', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '-';
+                return `
+                  <tr class="hover:bg-[#fcfbf8]">
+                    <td class="py-2.5 px-3 font-bold text-[#18181b]">#${idx + 1}</td>
+                    <td class="py-2.5 px-3 font-semibold text-[#18181b]">${escapeHtml(row.student_name || '-')}</td>
+                    <td class="py-2.5 px-3 text-center font-bold text-[#15803d]">${row.score}</td>
+                    <td class="py-2.5 px-3 text-center text-[#57534e] font-medium">${row.time_taken_seconds || 0}s</td>
+                    <td class="py-2.5 px-3 text-[11px] text-[#78716c]">${escapeHtml(dateStr)}</td>
+                    <td class="py-2.5 px-3 text-right">
+                      <button type="button" onclick="deleteSingleLeaderboardEntry('${escapeHtml(row.id)}')"
+                        class="p-1.5 text-[#78716c] hover:text-red-700 hover:bg-red-50 rounded-md transition-colors cursor-pointer"
+                        title="${escapeHtml(LotusI18n.t('studio.deleteQuestion'))}">
+                        <span class="ui-sprite ui-xs ui-trash"></span>
+                      </button>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function deleteSingleLeaderboardEntry(entryId) {
+      if (!activePlayerProject) return;
+      LotusDB.deleteLeaderboardEntry(activePlayerProject.id, entryId);
+      renderDashboardLeaderboard();
+    }
+
+    function promptClearAllLeaderboard() {
+      if (!activePlayerProject) return;
+      if (!confirm(LotusI18n.t('player.lbClearAll') + '?')) return;
+      LotusDB.clearLeaderboard(activePlayerProject.id);
+      renderDashboardLeaderboard();
+    }
+
+    // -------------------------------------------------------------------------
+    // ACTIONS: RENAME (Aa), DUPLICATE, DELETE, RESTORE, SWITCH TEACHER
+    // -------------------------------------------------------------------------
+    function openRenameModalById(id) {
+      closeDashUserMenu();
+      const proj = LotusDB.getProjectById(id);
+      if (!proj) return;
+      selectedProjectIdForAction = id;
+      document.getElementById('rename-input').value = proj.title || '';
+      document.getElementById('modal-rename').classList.remove('hidden');
+      document.getElementById('rename-input').focus();
+    }
+
+    function closeRenameModal() {
+      document.getElementById('modal-rename').classList.add('hidden');
+    }
+
+    function confirmRenameProject() {
+      const newTitle = document.getElementById('rename-input').value.trim();
+      if (newTitle && selectedProjectIdForAction) {
+        LotusDB.renameProject(selectedProjectIdForAction, newTitle);
+        closeRenameModal();
+        renderDashboard();
+      }
+    }
+
+    function duplicateProjectAction(id) {
+      const dup = LotusDB.duplicateProject(id, currentTeacher.id);
+      if (dup) renderDashboard();
+    }
+
+    function promptDeleteProjectById(id) {
+      closeDashUserMenu();
+      const proj = LotusDB.getProjectById(id);
+      if (!proj) return;
+      selectedProjectIdForAction = id;
+      document.getElementById('delete-confirm-text').textContent = LotusI18n.t('dash.confirmDeleteMsg', { title: proj.title });
+      document.getElementById('modal-delete-confirm').classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+      document.getElementById('modal-delete-confirm').classList.add('hidden');
+    }
+
+    function confirmDeleteProject() {
+      if (selectedProjectIdForAction) {
+        LotusDB.moveToRecycleBin(selectedProjectIdForAction);
+        closeDeleteModal();
+        renderDashboard();
+      }
+    }
+
+    function restoreProjectAction(id) {
+      LotusDB.restoreProject(id);
+      renderDashboard();
+    }
+
+    function permanentDeleteAction(id) {
+      const proj = LotusDB.getProjectById(id);
+      const title = proj ? proj.title : '';
+      if (confirm(LotusI18n.t('dash.confirmPermDeleteMsg', { title }))) {
+        LotusDB.permanentDeleteProject(id);
+        renderDashboard();
+      }
+    }
+
+    function emptyRecycleBinWithConfirm() {
+      if (confirm(LotusI18n.t('dash.confirmEmptyBin'))) {
+        LotusDB.emptyRecycleBin(currentTeacher.id);
+        renderDashboard();
+      }
+    }
+
+    function openSwitchAccountModal() {
+      closeDashUserMenu();
+      const container = document.getElementById('teachers-list-container');
+      const teachers = LotusDB.getTeachers();
+      const actionLabel = escapeHtml(LotusI18n.t('login.oneClickSignIn'));
+
+      container.innerHTML = teachers.map(t => `
+        <button type="button" onclick="selectTeacherAccount('${escapeHtml(t.id)}')"
+          class="w-full p-3 rounded-lg border ${t.id === currentTeacher.id ? 'border-[#1d4ed8] bg-[#eff6ff]/60' : 'border-[#e5dfd3] bg-white hover:bg-[#fcfbf8]'} cursor-pointer flex items-center justify-between text-left transition-colors">
+          <div>
+            <div class="font-bold text-xs text-[#18181b]">${escapeHtml(t.name)}</div>
+            <div class="text-[11px] text-[#78716c]">${escapeHtml(t.email)} • ${escapeHtml(t.subject)}</div>
+          </div>
+          <span class="text-xs font-bold text-[#1d4ed8]">${actionLabel}</span>
+        </button>
+      `).join('');
+
+      document.getElementById('modal-switch-teacher').classList.remove('hidden');
+    }
+
+    function closeSwitchAccountModal() {
+      document.getElementById('modal-switch-teacher').classList.add('hidden');
+    }
+
+    function selectTeacherAccount(id) {
+      const chosen = LotusDB.getTeacherById(id);
+      if (chosen) {
+        LotusDB.setCurrentTeacher(chosen, false);
+        currentTeacher = chosen;
+        updateTeacherUI();
+        closeSwitchAccountModal();
+        saveCurrentNavigation({ view: 'view-dashboard', dashboardTab: 'projects' });
+        showView('view-dashboard');
+        renderDashboard();
+      }
+    }
+
+    // Live i18n updates when flag pill toggled
+    LotusI18n.onChange(() => {
+      if (!currentTeacher) return;
+      syncDashI18nFallbacks();
+      populateDashboardTemplateFilter();
+      renderDashboard();
+      if (!document.getElementById('view-question-studio').classList.contains('hidden')) {
+        document.getElementById('studio-mode-title').textContent = editingProject && LotusDB.getProjectById(editingProject.id)
+          ? LotusI18n.t('studio.titleEdit')
+          : LotusI18n.t('studio.titleNew');
+        renderQuestionCards();
+        const pickerModal = document.getElementById('modal-media-picker');
+        if (pickerModal && !pickerModal.classList.contains('hidden')) {
+          const targetLabel = document.getElementById('media-picker-target-label');
+          if (targetLabel) {
+            const keys = ['A', 'B', 'C', 'D', 'E', 'F'];
+            const qNumLabel = LotusI18n.t('studio.questionLabel', { n: mediaPickerTarget.qIdx + 1 });
+            targetLabel.textContent = mediaPickerTarget.mode === 'option'
+              ? `${qNumLabel} · ${keys[mediaPickerTarget.oIdx] || 'A'}`
+              : qNumLabel;
+          }
+          updateMediaSearchStatusLabel();
+          if (mediaLastSearchItems.length > 0) renderMediaResultsGrid(mediaLastSearchItems, false, '');
+        }
+      }
+      if (!document.getElementById('view-edit-activity').classList.contains('hidden')) {
+        renderGameTypesGrid();
+        renderThemesSelectorGrid();
+      }
+      if (!document.getElementById('view-game-player').classList.contains('hidden') && activePlayerProject) {
+        const meta = getTplMeta(activePlayerProject.template_type);
+        const tplName = LotusI18n.getTemplateName(meta.id);
+        document.getElementById('player-game-badge').textContent = tplName;
+        document.getElementById('splash-game-badge').textContent = tplName;
+        document.getElementById('splash-sub').textContent = LotusI18n.t('player.readySub', {
+          tpl: tplName,
+          n: activePlayerProject.questions?.length || 0
+        });
+        renderPlayerSidebarGameList();
+        updatePlayerThemeUI(activePlayerProject.theme || 'white');
+        renderPlayerModeControls();
+        updatePlayerSettingsSummary();
+        renderDashboardLeaderboard();
+        const iframe = document.getElementById('game-iframe');
+        if (isPlayerGameStarted && iframe && iframe.contentWindow && iframe.src && !iframe.src.endsWith('about:blank')) {
+          try {
+            iframe.contentWindow.postMessage({ type: 'LANG_CHANGE', lang: LotusI18n.getLang() }, '*');
+          } catch (e) {}
+        }
+      }
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeDashUserMenu();
+        closeMediaPickerModal();
+        closeAllGamesModal();
+        closeRenameModal();
+        closeDeleteModal();
+        closeSwitchAccountModal();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -12,9 +12,9 @@
   <link rel="stylesheet" href="common/ui-spritesheet.css">
 
   <!-- MediaPipe Pose CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js" crossorigin="anonymous" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1675466124/drawing_utils.js" crossorigin="anonymous" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/pose.js" crossorigin="anonymous" defer></script>
 
   <script src="common/i18n.js"></script>
   <script src="common/sfx.js"></script>
@@ -957,6 +957,9 @@
 
     let mediaStream = null;
     let poseTracker = null;
+    let poseInitPromise = null;
+    let poseModelReady = false;
+    let poseConsecutiveErrors = 0;
     let isCameraRunning = false;
     let isDetecting = false;
     let frameCount = 0;
@@ -1579,6 +1582,13 @@
     }
 
     function onPoseResults(results) {
+      poseModelReady = true;
+      poseConsecutiveErrors = 0;
+      if (isCameraRunning) {
+        valAiStatus.textContent = T('aiSlicer.aiActive');
+        valAiStatus.style.color = '#059669';
+      }
+
       frameCount++;
       const now = performance.now();
       if (now - lastFpsTime >= 1000) { fpsText.textContent = `${frameCount} FPS`; frameCount = 0; lastFpsTime = now; }
@@ -1626,6 +1636,13 @@
     }
 
     function initMediaPipe() {
+      if (poseTracker) {
+        if (!poseModelReady) {
+          valAiStatus.textContent = T('aiSlicer.aiLoading');
+          valAiStatus.style.color = '#d97706';
+        }
+        return;
+      }
       if (typeof Pose === 'undefined') {
         valAiStatus.textContent = T('aiSlicer.aiLoading');
         valAiStatus.style.color = '#d97706';
@@ -1633,15 +1650,36 @@
       }
       valAiStatus.textContent = T('aiSlicer.aiLoading');
       valAiStatus.style.color = '#d97706';
+      valSlashState.textContent = T('aiSlicer.stateWait');
+      poseModelReady = false;
+      poseConsecutiveErrors = 0;
       try {
-        poseTracker = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
-        poseTracker.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+        poseTracker = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/${file}` });
+        poseTracker.setOptions({ modelComplexity: 0, smoothLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
         poseTracker.onResults(onPoseResults);
-        valAiStatus.textContent = T('aiSlicer.aiActive');
-        valAiStatus.style.color = '#059669';
+        if (typeof poseTracker.initialize === 'function') {
+          poseInitPromise = poseTracker.initialize().then(() => {
+            if (isCameraRunning && !latestLandmarks && !poseModelReady) {
+              valAiStatus.textContent = T('aiSlicer.aiLoadedWait');
+              valAiStatus.style.color = '#0284c7';
+            }
+          }).catch((err) => {
+            console.error('Pose initialize failed:', err);
+            poseTracker = null;
+            poseInitPromise = null;
+            poseModelReady = false;
+            valAiStatus.textContent = T('aiSlicer.aiFail');
+            valAiStatus.style.color = '#ef4444';
+            showCamError(T('aiSlicer.aiFail'));
+          });
+        }
       } catch (err) {
+        console.error('Pose setup failed:', err);
+        poseTracker = null;
+        poseInitPromise = null;
         valAiStatus.textContent = T('aiSlicer.aiFail');
         valAiStatus.style.color = '#ef4444';
+        showCamError(T('aiSlicer.aiFail'));
       }
     }
 
@@ -1650,8 +1688,21 @@
       if (!poseTracker && typeof Pose !== 'undefined') initMediaPipe();
       if (videoElement.readyState >= 2 && poseTracker && !isDetecting) {
         isDetecting = true;
-        try { await poseTracker.send({ image: videoElement }); } catch (e) {}
-        isDetecting = false;
+        try {
+          if (poseInitPromise) await poseInitPromise;
+          if (poseTracker) {
+            await poseTracker.send({ image: videoElement });
+          }
+        } catch (e) {
+          poseConsecutiveErrors++;
+          console.warn('Pose frame error:', e);
+          if (poseConsecutiveErrors >= 5) {
+            valAiStatus.textContent = T('aiSlicer.aiFail');
+            valAiStatus.style.color = '#ef4444';
+          }
+        } finally {
+          isDetecting = false;
+        }
       }
       requestAnimationFrame(detectionLoop);
     }
@@ -1700,6 +1751,10 @@
         statusText.textContent = T('aiSlicer.statusActive');
 
         if (!poseTracker) initMediaPipe();
+        else if (!poseModelReady) {
+          valAiStatus.textContent = T('aiSlicer.aiLoading');
+          valAiStatus.style.color = '#d97706';
+        }
         requestAnimationFrame(detectionLoop);
         if (!isGameOver && fruits.length === 0) setTimeout(spawnFruit, 250);
         emitGameState();
@@ -1715,6 +1770,7 @@
     function stopCamera() {
       if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
       isCameraRunning = false;
+      poseConsecutiveErrors = 0;
       videoElement.style.display = 'none';
       if (!isMouseMode) placeholder.style.display = 'flex';
       latestLandmarks = null;
@@ -1723,6 +1779,12 @@
       btnToggleCamera.className = 'btn btn-primary';
       statusBadge.className = 'status-badge';
       statusText.textContent = T('aiSlicer.statusReady');
+      if (!isMouseMode) {
+        valAiStatus.textContent = '-';
+        valAiStatus.style.color = '';
+        valSlashState.textContent = T('aiSlicer.stateWait');
+        valSlashState.style.color = '#64748b';
+      }
       fpsText.textContent = '0 FPS';
       emitGameState();
     }

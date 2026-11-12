@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 128" width="256" height="128">
-  <view id="cell1" viewBox="0 0 128 128" />
-  <view id="cell2" viewBox="128 0 128 128" />
-  <rect x="0" y="0" width="128" height="128" fill="#7e22ce" rx="20" />
-  <circle cx="64" cy="64" r="40" fill="#facc15" />
-  <rect x="128" y="0" width="128" height="128" fill="#10b981" rx="20" />
-  <polygon points="192,24 232,104 152,104" fill="#ffffff" />
-</svg>

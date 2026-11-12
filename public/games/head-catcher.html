@@ -12,8 +12,8 @@
   <link rel="stylesheet" href="common/ui-spritesheet.css">
 
   <!-- MediaPipe Face Detection CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js" crossorigin="anonymous" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js" crossorigin="anonymous" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4.1646425229/face_detection.js" crossorigin="anonymous" defer></script>
 
   <script src="common/i18n.js"></script>
   <script src="common/sfx.js"></script>
@@ -782,7 +782,7 @@
     const qTextEl = document.getElementById('q-text');
     const countdownBadge = document.getElementById('countdown-badge');
 
-    let mediaStream = null, faceDetector = null, isCameraRunning = false, isDetecting = false, frameCount = 0, lastFpsTime = performance.now();
+    let mediaStream = null, faceDetector = null, faceInitPromise = null, faceConsecutiveErrors = 0, isCameraRunning = false, isDetecting = false, frameCount = 0, lastFpsTime = performance.now();
 
     function resizeCanvas() {
       const rect = canvas.getBoundingClientRect();
@@ -1219,12 +1219,16 @@
     }
 
     function onFaceResults(results) {
+      faceConsecutiveErrors = 0;
       frameCount++;
       const now = performance.now();
       if (now - lastFpsTime >= 1000) { fpsText.textContent = `${frameCount} FPS`; frameCount = 0; lastFpsTime = now; }
-      valAiStatus.textContent = T('aiSlicer.aiActive'); valAiStatus.style.color = '#059669';
+      if (isCameraRunning) {
+        valAiStatus.textContent = T('aiSlicer.aiActive'); valAiStatus.style.color = '#059669';
+      }
 
       const midX = canvas.width / 2;
+      let p1Hit = false, p2Hit = false;
       if (results.detections && results.detections.length > 0) {
         const faces = results.detections.map(d => {
           const bb = d.boundingBox;
@@ -1239,29 +1243,52 @@
         const right = faces.filter(f => f.x >= midX).sort((a, b) => b.area - a.area);
 
         if (left[0]) {
+          p1Hit = true;
+          P1.lostFrames = 0;
           P1.detected = true; P1.lastHeadX = left[0].x; P1.lastHeadY = left[0].y; P1.lastHeadW = left[0].width; P1.lastHeadH = left[0].height;
           P1.basketX += (left[0].x - P1.basketX) * 0.5;
           P1.basketY += (Math.max(45, left[0].y - left[0].height * 0.65 - 10) - P1.basketY) * 0.5;
-          valP1Head.textContent = T('hb.p1Tracked');
+          valP1Head.textContent = T('hc.p1Tracked');
         }
         if (right[0]) {
+          p2Hit = true;
+          P2.lostFrames = 0;
           P2.detected = true; P2.lastHeadX = right[0].x; P2.lastHeadY = right[0].y; P2.lastHeadW = right[0].width; P2.lastHeadH = right[0].height;
           P2.basketX += (right[0].x - P2.basketX) * 0.5;
           P2.basketY += (Math.max(45, right[0].y - right[0].height * 0.65 - 10) - P2.basketY) * 0.5;
-          valP2Head.textContent = T('hb.p2Tracked');
+          valP2Head.textContent = T('hc.p2Tracked');
         }
+      }
+      if (!p1Hit) {
+        P1.lostFrames++;
+        if (P1.lostFrames > 15 && !isPlayersLocked) valP1Head.textContent = T('hc.p1TrackWait');
+      }
+      if (!p2Hit) {
+        P2.lostFrames++;
+        if (P2.lostFrames > 15 && !isPlayersLocked) valP2Head.textContent = T('hc.p2TrackWait');
       }
     }
 
     function initFaceDetection() {
-      valAiStatus.textContent = T('aiSlicer.aiLoading'); valAiStatus.style.color = '#d97706';
-      if (typeof FaceDetection === 'undefined') return;
+      valAiStatus.textContent = T('hc.aiLoading'); valAiStatus.style.color = '#d97706';
+      if (faceDetector || typeof FaceDetection === 'undefined') return;
+      faceConsecutiveErrors = 0;
       try {
-        faceDetector = new FaceDetection({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}` });
+        faceDetector = new FaceDetection({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4.1646425229/${file}` });
         faceDetector.setOptions({ model: 'full', minDetectionConfidence: 0.22 });
         faceDetector.onResults(onFaceResults);
+        if (typeof faceDetector.initialize === 'function') {
+          faceInitPromise = faceDetector.initialize().catch((e) => {
+            console.warn('FaceDetection pre-initialize warning:', e);
+            faceInitPromise = null;
+          });
+        }
       } catch (e) {
+        console.error('FaceDetection setup failed:', e);
+        faceDetector = null;
+        faceInitPromise = null;
         valAiStatus.textContent = T('aiSlicer.aiFail'); valAiStatus.style.color = '#ef4444';
+        showCamError(T('aiSlicer.aiFail'));
       }
     }
 
@@ -1270,8 +1297,21 @@
       if (!faceDetector && typeof FaceDetection !== 'undefined') initFaceDetection();
       if (videoElement.readyState >= 2 && faceDetector && !isDetecting) {
         isDetecting = true;
-        try { await faceDetector.send({ image: videoElement }); } catch (e) {}
-        isDetecting = false;
+        try {
+          if (faceInitPromise) await faceInitPromise;
+          if (faceDetector) {
+            await faceDetector.send({ image: videoElement });
+          }
+        } catch (e) {
+          faceConsecutiveErrors++;
+          console.warn('FaceDetection frame error:', e);
+          if (faceConsecutiveErrors >= 5) {
+            valAiStatus.textContent = T('aiSlicer.aiFail');
+            valAiStatus.style.color = '#ef4444';
+          }
+        } finally {
+          isDetecting = false;
+        }
       }
       requestAnimationFrame(detectionLoop);
     }
@@ -1301,8 +1341,11 @@
 
     async function startCamera() {
       showCamError('');
+      faceConsecutiveErrors = 0;
       statusBadge.className = 'status-badge active';
       statusText.textContent = T('aiSlicer.statusOpening');
+      if (!P1.detected) valP1Head.textContent = T('hc.p1TrackWait');
+      if (!P2.detected) valP2Head.textContent = T('hc.p2TrackWait');
       try {
         mediaStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' }, audio: false });
         videoElement.srcObject = mediaStream; await videoElement.play();
@@ -1315,6 +1358,10 @@
         statusBadge.className = 'status-badge active';
         statusText.textContent = T('aiSlicer.statusActive');
         if (!faceDetector) initFaceDetection();
+        else {
+          valAiStatus.textContent = T('aiSlicer.aiLoadedWait');
+          valAiStatus.style.color = '#15803d';
+        }
         requestAnimationFrame(detectionLoop);
         emitGameState();
       } catch (err) {
@@ -1328,8 +1375,14 @@
 
     function stopCamera() {
       if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
-      isCameraRunning = false; videoElement.style.display = 'none';
-      if (!isMouseMode) placeholder.style.display = 'flex';
+      isCameraRunning = false;
+      faceConsecutiveErrors = 0;
+      videoElement.style.display = 'none';
+      if (!isMouseMode) {
+        placeholder.style.display = 'flex';
+        valAiStatus.textContent = '-';
+        valAiStatus.style.color = '#57534e';
+      }
       btnToggleCamera.innerHTML = `<span class="ui-sprite ui-sm ui-camera"></span><span>${T('aiSlicer.startCam')}</span>`;
       btnToggleCamera.className = 'btn btn-primary';
       fpsText.textContent = '0 FPS';

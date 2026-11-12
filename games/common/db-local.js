@@ -991,6 +991,110 @@ class LocalDatabase {
     });
   }
 
+  // --- PROJECT JSON EXPORT / IMPORT (PORTABLE LOCAL <-> GITHUB SYNC) ---
+  exportProjectsBundle(teacherId = null, includeRecycle = false) {
+    const all = this.getAllProjects();
+    const filtered = all.filter(p => {
+      if (teacherId && p.teacher_id !== teacherId) return false;
+      if (!includeRecycle && p.is_deleted) return false;
+      return true;
+    });
+    return {
+      lotus_export_version: 1,
+      exported_at: new Date().toISOString(),
+      teacher_id: teacherId || null,
+      projects: filtered.map(p => this.normalizeProjectMeta(p))
+    };
+  }
+
+  downloadProjectsJson(teacherId = null) {
+    const bundle = this.exportProjectsBundle(teacherId, false);
+    if (!bundle.projects || bundle.projects.length === 0) {
+      return { count: 0 };
+    }
+    const teacher = teacherId ? this.getTeacherById(teacherId) : null;
+    const slug = (teacher && teacher.name ? teacher.name : 'all-teachers')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '') || 'projects';
+    const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `lotuswall-projects-${slug}-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    return { count: bundle.projects.length };
+  }
+
+  importProjectsJson(jsonInput, targetTeacherId = null) {
+    let parsed;
+    try {
+      parsed = typeof jsonInput === 'string' ? JSON.parse(jsonInput) : jsonInput;
+    } catch (e) {
+      throw new Error('INVALID_JSON');
+    }
+
+    let incoming = [];
+    if (Array.isArray(parsed)) {
+      incoming = parsed;
+    } else if (parsed && Array.isArray(parsed.projects)) {
+      incoming = parsed.projects;
+    } else if (parsed && typeof parsed === 'object' && parsed.title && Array.isArray(parsed.questions)) {
+      incoming = [parsed];
+    } else {
+      throw new Error('INVALID_BUNDLE');
+    }
+
+    const validItems = incoming.filter(p => p && typeof p === 'object' && (p.title || Array.isArray(p.questions)));
+    if (validItems.length === 0) {
+      throw new Error('EMPTY_BUNDLE');
+    }
+
+    const all = this.getAllProjects();
+    const now = new Date().toISOString();
+    let added = 0;
+    let updated = 0;
+
+    validItems.forEach((rawProj, idx) => {
+      const ownerId = targetTeacherId || rawProj.teacher_id || 't-1';
+      const clone = JSON.parse(JSON.stringify(rawProj));
+      clone.teacher_id = ownerId;
+      clone.is_deleted = false;
+      clone.deleted_at = null;
+      clone.updated_at = now;
+      if (!clone.created_at) clone.created_at = now;
+      if (!clone.title || !String(clone.title).trim()) clone.title = `Imported Project ${idx + 1}`;
+      if (!Array.isArray(clone.questions)) clone.questions = [];
+
+      const existingIdx = clone.id ? all.findIndex(p => p.id === clone.id) : -1;
+      if (existingIdx >= 0) {
+        if (all[existingIdx].teacher_id === ownerId) {
+          all[existingIdx] = this.normalizeProjectMeta({ ...all[existingIdx], ...clone, updated_at: now });
+          updated++;
+        } else {
+          clone.id = 'proj-' + Date.now() + '-' + idx + '-' + Math.floor(Math.random() * 1000);
+          clone.pin = this.generatePin();
+          all.unshift(this.normalizeProjectMeta(clone));
+          added++;
+        }
+      } else {
+        if (!clone.id) {
+          clone.id = 'proj-' + Date.now() + '-' + idx + '-' + Math.floor(Math.random() * 1000);
+        }
+        const pinCollision = clone.pin && all.some(p => p.pin === clone.pin);
+        if (!clone.pin || pinCollision) clone.pin = this.generatePin();
+        all.unshift(this.normalizeProjectMeta(clone));
+        added++;
+      }
+    });
+
+    this.saveAllProjects(all);
+    return { added, updated, total: added + updated };
+  }
+
   // --- EXPORT TEACHERS TO CSV ---
   exportTeachersToExcel() {
     const teachers = this.getTeachers();

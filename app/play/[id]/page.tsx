@@ -149,7 +149,7 @@ function PlayGameContent() {
 
   const copyEmbedCode = () => {
     const embedUrl = `${window.location.origin}/games/${currentTemplate}.html?id=${activityId}`;
-    const code = `<iframe src="${embedUrl}" width="100%" height="600" frameborder="0" allowfullscreen></iframe>`;
+    const code = `<iframe src="${embedUrl}" width="100%" height="600" frameborder="0" allow="camera; microphone; fullscreen; autoplay" allowfullscreen></iframe>`;
     navigator.clipboard.writeText(code);
     setCopiedEmbed(true);
     setTimeout(() => setCopiedEmbed(false), 2000);
@@ -281,7 +281,7 @@ function PlayGameContent() {
               ref={iframeRef}
               src={iframeSrc}
               className="w-full h-full border-none"
-              allow="fullscreen; autoplay"
+              allow="camera; microphone; fullscreen; autoplay"
               title={activity.title}
             />
           )}
@@ -545,7 +545,7 @@ function PlayGameContent() {
                   <textarea 
                     readOnly
                     rows={2}
-                    value={`<iframe src="${typeof window !== 'undefined' ? window.location.origin : ''}/games/${currentTemplate}.html?id=${activityId}" width="100%" height="600" frameborder="0" allowfullscreen></iframe>`}
+                    value={`<iframe src="${typeof window !== 'undefined' ? window.location.origin : ''}/games/${currentTemplate}.html?id=${activityId}" width="100%" height="600" frameborder="0" allow="camera; microphone; fullscreen; autoplay" allowfullscreen></iframe>`}
                     className="flex-1 px-3 py-2 text-xs bg-slate-100 rounded-xl font-mono text-slate-600 border border-slate-200 resize-none"
                   />
                   <button 

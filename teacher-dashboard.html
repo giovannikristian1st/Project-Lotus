@@ -177,12 +177,32 @@
           </button>
         </div>
 
-        <button type="button" id="dash-new-btn" onclick="openQuestionStudio()"
-          class="px-5 py-2.5 bg-[#15803d] hover:bg-[#166534] text-white font-bold text-xs sm:text-sm rounded-lg border-b-[3px] border-[#14532d] flex items-center justify-center gap-2 transition-colors cursor-pointer">
-          <span class="ui-sprite ui-sm ui-plus"></span>
-          <span data-i18n="dash.newActivity">New Activity</span>
-        </button>
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" id="dash-export-json-btn" onclick="exportTeacherProjectsAction()"
+            data-i18n-title="dash.exportTitle" title="Export your projects as a JSON backup file (portable across Local &amp; GitHub Pages)"
+            class="px-3.5 py-2.5 bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] text-[#18181b] font-semibold text-xs sm:text-sm rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+            <span class="ui-sprite ui-sm ui-download"></span>
+            <span data-i18n="dash.exportProjects">Export JSON</span>
+          </button>
+
+          <button type="button" id="dash-import-json-btn" onclick="triggerImportProjectsInput()"
+            data-i18n-title="dash.importTitle" title="Import projects from a JSON backup file"
+            class="px-3.5 py-2.5 bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] text-[#18181b] font-semibold text-xs sm:text-sm rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+            <span class="ui-sprite ui-sm ui-cloud"></span>
+            <span data-i18n="dash.importProjects">Import JSON</span>
+          </button>
+
+          <input type="file" id="dash-import-json-input" accept="application/json,.json" class="hidden" onchange="handleImportProjectsFile(this)">
+
+          <button type="button" id="dash-new-btn" onclick="openQuestionStudio()"
+            class="px-5 py-2.5 bg-[#15803d] hover:bg-[#166534] text-white font-bold text-xs sm:text-sm rounded-lg border-b-[3px] border-[#14532d] flex items-center justify-center gap-2 transition-colors cursor-pointer">
+            <span class="ui-sprite ui-sm ui-plus"></span>
+            <span data-i18n="dash.newActivity">New Activity</span>
+          </button>
+        </div>
       </div>
+
+      <div id="dash-transfer-toast" class="hidden px-4 py-2.5 rounded-xl border text-xs font-semibold flex items-center justify-between gap-3"></div>
 
       <!-- Tab 1: My Projects -->
       <div id="tab-content-projects" class="space-y-4">
@@ -3205,6 +3225,66 @@
     function duplicateProjectAction(id) {
       const dup = LotusDB.duplicateProject(id, currentTeacher.id);
       if (dup) renderDashboard();
+    }
+
+    let dashTransferToastTimer = null;
+    function showDashTransferToast(kind, message) {
+      const box = document.getElementById('dash-transfer-toast');
+      if (!box) return;
+      if (dashTransferToastTimer) clearTimeout(dashTransferToastTimer);
+      const isErr = kind === 'error';
+      box.className = `px-4 py-2.5 rounded-xl border text-xs font-semibold flex items-center justify-between gap-3 ${
+        isErr
+          ? 'bg-[#fef2f2] border-[#fecaca] text-[#991b1b]'
+          : 'bg-[#f0fdf4] border-[#bbf7d0] text-[#166534]'
+      }`;
+      box.innerHTML = `<span>${escapeHtml(message)}</span><button type="button" onclick="this.parentElement.classList.add('hidden')" class="font-bold opacity-70 hover:opacity-100 cursor-pointer">&times;</button>`;
+      box.classList.remove('hidden');
+      dashTransferToastTimer = setTimeout(() => box.classList.add('hidden'), 6000);
+    }
+
+    function exportTeacherProjectsAction() {
+      if (!currentTeacher) return;
+      const res = LotusDB.downloadProjectsJson(currentTeacher.id);
+      if (!res || res.count === 0) {
+        showDashTransferToast('error', LotusI18n.t('dash.exportEmpty'));
+        return;
+      }
+      showDashTransferToast('success', LotusI18n.t('dash.exportSuccess', { n: res.count }));
+    }
+
+    function triggerImportProjectsInput() {
+      const input = document.getElementById('dash-import-json-input');
+      if (input) {
+        input.value = '';
+        input.click();
+      }
+    }
+
+    function handleImportProjectsFile(inputEl) {
+      const file = inputEl && inputEl.files ? inputEl.files[0] : null;
+      if (!file || !currentTeacher) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const stats = LotusDB.importProjectsJson(e.target.result, currentTeacher.id);
+          switchDashboardTab('projects');
+          renderDashboard();
+          showDashTransferToast('success', LotusI18n.t('dash.importSuccess', {
+            added: stats.added,
+            updated: stats.updated
+          }));
+        } catch (err) {
+          showDashTransferToast('error', LotusI18n.t('dash.importInvalid'));
+        } finally {
+          inputEl.value = '';
+        }
+      };
+      reader.onerror = () => {
+        showDashTransferToast('error', LotusI18n.t('dash.importInvalid'));
+        inputEl.value = '';
+      };
+      reader.readAsText(file);
     }
 
     function promptDeleteProjectById(id) {

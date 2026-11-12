@@ -11,13 +11,13 @@
 
   <link rel="stylesheet" href="common/ui-spritesheet.css">
 
-  <!-- MediaPipe Hands CDN (Pose 2P loaded dynamically when selected) -->
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous" defer></script>
+  <!-- MediaPipe Unified Tasks-Vision CDN (Hands + Pose 2P on shared WASM runtime) -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.2.3/vision_bundle.js" crossorigin="anonymous" defer></script>
 
   <!-- Hanzi Databases (Stroke Paths + Meihua DB + Vocab DB) -->
-  <script src="data/brushstrokedb.js"></script>
-  <script src="data/meihuadb.js"></script>
-  <script src="data/vocabdb.js"></script>
+  <script src="data/brushstrokedb.js" defer></script>
+  <script src="data/meihuadb.js" defer></script>
+  <script src="data/vocabdb.js" defer></script>
 
   <!-- Shared LotusWall Engines -->
   <script src="common/i18n.js"></script>
@@ -1119,16 +1119,23 @@
     const player1 = createPlayerState(1, 'Player 1', '#0284c7', 'rgba(56, 189, 248, 0.5)', '#38bdf8', 'p1');
     const player2 = createPlayerState(2, 'Player 2', '#ec4899', 'rgba(244, 63, 94, 0.5)', '#f43f5e', 'p2');
 
-    // Camera & AI State
+    // Camera & AI State (Unified @mediapipe/tasks-vision runtime for Hands + Pose)
     let isCameraRunning = false;
-    let handsTracker = null;
+    let visionFilesetPromise = null;
+    let handLandmarker = null;
+    let handLoadingPromise = null;
     let handsReady = false;
+    let handInitFailed = false;
     let poseLandmarker = null;
     let poseReady = false;
     let poseLoadingPromise = null;
+    let poseInitFailed = false;
     let mediaStream = null;
     let isDetecting = false;
+    let lastHandVideoTime = -1;
     let lastPoseVideoTime = -1;
+    let lastDetectTimestamp = 0;
+    let detectConsecutiveErrors = 0;
     let animTick = 0;
     let aiFrameCount = 0;
     let aiCurrentFps = 0;
@@ -1647,20 +1654,7 @@
       return { strokes: data.strokes, medians: processedMedians, totalStrokes: data.strokes.length };
     }
 
-    // --- MEDIAPIPE HANDS & POSE INITIALIZATION ---
-    function initHandsTracker() {
-      if (handsTracker) return;
-      if (typeof Hands === 'undefined') { setAiStatus('loading', T('aiSlicer.aiLoading')); return; }
-      setAiStatus('loading', T('aiSlicer.aiLoading'));
-      try {
-        handsTracker = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
-        handsTracker.setOptions({ maxNumHands: 4, modelComplexity: 0, minDetectionConfidence: 0.35, minTrackingConfidence: 0.35 });
-        handsTracker.onResults((results) => onHandResults(results));
-      } catch (err) {
-        setAiStatus('error', T('aiSlicer.aiFail'));
-      }
-    }
-
+    // --- MEDIAPIPE UNIFIED HANDS & POSE INITIALIZATION (@mediapipe/tasks-vision) ---
     function loadScriptOnce(src) {
       return new Promise((resolve, reject) => {
         if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
@@ -1671,21 +1665,89 @@
       });
     }
 
+    async function getVisionFileset() {
+      if (visionFilesetPromise) return visionFilesetPromise;
+      visionFilesetPromise = (async () => {
+        if (typeof Vision === 'undefined' || !Vision.FilesetResolver) {
+          await loadScriptOnce('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.2.3/vision_bundle.js');
+        }
+        return Vision.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.2.3/wasm');
+      })().catch((err) => {
+        visionFilesetPromise = null;
+        throw err;
+      });
+      return visionFilesetPromise;
+    }
+
+    async function initHandsTracker() {
+      if (handLandmarker) {
+        handsReady = true;
+        if (isCameraRunning && selectTrackingMode.value === 'hands') {
+          setAiStatus('ready', T('aiSlicer.aiActive'));
+        }
+        return handLandmarker;
+      }
+      if (handLoadingPromise) return handLoadingPromise;
+
+      handLoadingPromise = (async () => {
+        setAiStatus('loading', T('hb.aiLoading'));
+        try {
+          const vision = await getVisionFileset();
+          const makeOpts = (delegate) => ({
+            baseOptions: {
+              modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
+              delegate
+            },
+            runningMode: 'VIDEO',
+            numHands: 4,
+            minHandDetectionConfidence: 0.35,
+            minHandPresenceConfidence: 0.35,
+            minTrackingConfidence: 0.35
+          });
+          try {
+            handLandmarker = await Vision.HandLandmarker.createFromOptions(vision, makeOpts('GPU'));
+          } catch (gpuErr) {
+            console.warn('HandLandmarker GPU fallback to CPU:', gpuErr);
+            handLandmarker = await Vision.HandLandmarker.createFromOptions(vision, makeOpts('CPU'));
+          }
+          handsReady = true;
+          if (isCameraRunning && selectTrackingMode.value === 'hands') {
+            setAiStatus('ready', T('aiSlicer.aiActive'));
+          }
+          return handLandmarker;
+        } catch (err) {
+          console.error('HandLandmarker init error:', err);
+          handLoadingPromise = null;
+          handsReady = false;
+          handInitFailed = true;
+          if (selectTrackingMode.value === 'hands') {
+            setAiStatus('error', T('aiSlicer.aiFail'));
+            showCamError(T('aiSlicer.aiFail'));
+          }
+          return null;
+        }
+      })();
+      return handLoadingPromise;
+    }
+
     async function initPoseTracker() {
-      if (poseLandmarker) return;
+      if (poseLandmarker) {
+        poseReady = true;
+        if (isCameraRunning && selectTrackingMode.value === 'pose') {
+          setAiStatus('ready', T('aiSlicer.aiActive'));
+        }
+        return poseLandmarker;
+      }
       if (poseLoadingPromise) return poseLoadingPromise;
 
       poseLoadingPromise = (async () => {
-        setAiStatus('loading', T('aiSlicer.aiLoading'));
+        setAiStatus('loading', T('hb.aiLoading'));
         try {
-          if (typeof Vision === 'undefined' || !Vision.PoseLandmarker) {
-            await loadScriptOnce('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.js');
-          }
-          const vision = await Vision.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm');
-          poseLandmarker = await Vision.PoseLandmarker.createFromOptions(vision, {
+          const vision = await getVisionFileset();
+          const makeOpts = (delegate) => ({
             baseOptions: {
               modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
-              delegate: 'GPU'
+              delegate
             },
             runningMode: 'VIDEO',
             numPoses: 2,
@@ -1693,10 +1755,27 @@
             minPosePresenceConfidence: 0.35,
             minTrackingConfidence: 0.35
           });
+          try {
+            poseLandmarker = await Vision.PoseLandmarker.createFromOptions(vision, makeOpts('GPU'));
+          } catch (gpuErr) {
+            console.warn('PoseLandmarker GPU fallback to CPU:', gpuErr);
+            poseLandmarker = await Vision.PoseLandmarker.createFromOptions(vision, makeOpts('CPU'));
+          }
           poseReady = true;
-          setAiStatus('ready', T('aiSlicer.aiActive'));
+          if (isCameraRunning && selectTrackingMode.value === 'pose') {
+            setAiStatus('ready', T('aiSlicer.aiActive'));
+          }
+          return poseLandmarker;
         } catch (err) {
-          setAiStatus('error', T('aiSlicer.aiFail'));
+          console.error('PoseLandmarker init error:', err);
+          poseLoadingPromise = null;
+          poseReady = false;
+          poseInitFailed = true;
+          if (selectTrackingMode.value === 'pose') {
+            setAiStatus('error', T('aiSlicer.aiFail'));
+            showCamError(T('aiSlicer.aiFail'));
+          }
+          return null;
         }
       })();
       return poseLoadingPromise;
@@ -1722,16 +1801,17 @@
       player1.rawPalmVisible = false;
       player2.rawPalmVisible = false;
 
-      if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) return;
+      const handsList = (results && (results.landmarks || results.multiHandLandmarks)) || [];
+      if (handsList.length === 0) return;
 
-      const handsList = results.multiHandLandmarks;
-      const handednessList = results.multiHandedness || [];
+      const handednessList = (results && (results.handednesses || results.multiHandedness)) || [];
       const midX = canvas.width / 2;
 
       for (let i = 0; i < handsList.length; i++) {
         const lm = handsList[i];
         const hInfo = handednessList[i];
-        const rawHandType = hInfo ? hInfo.label : 'Right';
+        const hCat = Array.isArray(hInfo) ? hInfo[0] : hInfo;
+        const rawHandType = (hCat && (hCat.categoryName || hCat.displayName || hCat.label)) || 'Right';
         const actualHand = rawHandType === 'Left' ? 'right' : 'left';
 
         if (handPref === 'right' && actualHand !== 'right') continue;
@@ -1791,23 +1871,47 @@
       if (videoElement.readyState >= 2 && videoElement.videoWidth > 0 && !isDetecting) {
         isDetecting = true;
         try {
+          const ts = Math.max(lastDetectTimestamp + 1, Math.round(performance.now()));
           if (mode === 'pose') {
-            if (!poseLandmarker) await initPoseTracker();
+            if (!poseLandmarker && !poseInitFailed) await initPoseTracker();
             if (poseLandmarker && videoElement.currentTime !== lastPoseVideoTime) {
               lastPoseVideoTime = videoElement.currentTime;
-              const res = poseLandmarker.detectForVideo(videoElement, performance.now());
+              lastDetectTimestamp = ts;
+              const res = poseLandmarker.detectForVideo(videoElement, ts);
               onPose2PResults(res);
+              detectConsecutiveErrors = 0;
             }
           } else {
-            if (!handsTracker) initHandsTracker();
-            if (handsTracker) await handsTracker.send({ image: videoElement });
+            if (!handLandmarker && !handInitFailed) await initHandsTracker();
+            if (handLandmarker && videoElement.currentTime !== lastHandVideoTime) {
+              lastHandVideoTime = videoElement.currentTime;
+              lastDetectTimestamp = ts;
+              const res = handLandmarker.detectForVideo(videoElement, ts);
+              onHandResults(res);
+              detectConsecutiveErrors = 0;
+            }
           }
-        } catch (e) {} finally { isDetecting = false; }
+        } catch (e) {
+          detectConsecutiveErrors++;
+          console.warn('Hanzi AI frame error:', e);
+          if (detectConsecutiveErrors >= 5) {
+            setAiStatus('error', T('aiSlicer.aiFail'));
+          }
+        } finally {
+          isDetecting = false;
+        }
       }
       requestAnimationFrame(detectionLoop);
     }
 
     selectTrackingMode.addEventListener('change', () => {
+      aiFrameCount = 0;
+      aiCurrentFps = 0;
+      lastHandVideoTime = -1;
+      lastPoseVideoTime = -1;
+      detectConsecutiveErrors = 0;
+      handInitFailed = false;
+      poseInitFailed = false;
       if (isCameraRunning) {
         if (selectTrackingMode.value === 'pose') initPoseTracker();
         else initHandsTracker();
@@ -1852,6 +1956,13 @@
 
     async function startCamera() {
       showCamError('');
+      lastHandVideoTime = -1;
+      lastPoseVideoTime = -1;
+      detectConsecutiveErrors = 0;
+      handInitFailed = false;
+      poseInitFailed = false;
+      aiFrameCount = 0;
+      aiCurrentFps = 0;
       setAiStatus('loading', T('aiSlicer.statusOpening'));
       try {
         mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -1889,6 +2000,7 @@
     function stopCamera() {
       if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
       isCameraRunning = false;
+      detectConsecutiveErrors = 0;
       videoElement.style.display = 'none';
       if (!isMouseMode) {
         placeholder.style.display = 'flex';

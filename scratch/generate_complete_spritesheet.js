@@ -1,0 +1,858 @@
+// scratch/generate_complete_spritesheet.js
+// Script to generate the comprehensive 1024x1024 SVG Spritesheet
+// and corresponding PNG Spritesheet with all 64 unified game assets.
+
+const fs = require('fs');
+const path = require('path');
+const zlib = require('zlib');
+
+function buildSVG() {
+  const width = 1024;
+  const height = 1024;
+
+  let svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
+  <defs>
+    <!-- Filter Shadows -->
+    <filter id="drop-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.2"/>
+    </filter>
+    <filter id="glow-gold" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#f59e0b" flood-opacity="0.6"/>
+    </filter>
+    <filter id="glow-blue" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#3b82f6" flood-opacity="0.5"/>
+    </filter>
+
+    <!-- Gradients -->
+    <linearGradient id="grad-card-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f8fafc"/>
+    </linearGradient>
+    <linearGradient id="grad-gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="grad-emerald" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="grad-rose" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f87171"/>
+      <stop offset="100%" stop-color="#dc2626"/>
+    </linearGradient>
+    <linearGradient id="grad-sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <linearGradient id="grad-blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="grad-purple" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#6b21a8"/>
+    </linearGradient>
+    <linearGradient id="grad-orange" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fb923c"/>
+      <stop offset="100%" stop-color="#ea580c"/>
+    </linearGradient>
+    <linearGradient id="grad-wood" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d97706"/>
+      <stop offset="100%" stop-color="#78350f"/>
+    </linearGradient>
+    <linearGradient id="grad-metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e2e8f0"/>
+      <stop offset="50%" stop-color="#94a3b8"/>
+      <stop offset="100%" stop-color="#64748b"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background Base (Transparent for Sprite Sheet) -->
+  <rect width="1024" height="1024" fill="none"/>
+
+  <!-- ========================================================================
+       ROW 0 (y=0): Universal UI & HUD Essentials
+       ======================================================================== -->
+  <!-- [0, 0]: stat-badge-pill (Pill latar belakang status / timer / nyawa) -->
+  <g id="sprite-stat-badge-pill" transform="translate(0, 0)">
+    <rect x="8" y="36" width="112" height="56" rx="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="3" filter="url(#drop-shadow)"/>
+    <rect x="14" y="42" width="100" height="44" rx="22" fill="#f8fafc"/>
+    <circle cx="36" cy="64" r="14" fill="#e2e8f0"/>
+    <circle cx="36" cy="64" r="7" fill="#64748b"/>
+    <rect x="58" y="58" width="46" height="12" rx="6" fill="#cbd5e1"/>
+  </g>
+
+  <!-- [1, 0]: heart-life (Ikon nyawa hati merah berkilau) -->
+  <g id="sprite-heart-life" transform="translate(128, 0)">
+    <path d="M 64 96 C 24 64, 20 38, 38 26 C 52 17, 60 25, 64 32 C 68 25, 76 17, 90 26 C 108 38, 104 64, 64 96 Z"
+          fill="url(#grad-rose)" stroke="#b91c1c" stroke-width="3" filter="url(#drop-shadow)"/>
+    <ellipse cx="46" cy="34" rx="8" ry="4" transform="rotate(-35 46 34)" fill="#ffffff" opacity="0.6"/>
+  </g>
+
+  <!-- [2, 0]: star-score (Bintang skor emas 3D) -->
+  <g id="sprite-star-score" transform="translate(256, 0)">
+    <polygon points="64,16 78,48 112,52 86,76 94,110 64,92 34,110 42,76 16,52 50,48"
+             fill="url(#grad-gold)" stroke="#b45309" stroke-width="3" filter="url(#glow-gold)"/>
+    <polygon points="64,16 78,48 64,92 42,76 16,52 50,48" fill="#fde047" opacity="0.6"/>
+    <circle cx="56" cy="40" r="4" fill="#ffffff" opacity="0.9"/>
+  </g>
+
+  <!-- [3, 0]: clock-timer (Jam timer modern) -->
+  <g id="sprite-clock-timer" transform="translate(384, 0)">
+    <circle cx="64" cy="64" r="44" fill="#ffffff" stroke="#64748b" stroke-width="5" filter="url(#drop-shadow)"/>
+    <circle cx="64" cy="64" r="36" fill="#f8fafc"/>
+    <!-- Tick marks -->
+    <line x1="64" y1="32" x2="64" y2="38" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+    <line x1="64" y1="90" x2="64" y2="96" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+    <line x1="32" y1="64" x2="38" y2="64" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+    <line x1="90" y1="64" x2="96" y2="64" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+    <!-- Hands -->
+    <line x1="64" y1="64" x2="64" y2="42" stroke="#0f172a" stroke-width="4" stroke-linecap="round"/>
+    <line x1="64" y1="64" x2="82" y2="64" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="64" cy="64" r="5" fill="#2563eb"/>
+  </g>
+
+  <!-- [4, 0]: badge-correct (Centang hijau bulat) -->
+  <g id="sprite-badge-correct" transform="translate(512, 0)">
+    <circle cx="64" cy="64" r="44" fill="url(#grad-emerald)" stroke="#ffffff" stroke-width="4" filter="url(#drop-shadow)"/>
+    <path d="M 42 64 L 56 78 L 86 48" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- [5, 0]: badge-wrong (Silang merah bulat) -->
+  <g id="sprite-badge-wrong" transform="translate(640, 0)">
+    <circle cx="64" cy="64" r="44" fill="url(#grad-rose)" stroke="#ffffff" stroke-width="4" filter="url(#drop-shadow)"/>
+    <line x1="46" y1="46" x2="82" y2="82" stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
+    <line x1="82" y1="46" x2="46" y2="82" stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
+  </g>
+
+  <!-- [6, 0]: powerup-5050 (Badge petir 50:50) -->
+  <g id="sprite-powerup-5050" transform="translate(768, 0)">
+    <circle cx="64" cy="64" r="44" fill="#0f172a" stroke="#fbbf24" stroke-width="4" filter="url(#drop-shadow)"/>
+    <polygon points="68,26 44,62 60,62 52,98 84,54 68,54" fill="#facc15" stroke="#eab308" stroke-width="2"/>
+    <rect x="34" y="90" width="60" height="20" rx="10" fill="#facc15"/>
+    <text x="64" y="104" font-family="'Poppins', sans-serif" font-weight="900" font-size="11" fill="#000000" text-anchor="middle">50:50</text>
+  </g>
+
+  <!-- [7, 0]: powerup-freeze (Badge beku salju) -->
+  <g id="sprite-powerup-freeze" transform="translate(896, 0)">
+    <circle cx="64" cy="64" r="44" fill="url(#grad-sky)" stroke="#ffffff" stroke-width="4" filter="url(#drop-shadow)"/>
+    <!-- Snowflake -->
+    <line x1="64" y1="30" x2="64" y2="98" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+    <line x1="30" y1="64" x2="98" y2="64" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+    <line x1="40" y1="40" x2="88" y2="88" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+    <line x1="88" y1="40" x2="40" y2="88" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="64" cy="64" r="6" fill="#ffffff"/>
+  </g>
+
+
+  <!-- ========================================================================
+       ROW 1 (y=128): Kuis & Benar-Salah (Quiz & True/False Boxes)
+       ======================================================================== -->
+  <!-- [0, 1]: quiz-question-box (Kotak latar belakang soal kuis) -->
+  <g id="sprite-quiz-question-box" transform="translate(0, 128)">
+    <rect x="8" y="16" width="112" height="96" rx="18" fill="#ffffff" stroke="#cbd5e1" stroke-width="3" filter="url(#drop-shadow)"/>
+    <!-- Header band -->
+    <path d="M 8 32 C 8 23, 17 16, 26 16 L 102 16 C 111 16, 120 23, 120 32 L 120 38 L 8 38 Z" fill="#2563eb"/>
+    <circle cx="24" cy="27" r="4" fill="#ffffff" opacity="0.8"/>
+    <circle cx="36" cy="27" r="4" fill="#ffffff" opacity="0.8"/>
+    <!-- Question mark icon on card -->
+    <circle cx="64" cy="68" r="18" fill="#eff6ff" stroke="#bfdbfe" stroke-width="2"/>
+    <text x="64" y="75" font-family="'Poppins', sans-serif" font-weight="900" font-size="20" fill="#2563eb" text-anchor="middle">?</text>
+  </g>
+
+  <!-- [1, 1]: quiz-answer-box (Kotak latar belakang jawaban kuis normal) -->
+  <g id="sprite-quiz-answer-box" transform="translate(128, 128)">
+    <rect x="8" y="24" width="112" height="80" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="3" filter="url(#drop-shadow)"/>
+    <rect x="18" y="38" width="28" height="52" rx="10" fill="#f1f5f9"/>
+    <text x="32" y="70" font-family="'Poppins', sans-serif" font-weight="900" font-size="16" fill="#2563eb" text-anchor="middle">A</text>
+    <line x1="56" y1="52" x2="108" y2="52" stroke="#cbd5e1" stroke-width="4" stroke-linecap="round"/>
+    <line x1="56" y1="74" x2="94" y2="74" stroke="#e2e8f0" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- [2, 1]: quiz-answer-hover (Kotak jawaban saat disentuh/hover) -->
+  <g id="sprite-quiz-answer-hover" transform="translate(256, 128)">
+    <rect x="8" y="24" width="112" height="80" rx="16" fill="#eff6ff" stroke="#3b82f6" stroke-width="3" filter="url(#glow-blue)"/>
+    <rect x="18" y="38" width="28" height="52" rx="10" fill="#dbeafe"/>
+    <text x="32" y="70" font-family="'Poppins', sans-serif" font-weight="900" font-size="16" fill="#1d4ed8" text-anchor="middle">A</text>
+    <line x1="56" y1="52" x2="108" y2="52" stroke="#3b82f6" stroke-width="4" stroke-linecap="round"/>
+    <line x1="56" y1="74" x2="94" y2="74" stroke="#93c5fd" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- [3, 1]: quiz-answer-correct (Kotak jawaban status BENAR) -->
+  <g id="sprite-quiz-answer-correct" transform="translate(384, 128)">
+    <rect x="8" y="24" width="112" height="80" rx="16" fill="#ecfdf5" stroke="#10b981" stroke-width="4" filter="url(#drop-shadow)"/>
+    <circle cx="34" cy="64" r="16" fill="#10b981"/>
+    <path d="M 26 64 L 32 70 L 42 56" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="58" y1="54" x2="108" y2="54" stroke="#059669" stroke-width="4" stroke-linecap="round"/>
+    <line x1="58" y1="72" x2="96" y2="72" stroke="#34d399" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- [4, 1]: quiz-answer-wrong (Kotak jawaban status SALAH) -->
+  <g id="sprite-quiz-answer-wrong" transform="translate(512, 128)">
+    <rect x="8" y="24" width="112" height="80" rx="16" fill="#fef2f2" stroke="#ef4444" stroke-width="4" filter="url(#drop-shadow)"/>
+    <circle cx="34" cy="64" r="16" fill="#ef4444"/>
+    <line x1="27" y1="57" x2="41" y2="71" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+    <line x1="41" y1="57" x2="27" y2="71" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+    <line x1="58" y1="54" x2="108" y2="54" stroke="#dc2626" stroke-width="4" stroke-linecap="round"/>
+    <line x1="58" y1="72" x2="96" y2="72" stroke="#f87171" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- [5, 1]: truefalse-card-box (Kotak kartu pernyataan soal Benar/Salah) -->
+  <g id="sprite-truefalse-card-box" transform="translate(640, 128)">
+    <rect x="8" y="18" width="112" height="92" rx="16" fill="#ffffff" stroke="#cbd5e1" stroke-width="3" filter="url(#drop-shadow)"/>
+    <rect x="14" y="24" width="100" height="24" rx="8" fill="#f1f5f9"/>
+    <text x="64" y="40" font-family="'Poppins', sans-serif" font-weight="800" font-size="10" fill="#475569" text-anchor="middle">SOAL PERNYATAAN</text>
+    <line x1="20" y1="62" x2="108" y2="62" stroke="#0f172a" stroke-width="4" stroke-linecap="round"/>
+    <line x1="20" y1="78" x2="92" y2="78" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
+    <line x1="20" y1="94" x2="68" y2="94" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- [6, 1]: btn-true-box (Kotak/Tombol BENAR hijau) -->
+  <g id="sprite-btn-true-box" transform="translate(768, 128)">
+    <rect x="8" y="24" width="112" height="80" rx="18" fill="url(#grad-emerald)" stroke="#047857" stroke-width="3" filter="url(#drop-shadow)"/>
+    <circle cx="38" cy="64" r="18" fill="#ffffff"/>
+    <path d="M 28 64 L 35 71 L 48 56" fill="none" stroke="#059669" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="82" y="70" font-family="'Poppins', sans-serif" font-weight="900" font-size="16" fill="#ffffff" text-anchor="middle">BENAR</text>
+  </g>
+
+  <!-- [7, 1]: btn-false-box (Kotak/Tombol SALAH merah) -->
+  <g id="sprite-btn-false-box" transform="translate(896, 128)">
+    <rect x="8" y="24" width="112" height="80" rx="18" fill="url(#grad-rose)" stroke="#b91c1c" stroke-width="3" filter="url(#drop-shadow)"/>
+    <circle cx="38" cy="64" r="18" fill="#ffffff"/>
+    <line x1="30" y1="56" x2="46" y2="72" stroke="#dc2626" stroke-width="4" stroke-linecap="round"/>
+    <line x1="46" y1="56" x2="30" y2="72" stroke="#dc2626" stroke-width="4" stroke-linecap="round"/>
+    <text x="82" y="70" font-family="'Poppins', sans-serif" font-weight="900" font-size="16" fill="#ffffff" text-anchor="middle">SALAH</text>
+  </g>
+
+
+  <!-- ========================================================================
+       ROW 2 (y=256): Buka Kotak & Flip Tiles (Boxes & Cards)
+       ======================================================================== -->
+  <!-- [0, 2]: box-closed (Kotak misteri tertutup pita) -->
+  <g id="sprite-box-closed" transform="translate(0, 256)">
+    <rect x="18" y="44" width="92" height="70" rx="14" fill="#ffffff" stroke="#6366f1" stroke-width="4" filter="url(#drop-shadow)"/>
+    <rect x="12" y="34" width="104" height="20" rx="8" fill="#4f46e5"/>
+    <!-- Vertical Ribbon -->
+    <rect x="56" y="34" width="16" height="80" fill="#fbbf24"/>
+    <!-- Bow -->
+    <path d="M 64 34 C 50 16, 34 24, 46 34 Z" fill="#fbbf24"/>
+    <path d="M 64 34 C 78 16, 94 24, 82 34 Z" fill="#fbbf24"/>
+    <circle cx="64" cy="34" r="6" fill="#d97706"/>
+    <text x="64" y="86" font-family="'Poppins', sans-serif" font-weight="900" font-size="24" fill="#1e1b4b" text-anchor="middle">1</text>
+  </g>
+
+  <!-- [1, 2]: box-open (Kotak misteri terbuka bercahaya) -->
+  <g id="sprite-box-open" transform="translate(128, 256)">
+    <!-- Light rays -->
+    <polygon points="64,30 20,4 34,0" fill="#fef08a" opacity="0.6"/>
+    <polygon points="64,30 60,0 68,0" fill="#fef08a" opacity="0.8"/>
+    <polygon points="64,30 94,0 108,4" fill="#fef08a" opacity="0.6"/>
+    <!-- Box Body -->
+    <rect x="18" y="52" width="92" height="62" rx="14" fill="#ffffff" stroke="#10b981" stroke-width="4" filter="url(#drop-shadow)"/>
+    <ellipse cx="64" cy="52" rx="46" ry="12" fill="#d1fae5"/>
+    <rect x="56" y="52" width="16" height="62" fill="#fbbf24"/>
+    <polygon points="64,28 72,46 90,48 76,60 80,78 64,68 48,78 52,60 38,48 56,46" fill="#f59e0b"/>
+  </g>
+
+  <!-- [2, 2]: box-gold (Kotak emas jackpot) -->
+  <g id="sprite-box-gold" transform="translate(256, 256)">
+    <rect x="18" y="44" width="92" height="70" rx="14" fill="url(#grad-gold)" stroke="#78350f" stroke-width="4" filter="url(#glow-gold)"/>
+    <rect x="12" y="34" width="104" height="20" rx="8" fill="#d97706"/>
+    <rect x="56" y="34" width="16" height="80" fill="#ffffff" opacity="0.7"/>
+    <circle cx="64" cy="74" r="16" fill="#78350f"/>
+    <polygon points="64,64 68,72 76,73 70,78 72,86 64,82 56,86 58,78 52,73 60,72" fill="#fef08a"/>
+  </g>
+
+  <!-- [3, 2]: box-lid (Tutup kotak terangkat) -->
+  <g id="sprite-box-lid" transform="translate(384, 256)">
+    <g transform="rotate(-18 64 54)">
+      <rect x="12" y="44" width="104" height="24" rx="8" fill="#4f46e5" stroke="#1e1b4b" stroke-width="3" filter="url(#drop-shadow)"/>
+      <rect x="56" y="44" width="16" height="24" fill="#fbbf24"/>
+      <path d="M 64 44 C 50 26, 34 34, 46 44 Z" fill="#fbbf24"/>
+      <path d="M 64 44 C 78 26, 94 34, 82 44 Z" fill="#fbbf24"/>
+      <circle cx="64" cy="44" r="6" fill="#d97706"/>
+    </g>
+  </g>
+
+  <!-- [4, 2]: card-back (Belakang kartu Flip Tiles) -->
+  <g id="sprite-card-back" transform="translate(512, 256)">
+    <rect x="16" y="12" width="96" height="104" rx="16" fill="url(#grad-blue)" stroke="#1e40af" stroke-width="3" filter="url(#drop-shadow)"/>
+    <rect x="24" y="20" width="80" height="88" rx="10" fill="none" stroke="#93c5fd" stroke-width="2" stroke-dasharray="4,4"/>
+    <!-- Diamond/Lotus icon -->
+    <polygon points="64,36 82,64 64,92 46,64" fill="#ffffff" opacity="0.9"/>
+    <polygon points="64,48 74,64 64,80 54,64" fill="#1d4ed8"/>
+  </g>
+
+  <!-- [5, 2]: card-front (Depan kartu Flip Tiles) -->
+  <g id="sprite-card-front" transform="translate(640, 256)">
+    <rect x="16" y="12" width="96" height="104" rx="16" fill="#ffffff" stroke="#cbd5e1" stroke-width="3" filter="url(#drop-shadow)"/>
+    <rect x="24" y="20" width="80" height="88" rx="10" fill="#f8fafc"/>
+    <circle cx="64" cy="56" r="22" fill="#e2e8f0"/>
+    <text x="64" y="64" font-family="'Poppins', sans-serif" font-weight="900" font-size="24" fill="#2563eb" text-anchor="middle">A</text>
+    <rect x="34" y="86" width="60" height="8" rx="4" fill="#cbd5e1"/>
+  </g>
+
+  <!-- [6, 2]: card-matched (Kartu cocok/selesai) -->
+  <g id="sprite-card-matched" transform="translate(768, 256)">
+    <rect x="16" y="12" width="96" height="104" rx="16" fill="#ecfdf5" stroke="#10b981" stroke-width="4" filter="url(#glow-gold)"/>
+    <circle cx="64" cy="54" r="24" fill="#10b981"/>
+    <path d="M 52 54 L 60 62 L 76 46" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="64" y="96" font-family="'Poppins', sans-serif" font-weight="800" font-size="11" fill="#047857" text-anchor="middle">MATCHED</text>
+  </g>
+
+  <!-- [7, 2]: card-placeholder (Slot kartu kosong) -->
+  <g id="sprite-card-placeholder" transform="translate(896, 256)">
+    <rect x="16" y="12" width="96" height="104" rx="16" fill="#f8fafc" stroke="#94a3b8" stroke-width="3" stroke-dasharray="6,6"/>
+    <circle cx="64" cy="64" r="16" fill="#e2e8f0"/>
+    <line x1="56" y1="64" x2="72" y2="64" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
+    <line x1="64" y1="56" x2="64" y2="72" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+
+  <!-- ========================================================================
+       ROW 3 (y=384): Menjodohkan & Pengelompokan (Match Up & Group Sort Boxes)
+       ======================================================================== -->
+  <!-- [0, 3]: matchup-prompt-box (Kotak soal Menjodohkan) -->
+  <g id="sprite-matchup-prompt-box" transform="translate(0, 384)">
+    <rect x="8" y="20" width="112" height="88" rx="16" fill="#ffffff" stroke="#3b82f6" stroke-width="3" filter="url(#drop-shadow)"/>
+    <rect x="16" y="28" width="96" height="20" rx="6" fill="#eff6ff"/>
+    <text x="64" y="42" font-family="'Poppins', sans-serif" font-weight="800" font-size="10" fill="#2563eb" text-anchor="middle">PASANGAN SOAL</text>
+    <circle cx="28" cy="68" r="8" fill="#3b82f6"/>
+    <line x1="42" y1="68" x2="104" y2="68" stroke="#0f172a" stroke-width="4" stroke-linecap="round"/>
+    <line x1="42" y1="84" x2="88" y2="84" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- [1, 3]: matchup-slot-box (Kotak slot target dropzone Menjodohkan) -->
+  <g id="sprite-matchup-slot-box" transform="translate(128, 384)">
+    <rect x="8" y="20" width="112" height="88" rx="16" fill="#f8fafc" stroke="#3b82f6" stroke-width="3" stroke-dasharray="6,6"/>
+    <rect x="24" y="46" width="80" height="36" rx="10" fill="#e0f2fe"/>
+    <text x="64" y="69" font-family="'Poppins', sans-serif" font-weight="700" font-size="11" fill="#0284c7" text-anchor="middle">TARIK KE SINI</text>
+  </g>
+
+  <!-- [2, 3]: matchup-item-box (Kotak kartu jawaban draggable Menjodohkan) -->
+  <g id="sprite-matchup-item-box" transform="translate(256, 384)">
+    <rect x="8" y="24" width="112" height="80" rx="14" fill="#ffffff" stroke="#10b981" stroke-width="3" filter="url(#drop-shadow)"/>
+    <!-- Grip handle dots -->
+    <circle cx="20" cy="56" r="3" fill="#94a3b8"/>
+    <circle cx="20" cy="72" r="3" fill="#94a3b8"/>
+    <circle cx="28" cy="56" r="3" fill="#94a3b8"/>
+    <circle cx="28" cy="72" r="3" fill="#94a3b8"/>
+    <text x="70" y="69" font-family="'Poppins', sans-serif" font-weight="800" font-size="13" fill="#065f46" text-anchor="middle">JAWABAN</text>
+  </g>
+
+  <!-- [3, 3]: matchup-bank-box (Kotak bank tempat kartu jawaban) -->
+  <g id="sprite-matchup-bank-box" transform="translate(384, 384)">
+    <rect x="8" y="16" width="112" height="96" rx="18" fill="#ffffff" stroke="#cbd5e1" stroke-width="3" filter="url(#drop-shadow)"/>
+    <rect x="14" y="22" width="100" height="20" rx="6" fill="#f1f5f9"/>
+    <text x="64" y="36" font-family="'Poppins', sans-serif" font-weight="800" font-size="9" fill="#64748b" text-anchor="middle">PILIHAN KATA</text>
+    <rect x="18" y="50" width="42" height="24" rx="6" fill="#e2e8f0"/>
+    <rect x="68" y="50" width="42" height="24" rx="6" fill="#e2e8f0"/>
+    <rect x="18" y="80" width="42" height="24" rx="6" fill="#e2e8f0"/>
+    <rect x="68" y="80" width="42" height="24" rx="6" fill="#e2e8f0"/>
+  </g>
+
+  <!-- [4, 3]: groupsort-bucket-1 (Wadah / ember kategori 1 biru) -->
+  <g id="sprite-groupsort-bucket-1" transform="translate(512, 384)">
+    <path d="M 24 38 L 32 108 C 33 114, 40 118, 46 118 L 82 118 C 88 118, 95 114, 96 108 L 104 38 Z"
+          fill="url(#grad-sky)" stroke="#0369a1" stroke-width="3" filter="url(#drop-shadow)"/>
+    <ellipse cx="64" cy="38" rx="40" ry="12" fill="#bae6fd" stroke="#0369a1" stroke-width="3"/>
+    <rect x="36" y="64" width="56" height="26" rx="6" fill="#ffffff"/>
+    <text x="64" y="81" font-family="'Poppins', sans-serif" font-weight="900" font-size="12" fill="#0369a1" text-anchor="middle">GRUP A</text>
+  </g>
+
+  <!-- [5, 3]: groupsort-bucket-2 (Wadah / ember kategori 2 hijau) -->
+  <g id="sprite-groupsort-bucket-2" transform="translate(640, 384)">
+    <path d="M 24 38 L 32 108 C 33 114, 40 118, 46 118 L 82 118 C 88 118, 95 114, 96 108 L 104 38 Z"
+          fill="url(#grad-emerald)" stroke="#065f46" stroke-width="3" filter="url(#drop-shadow)"/>
+    <ellipse cx="64" cy="38" rx="40" ry="12" fill="#a7f3d0" stroke="#065f46" stroke-width="3"/>
+    <rect x="36" y="64" width="56" height="26" rx="6" fill="#ffffff"/>
+    <text x="64" y="81" font-family="'Poppins', sans-serif" font-weight="900" font-size="12" fill="#065f46" text-anchor="middle">GRUP B</text>
+  </g>
+
+  <!-- [6, 3]: groupsort-bucket-3 (Wadah / ember kategori 3 oranye) -->
+  <g id="sprite-groupsort-bucket-3" transform="translate(768, 384)">
+    <path d="M 24 38 L 32 108 C 33 114, 40 118, 46 118 L 82 118 C 88 118, 95 114, 96 108 L 104 38 Z"
+          fill="url(#grad-orange)" stroke="#9a3412" stroke-width="3" filter="url(#drop-shadow)"/>
+    <ellipse cx="64" cy="38" rx="40" ry="12" fill="#fed7aa" stroke="#9a3412" stroke-width="3"/>
+    <rect x="36" y="64" width="56" height="26" rx="6" fill="#ffffff"/>
+    <text x="64" y="81" font-family="'Poppins', sans-serif" font-weight="900" font-size="12" fill="#9a3412" text-anchor="middle">GRUP C</text>
+  </g>
+
+  <!-- [7, 3]: groupsort-card-box (Kotak kartu aktif sortir) -->
+  <g id="sprite-groupsort-card-box" transform="translate(896, 384)">
+    <rect x="12" y="24" width="104" height="80" rx="18" fill="url(#grad-blue)" stroke="#1e40af" stroke-width="3" filter="url(#drop-shadow)"/>
+    <rect x="20" y="32" width="88" height="64" rx="12" fill="#ffffff"/>
+    <text x="64" y="69" font-family="'Poppins', sans-serif" font-weight="900" font-size="13" fill="#0f172a" text-anchor="middle">KARTU ITEM</text>
+  </g>
+
+
+  <!-- ========================================================================
+       ROW 4 (y=512): Fruit Slicer (Buah & Pisau)
+       ======================================================================== -->
+  <!-- [0, 4]: fruit-watermelon (Semangka segar) -->
+  <g id="sprite-fruit-watermelon" transform="translate(0, 512)">
+    <path d="M 16 48 C 16 92, 50 116, 64 116 C 78 116, 112 92, 112 48 Z" fill="#15803d" stroke="#14532d" stroke-width="3" filter="url(#drop-shadow)"/>
+    <path d="M 22 48 C 22 86, 52 108, 64 108 C 76 108, 106 86, 106 48 Z" fill="#bbf7d0"/>
+    <path d="M 26 48 C 26 82, 54 102, 64 102 C 74 102, 102 82, 102 48 Z" fill="#ef4444"/>
+    <!-- Seeds -->
+    <ellipse cx="44" cy="62" rx="2.5" ry="4" fill="#0f172a"/>
+    <ellipse cx="64" cy="72" rx="2.5" ry="4" fill="#0f172a"/>
+    <ellipse cx="84" cy="62" rx="2.5" ry="4" fill="#0f172a"/>
+    <ellipse cx="54" cy="84" rx="2" ry="3.5" fill="#0f172a"/>
+    <ellipse cx="74" cy="84" rx="2" ry="3.5" fill="#0f172a"/>
+  </g>
+
+  <!-- [1, 4]: fruit-orange (Jeruk oranye manis) -->
+  <g id="sprite-fruit-orange" transform="translate(128, 512)">
+    <circle cx="64" cy="68" r="42" fill="url(#grad-orange)" stroke="#c2410c" stroke-width="3" filter="url(#drop-shadow)"/>
+    <ellipse cx="50" cy="50" rx="10" ry="5" fill="#ffffff" opacity="0.4" transform="rotate(-30 50 50)"/>
+    <!-- Stem and Leaf -->
+    <rect x="62" y="20" width="4" height="12" rx="2" fill="#78350f"/>
+    <path d="M 64 24 C 76 18, 86 24, 88 28 C 82 34, 72 32, 64 24 Z" fill="#22c55e" stroke="#15803d" stroke-width="1.5"/>
+  </g>
+
+  <!-- [2, 4]: fruit-apple (Apel merah cerah) -->
+  <g id="sprite-fruit-apple" transform="translate(256, 512)">
+    <path d="M 64 36 C 46 22, 22 36, 24 66 C 26 94, 52 114, 64 114 C 76 114, 102 94, 104 66 C 106 36, 82 22, 64 36 Z"
+          fill="url(#grad-rose)" stroke="#991b1b" stroke-width="3" filter="url(#drop-shadow)"/>
+    <ellipse cx="44" cy="50" rx="8" ry="4" fill="#ffffff" opacity="0.4" transform="rotate(-30 44 50)"/>
+    <!-- Stem & Leaf -->
+    <path d="M 64 36 Q 66 20 72 14" fill="none" stroke="#78350f" stroke-width="4" stroke-linecap="round"/>
+    <path d="M 68 22 C 78 18, 86 24, 86 28 C 80 32, 72 30, 68 22 Z" fill="#22c55e"/>
+  </g>
+
+  <!-- [3, 4]: fruit-banana (Pisang kuning matang) -->
+  <g id="sprite-fruit-banana" transform="translate(384, 512)">
+    <path d="M 28 92 C 40 102, 76 102, 98 74 C 108 60, 108 42, 106 28 C 102 38, 92 56, 76 72 C 60 88, 40 92, 28 92 Z"
+          fill="url(#grad-gold)" stroke="#a16207" stroke-width="3" filter="url(#drop-shadow)"/>
+    <circle cx="106" cy="28" r="3" fill="#78350f"/>
+    <circle cx="28" cy="92" r="3" fill="#78350f"/>
+  </g>
+
+  <!-- [4, 4]: fruit-strawberry (Stroberi merah bertangkai) -->
+  <g id="sprite-fruit-strawberry" transform="translate(512, 512)">
+    <path d="M 64 112 C 42 96, 26 74, 28 50 C 30 32, 50 34, 64 38 C 78 34, 98 32, 100 50 C 102 74, 86 96, 64 112 Z"
+          fill="url(#grad-rose)" stroke="#991b1b" stroke-width="3" filter="url(#drop-shadow)"/>
+    <!-- Leaves -->
+    <path d="M 64 38 L 52 24 L 64 30 L 76 24 Z" fill="#22c55e" stroke="#15803d" stroke-width="1.5"/>
+    <path d="M 46 36 L 36 28 L 48 32 Z" fill="#22c55e"/>
+    <path d="M 82 36 L 92 28 L 80 32 Z" fill="#22c55e"/>
+    <!-- Yellow seeds -->
+    <circle cx="48" cy="54" r="2" fill="#fef08a"/>
+    <circle cx="64" cy="58" r="2" fill="#fef08a"/>
+    <circle cx="80" cy="54" r="2" fill="#fef08a"/>
+    <circle cx="56" cy="74" r="2" fill="#fef08a"/>
+    <circle cx="72" cy="74" r="2" fill="#fef08a"/>
+    <circle cx="64" cy="90" r="2" fill="#fef08a"/>
+  </g>
+
+  <!-- [5, 4]: fruit-bomb (Bom hitam berbahaya) -->
+  <g id="sprite-fruit-bomb" transform="translate(640, 512)">
+    <circle cx="64" cy="72" r="38" fill="#0f172a" stroke="#334155" stroke-width="3" filter="url(#drop-shadow)"/>
+    <ellipse cx="50" cy="56" rx="8" ry="4" fill="#ffffff" opacity="0.3" transform="rotate(-30 50 56)"/>
+    <!-- Cap and fuse -->
+    <rect x="58" y="28" width="12" height="8" rx="2" fill="#94a3b8"/>
+    <path d="M 64 28 Q 72 16 84 18" fill="none" stroke="#f59e0b" stroke-width="3"/>
+    <!-- Spark -->
+    <polygon points="84,18 88,12 92,18 98,16 94,22 98,26 92,26 88,32 86,26 80,24" fill="#ef4444"/>
+    <polygon points="85,19 88,15 91,19 95,17 93,21 95,24 91,24 88,28 86,24 82,23" fill="#fef08a"/>
+  </g>
+
+  <!-- [6, 4]: fruit-badge-box (Kotak badge jawaban di bawah buah) -->
+  <g id="sprite-fruit-badge-box" transform="translate(768, 512)">
+    <rect x="8" y="42" width="112" height="44" rx="14" fill="#0f172a" stroke="#38bdf8" stroke-width="3" filter="url(#drop-shadow)"/>
+    <line x1="24" y1="64" x2="104" y2="64" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- [7, 4]: fruit-splash (Efek cipratan jus / tebasan pedang) -->
+  <g id="sprite-fruit-splash" transform="translate(896, 512)">
+    <path d="M 24 24 L 104 104" stroke="#38bdf8" stroke-width="6" stroke-linecap="round" filter="url(#glow-blue)"/>
+    <path d="M 28 20 L 108 100" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="34" cy="54" r="5" fill="#f43f5e"/>
+    <circle cx="84" cy="44" r="6" fill="#f59e0b"/>
+    <circle cx="56" cy="88" r="4" fill="#22c55e"/>
+    <circle cx="76" cy="74" r="5" fill="#38bdf8"/>
+  </g>
+
+
+  <!-- ========================================================================
+       ROW 5 (y=640): Putar Roda & Kata (Wheel, Word Search & Anagram)
+       ======================================================================== -->
+  <!-- [0, 5]: wheel-rim (Lingkaran luar roda karnaval dengan stud) -->
+  <g id="sprite-wheel-rim" transform="translate(0, 640)">
+    <circle cx="64" cy="64" r="48" fill="none" stroke="#1e1b4b" stroke-width="8" filter="url(#drop-shadow)"/>
+    <circle cx="64" cy="64" r="48" fill="none" stroke="#f59e0b" stroke-width="4"/>
+    <!-- Carnival studs -->
+    <circle cx="64" cy="16" r="4" fill="#ffffff" stroke="#b45309" stroke-width="1"/>
+    <circle cx="112" cy="64" r="4" fill="#ffffff" stroke="#b45309" stroke-width="1"/>
+    <circle cx="64" cy="112" r="4" fill="#ffffff" stroke="#b45309" stroke-width="1"/>
+    <circle cx="16" cy="64" r="4" fill="#ffffff" stroke="#b45309" stroke-width="1"/>
+    <circle cx="98" cy="30" r="3.5" fill="#ffffff"/>
+    <circle cx="98" cy="98" r="3.5" fill="#ffffff"/>
+    <circle cx="30" cy="98" r="3.5" fill="#ffffff"/>
+    <circle cx="30" cy="30" r="3.5" fill="#ffffff"/>
+  </g>
+
+  <!-- [1, 5]: wheel-center (Poros tengah roda emas berlogo) -->
+  <g id="sprite-wheel-center" transform="translate(128, 640)">
+    <circle cx="64" cy="64" r="38" fill="url(#grad-gold)" stroke="#78350f" stroke-width="4" filter="url(#drop-shadow)"/>
+    <circle cx="64" cy="64" r="26" fill="#ffffff" stroke="#d97706" stroke-width="3"/>
+    <circle cx="64" cy="64" r="14" fill="#2563eb"/>
+    <circle cx="64" cy="64" r="6" fill="#ffffff"/>
+  </g>
+
+  <!-- [2, 5]: wheel-pointer (Jarum penunjuk roda) -->
+  <g id="sprite-wheel-pointer" transform="translate(256, 640)">
+    <polygon points="64,112 40,24 88,24" fill="url(#grad-rose)" stroke="#991b1b" stroke-width="4" filter="url(#drop-shadow)"/>
+    <polygon points="64,100 48,28 80,28" fill="#f87171"/>
+    <circle cx="64" cy="36" r="8" fill="#ffffff" stroke="#991b1b" stroke-width="2"/>
+  </g>
+
+  <!-- [3, 5]: wheel-btn-box (Kotak tombol putar roda) -->
+  <g id="sprite-wheel-btn-box" transform="translate(384, 640)">
+    <rect x="8" y="28" width="112" height="72" rx="36" fill="url(#grad-gold)" stroke="#b45309" stroke-width="4" filter="url(#drop-shadow)"/>
+    <text x="64" y="65" font-family="'Poppins', sans-serif" font-weight="900" font-size="13" fill="#ffffff" text-anchor="middle">PUTAR RODA!</text>
+    <text x="64" y="82" font-family="'Poppins', sans-serif" font-weight="800" font-size="10" fill="#78350f" text-anchor="middle">🎡 KLIK DISINI</text>
+  </g>
+
+  <!-- [4, 5]: tile-letter-box (Ubin huruf anagram normal) -->
+  <g id="sprite-tile-letter-box" transform="translate(512, 640)">
+    <rect x="18" y="18" width="92" height="92" rx="18" fill="#ffffff" stroke="#cbd5e1" stroke-width="3" filter="url(#drop-shadow)"/>
+    <rect x="24" y="24" width="80" height="80" rx="14" fill="#f8fafc"/>
+    <text x="64" y="76" font-family="'Poppins', sans-serif" font-weight="900" font-size="44" fill="#0f172a" text-anchor="middle">A</text>
+  </g>
+
+  <!-- [5, 5]: tile-letter-slot (Kotak slot target susun huruf) -->
+  <g id="sprite-tile-letter-slot" transform="translate(640, 640)">
+    <rect x="18" y="18" width="92" height="92" rx="18" fill="#f8fafc" stroke="#94a3b8" stroke-width="3" stroke-dasharray="6,6"/>
+    <circle cx="64" cy="64" r="8" fill="#cbd5e1"/>
+  </g>
+
+  <!-- [6, 5]: wordsearch-cell-box (Kotak sel matriks kata normal) -->
+  <g id="sprite-wordsearch-cell-box" transform="translate(768, 640)">
+    <rect x="16" y="16" width="96" height="96" rx="14" fill="#ffffff" stroke="#e2e8f0" stroke-width="2.5" filter="url(#drop-shadow)"/>
+    <text x="64" y="74" font-family="'Poppins', sans-serif" font-weight="800" font-size="38" fill="#0f172a" text-anchor="middle">K</text>
+  </g>
+
+  <!-- [7, 5]: wordsearch-found-box (Kotak sel matriks saat kata ditemukan) -->
+  <g id="sprite-wordsearch-found-box" transform="translate(896, 640)">
+    <rect x="16" y="16" width="96" height="96" rx="14" fill="#ecfdf5" stroke="#10b981" stroke-width="4" filter="url(#drop-shadow)"/>
+    <text x="64" y="74" font-family="'Poppins', sans-serif" font-weight="900" font-size="38" fill="#047857" text-anchor="middle">K</text>
+  </g>
+
+
+  <!-- ========================================================================
+       ROW 6 (y=768): Whack-a-Mole (Pukul Tikus)
+       ======================================================================== -->
+  <!-- [0, 6]: mole-hole (Liang lubang tanah) -->
+  <g id="sprite-mole-hole" transform="translate(0, 768)">
+    <ellipse cx="64" cy="64" rx="52" ry="32" fill="#451a03" stroke="#78350f" stroke-width="5" filter="url(#drop-shadow)"/>
+    <ellipse cx="64" cy="64" rx="42" ry="22" fill="#1c1917"/>
+  </g>
+
+  <!-- [1, 6]: mole-normal (Tikus tanah ramah) -->
+  <g id="sprite-mole-normal" transform="translate(128, 768)">
+    <path d="M 28 114 C 28 48, 44 26, 64 26 C 84 26, 100 48, 100 114 Z" fill="#b45309" stroke="#78350f" stroke-width="3"/>
+    <!-- Ears -->
+    <circle cx="34" cy="38" r="10" fill="#78350f"/>
+    <circle cx="34" cy="38" r="6" fill="#fcd34d"/>
+    <circle cx="94" cy="38" r="10" fill="#78350f"/>
+    <circle cx="94" cy="38" r="6" fill="#fcd34d"/>
+    <!-- Eyes -->
+    <ellipse cx="50" cy="54" rx="4" ry="6" fill="#0f172a"/>
+    <ellipse cx="78" cy="54" rx="4" ry="6" fill="#0f172a"/>
+    <circle cx="49" cy="52" r="1.5" fill="#ffffff"/>
+    <circle cx="77" cy="52" r="1.5" fill="#ffffff"/>
+    <!-- Snout & Teeth -->
+    <ellipse cx="64" cy="68" rx="16" ry="10" fill="#fed7aa"/>
+    <ellipse cx="64" cy="64" rx="5" ry="3.5" fill="#f43f5e"/>
+    <rect x="61" y="73" width="6" height="6" fill="#ffffff" stroke="#78350f" stroke-width="1"/>
+  </g>
+
+  <!-- [2, 6]: mole-hit (Tikus tanah pusing kena pukul) -->
+  <g id="sprite-mole-hit" transform="translate(256, 768)">
+    <path d="M 28 114 C 28 58, 44 42, 64 42 C 84 42, 100 58, 100 114 Z" fill="#b45309" stroke="#78350f" stroke-width="3"/>
+    <!-- Spiral Eyes -->
+    <text x="50" y="66" font-family="'Poppins', sans-serif" font-weight="900" font-size="16" fill="#0f172a" text-anchor="middle">@</text>
+    <text x="78" y="66" font-family="'Poppins', sans-serif" font-weight="900" font-size="16" fill="#0f172a" text-anchor="middle">@</text>
+    <!-- Stars around head -->
+    <polygon points="40,24 43,30 50,30 45,34 47,40 40,36 33,40 35,34 30,30 37,30" fill="#facc15"/>
+    <polygon points="88,24 91,30 98,30 93,34 95,40 88,36 81,40 83,34 78,30 85,30" fill="#facc15"/>
+    <polygon points="64,12 66,17 72,17 68,20 70,25 64,22 58,25 60,20 56,17 62,17" fill="#facc15"/>
+  </g>
+
+  <!-- [3, 6]: mole-card-box (Kotak papan teks jawaban tikus) -->
+  <g id="sprite-mole-card-box" transform="translate(384, 768)">
+    <rect x="8" y="36" width="112" height="56" rx="14" fill="#ffffff" stroke="#0f172a" stroke-width="3" filter="url(#drop-shadow)"/>
+    <line x1="24" y1="64" x2="104" y2="64" stroke="#0f172a" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- [4, 6]: hammer-idle (Palu kayu posisi siap) -->
+  <g id="sprite-hammer-idle" transform="translate(512, 768)">
+    <g transform="rotate(25 64 64)">
+      <!-- Handle -->
+      <rect x="58" y="38" width="12" height="74" rx="5" fill="url(#grad-wood)" stroke="#451a03" stroke-width="2"/>
+      <!-- Head -->
+      <rect x="34" y="20" width="60" height="30" rx="8" fill="#94a3b8" stroke="#334155" stroke-width="3" filter="url(#drop-shadow)"/>
+      <rect x="30" y="16" width="8" height="38" rx="3" fill="#cbd5e1" stroke="#334155" stroke-width="2"/>
+      <rect x="90" y="16" width="8" height="38" rx="3" fill="#cbd5e1" stroke="#334155" stroke-width="2"/>
+    </g>
+  </g>
+
+  <!-- [5, 6]: hammer-hit (Palu posisi mengayun ke bawah) -->
+  <g id="sprite-hammer-hit" transform="translate(640, 768)">
+    <g transform="rotate(-40 64 64)">
+      <!-- Handle -->
+      <rect x="58" y="38" width="12" height="74" rx="5" fill="url(#grad-wood)" stroke="#451a03" stroke-width="2"/>
+      <!-- Head -->
+      <rect x="34" y="20" width="60" height="30" rx="8" fill="#94a3b8" stroke="#334155" stroke-width="3"/>
+    </g>
+    <!-- Motion lines -->
+    <path d="M 24 34 Q 18 64 36 94" fill="none" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>
+    <path d="M 34 38 Q 28 64 44 88" fill="none" stroke="#fef08a" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- [6, 6]: mole-banner-box (Kotak banner target soal pukul tikus) -->
+  <g id="sprite-mole-banner-box" transform="translate(768, 768)">
+    <rect x="8" y="24" width="112" height="80" rx="16" fill="#ffffff" stroke="#16a34a" stroke-width="3" filter="url(#drop-shadow)"/>
+    <rect x="16" y="32" width="96" height="20" rx="6" fill="#dcfce7"/>
+    <text x="64" y="46" font-family="'Poppins', sans-serif" font-weight="900" font-size="10" fill="#15803d" text-anchor="middle">PUKUL JAWABAN</text>
+    <line x1="28" y1="72" x2="100" y2="72" stroke="#0f172a" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- [7, 6]: spark-effect (Efek kilatan bintang benturan) -->
+  <g id="sprite-spark-effect" transform="translate(896, 768)">
+    <polygon points="64,16 76,50 112,64 76,78 64,112 52,78 16,64 52,50" fill="#facc15" filter="url(#glow-gold)"/>
+    <polygon points="64,36 70,58 92,64 70,70 64,92 58,70 36,64 58,58" fill="#ffffff"/>
+  </g>
+
+
+  <!-- ========================================================================
+       ROW 7 (y=896): Universal Dialogs & Controls
+       ======================================================================== -->
+  <!-- [0, 7]: modal-dialog-box (Kotak dialog pop-up game over / hasil) -->
+  <g id="sprite-modal-dialog-box" transform="translate(0, 896)">
+    <rect x="12" y="16" width="104" height="96" rx="20" fill="#ffffff" stroke="#3b82f6" stroke-width="4" filter="url(#drop-shadow)"/>
+    <circle cx="64" cy="42" r="16" fill="#eff6ff"/>
+    <polygon points="64,32 68,40 76,41 70,46 72,54 64,50 56,54 58,46 52,41 60,40" fill="#f59e0b"/>
+    <line x1="30" y1="72" x2="98" y2="72" stroke="#0f172a" stroke-width="4" stroke-linecap="round"/>
+    <rect x="36" y="86" width="56" height="16" rx="8" fill="#2563eb"/>
+  </g>
+
+  <!-- [1, 7]: play-button-box (Tombol besar PLAY GAME terpadu) -->
+  <g id="sprite-play-button-box" transform="translate(128, 896)">
+    <rect x="8" y="24" width="112" height="80" rx="20" fill="url(#grad-emerald)" stroke="#047857" stroke-width="3" filter="url(#drop-shadow)"/>
+    <polygon points="50,44 50,84 86,64" fill="#ffffff"/>
+    <text x="64" y="98" font-family="'Poppins', sans-serif" font-weight="900" font-size="10" fill="#ffffff" text-anchor="middle">PLAY</text>
+  </g>
+
+  <!-- [2, 7]: action-button-box (Tombol aksi sekunder / ulangi) -->
+  <g id="sprite-action-button-box" transform="translate(256, 896)">
+    <rect x="8" y="28" width="112" height="72" rx="18" fill="url(#grad-blue)" stroke="#1e40af" stroke-width="3" filter="url(#drop-shadow)"/>
+    <text x="64" y="70" font-family="'Poppins', sans-serif" font-weight="900" font-size="14" fill="#ffffff" text-anchor="middle">SUBMIT</text>
+  </g>
+
+  <!-- [3, 7]: trophy-cup (Piala kemenangan emas) -->
+  <g id="sprite-trophy-cup" transform="translate(384, 896)">
+    <!-- Base -->
+    <rect x="42" y="94" width="44" height="16" rx="4" fill="#78350f" stroke="#451a03" stroke-width="2"/>
+    <rect x="54" y="78" width="20" height="16" fill="url(#grad-gold)"/>
+    <!-- Cup -->
+    <path d="M 36 28 L 92 28 C 92 64, 78 78, 64 78 C 50 78, 36 64, 36 28 Z" fill="url(#grad-gold)" stroke="#b45309" stroke-width="3" filter="url(#glow-gold)"/>
+    <!-- Handles -->
+    <path d="M 36 34 C 20 34, 20 58, 38 60" fill="none" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+    <path d="M 92 34 C 108 34, 108 58, 90 60" fill="none" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+    <!-- Star on cup -->
+    <polygon points="64,38 67,46 75,47 69,52 71,60 64,56 57,60 59,52 53,47 61,46" fill="#ffffff"/>
+  </g>
+
+  <!-- [4, 7]: speaker-on (Ikon audio aktif) -->
+  <g id="sprite-speaker-on" transform="translate(512, 896)">
+    <circle cx="64" cy="64" r="44" fill="#ffffff" stroke="#cbd5e1" stroke-width="3" filter="url(#drop-shadow)"/>
+    <polygon points="38,54 48,54 62,42 62,86 48,74 38,74" fill="#0f172a"/>
+    <path d="M 72 50 C 78 54, 78 74, 72 78" fill="none" stroke="#2563eb" stroke-width="4" stroke-linecap="round"/>
+    <path d="M 80 42 C 92 48, 92 80, 80 86" fill="none" stroke="#2563eb" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- [5, 7]: speaker-off (Ikon audio bisu) -->
+  <g id="sprite-speaker-off" transform="translate(640, 896)">
+    <circle cx="64" cy="64" r="44" fill="#ffffff" stroke="#cbd5e1" stroke-width="3" filter="url(#drop-shadow)"/>
+    <polygon points="38,54 48,54 62,42 62,86 48,74 38,74" fill="#64748b"/>
+    <line x1="38" y1="38" x2="90" y2="90" stroke="#ef4444" stroke-width="5" stroke-linecap="round"/>
+  </g>
+
+  <!-- [6, 7]: restart-icon (Ikon putar ulang / reload) -->
+  <g id="sprite-restart-icon" transform="translate(768, 896)">
+    <circle cx="64" cy="64" r="44" fill="#ffffff" stroke="#cbd5e1" stroke-width="3" filter="url(#drop-shadow)"/>
+    <path d="M 64 36 A 28 28 0 1 1 38 52" fill="none" stroke="#2563eb" stroke-width="6" stroke-linecap="round"/>
+    <polygon points="38,36 38,56 58,56" fill="#2563eb"/>
+  </g>
+
+  <!-- [7, 7]: lotus-logo (Lambang resmi LotusWall) -->
+  <g id="sprite-lotus-logo" transform="translate(896, 896)">
+    <circle cx="64" cy="64" r="44" fill="url(#grad-card-bg)" stroke="#6366f1" stroke-width="3" filter="url(#drop-shadow)"/>
+    <!-- Lotus Petals -->
+    <path d="M 64 26 C 54 42, 54 66, 64 82 C 74 66, 74 42, 64 26 Z" fill="#6366f1"/>
+    <path d="M 64 42 C 46 48, 36 68, 48 84 C 56 74, 62 66, 64 42 Z" fill="#a855f7" opacity="0.85"/>
+    <path d="M 64 42 C 82 48, 92 68, 80 84 C 72 74, 66 66, 64 42 Z" fill="#a855f7" opacity="0.85"/>
+    <circle cx="64" cy="80" r="4" fill="#fbbf24"/>
+  </g>
+
+</svg>`;
+
+  return svg;
+}
+
+// Generate valid PNG buffer
+function createPNGFromGrid() {
+  const width = 1024;
+  const height = 1024;
+  
+  // Create RGBA raw buffer
+  const rawData = Buffer.alloc(height * (1 + width * 4));
+  let offset = 0;
+
+  // Simple palette colors for PNG fallback representation
+  for (let y = 0; y < height; y++) {
+    rawData[offset++] = 0; // Filter: None
+    const row = Math.floor(y / 128);
+    const inCellY = y % 128;
+
+    for (let x = 0; x < width; x++) {
+      const col = Math.floor(x / 128);
+      const inCellX = x % 128;
+
+      let r = 255, g = 255, b = 255, a = 0; // default transparent
+
+      // Draw cell border grid
+      if (inCellX === 0 || inCellY === 0 || inCellX === 127 || inCellY === 127) {
+        r = 226; g = 232; b = 240; a = 60; // subtle boundary
+      }
+
+      // Check if inside inner 120x120 area
+      if (inCellX >= 10 && inCellX <= 118 && inCellY >= 10 && inCellY <= 118) {
+        // Row-based base tinting for fallback raster
+        if (row === 0) { // UI HUD
+          r = 255; g = 255; b = 255; a = 240;
+          if (col === 1) { r = 239; g = 68; b = 68; a = 255; } // heart
+          if (col === 2) { r = 245; g = 158; b = 11; a = 255; } // star
+          if (col === 4) { r = 16; g = 185; b = 129; a = 255; } // correct
+          if (col === 5) { r = 239; g = 68; b = 68; a = 255; } // wrong
+        } else if (row === 1) { // Quiz Boxes
+          r = 255; g = 255; b = 255; a = 250;
+          if (col === 2) { r = 239; g = 246; b = 255; } // hover
+          if (col === 3) { r = 236; g = 253; b = 245; } // correct
+          if (col === 4) { r = 254; g = 242; b = 242; } // wrong
+          if (col === 6) { r = 16; g = 185; b = 129; a = 255; } // TRUE
+          if (col === 7) { r = 239; g = 68; b = 68; a = 255; } // FALSE
+        } else if (row === 2) { // Boxes & Cards
+          r = 255; g = 255; b = 255; a = 250;
+          if (col === 2) { r = 245; g = 158; b = 11; a = 255; } // gold box
+          if (col === 4) { r = 59; g = 130; b = 246; a = 255; } // card back
+          if (col === 6) { r = 16; g = 185; b = 129; a = 255; } // matched
+        } else if (row === 3) { // Match Up & Sort
+          r = 255; g = 255; b = 255; a = 250;
+          if (col === 4) { r = 56; g = 189; b = 248; a = 255; } // bucket 1
+          if (col === 5) { r = 16; g = 185; b = 129; a = 255; } // bucket 2
+          if (col === 6) { r = 249; g = 115; b = 22; a = 255; } // bucket 3
+        } else if (row === 4) { // Fruit Slicer
+          if (col === 0) { r = 239; g = 68; b = 68; a = 255; } // watermelon
+          else if (col === 1) { r = 249; g = 115; b = 22; a = 255; } // orange
+          else if (col === 2) { r = 220; g = 38; b = 38; a = 255; } // apple
+          else if (col === 3) { r = 250; g = 204; b = 21; a = 255; } // banana
+          else if (col === 4) { r = 244; g = 63; b = 94; a = 255; } // strawberry
+          else if (col === 5) { r = 15; g = 23; b = 42; a = 255; } // bomb
+          else { r = 56; g = 189; b = 248; a = 240; }
+        } else if (row === 5) { // Wheel & Anagram
+          r = 255; g = 255; b = 255; a = 250;
+          if (col === 1) { r = 245; g = 158; b = 11; a = 255; } // center pin
+          if (col === 2) { r = 239; g = 68; b = 68; a = 255; } // pointer
+          if (col === 3) { r = 245; g = 158; b = 11; a = 255; } // spin btn
+          if (col === 7) { r = 236; g = 253; b = 245; a = 255; } // found
+        } else if (row === 6) { // Mole & Hammer
+          r = 255; g = 255; b = 255; a = 250;
+          if (col === 0) { r = 69; g = 26; b = 3; a = 255; } // hole
+          if (col === 1 || col === 2) { r = 180; g = 83; b = 9; a = 255; } // mole
+          if (col === 4 || col === 5) { r = 148; g = 163; b = 184; a = 255; } // hammer
+        } else { // Row 7 Controls
+          r = 255; g = 255; b = 255; a = 250;
+          if (col === 1) { r = 16; g = 185; b = 129; a = 255; } // play btn
+          if (col === 2) { r = 37; g = 99; b = 235; a = 255; } // action btn
+          if (col === 3) { r = 245; g = 158; b = 11; a = 255; } // trophy
+        }
+      }
+
+      rawData[offset++] = r;
+      rawData[offset++] = g;
+      rawData[offset++] = b;
+      rawData[offset++] = a;
+    }
+  }
+
+  // Compress IDAT
+  const compressedData = zlib.deflateSync(rawData);
+
+  // Helper CRC32
+  function crc32(buf) {
+    let crc = 0 ^ (-1);
+    for (let i = 0; i < buf.length; i++) {
+      crc = (crc >>> 8) ^ table[(crc ^ buf[i]) & 0xFF];
+    }
+    return (crc ^ (-1)) >>> 0;
+  }
+
+  const table = new Uint32Array(256);
+  for (let i = 0; i < 256; i++) {
+    let c = i;
+    for (let j = 0; j < 8; j++) {
+      c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    }
+    table[i] = c;
+  }
+
+  function makeChunk(type, data) {
+    const len = data.length;
+    const buf = Buffer.alloc(12 + len);
+    buf.writeUInt32BE(len, 0);
+    buf.write(type, 4, 4, 'ascii');
+    data.copy(buf, 8);
+    const typeAndData = buf.subarray(4, 8 + len);
+    const crc = crc32(typeAndData);
+    buf.writeUInt32BE(crc, 8 + len);
+    return buf;
+  }
+
+  // IHDR
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(width, 0);
+  ihdr.writeUInt32BE(height, 4);
+  ihdr.writeUInt8(8, 8); // 8-bit depth
+  ihdr.writeUInt8(6, 9); // RGBA
+  ihdr.writeUInt8(0, 10); // Compression: deflate
+  ihdr.writeUInt8(0, 11); // Filter: standard
+  ihdr.writeUInt8(0, 12); // Interlace: none
+
+  const pngHeader = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+  const ihdrChunk = makeChunk('IHDR', ihdr);
+  const idatChunk = makeChunk('IDAT', compressedData);
+  const iendChunk = makeChunk('IEND', Buffer.alloc(0));
+
+  return Buffer.concat([pngHeader, ihdrChunk, idatChunk, iendChunk]);
+}
+
+// Generate files
+const svgContent = buildSVG();
+const pngBuffer = createPNGFromGrid();
+
+const targets = [
+  { svg: 'games/common/spritesheet.svg', png: 'games/common/spritesheet.png' },
+  { svg: 'public/games/common/spritesheet.svg', png: 'public/games/common/spritesheet.png' }
+];
+
+targets.forEach(t => {
+  fs.mkdirSync(path.dirname(t.svg), { recursive: true });
+  fs.writeFileSync(t.svg, svgContent, 'utf8');
+  fs.writeFileSync(t.png, pngBuffer);
+  console.log(`Saved ${t.svg} (${svgContent.length} bytes) and ${t.png} (${pngBuffer.length} bytes)`);
+});

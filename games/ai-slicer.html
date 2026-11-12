@@ -962,15 +962,38 @@
     let poseConsecutiveErrors = 0;
     let isCameraRunning = false;
     let isDetecting = false;
+    let lastAiVideoTime = -1;
+    let lastAiRunTime = 0;
+    const AI_MIN_INTERVAL_MS = 40;
+    const aiInputCanvas = document.createElement('canvas');
+    const aiInputCtx = aiInputCanvas.getContext('2d', { alpha: false, desynchronized: true });
     let frameCount = 0;
     let lastFpsTime = performance.now();
     let latestLandmarks = null;
 
+    function getAiFeedSource() {
+      const vw = videoElement.videoWidth || 640;
+      const vh = videoElement.videoHeight || 480;
+      if (!aiInputCtx || vw <= 384) return videoElement;
+      const targetW = 360;
+      const targetH = Math.max(180, Math.round(targetW * (vh / Math.max(1, vw))));
+      if (aiInputCanvas.width !== targetW || aiInputCanvas.height !== targetH) {
+        aiInputCanvas.width = targetW;
+        aiInputCanvas.height = targetH;
+      }
+      aiInputCtx.drawImage(videoElement, 0, 0, targetW, targetH);
+      return aiInputCanvas;
+    }
+
     function resizeCanvas() {
       const rect = canvas.getBoundingClientRect();
-      if (rect.width > 0 && rect.height > 0 && (canvas.width !== Math.round(rect.width) || canvas.height !== Math.round(rect.height))) {
-        canvas.width = Math.round(rect.width);
-        canvas.height = Math.round(rect.height);
+      if (rect.width > 0 && rect.height > 0) {
+        const targetW = Math.min(1152, Math.round(rect.width));
+        const targetH = Math.max(1, Math.round(targetW * (rect.height / rect.width)));
+        if (canvas.width !== targetW || canvas.height !== targetH) {
+          canvas.width = targetW;
+          canvas.height = targetH;
+        }
       }
     }
     window.addEventListener('resize', resizeCanvas);
@@ -1290,18 +1313,17 @@
           ctx.font = '54px sans-serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.shadowColor = 'rgba(0,0,0,0.4)';
-          ctx.shadowBlur = 10;
           ctx.fillText(f.emoji, f.x, f.y);
 
           ctx.font = 'bold 15px Plus Jakarta Sans, sans-serif';
-          const textWidth = ctx.measureText(f.text).width || 80;
-          const badgeW = Math.max(100, textWidth + 28);
+          if (!f._badgeW) {
+            const textWidth = ctx.measureText(f.text).width || 80;
+            f._badgeW = Math.max(100, textWidth + 28);
+          }
+          const badgeW = f._badgeW;
           const badgeH = 34;
           const badgeY = f.y + 38;
 
-          ctx.shadowColor = 'rgba(24,24,27,0.12)';
-          ctx.shadowBlur = 8;
           ctx.fillStyle = '#ffffff';
           ctx.strokeStyle = '#18181b';
           ctx.lineWidth = 2.5;
@@ -1311,7 +1333,6 @@
           ctx.fill();
           ctx.stroke();
 
-          ctx.shadowBlur = 0;
           ctx.fillStyle = '#18181b';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
@@ -1345,10 +1366,11 @@
         ctx.save();
         ctx.globalAlpha = Math.max(0, p.alpha);
         ctx.font = 'bold 22px Outfit, sans-serif';
-        ctx.fillStyle = p.color;
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = 'rgba(15,23,42,0.75)';
         ctx.textAlign = 'center';
-        ctx.shadowColor = 'rgba(0,0,0,0.6)';
-        ctx.shadowBlur = 8;
+        ctx.strokeText(p.text, p.x, p.y);
+        ctx.fillStyle = p.color;
         ctx.fillText(p.text, p.x, p.y);
         ctx.restore();
       }
@@ -1374,14 +1396,11 @@
       const { w, h, tipDist, scale } = getKnifeDimensions();
       const gripPxX = -w * KNIFE_PIVOT_X;
       const gripPxY = -h * KNIFE_PIVOT_Y;
-      const isSwingingFast = knife.speed >= 5.5;
 
       ctx.save();
       ctx.translate(knife.gripX, knife.gripY);
       ctx.rotate(knife.angle);
       if (side === 'left') ctx.scale(1, -1);
-      ctx.shadowColor = isSwingingFast ? '#ffffff' : glowColor;
-      ctx.shadowBlur = isSwingingFast ? 20 : 10;
 
       if (isKnifeLoaded) {
         ctx.drawImage(knifeImg, gripPxX, gripPxY, w, h);
@@ -1409,18 +1428,17 @@
       for (let i = 1; i < trail.length; i++) {
         const p1 = trail[i - 1], p2 = trail[i];
         const ratio = (i / trail.length) * Math.max(0, p2.life);
+        ctx.globalAlpha = Math.min(1, ratio * 0.72);
         ctx.strokeStyle = color;
-        ctx.lineWidth = ratio * 12 + 2;
-        ctx.shadowColor = color;
-        ctx.shadowBlur = ratio * 18;
+        ctx.lineWidth = ratio * 14 + 3;
         ctx.beginPath();
         ctx.moveTo(p1.tipX, p1.tipY);
         ctx.lineTo(p2.tipX, p2.tipY);
         ctx.stroke();
 
-        ctx.strokeStyle = `rgba(255, 255, 255, ${Math.min(1, ratio * 1.15).toFixed(3)})`;
+        ctx.globalAlpha = Math.min(1, ratio * 1.1);
+        ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = ratio * 5 + 1;
-        ctx.shadowBlur = 6;
         ctx.beginPath();
         ctx.moveTo(p1.tipX, p1.tipY);
         ctx.lineTo(p2.tipX, p2.tipY);
@@ -1686,12 +1704,21 @@
     async function detectionLoop() {
       if (!isCameraRunning) return;
       if (!poseTracker && typeof Pose !== 'undefined') initMediaPipe();
-      if (videoElement.readyState >= 2 && poseTracker && !isDetecting) {
+      const now = performance.now();
+      if (
+        videoElement.readyState >= 2 &&
+        poseTracker &&
+        !isDetecting &&
+        now - lastAiRunTime >= AI_MIN_INTERVAL_MS &&
+        videoElement.currentTime !== lastAiVideoTime
+      ) {
         isDetecting = true;
+        lastAiRunTime = now;
+        lastAiVideoTime = videoElement.currentTime;
         try {
           if (poseInitPromise) await poseInitPromise;
           if (poseTracker) {
-            await poseTracker.send({ image: videoElement });
+            await poseTracker.send({ image: getAiFeedSource() });
           }
         } catch (e) {
           poseConsecutiveErrors++;
@@ -1734,10 +1761,12 @@
 
     async function startCamera() {
       showCamError('');
+      lastAiVideoTime = -1;
+      lastAiRunTime = 0;
       statusBadge.className = 'status-badge active';
       statusText.textContent = T('aiSlicer.statusOpening');
       try {
-        mediaStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' }, audio: false });
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30, max: 30 }, facingMode: 'user' }, audio: false });
         videoElement.srcObject = mediaStream;
         await videoElement.play();
         videoElement.style.display = 'block';

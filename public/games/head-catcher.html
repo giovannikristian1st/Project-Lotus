@@ -783,14 +783,36 @@
     const countdownBadge = document.getElementById('countdown-badge');
 
     let mediaStream = null, faceDetector = null, faceInitPromise = null, faceConsecutiveErrors = 0, isCameraRunning = false, isDetecting = false, frameCount = 0, lastFpsTime = performance.now();
+    let lastAiVideoTime = -1, lastAiRunTime = 0;
+    const AI_MIN_INTERVAL_MS = 40;
+    const aiInputCanvas = document.createElement('canvas');
+    const aiInputCtx = aiInputCanvas.getContext('2d', { alpha: false, desynchronized: true });
+
+    function getAiFeedSource() {
+      const vw = videoElement.videoWidth || 640;
+      const vh = videoElement.videoHeight || 480;
+      if (!aiInputCtx || vw <= 400) return videoElement;
+      const targetW = 384;
+      const targetH = Math.max(192, Math.round(targetW * (vh / Math.max(1, vw))));
+      if (aiInputCanvas.width !== targetW || aiInputCanvas.height !== targetH) {
+        aiInputCanvas.width = targetW;
+        aiInputCanvas.height = targetH;
+      }
+      aiInputCtx.drawImage(videoElement, 0, 0, targetW, targetH);
+      return aiInputCanvas;
+    }
 
     function resizeCanvas() {
       const rect = canvas.getBoundingClientRect();
-      if (rect.width > 0 && rect.height > 0 && (canvas.width !== Math.round(rect.width) || canvas.height !== Math.round(rect.height))) {
-        canvas.width = Math.round(rect.width);
-        canvas.height = Math.round(rect.height);
-        if (!P1.detected) { P1.basketX = canvas.width * 0.25; P1.basketY = canvas.height * 0.72; }
-        if (!P2.detected) { P2.basketX = canvas.width * 0.75; P2.basketY = canvas.height * 0.72; }
+      if (rect.width > 0 && rect.height > 0) {
+        const targetW = Math.min(1152, Math.round(rect.width));
+        const targetH = Math.max(1, Math.round(targetW * (rect.height / rect.width)));
+        if (canvas.width !== targetW || canvas.height !== targetH) {
+          canvas.width = targetW;
+          canvas.height = targetH;
+          if (!P1.detected) { P1.basketX = canvas.width * 0.25; P1.basketY = canvas.height * 0.72; }
+          if (!P2.detected) { P2.basketX = canvas.width * 0.75; P2.basketY = canvas.height * 0.72; }
+        }
       }
     }
     window.addEventListener('resize', resizeCanvas);
@@ -1121,8 +1143,9 @@
         const pop = popups[i]; pop.y += pop.vy; pop.alpha -= 0.022;
         if (pop.alpha <= 0) { popups.splice(i, 1); continue; }
         ctx.save(); ctx.globalAlpha = Math.max(0, pop.alpha);
-        ctx.font = '800 18px Outfit, sans-serif'; ctx.fillStyle = pop.color; ctx.textAlign = 'center';
-        ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 8; ctx.fillText(pop.text, pop.x, pop.y); ctx.restore();
+        ctx.font = '800 18px Outfit, sans-serif'; ctx.textAlign = 'center';
+        ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(15,23,42,0.8)'; ctx.strokeText(pop.text, pop.x, pop.y);
+        ctx.fillStyle = pop.color; ctx.fillText(pop.text, pop.x, pop.y); ctx.restore();
       }
 
       requestAnimationFrame(gameLoop);
@@ -1147,18 +1170,21 @@
 
         ctx.save();
         ctx.font = '50px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = 10; ctx.fillText(f.emoji, f.x, f.y);
+        ctx.fillText(f.emoji, f.x, f.y);
 
         ctx.font = 'bold 15px Plus Jakarta Sans, sans-serif';
-        const txtW = ctx.measureText(f.text).width || 80;
-        const bW = Math.max(96, txtW + 26), bH = 34, bY = f.y + 34;
+        if (!f._badgeW) {
+          const txtW = ctx.measureText(f.text).width || 80;
+          f._badgeW = Math.max(96, txtW + 26);
+        }
+        const bW = f._badgeW, bH = 34, bY = f.y + 34;
         ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#18181b'; ctx.lineWidth = 2.5;
         ctx.beginPath();
         if (ctx.roundRect) ctx.roundRect(f.x - bW / 2, bY, bW, bH, 8);
         else ctx.rect(f.x - bW / 2, bY, bW, bH);
         ctx.fill(); ctx.stroke();
 
-        ctx.shadowBlur = 0; ctx.fillStyle = '#18181b'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#18181b'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText(f.text, f.x, bY + bH / 2);
         ctx.restore();
       }
@@ -1295,12 +1321,21 @@
     async function detectionLoop() {
       if (!isCameraRunning) return;
       if (!faceDetector && typeof FaceDetection !== 'undefined') initFaceDetection();
-      if (videoElement.readyState >= 2 && faceDetector && !isDetecting) {
+      const now = performance.now();
+      if (
+        videoElement.readyState >= 2 &&
+        faceDetector &&
+        !isDetecting &&
+        now - lastAiRunTime >= AI_MIN_INTERVAL_MS &&
+        videoElement.currentTime !== lastAiVideoTime
+      ) {
         isDetecting = true;
+        lastAiRunTime = now;
+        lastAiVideoTime = videoElement.currentTime;
         try {
           if (faceInitPromise) await faceInitPromise;
           if (faceDetector) {
-            await faceDetector.send({ image: videoElement });
+            await faceDetector.send({ image: getAiFeedSource() });
           }
         } catch (e) {
           faceConsecutiveErrors++;
@@ -1342,12 +1377,14 @@
     async function startCamera() {
       showCamError('');
       faceConsecutiveErrors = 0;
+      lastAiVideoTime = -1;
+      lastAiRunTime = 0;
       statusBadge.className = 'status-badge active';
       statusText.textContent = T('aiSlicer.statusOpening');
       if (!P1.detected) valP1Head.textContent = T('hc.p1TrackWait');
       if (!P2.detected) valP2Head.textContent = T('hc.p2TrackWait');
       try {
-        mediaStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' }, audio: false });
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30, max: 30 }, facingMode: 'user' }, audio: false });
         videoElement.srcObject = mediaStream; await videoElement.play();
         videoElement.style.display = 'block'; placeholder.style.display = 'none';
         isCameraRunning = true; isMouseMode = false;

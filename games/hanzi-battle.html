@@ -1135,11 +1135,29 @@
     let lastHandVideoTime = -1;
     let lastPoseVideoTime = -1;
     let lastDetectTimestamp = 0;
+    let lastAiRunTime = 0;
+    const AI_MIN_INTERVAL_MS = 45;
+    const aiInputCanvas = document.createElement('canvas');
+    const aiInputCtx = aiInputCanvas.getContext('2d', { alpha: false, desynchronized: true });
     let detectConsecutiveErrors = 0;
     let animTick = 0;
     let aiFrameCount = 0;
     let aiCurrentFps = 0;
     let aiLastFpsTime = performance.now();
+
+    function getAiFeedSource() {
+      const vw = videoElement.videoWidth || 640;
+      const vh = videoElement.videoHeight || 480;
+      if (!aiInputCtx || vw <= 480) return videoElement;
+      const targetW = 448;
+      const targetH = Math.max(224, Math.round(targetW * (vh / Math.max(1, vw))));
+      if (aiInputCanvas.width !== targetW || aiInputCanvas.height !== targetH) {
+        aiInputCanvas.width = targetW;
+        aiInputCanvas.height = targetH;
+      }
+      aiInputCtx.drawImage(videoElement, 0, 0, targetW, targetH);
+      return aiInputCanvas;
+    }
 
     // DOM Elements
     const videoElement = document.getElementById('webcam');
@@ -1651,7 +1669,8 @@
         if (res[res.length - 1] !== pts[pts.length - 1]) res.push(pts[pts.length - 1]);
         return res;
       });
-      return { strokes: data.strokes, medians: processedMedians, totalStrokes: data.strokes.length };
+      const paths = (data.strokes || []).map(s => new Path2D(s));
+      return { strokes: data.strokes, paths, medians: processedMedians, totalStrokes: data.strokes.length };
     }
 
     // --- MEDIAPIPE UNIFIED HANDS & POSE INITIALIZATION (@mediapipe/tasks-vision) ---
@@ -1868,16 +1887,23 @@
     async function detectionLoop() {
       if (!isCameraRunning) return;
       const mode = selectTrackingMode.value;
-      if (videoElement.readyState >= 2 && videoElement.videoWidth > 0 && !isDetecting) {
+      const now = performance.now();
+      if (
+        videoElement.readyState >= 2 &&
+        videoElement.videoWidth > 0 &&
+        !isDetecting &&
+        now - lastAiRunTime >= AI_MIN_INTERVAL_MS
+      ) {
         isDetecting = true;
         try {
-          const ts = Math.max(lastDetectTimestamp + 1, Math.round(performance.now()));
+          const ts = Math.max(lastDetectTimestamp + 1, Math.round(now));
           if (mode === 'pose') {
             if (!poseLandmarker && !poseInitFailed) await initPoseTracker();
             if (poseLandmarker && videoElement.currentTime !== lastPoseVideoTime) {
               lastPoseVideoTime = videoElement.currentTime;
               lastDetectTimestamp = ts;
-              const res = poseLandmarker.detectForVideo(videoElement, ts);
+              lastAiRunTime = now;
+              const res = poseLandmarker.detectForVideo(getAiFeedSource(), ts);
               onPose2PResults(res);
               detectConsecutiveErrors = 0;
             }
@@ -1886,7 +1912,8 @@
             if (handLandmarker && videoElement.currentTime !== lastHandVideoTime) {
               lastHandVideoTime = videoElement.currentTime;
               lastDetectTimestamp = ts;
-              const res = handLandmarker.detectForVideo(videoElement, ts);
+              lastAiRunTime = now;
+              const res = handLandmarker.detectForVideo(getAiFeedSource(), ts);
               onHandResults(res);
               detectConsecutiveErrors = 0;
             }
@@ -1958,6 +1985,7 @@
       showCamError('');
       lastHandVideoTime = -1;
       lastPoseVideoTime = -1;
+      lastAiRunTime = 0;
       detectConsecutiveErrors = 0;
       handInitFailed = false;
       poseInitFailed = false;
@@ -1966,7 +1994,7 @@
       setAiStatus('loading', T('aiSlicer.statusOpening'));
       try {
         mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
+          video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30, max: 30 }, facingMode: 'user' },
           audio: false
         });
 
@@ -2078,15 +2106,19 @@
 
     function resizeCanvasToViewport() {
       const rect = canvas.getBoundingClientRect();
-      if (rect.width > 0 && rect.height > 0 && (canvas.width !== Math.round(rect.width) || canvas.height !== Math.round(rect.height))) {
-        canvas.width = Math.round(rect.width);
-        canvas.height = Math.round(rect.height);
+      if (rect.width > 0 && rect.height > 0) {
+        const targetW = Math.min(1152, Math.round(rect.width));
+        const targetH = Math.max(1, Math.round(targetW * (rect.height / rect.width)));
+        if (canvas.width !== targetW || canvas.height !== targetH) {
+          canvas.width = targetW;
+          canvas.height = targetH;
 
-        const halfWidth = canvas.width / 2;
-        const boxSize = Math.min(halfWidth * 0.72, canvas.height * 0.62);
+          const halfWidth = canvas.width / 2;
+          const boxSize = Math.min(halfWidth * 0.72, canvas.height * 0.62);
 
-        player1.box = { x: (halfWidth - boxSize) / 2, y: (canvas.height - boxSize) / 2 + 14, size: boxSize };
-        player2.box = { x: halfWidth + (halfWidth - boxSize) / 2, y: (canvas.height - boxSize) / 2 + 14, size: boxSize };
+          player1.box = { x: (halfWidth - boxSize) / 2, y: (canvas.height - boxSize) / 2 + 14, size: boxSize };
+          player2.box = { x: halfWidth + (halfWidth - boxSize) / 2, y: (canvas.height - boxSize) / 2 + 14, size: boxSize };
+        }
       }
     }
 
@@ -2391,8 +2423,6 @@
       ctx.textAlign = align;
       ctx.font = '800 18px "Outfit", sans-serif';
       ctx.fillStyle = p.colorLight;
-      ctx.shadowColor = 'rgba(0,0,0,0.8)';
-      ctx.shadowBlur = 6;
       ctx.fillText(p.name, hudX, box.y - 45);
 
       const wins = isP1 ? p1RoundWins : p2RoundWins;
@@ -2453,10 +2483,10 @@
 
     function renderHanziStrokes(p, box) {
       const strokes = currentCharStrokeData.strokes;
+      const paths = currentCharStrokeData.paths || [];
       const total = currentCharStrokeData.totalStrokes;
 
       for (let i = 0; i < total; i++) {
-        const svgPathStr = strokes[i];
         const isCompleted = p.completedStrokes.includes(i);
         const isActive = (i === p.currentStrokeIdx);
 
@@ -2466,18 +2496,14 @@
         ctx.translate(0, 900);
         ctx.scale(1, -1);
 
-        const path = new Path2D(svgPathStr);
+        const path = paths[i] || new Path2D(strokes[i]);
 
         if (isCompleted) {
           ctx.fillStyle = p.colorLight;
-          ctx.shadowColor = p.colorGlow;
-          ctx.shadowBlur = 14;
           ctx.fill(path);
         } else if (isActive && p.emergencyHintTimer > 0) {
           const pulse = (Math.sin(Date.now() / 150) + 1) / 2;
-          ctx.fillStyle = `rgba(245, 158, 11, ${0.35 + pulse * 0.5})`;
-          ctx.shadowColor = 'rgba(245, 158, 11, 0.85)';
-          ctx.shadowBlur = 18;
+          ctx.fillStyle = `rgba(245, 158, 11, ${0.38 + pulse * 0.52})`;
           ctx.fill(path);
         } else {
           ctx.fillStyle = 'rgba(226, 232, 240, 0.24)';
@@ -2497,8 +2523,6 @@
           if (endIdx >= 1) {
             ctx.save();
             ctx.strokeStyle = p.colorLight;
-            ctx.shadowColor = p.colorGlow;
-            ctx.shadowBlur = 12;
             ctx.lineWidth = box.size * 0.048;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
@@ -2641,7 +2665,6 @@
         ctx.save();
         const pulseR = 17 + Math.sin(animTick * 0.2) * 3;
         ctx.strokeStyle = p.colorLight; ctx.lineWidth = 2.5;
-        ctx.shadowColor = p.colorGlow; ctx.shadowBlur = 14;
         ctx.beginPath(); ctx.arc(x, y, pulseR, 0, Math.PI * 2); ctx.stroke();
 
         ctx.fillStyle = p.color;
@@ -2662,10 +2685,12 @@
           ctx.restore();
         }
 
-        ctx.shadowBlur = 4; ctx.shadowColor = '#000';
         ctx.font = '800 12px "Outfit", sans-serif';
-        ctx.fillStyle = p.colorLight;
         ctx.textAlign = 'center';
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+        ctx.strokeText(p.name, x, y + 30);
+        ctx.fillStyle = p.colorLight;
         ctx.fillText(p.name, x, y + 30);
         ctx.restore();
       }

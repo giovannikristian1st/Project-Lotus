@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flip Tiles (Memory Pairs) — LotusWall</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="common/ui-spritesheet.css">
+  <link rel="stylesheet" href="common/themes.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; user-select: none; }
+    body {
+      background: #f7f5f0;
+      min-height: 100vh;
+      color: #18181b;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Top Info Bar */
+    .top-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 24px;
+      background: #ffffff;
+      border-bottom: 1.5px solid #e5dfd3;
+      color: #18181b;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+    .stat-badge {
+      background: #fcfbf8;
+      padding: 6px 13px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: 1.5px solid #d6cfc2;
+      color: #18181b;
+      box-shadow: 0 1px 2px rgba(24,24,27,0.04);
+    }
+    .hearts { color: #dc2626; font-size: 16px; gap: 4px; }
+    .heart { display: inline-flex; align-items: center; justify-content: center; }
+    .heart.lost { opacity: 0.25; filter: grayscale(1); }
+
+    /* Timer Container */
+    .timer-container { width: 100%; height: 6px; background: #e5dfd3; }
+    .timer-bar { height: 100%; background: #15803d; width: 100%; transition: width 0.1s linear; }
+
+    /* Game Area */
+    .game-area {
+      flex: 1;
+      width: 96%;
+      max-width: 1520px;
+      margin: 0 auto;
+      padding: 18px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .hint-banner {
+      font-size: 13px;
+      color: #57534e;
+      margin-bottom: 18px;
+      background: #ffffff;
+      padding: 8px 18px;
+      border-radius: 8px;
+      border: 1.5px solid #d6cfc2;
+      text-align: center;
+      max-width: 980px;
+    }
+
+    /* Cards Grid */
+    .tiles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      width: 100%;
+      max-width: 1480px;
+      perspective: 1200px;
+    }
+    @media (min-width: 769px) {
+      .tiles-grid {
+        grid-template-columns: repeat(var(--grid-cols, 4), minmax(0, 1fr));
+        gap: 18px;
+      }
+    }
+    @media (max-width: 640px) {
+      .game-area {
+        width: 100%;
+        padding: 14px;
+      }
+      .tiles-grid {
+        grid-template-columns: repeat(auto-fit, minmax(115px, 1fr));
+        gap: 10px;
+      }
+    }
+
+    /* 3D Tile Card */
+    .tile-card {
+      aspect-ratio: 4 / 3.4;
+      min-height: 140px;
+      cursor: pointer;
+      position: relative;
+      border-radius: 12px;
+    }
+    @media (max-width: 640px) {
+      .tile-card {
+        min-height: 110px;
+        border-radius: 10px;
+      }
+    }
+
+    .tile-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.45s cubic-bezier(0.4, 0.2, 0.2, 1);
+      border-radius: inherit;
+    }
+
+    .tile-card.is-flipped .tile-inner {
+      transform: rotateY(180deg);
+    }
+
+    /* Faces */
+    .tile-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border-radius: inherit;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 12px;
+      box-shadow: 0 2px 8px rgba(24,24,27,0.08);
+      border: 2px solid #d6cfc2;
+    }
+
+    /* Card Front: Face-down (Classic slate index card deck) */
+    .tile-front {
+      background: #1e242b;
+      border-color: #334155;
+      box-shadow: inset 0 0 0 5px rgba(255,255,255,0.06), 0 4px 10px rgba(24,24,27,0.12);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .tile-card:hover:not(.is-flipped):not(.is-matched) .tile-front {
+      border-color: #d97706;
+      transform: translateY(-2px);
+    }
+    .card-number {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.4px;
+      color: #e2e8f0;
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+
+    /* Card Back: Face-up (Clean High-Contrast Light Card) */
+    .tile-back {
+      background: #ffffff;
+      transform: rotateY(180deg);
+      border-color: #18181b;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+
+    .role-badge {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      flex-shrink: 0;
+    }
+    .badge-term { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .badge-match { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+
+    .tile-text {
+      font-weight: 700;
+      line-height: 1.35;
+      color: #18181b;
+      word-break: break-word;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .tile-text.short { font-size: 16px; font-weight: 800; }
+    .tile-text.medium { font-size: 13px; font-weight: 700; }
+    .tile-text.long { font-size: 11px; line-height: 1.25; font-weight: 600; }
+
+    .tile-img {
+      max-height: 55px;
+      max-width: 100%;
+      border-radius: 6px;
+      margin-top: 6px;
+      object-fit: contain;
+    }
+
+    /* Matched State */
+    .tile-card.is-matched .tile-back {
+      background: #f0fdf4 !important;
+      border-color: #15803d !important;
+      animation: pulseMatch 0.45s ease-out;
+    }
+    .tile-card.is-matched { cursor: default; }
+    .matched-check {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      font-size: 14px;
+    }
+
+    /* Wrong Shake State */
+    .tile-card.is-wrong .tile-back {
+      background: #fef2f2 !important;
+      border-color: #dc2626 !important;
+      animation: shake 0.4s ease-in-out;
+    }
+
+    @keyframes pulseMatch { 0% { transform: scale(0.96); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }
+    @keyframes shake {
+      0%, 100% { transform: rotateY(180deg) translateX(0); }
+      20%, 60% { transform: rotateY(180deg) translateX(-6px); }
+      40%, 80% { transform: rotateY(180deg) translateX(6px); }
+    }
+
+    /* Game Over Modal */
+    .screen-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(24, 24, 27, 0.7);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+    .modal-box {
+      background: #ffffff;
+      border: 2px solid #d6cfc2;
+      color: #18181b;
+      border-radius: 14px;
+      padding: 32px;
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(24,24,27,0.22);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .end-sub { color: #57534e; margin-bottom: 16px; font-size: 13px; }
+    .stats-grid { background: #fcfbf8; border: 1.5px solid #e5dfd3; padding: 14px; border-radius: 10px; margin-bottom: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat-mini-lbl { font-size: 11px; color: #57534e; font-weight: 600; }
+    .lb-submit-card { background: #fcfbf8; padding: 14px; border-radius: 10px; border: 1.5px solid #e5dfd3; margin-bottom: 14px; text-align: left; }
+    .lb-submit-label { display: block; font-size: 12px; font-weight: 700; color: #18181b; margin-bottom: 6px; }
+    .lb-input { flex: 1; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #d6cfc2; background: #ffffff; color: #18181b; font-size: 13px; font-weight: 600; outline: none; }
+    .action-btn {
+      background: #1d4ed8;
+      color: white;
+      border: none;
+      border-bottom: 3px solid #1e3a8a;
+      padding: 12px 32px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: all 0.15s;
+    }
+    .action-btn:hover { background: #1e40af; }
+
+    .leaderboard-list { margin-top: 10px; max-height: 160px; overflow-y: auto; text-align: left; }
+    .lb-row { display: flex; justify-content: space-between; padding: 7px 12px; border-bottom: 1px solid #e5dfd3; font-size: 13px; color: #18181b; }
+    .lb-row.active { background: #eff6ff; border-radius: 6px; font-weight: bold; }
+  </style>
+</head>
+<body class="theme-white">
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="stat-badge">
+      <span class="ui-sprite ui-sm ui-game-flashcards hud-icon-white"></span>
+      <span id="pairs-badge">Pairs: 0 / 0</span>
+    </div>
+    <div class="stat-badge" id="score-badge">
+      <span class="ui-sprite ui-sm ui-trophy hud-icon-white"></span>
+      <span><span data-i18n="game.score">Score</span>: <span id="score-val" style="color: #059669;">0</span></span>
+    </div>
+    <div class="stat-badge" id="timer-badge">
+      <span class="ui-sprite ui-sm ui-clock hud-icon-white"></span>
+      <span><span id="timer-label" data-i18n="game.time">Time</span>: <span id="timer-val">0</span>s</span>
+    </div>
+    <div class="stat-badge">
+      <span class="ui-sprite ui-sm ui-hand hud-icon-white"></span>
+      <span><span data-i18n="ft.moves">Moves:</span> <span id="moves-val">0</span></span>
+    </div>
+    <div class="stat-badge hearts" id="lives-container"></div>
+  </div>
+
+  <div class="timer-container" id="timer-bar-wrapper">
+    <div class="timer-bar" id="timer-bar"></div>
+  </div>
+
+  <!-- Main Game Area -->
+  <main class="game-area">
+    <div class="hint-banner" id="hint-banner" data-i18n-html="ft.hintHtml">
+      <strong>Flip Tiles:</strong> Click 2 cards to flip and match each question with its right answer!
+    </div>
+
+    <div class="tiles-grid" id="tiles-grid"></div>
+  </main>
+
+  <!-- Game Over Screen -->
+  <div class="screen-overlay" id="end-screen" style="display: none;">
+    <div class="modal-box">
+      <div style="margin-bottom: 10px; display:flex; justify-content:center;" id="end-icon">
+        <span class="ui-sprite ui-2xl ui-trophy"></span>
+      </div>
+      <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 6px;" id="end-title">Awesome, All Pairs Matched!</h2>
+      <p class="end-sub" id="end-subtitle">You matched all card pairs!</p>
+      
+      <div class="stats-grid">
+        <div style="text-align: center;">
+          <div style="font-size: 22px; font-weight: 800; color: #059669;" id="final-score">0 pts</div>
+          <div class="stat-mini-lbl" data-i18n="ft.totalScoreLabel">Total Score</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 22px; font-weight: 800; color: #0284c7;" id="final-time">0s</div>
+          <div class="stat-mini-lbl" data-i18n="ft.timeTakenLabel">Time Taken</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 19px; font-weight: 800; color: #d97706;" id="final-moves">0</div>
+          <div class="stat-mini-lbl" data-i18n="ft.totalMovesLabel">Total Moves</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 19px; font-weight: 800; color: #db2777;" id="final-accuracy">100%</div>
+          <div class="stat-mini-lbl" data-i18n="ft.accuracy">Pair Accuracy</div>
+        </div>
+      </div>
+
+      <!-- Student Name Input for Leaderboard -->
+      <div id="score-submit-box" class="lb-submit-card">
+        <label for="player-name-input" class="lb-submit-label" data-i18n="game.lbNamePrompt">
+          Write your name for the Leaderboard:
+        </label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="player-name-input" class="lb-input" data-i18n-placeholder="game.namePlaceholder" placeholder="Your name (e.g. Budi, Siti, Andi)..." onkeydown="if(event.key==='Enter') submitPlayerScore();">
+          <button id="btn-submit-score" onclick="submitPlayerScore()" style="background: #15803d; color: #ffffff; border: none; border-bottom: 3px solid #14532d; padding: 10px 16px; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; white-space: nowrap;" data-i18n="game.send">
+            Submit
+          </button>
+        </div>
+        <div id="score-submitted-alert" style="display: none; margin-top: 8px; color: #15803d; font-size: 12px; font-weight: 700;"></div>
+      </div>
+
+      <div style="text-align: left; font-weight: 700; font-size: 14px; color: #18181b; margin-bottom: 4px;" data-i18n="game.leaderboard">Leaderboard</div>
+      <div class="leaderboard-list" id="lb-list"></div>
+
+      <button class="action-btn" onclick="restartGame()" data-i18n="game.playAgain">Play Again</button>
+    </div>
+  </div>
+
+  <script src="common/i18n.js"></script>
+  <script src="common/sfx.js"></script>
+  <script src="common/confetti.js"></script>
+  <script src="common/themes.js"></script>
+  <script src="common/bridge.js"></script>
+  <script>
+    const tr = (k, v) => (window.LotusI18n ? LotusI18n.t(k, v) : k);
+
+    let activity = null;
+    let cardPairs = [];
+    let tiles = [];
+    let selectedTiles = [];
+    let matchedPairsCount = 0;
+    let totalPairsCount = 0;
+    let movesCount = 0;
+    let score = 0;
+    let isBoardLocked = false;
+    let hasSubmittedScore = false;
+    let lastPlayerName = '';
+    let lastEndState = { victory: true, timeout: false };
+
+    let lives = 3;
+    let maxLives = 3;
+    let timeMode = 'stopwatch';
+    let timerDuration = 60;
+    let timeLeft = 60;
+    let stopwatchSeconds = 0;
+    let timerInterval = null;
+    let mismatchTimeout = null;
+    let loseTimeout = null;
+    let winTimeout = null;
+    let hasBootedOnce = false;
+    let lastActivitySig = '';
+    let lastSettingsSyncTs = 0;
+    const processedBridgeMsgs = new WeakSet();
+
+    function syncStaticTexts() {
+      document.title = tr('ft.pageTitle');
+      if (window.LotusI18n) LotusI18n.applyDomTranslations(document);
+      const timerLbl = document.getElementById('timer-label');
+      if (timerLbl) timerLbl.innerText = timeMode === 'stopwatch' ? tr('game.stopwatch') : tr('game.time');
+    }
+
+    if (window.LotusI18n) {
+      LotusI18n.onChange(() => {
+        syncStaticTexts();
+        updateStatsUI();
+        // Refresh card front numbers & role badges in place without breaking flip state
+        tiles.forEach((t, idx) => {
+          const card = document.getElementById(t.tileId);
+          if (!card) return;
+          const numEl = card.querySelector('.card-number');
+          if (numEl) numEl.innerText = tr('ft.cardLabel', { n: idx + 1 });
+          const roleEl = card.querySelector('.role-badge');
+          if (roleEl) roleEl.innerText = t.role === 'term' ? tr('ft.termLabel') : tr('ft.matchLabel');
+        });
+        if (document.getElementById('end-screen').style.display !== 'none') {
+          refreshEndTexts();
+          renderLeaderboardUI(lastPlayerName);
+        }
+      });
+    }
+
+    const bridge = window.GameBridge || (typeof GameBridge !== 'undefined' ? GameBridge : null);
+
+    function computeActivitySig(act) {
+      if (!act) return '';
+      const qLen = (act.questions || act.content?.items || []).length;
+      return JSON.stringify({
+        id: act.id || '',
+        title: act.title || '',
+        qLen,
+        rules: act.rules || null,
+        settings: act.settings || null,
+        theme: act.theme || ''
+      });
+    }
+
+    function applyMergedSettings(payload) {
+      if (!payload) return;
+      const base = payload.activity ? { ...payload.activity } : { ...(activity || {}) };
+      if (payload.rules) base.rules = { ...(base.rules || {}), ...payload.rules };
+      if (payload.settings) base.settings = { ...(base.settings || {}), ...payload.settings };
+      if (payload.theme) base.theme = payload.theme;
+      if (base.rules) {
+        base.settings = {
+          ...(base.settings || {}),
+          timerSeconds: base.rules.timerSeconds ?? base.settings?.timerSeconds ?? 60,
+          lives: base.rules.hasLives === false ? 0 : (base.rules.livesCount ?? base.settings?.lives ?? 3),
+          hasLives: base.rules.hasLives,
+          timeMode: base.rules.timeMode,
+          shuffle: base.rules.shuffleQuestions,
+          shuffleAnswers: base.rules.shuffleAnswers
+        };
+      }
+      const norm = (bridge && typeof bridge.normalizeActivity === 'function') ? bridge.normalizeActivity(base) : base;
+      activity = norm;
+      if (bridge) bridge.activity = norm;
+      lastActivitySig = computeActivitySig(norm);
+      if (payload.theme && window.LotusThemes) LotusThemes.apply(payload.theme, true);
+      else if (norm.theme && window.LotusThemes) LotusThemes.apply(norm.theme);
+      if (payload.restart !== false) initGame();
+    }
+
+    function handleExternalMessage(data) {
+      if (!data || typeof data !== 'object') return;
+      if (data.type === 'GAME_CMD') {
+        const cmd = data.command || data.cmd;
+        if (cmd === 'RESTART') initGame();
+      } else if (data.type === 'UPDATE_SETTINGS') {
+        lastSettingsSyncTs = Date.now();
+        applyMergedSettings(data);
+      } else if (data.type === 'GAME_SETTINGS') {
+        lastSettingsSyncTs = Date.now();
+        const p = data.payload && typeof data.payload === 'object' ? { ...data, ...data.payload } : data;
+        if (p.rules || p.settings || p.activity || p.theme) applyMergedSettings(p);
+      } else if (data.type === 'INIT_ACTIVITY' && data.activity) {
+        const norm = (bridge && typeof bridge.normalizeActivity === 'function') ? bridge.normalizeActivity(data.activity) : data.activity;
+        const sig = computeActivitySig(norm);
+        if (!hasBootedOnce || sig !== lastActivitySig || data.forceRestart || data.restart === true) {
+          activity = norm;
+          if (bridge) bridge.activity = norm;
+          lastActivitySig = sig;
+          hasBootedOnce = true;
+          initGame();
+        }
+      }
+    }
+
+    if (bridge && typeof bridge.onReady === 'function') {
+      bridge.onReady((act) => {
+        if (hasBootedOnce && (Date.now() - lastSettingsSyncTs) < 50) return;
+        activity = act;
+        lastActivitySig = computeActivitySig(act);
+        hasBootedOnce = true;
+        initGame();
+      });
+      if (typeof bridge.onSettings === 'function') {
+        bridge.onSettings((payload) => {
+          if (payload && typeof payload === 'object') processedBridgeMsgs.add(payload);
+          handleExternalMessage(payload);
+        });
+      }
+    } else {
+      setTimeout(() => { hasBootedOnce = true; initGame(); }, 100);
+    }
+
+    const hasBridgeSettings = Boolean(bridge && typeof bridge.onSettings === 'function');
+    window.addEventListener('message', (event) => {
+      if (!event.data || typeof event.data !== 'object') return;
+      if (processedBridgeMsgs.has(event.data)) return;
+      if (hasBridgeSettings && (event.data.type === 'UPDATE_SETTINGS' || event.data.type === 'GAME_SETTINGS' || event.data.type === 'GAME_CMD')) {
+        return;
+      }
+      processedBridgeMsgs.add(event.data);
+      handleExternalMessage(event.data);
+    });
+
+    function initGame() {
+      clearInterval(timerInterval);
+      clearTimeout(mismatchTimeout);
+      clearTimeout(loseTimeout);
+      clearTimeout(winTimeout);
+      selectedTiles = [];
+      matchedPairsCount = 0;
+      movesCount = 0;
+      score = 0;
+      isBoardLocked = false;
+      hasSubmittedScore = false;
+      lastPlayerName = '';
+
+      const rawList = activity?.questions || activity?.content?.items || [];
+      cardPairs = rawList.map((item, idx) => {
+        const questionText = item.text || item.question || tr('game.defaultQuestion', { n: idx + 1 });
+        let answerText = item.correctAnswer || item.pairTarget || '';
+        if (!answerText && Array.isArray(item.options) && item.options.length > 0) {
+          const correctOpt = item.options.find(o => o.isCorrect);
+          answerText = correctOpt ? correctOpt.text : (item.options[0].text || item.options[0]);
+        }
+        if (!answerText) answerText = tr('ft.matchLabel');
+
+        return {
+          pairId: item.id || `pair-${idx}`,
+          term: { text: questionText, image: item.image || '', role: 'term' },
+          match: { text: answerText, image: item.options?.find(o => o.isCorrect)?.image || '', role: 'match' }
+        };
+      });
+
+      if (cardPairs.length === 0) {
+        const isId = (window.LotusI18n && LotusI18n.getLang() === 'id');
+        cardPairs = isId
+          ? [
+              { pairId: 'p1', term: { text: "Cat", role: 'term' }, match: { text: "Kucing", role: 'match' } },
+              { pairId: 'p2', term: { text: "Sun", role: 'term' }, match: { text: "Matahari", role: 'match' } },
+              { pairId: 'p3', term: { text: "Water", role: 'term' }, match: { text: "Air", role: 'match' } },
+              { pairId: 'p4', term: { text: "Book", role: 'term' }, match: { text: "Buku", role: 'match' } }
+            ]
+          : [
+              { pairId: 'p1', term: { text: "H2O", role: 'term' }, match: { text: "Water", role: 'match' } },
+              { pairId: 'p2', term: { text: "CO2", role: 'term' }, match: { text: "Carbon Dioxide", role: 'match' } },
+              { pairId: 'p3', term: { text: "Mars", role: 'term' }, match: { text: "Red Planet", role: 'match' } },
+              { pairId: 'p4', term: { text: "6 x 7", role: 'term' }, match: { text: "42", role: 'match' } }
+            ];
+      }
+
+      totalPairsCount = cardPairs.length;
+
+      const rules = activity?.rules || {};
+      const settings = activity?.settings || {};
+
+      timeMode = rules.timeMode || (settings.timerSeconds > 0 ? 'timer' : 'stopwatch');
+      timerDuration = Number(rules.timerSeconds ?? settings.timerSeconds ?? 60);
+      if (timerDuration <= 0 && timeMode === 'timer') timerDuration = 60;
+
+      const hasLives = rules.hasLives !== undefined
+        ? Boolean(rules.hasLives)
+        : (settings.hasLives !== undefined ? Boolean(settings.hasLives) : (settings.lives !== undefined ? Number(settings.lives) > 0 : false));
+      maxLives = hasLives ? (Number(rules.livesCount ?? settings.lives ?? 3) || 3) : 0;
+      lives = maxLives;
+
+      syncStaticTexts();
+
+      const termTiles = [];
+      const matchTiles = [];
+      cardPairs.forEach((pair, pIdx) => {
+        termTiles.push({
+          tileId: `tile-${pIdx}-term`,
+          pairId: pair.pairId,
+          text: pair.term.text,
+          image: pair.term.image,
+          role: 'term',
+          isFlipped: false,
+          isMatched: false
+        });
+        matchTiles.push({
+          tileId: `tile-${pIdx}-match`,
+          pairId: pair.pairId,
+          text: pair.match.text,
+          image: pair.match.image,
+          role: 'match',
+          isFlipped: false,
+          isMatched: false
+        });
+      });
+
+      const shouldShuffle = rules.shuffleQuestions !== false && settings.shuffle !== false;
+      tiles = [...termTiles, ...matchTiles];
+      if (shouldShuffle) {
+        tiles.sort(() => Math.random() - 0.5);
+      }
+
+      updateHearts();
+      updateStatsUI();
+
+      const themeToApply = activity?.theme || 'white';
+      if (window.LotusThemes) LotusThemes.apply(themeToApply);
+
+      document.getElementById('end-screen').style.display = 'none';
+
+      renderBoard();
+      startTimer();
+    }
+
+    function updateHearts() {
+      const container = document.getElementById('lives-container');
+      if (maxLives <= 0) {
+        container.style.setProperty('display', 'none', 'important');
+        return;
+      }
+      container.style.removeProperty('display');
+      container.style.display = 'flex';
+      let str = '';
+      for (let i = 0; i < maxLives; i++) {
+        const lostCls = i < lives ? '' : ' lost';
+        str += `<span class="heart${lostCls}"><span class="ui-sprite ui-sm ui-heart hud-icon-white"></span></span>`;
+      }
+      container.innerHTML = str;
+    }
+
+    function updateStatsUI() {
+      document.getElementById('pairs-badge').innerText = tr('ft.pairs', { matched: matchedPairsCount, total: totalPairsCount });
+      document.getElementById('score-val').innerText = score;
+      document.getElementById('moves-val').innerText = movesCount;
+    }
+
+    function renderBoard() {
+      const grid = document.getElementById('tiles-grid');
+      const total = tiles.length;
+      const cols = total <= 4 ? Math.max(2, total) : total <= 6 ? 3 : total <= 8 ? 4 : total <= 10 ? 5 : 6;
+      grid.style.setProperty('--grid-cols', String(cols));
+      grid.innerHTML = '';
+
+      tiles.forEach((t, idx) => {
+        const card = document.createElement('div');
+        card.className = 'tile-card';
+        card.id = t.tileId;
+        card.onclick = () => handleTileClick(idx);
+
+        let textLenClass = 'short';
+        if (t.text.length > 55) textLenClass = 'long';
+        else if (t.text.length > 25) textLenClass = 'medium';
+
+        const roleBadgeClass = t.role === 'term' ? 'badge-term' : 'badge-match';
+        const roleLabel = t.role === 'term' ? tr('ft.termLabel') : tr('ft.matchLabel');
+
+        card.innerHTML = `
+          <div class="tile-inner">
+            <div class="tile-face tile-front">
+              <span class="game-sprite sprite-icon-md sprite-card-back"></span>
+              <div class="card-number">${tr('ft.cardLabel', { n: idx + 1 })}</div>
+            </div>
+            <div class="tile-face tile-back">
+              <span class="role-badge ${roleBadgeClass}">${roleLabel}</span>
+              <div class="tile-text ${textLenClass}">${t.text}</div>
+              ${t.image ? `<img src="${t.image}" class="tile-img" alt="tile-img" onerror="this.style.display='none'">` : ''}
+              <div class="matched-check" style="display:none;" id="check-${t.tileId}">
+                <span class="game-sprite sprite-icon-sm sprite-badge-correct"></span>
+              </div>
+            </div>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    function handleTileClick(tileIndex) {
+      if (isBoardLocked) return;
+
+      const tile = tiles[tileIndex];
+      if (tile.isFlipped || tile.isMatched) return;
+
+      const cardEl = document.getElementById(tile.tileId);
+      if (!cardEl) return;
+
+      SFX.click();
+      tile.isFlipped = true;
+      cardEl.classList.add('is-flipped');
+      selectedTiles.push({ index: tileIndex, tile, element: cardEl });
+
+      if (selectedTiles.length === 2) {
+        movesCount++;
+        updateStatsUI();
+
+        const [first, second] = selectedTiles;
+        const isMatch = first.tile.pairId === second.tile.pairId && first.tile.tileId !== second.tile.tileId;
+
+        if (isMatch) {
+          SFX.correct();
+          first.tile.isMatched = true;
+          second.tile.isMatched = true;
+          first.element.classList.add('is-matched');
+          second.element.classList.add('is-matched');
+
+          const check1 = document.getElementById(`check-${first.tile.tileId}`);
+          const check2 = document.getElementById(`check-${second.tile.tileId}`);
+          if (check1) check1.style.display = 'block';
+          if (check2) check2.style.display = 'block';
+
+          matchedPairsCount++;
+          score += 150 + Math.max(0, (totalPairsCount * 3 - movesCount) * 10);
+          updateStatsUI();
+          selectedTiles = [];
+
+          if (matchedPairsCount >= totalPairsCount) {
+            clearTimeout(winTimeout);
+            winTimeout = setTimeout(() => endGame(true), 600);
+          }
+        } else {
+          SFX.wrong();
+          isBoardLocked = true;
+          first.element.classList.add('is-wrong');
+          second.element.classList.add('is-wrong');
+
+          if (maxLives > 0) {
+            lives--;
+            updateHearts();
+            if (lives <= 0) {
+              clearTimeout(loseTimeout);
+              loseTimeout = setTimeout(() => endGame(false), 800);
+              return;
+            }
+          }
+
+          clearTimeout(mismatchTimeout);
+          mismatchTimeout = setTimeout(() => {
+            first.element.classList.remove('is-flipped', 'is-wrong');
+            second.element.classList.remove('is-flipped', 'is-wrong');
+            first.tile.isFlipped = false;
+            second.tile.isFlipped = false;
+            selectedTiles = [];
+            isBoardLocked = false;
+          }, 850);
+        }
+      }
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      const timerBadge = document.getElementById('timer-badge');
+      const timerBarWrapper = document.getElementById('timer-bar-wrapper');
+
+      if (timeMode === 'none') {
+        timerBadge.style.setProperty('display', 'none', 'important');
+        timerBarWrapper.style.display = 'none';
+        return;
+      }
+
+      timerBadge.style.removeProperty('display');
+      timerBadge.style.display = 'flex';
+
+      if (timeMode === 'stopwatch') {
+        timerBarWrapper.style.display = 'none';
+        stopwatchSeconds = 0;
+        document.getElementById('timer-val').innerText = stopwatchSeconds;
+        timerInterval = setInterval(() => {
+          stopwatchSeconds++;
+          document.getElementById('timer-val').innerText = stopwatchSeconds;
+        }, 1000);
+      } else {
+        timerBarWrapper.style.display = 'block';
+        timeLeft = timerDuration;
+        updateTimerDisplay();
+        timerInterval = setInterval(() => {
+          timeLeft -= 0.1;
+          if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            timeLeft = 0;
+            updateTimerDisplay();
+            endGame(false, true);
+          } else {
+            updateTimerDisplay();
+            if (Math.round(timeLeft) <= 5 && Math.round(timeLeft * 10) % 10 === 0) SFX.tick();
+          }
+        }, 100);
+      }
+    }
+
+    function updateTimerDisplay() {
+      document.getElementById('timer-val').innerText = Math.max(0, Math.ceil(timeLeft));
+      const percentage = Math.max(0, (timeLeft / timerDuration) * 100);
+      document.getElementById('timer-bar').style.width = percentage + '%';
+    }
+
+    function refreshEndTexts() {
+      const totalTime = timeMode === 'stopwatch' ? stopwatchSeconds : Math.max(1, Math.round(timerDuration - timeLeft));
+      const accuracy = Math.round((totalPairsCount / Math.max(1, movesCount)) * 100);
+      document.getElementById('final-score').innerText = tr('game.ptsShort', { n: score });
+      document.getElementById('final-time').innerText = tr('game.timeSec', { n: totalTime });
+      document.getElementById('final-moves').innerText = movesCount;
+      document.getElementById('final-accuracy').innerText = `${Math.min(100, accuracy)}%`;
+
+      const iconBox = document.getElementById('end-icon');
+      if (lastEndState.victory) {
+        if (iconBox) iconBox.innerHTML = '<span class="ui-sprite ui-2xl ui-trophy"></span>';
+        document.getElementById('end-title').innerText = tr('ft.doneTitle');
+        document.getElementById('end-subtitle').innerText = tr('ft.doneSub', { total: totalPairsCount, moves: movesCount });
+      } else if (lastEndState.timeout) {
+        if (iconBox) iconBox.innerHTML = '<span class="ui-sprite ui-2xl ui-clock"></span>';
+        document.getElementById('end-title').innerText = tr('ft.timeoutTitle');
+        document.getElementById('end-subtitle').innerText = tr('ft.timeoutSub');
+      } else {
+        if (iconBox) iconBox.innerHTML = '<span class="ui-sprite ui-2xl ui-alert"></span>';
+        document.getElementById('end-title').innerText = tr('ft.livesTitle');
+        document.getElementById('end-subtitle').innerText = tr('ft.livesSub');
+      }
+
+      const submitBtn = document.getElementById('btn-submit-score');
+      const alertBox = document.getElementById('score-submitted-alert');
+      if (submitBtn) submitBtn.innerText = hasSubmittedScore ? tr('game.savedBtn') : tr('game.send');
+      if (alertBox && hasSubmittedScore) alertBox.innerText = tr('game.scoreSavedBanner', { name: lastPlayerName, score });
+    }
+
+    function endGame(isVictory = true, isTimeout = false) {
+      clearInterval(timerInterval);
+      clearTimeout(mismatchTimeout);
+      clearTimeout(loseTimeout);
+      clearTimeout(winTimeout);
+      hasSubmittedScore = false;
+      lastEndState = { victory: isVictory, timeout: isTimeout };
+
+      if (isVictory) {
+        SFX.win();
+        window.launchConfetti();
+      } else {
+        SFX.wrong();
+      }
+
+      refreshEndTexts();
+
+      const nameInput = document.getElementById('player-name-input');
+      const submitBtn = document.getElementById('btn-submit-score');
+      const alertBox = document.getElementById('score-submitted-alert');
+      if (nameInput) { nameInput.value = ''; nameInput.disabled = false; }
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.style.opacity = '1'; }
+      if (alertBox) alertBox.style.display = 'none';
+
+      renderLeaderboardUI();
+      document.getElementById('end-screen').style.display = 'flex';
+    }
+
+    function submitPlayerScore() {
+      if (hasSubmittedScore) return;
+      const nameInput = document.getElementById('player-name-input');
+      const playerName = (nameInput?.value || '').trim();
+      if (!playerName) {
+        alert(tr('game.enterNameAlert'));
+        if (nameInput) nameInput.focus();
+        return;
+      }
+
+      hasSubmittedScore = true;
+      lastPlayerName = playerName;
+      const maxScore = totalPairsCount * 200;
+      GameBridge.finishGame(score, maxScore, [], playerName);
+
+      const submitBtn = document.getElementById('btn-submit-score');
+      const alertBox = document.getElementById('score-submitted-alert');
+      if (nameInput) nameInput.disabled = true;
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.6';
+        submitBtn.innerText = tr('game.savedBtn');
+      }
+      if (alertBox) {
+        alertBox.innerText = tr('game.scoreSavedBanner', { name: playerName, score });
+        alertBox.style.display = 'block';
+      }
+
+      SFX.click();
+      renderLeaderboardUI(playerName);
+    }
+
+    function renderLeaderboardUI(highlightName = '') {
+      const lb = (window.GameBridge && GameBridge.getLeaderboard) ? GameBridge.getLeaderboard() : [];
+      const lbList = document.getElementById('lb-list');
+      if (!lb || lb.length === 0) {
+        lbList.innerHTML = `<div style="text-align: center; color: #64748b; font-size: 13px; padding: 12px;">${tr('game.emptyLb')}</div>`;
+        return;
+      }
+      lbList.innerHTML = lb.slice(0, 10).map((row, i) => `
+        <div class="lb-row ${row.student_name === highlightName ? 'active' : ''}">
+          <span>#${i + 1} ${row.student_name}</span>
+          <span>${tr('game.ptsShort', { n: row.score })} (${tr('game.timeSec', { n: row.time_taken_seconds })})</span>
+        </div>
+      `).join('');
+    }
+
+    function restartGame() {
+      initGame();
+    }
+  </script>
+</body>
+</html>

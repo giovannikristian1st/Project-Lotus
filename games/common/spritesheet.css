@@ -1,0 +1,164 @@
+/**
+ * spritesheet.css: Satu Sprite Sheet Terpadu LotusWall Games (1024x1024 Atlas, 64 Aset)
+ * Menggabungkan SELURUH aset visual dari 12 mini-game ke dalam 1 sprite sheet tunggal.
+ * 
+ * Grid: 8 kolom x 8 baris (Cell 128x128px).
+ * Untuk membuat tema baru di masa depan, pengembang cukup mengganti --spritesheet-url
+ * ke file sprite sheet bertema baru dengan koordinat 8x8 yang sama persis!
+ */
+
+:root {
+  --spritesheet-url: url('spritesheet.svg');
+}
+
+/* Base Sprite Class */
+.game-sprite {
+  display: inline-block;
+  width: 128px;
+  height: 128px;
+  background-image: var(--spritesheet-url);
+  background-size: 1024px 1024px;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   SCALED SPRITE UTILITIES (Ukuran Fleksibel)
+   ========================================================================== */
+.sprite-icon-sm {
+  width: 32px !important;
+  height: 32px !important;
+  background-size: 256px 256px !important;
+}
+.sprite-icon-md {
+  width: 48px !important;
+  height: 48px !important;
+  background-size: 384px 384px !important;
+}
+.sprite-icon-lg {
+  width: 64px !important;
+  height: 64px !important;
+  background-size: 512px 512px !important;
+}
+.sprite-icon-xl {
+  width: 96px !important;
+  height: 96px !important;
+  background-size: 768px 768px !important;
+}
+
+/* ==========================================================================
+   BARIS 0 (y=0): Universal UI & HUD Essentials
+   ========================================================================== */
+.sprite-stat-badge-pill { background-position: 0 0; }
+.sprite-heart-life      { background-position: -128px 0; }
+.sprite-star-score      { background-position: -256px 0; }
+.sprite-clock-timer     { background-position: -384px 0; }
+.sprite-badge-correct   { background-position: -512px 0; }
+.sprite-badge-wrong     { background-position: -640px 0; }
+.sprite-powerup-5050    { background-position: -768px 0; }
+.sprite-powerup-freeze  { background-position: -896px 0; }
+
+/* Scaled versions for 64px (.sprite-icon-lg) */
+.sprite-icon-lg.sprite-stat-badge-pill { background-position: 0 0; }
+.sprite-icon-lg.sprite-heart-life      { background-position: -64px 0; }
+.sprite-icon-lg.sprite-star-score      { background-position: -128px 0; }
+.sprite-icon-lg.sprite-clock-timer     { background-position: -192px 0; }
+.sprite-icon-lg.sprite-badge-correct   { background-position: -256px 0; }
+.sprite-icon-lg.sprite-badge-wrong     { background-position: -320px 0; }
+.sprite-icon-lg.sprite-powerup-5050    { background-position: -384px 0; }
+.sprite-icon-lg.sprite-powerup-freeze  { background-position: -448px 0; }
+
+/* ==========================================================================
+   BARIS 1 (y=-128px): Kuis & Benar-Salah (Quiz & True/False Boxes)
+   ========================================================================== */
+.sprite-quiz-question-box   { background-position: 0 -128px; }
+.sprite-quiz-answer-box     { background-position: -128px -128px; }
+.sprite-quiz-answer-hover   { background-position: -256px -128px; }
+.sprite-quiz-answer-correct { background-position: -384px -128px; }
+.sprite-quiz-answer-wrong   { background-position: -512px -128px; }
+.sprite-truefalse-card-box  { background-position: -640px -128px; }
+.sprite-btn-true-box        { background-position: -768px -128px; }
+.sprite-btn-false-box       { background-position: -896px -128px; }
+
+/* ==========================================================================
+   BARIS 2 (y=-256px): Buka Kotak & Flip Tiles (Boxes & Cards)
+   ========================================================================== */
+.sprite-box-closed       { background-position: 0 -256px; }
+.sprite-box-open         { background-position: -128px -256px; }
+.sprite-box-gold         { background-position: -256px -256px; }
+.sprite-box-lid          { background-position: -384px -256px; }
+.sprite-card-back        { background-position: -512px -256px; }
+.sprite-card-front       { background-position: -640px -256px; }
+.sprite-card-matched     { background-position: -768px -256px; }
+.sprite-card-placeholder { background-position: -896px -256px; }
+
+/* ==========================================================================
+   BARIS 3 (y=-384px): Menjodohkan & Pengelompokan (Match Up & Group Sort Boxes)
+   ========================================================================== */
+.sprite-matchup-prompt-box { background-position: 0 -384px; }
+.sprite-matchup-slot-box   { background-position: -128px -384px; }
+.sprite-matchup-item-box   { background-position: -256px -384px; }
+.sprite-matchup-bank-box   { background-position: -384px -384px; }
+.sprite-groupsort-bucket-1 { background-position: -512px -384px; }
+.sprite-groupsort-bucket-2 { background-position: -640px -384px; }
+.sprite-groupsort-bucket-3 { background-position: -768px -384px; }
+.sprite-groupsort-card-box { background-position: -896px -384px; }
+
+/* ==========================================================================
+   BARIS 4 (y=-512px): Fruit Slicer (Buah & Pisau)
+   ========================================================================== */
+.sprite-fruit-watermelon { background-position: 0 -512px; }
+.sprite-fruit-orange     { background-position: -128px -512px; }
+.sprite-fruit-apple      { background-position: -256px -512px; }
+.sprite-fruit-banana     { background-position: -384px -512px; }
+.sprite-fruit-strawberry { background-position: -512px -512px; }
+.sprite-fruit-bomb       { background-position: -640px -512px; }
+.sprite-fruit-badge-box  { background-position: -768px -512px; }
+.sprite-fruit-splash     { background-position: -896px -512px; }
+
+/* Scaled versions for 64px (.sprite-icon-lg) */
+.sprite-icon-lg.sprite-fruit-watermelon { background-position: 0 -256px; }
+.sprite-icon-lg.sprite-fruit-orange     { background-position: -64px -256px; }
+.sprite-icon-lg.sprite-fruit-apple      { background-position: -128px -256px; }
+.sprite-icon-lg.sprite-fruit-banana     { background-position: -192px -256px; }
+.sprite-icon-lg.sprite-fruit-strawberry { background-position: -256px -256px; }
+.sprite-icon-lg.sprite-fruit-bomb       { background-position: -320px -256px; }
+.sprite-icon-lg.sprite-fruit-badge-box  { background-position: -384px -256px; }
+.sprite-icon-lg.sprite-fruit-splash     { background-position: -448px -256px; }
+
+/* ==========================================================================
+   BARIS 5 (y=-640px): Putar Roda & Kata (Wheel, Word Search & Anagram)
+   ========================================================================== */
+.sprite-wheel-rim           { background-position: 0 -640px; }
+.sprite-wheel-center        { background-position: -128px -640px; }
+.sprite-wheel-pointer       { background-position: -256px -640px; }
+.sprite-wheel-btn-box       { background-position: -384px -640px; }
+.sprite-tile-letter-box     { background-position: -512px -640px; }
+.sprite-tile-letter-slot    { background-position: -640px -640px; }
+.sprite-wordsearch-cell-box { background-position: -768px -640px; }
+.sprite-wordsearch-found-box{ background-position: -896px -640px; }
+
+/* ==========================================================================
+   BARIS 6 (y=-768px): Whack-a-Mole (Pukul Tikus)
+   ========================================================================== */
+.sprite-mole-hole       { background-position: 0 -768px; }
+.sprite-mole-normal     { background-position: -128px -768px; }
+.sprite-mole-hit        { background-position: -256px -768px; }
+.sprite-mole-card-box   { background-position: -384px -768px; }
+.sprite-hammer-idle     { background-position: -512px -768px; }
+.sprite-hammer-hit      { background-position: -640px -768px; }
+.sprite-mole-banner-box { background-position: -768px -768px; }
+.sprite-spark-effect    { background-position: -896px -768px; }
+
+/* ==========================================================================
+   BARIS 7 (y=-896px): Universal Dialogs & Controls
+   ========================================================================== */
+.sprite-modal-dialog-box  { background-position: 0 -896px; }
+.sprite-play-button-box   { background-position: -128px -896px; }
+.sprite-action-button-box { background-position: -256px -896px; }
+.sprite-trophy-cup        { background-position: -384px -896px; }
+.sprite-speaker-on        { background-position: -512px -896px; }
+.sprite-speaker-off       { background-position: -640px -896px; }
+.sprite-restart-icon      { background-position: -768px -896px; }
+.sprite-lotus-logo        { background-position: -896px -896px; }

@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Whack-a-Mole — LotusWall</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="common/ui-spritesheet.css">
+  <link rel="stylesheet" href="common/themes.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; user-select: none; }
+    body { background: #f7f5f0; min-height: 100vh; color: #18181b; display: flex; flex-direction: column; overflow-x: hidden; cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="%23d97706" stroke="%2318181b" stroke-width="2"><path d="m14 12-8.5 8.5a2.12 2.12 0 1 1-3-3L11 9"/><path d="M15 13 9 7l4-4 6 6z"/></svg>') 16 16, auto; }
+
+    .top-bar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; padding: 14px 24px; background: #fcfbf8; border-bottom: 1.5px solid #d6cfc2; }
+    .stat-badge { background: #ffffff; color: #18181b; border: 1.5px solid #d6cfc2; padding: 7px 14px; border-radius: 8px; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 0 #e5dfd3; }
+    .hearts { color: #dc2626; font-size: 16px; gap: 4px; }
+    .heart { display: inline-flex; align-items: center; justify-content: center; }
+    .heart.lost { opacity: 0.25; filter: grayscale(1); }
+
+    .game-area { flex: 1; width: 96%; max-width: 1480px; margin: 0 auto; padding: 20px 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+    .target-banner {
+      background: #ffffff;
+      border: 1.5px solid #15803d;
+      border-bottom: 4px solid #14532d;
+      border-radius: 12px;
+      padding: 18px 32px;
+      text-align: center;
+      width: 100%;
+      max-width: 1260px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(24, 24, 27, 0.06);
+      color: #18181b;
+    }
+    .banner-sub { font-size: 12px; text-transform: uppercase; color: #15803d; font-weight: 800; letter-spacing: 1.2px; }
+    .banner-q { font-size: clamp(20px, 2.1vw, 26px); font-weight: 800; margin-top: 6px; color: #18181b; }
+
+    /* Holes Grid */
+    .holes-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; width: 100%; max-width: 1260px; }
+    @media (max-width: 640px) {
+      .game-area { width: 100%; padding: 14px; }
+      .holes-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    }
+
+    .hole {
+      position: relative;
+      height: clamp(135px, 23vh, 210px);
+      background: radial-gradient(ellipse at center, #1c1917 50%, #292524 80%, #15803d 100%);
+      border-radius: 50%;
+      overflow: hidden;
+      border: 4px solid #166534;
+      box-shadow: inset 0 12px 20px rgba(0,0,0,0.65);
+    }
+
+    /* Mole */
+    .mole {
+      position: absolute;
+      bottom: -100%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(82%, 230px);
+      height: 92%;
+      background: #9a3412;
+      border-radius: 36px 36px 8px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 8px;
+      cursor: pointer;
+      transition: bottom 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: inset 0 8px 0 #b45309, 0 -4px 10px rgba(0,0,0,0.35);
+      border: 2px solid #78350f;
+    }
+    .mole.up { bottom: 0; }
+    .mole.whacked { animation: squash 0.3s forwards; }
+
+    @keyframes squash {
+      0% { transform: translateX(-50%) scale(1); }
+      50% { transform: translateX(-50%) scale(1.2, 0.6); }
+      100% { transform: translateX(-50%) scale(0.9, 0.4); bottom: -100%; }
+    }
+
+    .mole-face { display: flex; align-items: center; justify-content: center; line-height: 1; }
+    .mole-card {
+      background: #ffffff;
+      color: #18181b;
+      border: 1.5px solid #d6cfc2;
+      border-bottom: 2.5px solid #c9c1b2;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-top: 4px;
+      text-align: center;
+      max-width: 92%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      box-shadow: 0 3px 6px rgba(24, 24, 27, 0.2);
+    }
+
+    .screen-overlay { position: fixed; inset: 0; background: rgba(24, 24, 27, 0.72); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 200; padding: 24px; }
+    .end-box { background: #ffffff; color: #18181b; border: 1.5px solid #d6cfc2; border-bottom: 4px solid #c9c1b2; border-radius: 14px; padding: 36px; max-width: 480px; width: 100%; text-align: center; box-shadow: 0 20px 45px rgba(24, 24, 27, 0.22); }
+    .end-sub { color: #57534e; margin-bottom: 20px; font-size: 14px; }
+    .end-score-box { background: #fcfbf8; border: 1.5px solid #e5dfd3; padding: 18px; border-radius: 10px; margin-bottom: 20px; }
+    .action-btn { background: #15803d; color: #ffffff; border: none; border-bottom: 3px solid #14532d; padding: 12px 30px; border-radius: 10px; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 10px; display: inline-flex; align-items: center; gap: 8px; transition: transform 0.12s, background 0.15s; }
+    .action-btn:hover { background: #166534; transform: translateY(-1px); }
+  </style>
+</head>
+<body class="theme-white">
+
+  <div class="top-bar">
+    <div class="stat-badge">
+      <span class="ui-sprite ui-sm ui-mole hud-icon-white"></span>
+      <span id="hdr-title">Whack-a-Mole</span>
+    </div>
+    <div class="stat-badge" id="score-badge">
+      <span class="ui-sprite ui-sm ui-trophy hud-icon-white"></span>
+      <span><span id="lbl-score">Score</span>: <span id="score-val">0</span></span>
+    </div>
+    <div class="stat-badge" id="timer-badge">
+      <span class="ui-sprite ui-sm ui-clock hud-icon-white"></span>
+      <span><span id="lbl-time">Time</span>: <span id="timer-val">30</span>s</span>
+    </div>
+    <div class="stat-badge hearts" id="lives-container" style="display: none;"></div>
+  </div>
+
+  <main class="game-area">
+    <div class="target-banner">
+      <div class="banner-sub" id="banner-sub">Whack the Right Answer for:</div>
+      <div class="banner-q" id="question-text">Loading Activity...</div>
+    </div>
+
+    <div class="holes-grid" id="holes-grid"></div>
+  </main>
+
+  <div class="screen-overlay" id="end-screen" style="display: none;">
+    <div class="end-box">
+      <div style="margin-bottom: 14px; display: flex; justify-content: center;">
+        <span class="ui-sprite ui-2xl ui-trophy"></span>
+      </div>
+      <h2 style="font-size: 28px; font-weight: 800; margin-bottom: 8px;" id="end-title">Time's Up!</h2>
+      <p class="end-sub" id="end-sub">Your reflexes whacking the right answers are awesome!</p>
+
+      <div class="end-score-box">
+        <div style="font-size: 36px; font-weight: 800; color: #15803d;" id="final-score">0 Points</div>
+      </div>
+
+      <button class="action-btn" onclick="initGame()">
+        <span class="ui-sprite ui-sm ui-refresh hud-icon-white"></span>
+        <span id="play-again-text">Play Again</span>
+      </button>
+    </div>
+  </div>
+
+  <script src="common/sfx.js"></script>
+  <script src="common/confetti.js"></script>
+  <script src="common/i18n.js"></script>
+  <script src="common/themes.js"></script>
+  <script src="common/bridge.js"></script>
+  <script>
+    const tr = (key, vars) => (window.LotusI18n ? window.LotusI18n.t(key, vars) : key);
+
+    let activity = null;
+    let questions = [];
+    let currentQIndex = 0;
+    let correctHits = 0;
+    let score = 0;
+    let maxLives = 0;
+    let lives = 0;
+    let timeMode = 'timer';
+    let timerDuration = 30;
+    let timeLeft = 30;
+    let stopwatchSeconds = 0;
+    let timerInterval = null;
+    let moleInterval = null;
+    let isGameOver = false;
+    let lastEndReason = 'timeout';
+    const moleTimeouts = new Set();
+    let hasBootedOnce = false;
+    let lastActivitySig = '';
+    let lastSettingsSyncTs = 0;
+    const processedBridgeMsgs = new WeakSet();
+
+    function applyTranslations() {
+      const titleEl = document.getElementById('page-title');
+      if (titleEl) titleEl.textContent = tr('wam.pageTitle');
+      document.title = tr('wam.pageTitle');
+
+      const hdrTitle = document.getElementById('hdr-title');
+      if (hdrTitle) hdrTitle.textContent = tr('wam.title');
+
+      const lblScore = document.getElementById('lbl-score');
+      if (lblScore) lblScore.textContent = tr('game.score');
+
+      const lblTime = document.getElementById('lbl-time');
+      if (lblTime) lblTime.textContent = timeMode === 'stopwatch' ? tr('game.stopwatch') : tr('game.time');
+
+      const bannerSub = document.getElementById('banner-sub');
+      if (bannerSub) bannerSub.textContent = tr('wam.subPrompt');
+
+      const endTitle = document.getElementById('end-title');
+      if (endTitle) {
+        endTitle.textContent = lastEndReason === 'lives'
+          ? tr('game.outOfLivesTitle')
+          : lastEndReason === 'win'
+            ? tr('game.greatFinishTitle')
+            : tr('game.timesUp');
+      }
+
+      const endSub = document.getElementById('end-sub');
+      if (endSub) endSub.textContent = lastEndReason === 'lives' ? tr('game.outOfLivesSub') : tr('wam.allDoneSub');
+
+      const finalScore = document.getElementById('final-score');
+      if (finalScore) finalScore.textContent = tr('game.totalPoints', { n: score });
+
+      const playAgainText = document.getElementById('play-again-text');
+      if (playAgainText) playAgainText.textContent = tr('game.playAgain');
+    }
+
+    if (window.LotusI18n) {
+      window.LotusI18n.onChange(() => applyTranslations());
+    }
+
+    const bridge = window.GameBridge || (typeof GameBridge !== 'undefined' ? GameBridge : null);
+
+    function computeActivitySig(act) {
+      if (!act) return '';
+      const qLen = (act.questions || act.content?.items || []).length;
+      return JSON.stringify({
+        id: act.id || '',
+        title: act.title || '',
+        qLen,
+        rules: act.rules || null,
+        settings: act.settings || null,
+        theme: act.theme || ''
+      });
+    }
+
+    function applyMergedSettings(payload) {
+      if (!payload) return;
+      const base = payload.activity ? { ...payload.activity } : { ...(activity || {}) };
+      if (payload.rules) base.rules = { ...(base.rules || {}), ...payload.rules };
+      if (payload.settings) base.settings = { ...(base.settings || {}), ...payload.settings };
+      if (payload.theme) base.theme = payload.theme;
+      if (base.rules) {
+        base.settings = {
+          ...(base.settings || {}),
+          timerSeconds: base.rules.timerSeconds ?? base.settings?.timerSeconds ?? 30,
+          lives: base.rules.hasLives === false ? 0 : (base.rules.livesCount ?? base.settings?.lives ?? 3),
+          hasLives: base.rules.hasLives,
+          timeMode: base.rules.timeMode,
+          shuffle: base.rules.shuffleQuestions,
+          shuffleAnswers: base.rules.shuffleAnswers
+        };
+      }
+      const norm = (bridge && typeof bridge.normalizeActivity === 'function') ? bridge.normalizeActivity(base) : base;
+      activity = norm;
+      if (bridge) bridge.activity = norm;
+      lastActivitySig = computeActivitySig(norm);
+      if (payload.theme && window.LotusThemes) LotusThemes.apply(payload.theme, true);
+      else if (norm.theme && window.LotusThemes) LotusThemes.apply(norm.theme);
+      if (payload.restart !== false) initGame();
+    }
+
+    function handleExternalMessage(data) {
+      if (!data || typeof data !== 'object') return;
+      if (data.type === 'GAME_CMD') {
+        const cmd = data.command || data.cmd;
+        if (cmd === 'RESTART') initGame();
+      } else if (data.type === 'UPDATE_SETTINGS') {
+        lastSettingsSyncTs = Date.now();
+        applyMergedSettings(data);
+      } else if (data.type === 'GAME_SETTINGS') {
+        lastSettingsSyncTs = Date.now();
+        const p = data.payload && typeof data.payload === 'object' ? { ...data, ...data.payload } : data;
+        if (p.rules || p.settings || p.activity || p.theme) applyMergedSettings(p);
+      } else if (data.type === 'INIT_ACTIVITY' && data.activity) {
+        const norm = (bridge && typeof bridge.normalizeActivity === 'function') ? bridge.normalizeActivity(data.activity) : data.activity;
+        const sig = computeActivitySig(norm);
+        if (!hasBootedOnce || sig !== lastActivitySig || data.forceRestart || data.restart === true) {
+          activity = norm;
+          if (bridge) bridge.activity = norm;
+          lastActivitySig = sig;
+          hasBootedOnce = true;
+          initGame();
+        }
+      }
+    }
+
+    if (bridge && typeof bridge.onReady === 'function') {
+      bridge.onReady((act) => {
+        if (hasBootedOnce && (Date.now() - lastSettingsSyncTs) < 50) return;
+        activity = act;
+        lastActivitySig = computeActivitySig(act);
+        hasBootedOnce = true;
+        initGame();
+      });
+      if (typeof bridge.onSettings === 'function') {
+        bridge.onSettings((payload) => {
+          if (payload && typeof payload === 'object') processedBridgeMsgs.add(payload);
+          handleExternalMessage(payload);
+        });
+      }
+    } else {
+      setTimeout(() => { hasBootedOnce = true; initGame(); }, 100);
+    }
+
+    const hasBridgeSettings = Boolean(bridge && typeof bridge.onSettings === 'function');
+    window.addEventListener('message', (event) => {
+      if (!event.data || typeof event.data !== 'object') return;
+      if (processedBridgeMsgs.has(event.data)) return;
+      if (hasBridgeSettings && (event.data.type === 'UPDATE_SETTINGS' || event.data.type === 'GAME_SETTINGS' || event.data.type === 'GAME_CMD')) {
+        return;
+      }
+      processedBridgeMsgs.add(event.data);
+      handleExternalMessage(event.data);
+    });
+
+    function clearMoleTimeouts() {
+      moleTimeouts.forEach(id => clearTimeout(id));
+      moleTimeouts.clear();
+    }
+
+    function scheduleMoleTimeout(fn, ms) {
+      const id = setTimeout(() => {
+        moleTimeouts.delete(id);
+        fn();
+      }, ms);
+      moleTimeouts.add(id);
+      return id;
+    }
+
+    function initGame() {
+      clearInterval(timerInterval);
+      clearInterval(moleInterval);
+      clearMoleTimeouts();
+
+      const lang = window.LotusI18n ? window.LotusI18n.getLang() : 'en';
+      const rawItems = activity?.questions || activity?.content?.items || [];
+      questions = rawItems.map(q => {
+        let correctAns = q.correctAnswer || '';
+        let wrongs = Array.isArray(q.wrongAnswers) ? [...q.wrongAnswers] : [];
+        if (Array.isArray(q.options) && q.options.length > 0) {
+          if (!correctAns) {
+            const cOpt = q.options.find(o => o.isCorrect);
+            if (cOpt) correctAns = cOpt.text;
+          }
+          if (wrongs.length === 0) {
+            wrongs = q.options.filter(o => !o.isCorrect).map(o => o.text || o).filter(Boolean);
+          }
+        }
+        return {
+          question: q.question || q.text || '',
+          correctAnswer: correctAns,
+          wrongAnswers: wrongs
+        };
+      }).filter(q => q.question && q.correctAnswer);
+
+      if (questions.length === 0) {
+        questions = lang === 'id'
+          ? [
+              { question: "Planet yang dijuluki Planet Merah?", correctAnswer: "Mars", wrongAnswers: ["Venus", "Jupiter", "Saturnus"] },
+              { question: "Bintang pusat tata surya kita?", correctAnswer: "Matahari", wrongAnswers: ["Bulan", "Bumi", "Komet"] },
+              { question: "Simbol kimia untuk air murni?", correctAnswer: "H2O", wrongAnswers: ["CO2", "O2", "NaCl"] }
+            ]
+          : [
+              { question: "Which planet is known as the Red Planet?", correctAnswer: "Mars", wrongAnswers: ["Venus", "Jupiter", "Saturn"] },
+              { question: "Central star of our Solar System?", correctAnswer: "Sun", wrongAnswers: ["Moon", "Earth", "Comet"] },
+              { question: "Chemical formula for pure water?", correctAnswer: "H2O", wrongAnswers: ["CO2", "O2", "NaCl"] }
+            ];
+      }
+
+      const rules = activity?.rules || {};
+      const settings = activity?.settings || {};
+
+      if (rules.shuffleQuestions !== false && settings.shuffle !== false) {
+        questions.sort(() => Math.random() - 0.5);
+      }
+
+      const hasLives = rules.hasLives !== undefined
+        ? Boolean(rules.hasLives)
+        : (settings.hasLives !== undefined ? Boolean(settings.hasLives) : (settings.lives !== undefined ? Number(settings.lives) > 0 : false));
+      maxLives = hasLives ? (Number(rules.livesCount ?? settings.lives ?? 3) || 3) : 0;
+      lives = maxLives;
+
+      timeMode = rules.timeMode || (settings.timerSeconds === 0 ? 'none' : 'timer');
+      timerDuration = Number(rules.timerSeconds ?? settings.timerSeconds ?? 30);
+      if (timerDuration <= 0 && timeMode === 'timer') timerDuration = 30;
+      timeLeft = timerDuration;
+      stopwatchSeconds = 0;
+
+      if (window.LotusThemes) LotusThemes.apply(activity?.theme || 'white');
+
+      score = 0;
+      correctHits = 0;
+      isGameOver = false;
+      currentQIndex = 0;
+      lastEndReason = 'timeout';
+      document.getElementById('score-val').innerText = score;
+      document.getElementById('end-screen').style.display = 'none';
+
+      updateHearts();
+      buildHoles();
+      nextQuestion();
+      applyTranslations();
+
+      const timerBadge = document.getElementById('timer-badge');
+      const timerVal = document.getElementById('timer-val');
+      if (timeMode === 'none') {
+        if (timerBadge) timerBadge.style.setProperty('display', 'none', 'important');
+      } else if (timeMode === 'stopwatch') {
+        if (timerBadge) {
+          timerBadge.style.removeProperty('display');
+          timerBadge.style.display = 'inline-flex';
+        }
+        if (timerVal) timerVal.innerText = '0';
+        timerInterval = setInterval(() => {
+          stopwatchSeconds++;
+          if (timerVal) timerVal.innerText = String(stopwatchSeconds);
+        }, 1000);
+      } else {
+        if (timerBadge) {
+          timerBadge.style.removeProperty('display');
+          timerBadge.style.display = 'inline-flex';
+        }
+        if (timerVal) timerVal.innerText = String(timeLeft);
+        timerInterval = setInterval(() => {
+          timeLeft--;
+          if (timerVal) timerVal.innerText = String(Math.max(0, timeLeft));
+          if (timeLeft <= 5 && timeLeft > 0 && window.SFX && SFX.tick) SFX.tick();
+          if (timeLeft <= 0) endGame('timeout');
+        }, 1000);
+      }
+
+      moleInterval = setInterval(popRandomMole, 900);
+    }
+
+    function updateHearts() {
+      const container = document.getElementById('lives-container');
+      if (!container) return;
+      if (maxLives <= 0) {
+        container.style.setProperty('display', 'none', 'important');
+        container.innerHTML = '';
+        return;
+      }
+      container.style.removeProperty('display');
+      container.style.display = 'inline-flex';
+      let str = '';
+      for (let i = 0; i < maxLives; i++) {
+        const lostCls = i < lives ? '' : ' lost';
+        str += `<span class="heart${lostCls}"><span class="ui-sprite ui-sm ui-heart hud-icon-white"></span></span>`;
+      }
+      container.innerHTML = str;
+    }
+
+    function buildHoles() {
+      const grid = document.getElementById('holes-grid');
+      grid.innerHTML = '';
+      for (let i = 0; i < 6; i++) {
+        const hole = document.createElement('div');
+        hole.className = 'hole';
+        hole.id = `hole-${i}`;
+        hole.innerHTML = `
+          <div class="mole" id="mole-${i}" onclick="whackMole(${i})">
+            <div class="mole-face"><span class="ui-sprite ui-md ui-mole"></span></div>
+            <div class="mole-card" id="card-${i}">...</div>
+          </div>
+        `;
+        grid.appendChild(hole);
+      }
+    }
+
+    function nextQuestion() {
+      if (currentQIndex >= questions.length) currentQIndex = 0;
+      const q = questions[currentQIndex];
+      document.getElementById('question-text').innerText = q.question;
+    }
+
+    function popRandomMole() {
+      if (isGameOver || questions.length === 0) return;
+      const q = questions[currentQIndex];
+      const holeIdx = Math.floor(Math.random() * 6);
+      const mole = document.getElementById(`mole-${holeIdx}`);
+      const card = document.getElementById(`card-${holeIdx}`);
+
+      if (!mole || !card || mole.classList.contains('up')) return;
+
+      const isCorrect = Math.random() > 0.4;
+      const wrongList = Array.isArray(q.wrongAnswers) ? q.wrongAnswers.filter(Boolean) : [];
+      const text = isCorrect
+        ? q.correctAnswer
+        : (wrongList.length > 0 ? wrongList[Math.floor(Math.random() * wrongList.length)] : tr('wam.wrongFallback'));
+
+      card.innerText = text;
+      mole.dataset.correct = isCorrect ? 'true' : 'false';
+
+      mole.classList.add('up');
+
+      scheduleMoleTimeout(() => {
+        if (!mole.classList.contains('whacked')) {
+          mole.classList.remove('up');
+        }
+      }, 1400);
+    }
+
+    function whackMole(holeIdx) {
+      if (isGameOver) return;
+      const mole = document.getElementById(`mole-${holeIdx}`);
+      if (!mole || !mole.classList.contains('up') || mole.classList.contains('whacked')) return;
+
+      const isCorrect = mole.dataset.correct === 'true';
+      mole.classList.add('whacked');
+      if (window.SFX) SFX.hit();
+
+      if (isCorrect) {
+        if (window.SFX) SFX.correct();
+        score += 100;
+        correctHits++;
+        document.getElementById('score-val').innerText = score;
+        if (timeMode !== 'timer' && correctHits >= questions.length) {
+          scheduleMoleTimeout(() => {
+            mole.classList.remove('up', 'whacked');
+            endGame('win');
+          }, 350);
+          return;
+        }
+        currentQIndex++;
+        nextQuestion();
+      } else {
+        if (window.SFX) SFX.wrong();
+        score = Math.max(0, score - 50);
+        document.getElementById('score-val').innerText = score;
+        if (maxLives > 0) {
+          lives = Math.max(0, lives - 1);
+          updateHearts();
+          if (lives <= 0) {
+            scheduleMoleTimeout(() => {
+              mole.classList.remove('up', 'whacked');
+              endGame('lives');
+            }, 350);
+            return;
+          }
+        }
+      }
+
+      scheduleMoleTimeout(() => {
+        mole.classList.remove('up', 'whacked');
+      }, 400);
+    }
+
+    function endGame(reason = 'timeout') {
+      if (isGameOver) return;
+      isGameOver = true;
+      lastEndReason = reason || 'timeout';
+      clearInterval(timerInterval);
+      clearInterval(moleInterval);
+      clearMoleTimeouts();
+      if (lastEndReason === 'lives') {
+        if (window.SFX) SFX.wrong();
+      } else {
+        if (window.SFX) SFX.win();
+        if (window.launchConfetti) window.launchConfetti();
+      }
+      GameBridge.finishGame(score, Math.max(1000, questions.length * 100));
+      applyTranslations();
+      document.getElementById('final-score').innerText = tr('game.totalPoints', { n: score });
+      document.getElementById('end-screen').style.display = 'flex';
+    }
+  </script>
+</body>
+</html>

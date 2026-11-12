@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Open the Box — LotusWall</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="common/ui-spritesheet.css">
+  <link rel="stylesheet" href="common/themes.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; user-select: none; }
+    body {
+      background: #f7f5f0;
+      min-height: 100vh;
+      color: #18181b;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Top Bar */
+    .top-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 24px;
+      background: #ffffff;
+      border-bottom: 1.5px solid #e5dfd3;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+    .stat-badge {
+      background: #fcfbf8;
+      color: #18181b;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1.5px solid #d6cfc2;
+      box-shadow: 0 1px 2px rgba(24, 24, 27, 0.04);
+    }
+    .hearts { color: #dc2626; font-size: 16px; gap: 4px; }
+    .heart { display: inline-flex; align-items: center; justify-content: center; }
+    .heart.lost { opacity: 0.25; filter: grayscale(1); }
+
+    /* Main Area */
+    .game-area {
+      flex: 1;
+      width: 96%;
+      max-width: 1520px;
+      margin: 0 auto;
+      padding: 20px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .hint-banner {
+      font-size: 13px;
+      color: #57534e;
+      margin-bottom: 24px;
+      background: #ffffff;
+      padding: 9px 18px;
+      border-radius: 8px;
+      border: 1.5px solid #d6cfc2;
+      text-align: center;
+      max-width: 980px;
+    }
+
+    /* Boxes Grid */
+    .boxes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 22px;
+      width: 100%;
+      max-width: 1480px;
+      perspective: 1200px;
+    }
+    @media (max-width: 640px) {
+      .game-area {
+        width: 100%;
+        padding: 14px;
+      }
+      .boxes-grid {
+        grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+        gap: 14px;
+      }
+    }
+
+    /* 3D Mystery Box */
+    .box-wrapper {
+      position: relative;
+      height: 190px;
+      perspective: 1000px;
+      cursor: pointer;
+    }
+    @media (max-width: 640px) {
+      .box-wrapper { height: 160px; }
+    }
+
+    .mystery-box {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      border-radius: 12px;
+    }
+    .box-wrapper:hover:not(.opened):not(.opening) .mystery-box {
+      transform: translateY(-6px);
+    }
+    .box-wrapper.opened { cursor: default; }
+
+    /* Box Base Body (Classic charcoal slate crate) */
+    .box-body {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      border-radius: 12px;
+      background: #1e242b;
+      border: 2.5px solid #334155;
+      box-shadow: 0 8px 18px rgba(24, 24, 27, 0.16);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      transition: all 0.35s ease;
+      padding: 16px;
+      text-align: center;
+    }
+    body:not(.theme-magical) .box-body {
+      padding: 50px 14px 14px 14px;
+    }
+    .box-body .sprite-box-closed {
+      display: none;
+    }
+
+    .box-number {
+      font-size: 44px;
+      line-height: 1.05;
+      font-weight: 900;
+      color: #ffffff;
+    }
+    @media (max-width: 640px) {
+      .box-number { font-size: 34px; }
+    }
+
+    .box-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.8px;
+      color: #cbd5e1;
+      font-weight: 800;
+      margin-top: 4px;
+    }
+
+    /* 3D Box Lid (Warm amber brass lid) */
+    .box-lid {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 46px;
+      background: #d97706;
+      border: 2.5px solid #92400e;
+      border-radius: 12px 12px 5px 5px;
+      transform-origin: top center;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .lid-handle {
+      width: 34px;
+      height: 7px;
+      background: #fef3c7;
+      border-radius: 4px;
+    }
+
+    /* Glowing Interior of the box */
+    .box-interior-glow {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 30%, rgba(251, 191, 36, 0.55) 0%, transparent 75%);
+      opacity: 0;
+      transition: opacity 0.45s ease;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .box-wrapper.opening .box-lid {
+      transform: rotateX(-125deg) translateY(-8px);
+    }
+    .box-wrapper.opening .box-interior-glow {
+      opacity: 1;
+      animation: glowPulse 1s infinite alternate;
+    }
+    .box-wrapper.opening .box-body {
+      border-color: #f59e0b;
+    }
+
+    @keyframes glowPulse {
+      0% { opacity: 0.6; }
+      100% { opacity: 1; }
+    }
+
+    /* Solved Box States */
+    .box-wrapper.opened .box-lid {
+      transform: rotateX(-120deg) translateY(-6px);
+      opacity: 0.7;
+    }
+    .box-wrapper.opened.solved-correct .box-body {
+      background: #15803d !important;
+      border-color: #14532d !important;
+    }
+    .box-wrapper.opened.solved-wrong .box-body {
+      background: #dc2626 !important;
+      border-color: #991b1b !important;
+    }
+
+    /* QUESTION EMERGE STAGE */
+    .question-stage {
+      position: fixed;
+      inset: 0;
+      background: rgba(24, 24, 27, 0.72);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      perspective: 1200px;
+      transition: opacity 0.3s ease;
+    }
+    .question-stage.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Emerging Question Card */
+    .emerging-card {
+      background: #ffffff;
+      border: 2px solid #d6cfc2;
+      border-radius: 14px;
+      padding: 30px;
+      max-width: 720px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 45px rgba(24, 24, 27, 0.24);
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: translateY(60px) scale(0.4);
+      opacity: 0;
+      transform-style: preserve-3d;
+      backface-visibility: hidden;
+      will-change: transform, opacity;
+      transition: opacity 0.3s ease;
+      color: #18181b;
+    }
+
+    .question-stage.show .emerging-card {
+      opacity: 1 !important;
+      transform: translateY(0) scale(1) !important;
+      animation: emergeFromBox 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    }
+
+    @keyframes emergeFromBox {
+      0% {
+        transform: translateY(100px) scale(0.3) rotateX(15deg);
+        opacity: 0;
+      }
+      70% {
+        opacity: 1;
+        transform: translateY(-6px) scale(1.01) rotateX(0deg);
+      }
+      100% {
+        transform: translateY(0) scale(1) rotateX(0deg);
+        opacity: 1;
+      }
+    }
+
+    .card-box-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      padding: 5px 12px;
+      border-radius: 6px;
+      background: #f3efe6;
+      color: #18181b;
+      border: 1.5px solid #d6cfc2;
+      margin-bottom: 14px;
+    }
+
+    .q-text {
+      font-size: 21px;
+      font-weight: 700;
+      line-height: 1.4;
+      color: #18181b;
+      margin-bottom: 16px;
+      word-break: break-word;
+    }
+
+    .q-image {
+      max-height: 180px;
+      max-width: 100%;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      object-fit: contain;
+      border: 1.5px solid #e5dfd3;
+    }
+
+    /* Options */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .opt-btn {
+      background: #fcfbf8;
+      border: 2px solid #d6cfc2;
+      border-bottom-width: 4px;
+      border-radius: 10px;
+      padding: 13px 18px;
+      color: #18181b;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.12s ease;
+    }
+    .opt-btn:hover:not(:disabled) {
+      background: #ffffff;
+      border-color: #18181b;
+      transform: translateY(-1px);
+    }
+    .opt-key {
+      width: 32px;
+      height: 32px;
+      border-radius: 7px;
+      background: #f3efe6;
+      border: 1px solid #d6cfc2;
+      color: #18181b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .opt-btn.correct { background: #15803d !important; border-color: #14532d !important; color: #ffffff !important; }
+    .opt-btn.correct .opt-key { background: rgba(255, 255, 255, 0.2); border-color: rgba(255,255,255,0.35); color: #ffffff; }
+    .opt-btn.wrong { background: #dc2626 !important; border-color: #991b1b !important; color: #ffffff !important; }
+    .opt-btn.wrong .opt-key { background: rgba(255, 255, 255, 0.2); border-color: rgba(255,255,255,0.35); color: #ffffff; }
+
+    /* End Screen */
+    .screen-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(24, 24, 27, 0.72);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 120;
+      padding: 24px;
+    }
+    .end-box {
+      background: #ffffff;
+      color: #18181b;
+      border: 2px solid #d6cfc2;
+      border-radius: 14px;
+      padding: 32px;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 45px rgba(24, 24, 27, 0.24);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .end-sub { color: #57534e; margin-bottom: 18px; font-size: 13px; }
+    .end-score-box { background: #fcfbf8; border: 1.5px solid #e5dfd3; padding: 16px; border-radius: 10px; margin-bottom: 16px; }
+    .score-submit-box { background: #fcfbf8; padding: 16px; border-radius: 10px; border: 1.5px solid #e5dfd3; margin-bottom: 16px; text-align: left; }
+    .name-input { flex: 1; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #d6cfc2; background: #ffffff; color: #18181b; font-size: 13px; font-weight: 600; outline: none; }
+    .name-input:focus { border-color: #18181b; }
+    .submit-score-btn { background: #15803d; color: #ffffff; border: none; border-bottom: 3px solid #14532d; padding: 10px 16px; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; white-space: nowrap; }
+    .action-btn {
+      background: #1d4ed8;
+      color: #ffffff;
+      border: none;
+      border-bottom: 3px solid #1e3a8a;
+      padding: 12px 32px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 18px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s;
+    }
+    .action-btn:hover { background: #1e40af; }
+
+    .leaderboard-list { margin-top: 10px; max-height: 180px; overflow-y: auto; text-align: left; }
+    .lb-row { display: flex; justify-content: space-between; padding: 7px 12px; border-bottom: 1px solid #e5dfd3; font-size: 13px; color: #18181b; }
+    .lb-row.active { background: #eff6ff; color: #1d4ed8; border-radius: 6px; font-weight: bold; }
+  </style>
+</head>
+<body class="theme-white">
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="stat-badge">
+      <span class="ui-sprite ui-sm ui-game-box hud-icon-white"></span>
+      <span id="hdr-title">Open the Box</span>
+    </div>
+    <div class="stat-badge" id="score-badge">
+      <span class="ui-sprite ui-sm ui-trophy hud-icon-white"></span>
+      <span><span id="lbl-score">Score</span>: <span id="score-val" style="color: #059669;">0</span></span>
+    </div>
+    <div class="stat-badge" id="timer-badge" style="display: none;">
+      <span class="ui-sprite ui-sm ui-clock hud-icon-white"></span>
+      <span><span id="lbl-time">Time</span>: <span id="timer-val">0</span>s</span>
+    </div>
+    <div class="stat-badge" id="opened-badge">
+      <span class="ui-sprite ui-sm ui-folder hud-icon-white"></span>
+      <span><span id="lbl-opened">Opened:</span> <span id="opened-count">0</span> / <span id="total-count">0</span></span>
+    </div>
+    <div class="stat-badge hearts" id="lives-container" style="display: none;"></div>
+  </div>
+
+  <!-- Main Game Area -->
+  <main class="game-area">
+    <div class="hint-banner" id="hint-banner">
+      <strong>Pick & Open a Mystery Box</strong> to reveal the secret question inside!
+    </div>
+
+    <div class="boxes-grid" id="boxes-grid">
+      <!-- Generated 3D Mystery Boxes -->
+    </div>
+  </main>
+
+  <!-- Question Emerge Stage -->
+  <div class="question-stage" id="q-stage">
+    <div class="emerging-card" id="emerging-card">
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+        <div class="card-box-badge" id="card-box-badge" style="margin-bottom:0;">
+          <span class="ui-sprite ui-xs ui-game-box"></span>
+          <span id="modal-box-num">Mystery Box #1</span>
+        </div>
+        <div class="card-box-badge" id="modal-timer-pill" style="display:none;margin-bottom:0;">
+          <span class="ui-sprite ui-xs ui-clock"></span>
+          <span><span id="modal-timer-val">30</span>s</span>
+        </div>
+      </div>
+
+      <div class="q-text" id="modal-q-text">...</div>
+      <img id="modal-q-img" class="q-image" style="display:none;" src="" alt="Question Image" onerror="this.style.display='none'">
+
+      <div class="options-grid" id="modal-options"></div>
+    </div>
+  </div>
+
+  <!-- Game Over Screen -->
+  <div class="screen-overlay" id="end-screen" style="display: none;">
+    <div class="end-box">
+      <div style="margin-bottom: 12px; display: flex; justify-content: center;">
+        <span class="ui-sprite ui-2xl ui-trophy"></span>
+      </div>
+      <h2 style="font-size: 26px; font-weight: 800; margin-bottom: 6px;" id="end-title">All Boxes Opened!</h2>
+      <p class="end-sub" id="end-sub">You completed every mystery box challenge.</p>
+
+      <div class="end-score-box">
+        <div style="font-size: 32px; font-weight: 800; color: #059669;" id="final-score">0 Points</div>
+        <div style="font-size: 12px; color: #475569; margin-top: 4px; font-weight: 600;" id="final-stats">0 of 0 boxes answered correctly!</div>
+      </div>
+
+      <!-- Leaderboard Submit -->
+      <div id="score-submit-box" class="score-submit-box">
+        <label for="player-name-input" id="lbl-player-name" style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 6px;">
+          Write your name for the Leaderboard:
+        </label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="player-name-input" class="name-input" placeholder="Your name (e.g. Budi, Siti, Andi)..." onkeydown="if(event.key==='Enter') submitPlayerScore();">
+          <button id="btn-submit-score" class="submit-score-btn" onclick="submitPlayerScore()">Submit</button>
+        </div>
+        <div id="score-submitted-alert" style="display: none; margin-top: 8px; color: #059669; font-size: 12px; font-weight: 700;"></div>
+      </div>
+
+      <div id="lbl-leaderboard" style="text-align: left; font-weight: 700; font-size: 14px; color: #1e293b; margin-bottom: 6px;">Leaderboard:</div>
+      <div class="leaderboard-list" id="lb-list"></div>
+
+      <button class="action-btn" onclick="initGame(true)">
+        <span class="ui-sprite ui-sm ui-refresh hud-icon-white"></span>
+        <span id="play-again-text">Play Again</span>
+      </button>
+    </div>
+  </div>
+
+  <script src="common/sfx.js"></script>
+  <script src="common/confetti.js"></script>
+  <script src="common/i18n.js"></script>
+  <script src="common/themes.js"></script>
+  <script src="common/bridge.js"></script>
+  <script>
+    const tr = (key, vars) => (window.LotusI18n ? window.LotusI18n.t(key, vars) : key);
+
+    let activity = null;
+    let questions = [];
+    let openedCount = 0;
+    let correctCount = 0;
+    let score = 0;
+    let activeIndex = -1;
+    let answersSummary = [];
+    let isTransitioning = false;
+    let hasSubmittedScore = false;
+    let isGameRunning = false;
+    let lastSubmittedName = '';
+    let maxLives = 0;
+    let lives = 0;
+    let timeMode = 'none';
+    let timerDuration = 30;
+    let timeLeft = 30;
+    let stopwatchSeconds = 0;
+    let timerInterval = null;
+    let questionTimerInterval = null;
+    let openDelayTimeout = null;
+    let pointerEnableTimeout = null;
+    let closeStageTimeout = null;
+    let endGameDelayTimeout = null;
+    let hasBootedOnce = false;
+    let lastActivitySig = '';
+    let lastSettingsSyncTs = 0;
+    const processedBridgeMsgs = new WeakSet();
+
+    function applyTranslations() {
+      const titleEl = document.getElementById('page-title');
+      if (titleEl) titleEl.textContent = tr('box.pageTitle');
+      document.title = tr('box.pageTitle');
+
+      const hdrTitle = document.getElementById('hdr-title');
+      if (hdrTitle) hdrTitle.textContent = tr('box.title');
+
+      const lblScore = document.getElementById('lbl-score');
+      if (lblScore) lblScore.textContent = tr('game.score');
+
+      const lblTime = document.getElementById('lbl-time');
+      if (lblTime) lblTime.textContent = timeMode === 'stopwatch' ? tr('game.stopwatch') : tr('game.time');
+
+      const lblOpened = document.getElementById('lbl-opened');
+      if (lblOpened) lblOpened.textContent = tr('box.openedCount');
+
+      const hintBanner = document.getElementById('hint-banner');
+      if (hintBanner) hintBanner.innerHTML = tr('box.instructionHtml');
+
+      document.querySelectorAll('.box-wrapper:not(.opened) .box-label').forEach(el => {
+        el.textContent = tr('box.mysteryLabel');
+      });
+      document.querySelectorAll('.box-wrapper.opened').forEach(wrap => {
+        const stateLabel = wrap.querySelector('.box-state-label');
+        if (stateLabel) {
+          stateLabel.textContent = wrap.classList.contains('solved-correct') ? tr('box.correctPlus') : tr('box.wrongLabel');
+        }
+      });
+
+      if (activeIndex >= 0) {
+        const modalBoxNum = document.getElementById('modal-box-num');
+        if (modalBoxNum) modalBoxNum.textContent = tr('box.mysteryNum', { n: activeIndex + 1 });
+      }
+
+      const endTitle = document.getElementById('end-title');
+      if (endTitle) endTitle.textContent = (maxLives > 0 && lives <= 0) ? tr('game.outOfLivesTitle') : tr('box.allOpenedTitle');
+
+      const endSub = document.getElementById('end-sub');
+      if (endSub) endSub.textContent = (maxLives > 0 && lives <= 0) ? tr('game.outOfLivesSub') : tr('box.allOpenedSub');
+
+      const finalScoreEl = document.getElementById('final-score');
+      if (finalScoreEl) finalScoreEl.textContent = tr('game.totalPoints', { n: score });
+
+      const finalStatsEl = document.getElementById('final-stats');
+      if (finalStatsEl) finalStatsEl.textContent = tr('box.statsSummary', { ok: correctCount, tot: questions.length });
+
+      const lblPlayer = document.getElementById('lbl-player-name');
+      if (lblPlayer) lblPlayer.textContent = tr('game.lbNamePrompt');
+
+      const nameInput = document.getElementById('player-name-input');
+      if (nameInput) nameInput.placeholder = tr('game.namePlaceholder');
+
+      const submitBtn = document.getElementById('btn-submit-score');
+      if (submitBtn) submitBtn.textContent = hasSubmittedScore ? tr('game.savedBtn') : tr('game.send');
+
+      const alertBox = document.getElementById('score-submitted-alert');
+      if (alertBox && hasSubmittedScore) {
+        alertBox.textContent = tr('game.scoreSavedBanner', { name: lastSubmittedName, score });
+      }
+
+      const lblLb = document.getElementById('lbl-leaderboard');
+      if (lblLb) lblLb.textContent = tr('game.leaderboard') + ':';
+
+      const playAgainText = document.getElementById('play-again-text');
+      if (playAgainText) playAgainText.textContent = tr('game.playAgain');
+
+      renderLeaderboardUI(lastSubmittedName);
+    }
+
+    if (window.LotusI18n) {
+      window.LotusI18n.onChange(() => applyTranslations());
+    }
+
+    const bridge = window.GameBridge || (typeof GameBridge !== 'undefined' ? GameBridge : null);
+
+    function computeActivitySig(act) {
+      if (!act) return '';
+      const qLen = (act.questions || act.content?.items || []).length;
+      return JSON.stringify({
+        id: act.id || '',
+        title: act.title || '',
+        qLen,
+        rules: act.rules || null,
+        settings: act.settings || null,
+        theme: act.theme || ''
+      });
+    }
+
+    function applyMergedSettings(payload) {
+      if (!payload) return;
+      const base = payload.activity ? { ...payload.activity } : { ...(activity || {}) };
+      if (payload.rules) base.rules = { ...(base.rules || {}), ...payload.rules };
+      if (payload.settings) base.settings = { ...(base.settings || {}), ...payload.settings };
+      if (payload.theme) base.theme = payload.theme;
+      if (base.rules) {
+        base.settings = {
+          ...(base.settings || {}),
+          timerSeconds: base.rules.timerSeconds ?? base.settings?.timerSeconds ?? 30,
+          lives: base.rules.hasLives === false ? 0 : (base.rules.livesCount ?? base.settings?.lives ?? 3),
+          hasLives: base.rules.hasLives,
+          timeMode: base.rules.timeMode,
+          shuffle: base.rules.shuffleQuestions,
+          shuffleAnswers: base.rules.shuffleAnswers
+        };
+      }
+      const norm = (bridge && typeof bridge.normalizeActivity === 'function') ? bridge.normalizeActivity(base) : base;
+      activity = norm;
+      if (bridge) bridge.activity = norm;
+      lastActivitySig = computeActivitySig(norm);
+      if (payload.theme && window.LotusThemes) LotusThemes.apply(payload.theme, true);
+      else if (norm.theme && window.LotusThemes) LotusThemes.apply(norm.theme);
+      if (payload.restart !== false) initGame(true);
+    }
+
+    function handleExternalMessage(data) {
+      if (!data || typeof data !== 'object') return;
+      if (data.type === 'GAME_CMD') {
+        const cmd = data.command || data.cmd;
+        if (cmd === 'RESTART') initGame(true);
+      } else if (data.type === 'UPDATE_SETTINGS') {
+        lastSettingsSyncTs = Date.now();
+        applyMergedSettings(data);
+      } else if (data.type === 'GAME_SETTINGS') {
+        lastSettingsSyncTs = Date.now();
+        const p = data.payload && typeof data.payload === 'object' ? { ...data, ...data.payload } : data;
+        if (p.rules || p.settings || p.activity || p.theme) applyMergedSettings(p);
+      } else if (data.type === 'INIT_ACTIVITY' && data.activity) {
+        const norm = (bridge && typeof bridge.normalizeActivity === 'function') ? bridge.normalizeActivity(data.activity) : data.activity;
+        const sig = computeActivitySig(norm);
+        if (!hasBootedOnce || sig !== lastActivitySig || data.forceRestart || data.restart === true) {
+          activity = norm;
+          if (bridge) bridge.activity = norm;
+          lastActivitySig = sig;
+          hasBootedOnce = true;
+          initGame(true);
+        }
+      }
+    }
+
+    if (bridge && typeof bridge.onReady === 'function') {
+      bridge.onReady((act) => {
+        if (hasBootedOnce && (Date.now() - lastSettingsSyncTs) < 50) return;
+        activity = act;
+        lastActivitySig = computeActivitySig(act);
+        hasBootedOnce = true;
+        initGame(true);
+      });
+      if (typeof bridge.onSettings === 'function') {
+        bridge.onSettings((payload) => {
+          if (payload && typeof payload === 'object') processedBridgeMsgs.add(payload);
+          handleExternalMessage(payload);
+        });
+      }
+    } else {
+      setTimeout(() => { hasBootedOnce = true; initGame(true); }, 100);
+    }
+
+    const hasBridgeSettings = Boolean(bridge && typeof bridge.onSettings === 'function');
+    window.addEventListener('message', (event) => {
+      if (!event.data || typeof event.data !== 'object') return;
+      if (processedBridgeMsgs.has(event.data)) return;
+      if (hasBridgeSettings && (event.data.type === 'UPDATE_SETTINGS' || event.data.type === 'GAME_SETTINGS' || event.data.type === 'GAME_CMD')) {
+        return;
+      }
+      processedBridgeMsgs.add(event.data);
+      handleExternalMessage(event.data);
+    });
+
+    function initGame(force = false) {
+      if (isGameRunning && !force && openedCount > 0 && openedCount < questions.length) {
+        return;
+      }
+      clearInterval(timerInterval);
+      clearInterval(questionTimerInterval);
+      clearTimeout(openDelayTimeout);
+      clearTimeout(pointerEnableTimeout);
+      clearTimeout(closeStageTimeout);
+      clearTimeout(endGameDelayTimeout);
+      isGameRunning = true;
+
+      const lang = window.LotusI18n ? window.LotusI18n.getLang() : 'en';
+      const rawList = activity?.questions || activity?.content?.items || [];
+
+      questions = rawList.map((item, idx) => {
+        let opts = [];
+        if (Array.isArray(item.options) && item.options.length > 0) {
+          opts = item.options.map(o => typeof o === 'string' ? { text: o, isCorrect: false } : o);
+        } else if (item.correctAnswer) {
+          opts = [
+            { text: item.correctAnswer, isCorrect: true },
+            ...(item.wrongAnswers || []).map(w => ({ text: w, isCorrect: false }))
+          ];
+        } else {
+          opts = [
+            { text: tr('tf.true'), isCorrect: true },
+            { text: tr('tf.false'), isCorrect: false }
+          ];
+        }
+
+        return {
+          id: item.id || String(idx + 1),
+          text: item.text || item.question || tr('game.defaultQuestion', { n: idx + 1 }),
+          image: item.image || '',
+          options: opts,
+          isOpened: false,
+          isCorrect: false
+        };
+      });
+
+      if (questions.length === 0) {
+        questions = lang === 'id'
+          ? [
+              { text: "Planet manakah yang dijuluki Planet Merah?", options: [{ text: "Mars", isCorrect: true }, { text: "Venus", isCorrect: false }] },
+              { text: "Bintang pusat tata surya kita adalah?", options: [{ text: "Matahari", isCorrect: true }, { text: "Bulan", isCorrect: false }] },
+              { text: "Air mendidih pada suhu berapa derajat celcius?", options: [{ text: "100°C", isCorrect: true }, { text: "50°C", isCorrect: false }] }
+            ]
+          : [
+              { text: "Which planet is known as the Red Planet?", options: [{ text: "Mars", isCorrect: true }, { text: "Venus", isCorrect: false }] },
+              { text: "Which star sits at the center of our Solar System?", options: [{ text: "Sun", isCorrect: true }, { text: "Moon", isCorrect: false }] },
+              { text: "At what Celsius temperature does pure water boil?", options: [{ text: "100°C", isCorrect: true }, { text: "50°C", isCorrect: false }] }
+            ];
+      }
+
+      const rules = activity?.rules || {};
+      const settings = activity?.settings || {};
+
+      if (rules.shuffleQuestions !== false && settings.shuffle !== false) {
+        questions.sort(() => Math.random() - 0.5);
+      }
+
+      timeMode = rules.timeMode || settings.timeMode || (settings.timerSeconds > 0 ? 'timer' : 'none');
+      timerDuration = Number(rules.timerSeconds ?? settings.timerSeconds ?? 30);
+      if (timerDuration <= 0 && timeMode === 'timer') timerDuration = 30;
+      timeLeft = timerDuration;
+      stopwatchSeconds = 0;
+
+      const hasLives = rules.hasLives !== undefined
+        ? Boolean(rules.hasLives)
+        : (settings.hasLives !== undefined ? Boolean(settings.hasLives) : (settings.lives !== undefined ? Number(settings.lives) > 0 : false));
+      maxLives = hasLives ? (Number(rules.livesCount ?? settings.lives ?? 3) || 3) : 0;
+      lives = maxLives;
+
+      openedCount = 0;
+      correctCount = 0;
+      score = 0;
+      activeIndex = -1;
+      answersSummary = [];
+      isTransitioning = false;
+      hasSubmittedScore = false;
+      lastSubmittedName = '';
+
+      const themeToApply = activity?.theme || 'white';
+      if (window.LotusThemes) LotusThemes.apply(themeToApply);
+
+      document.getElementById('score-val').innerText = score;
+      document.getElementById('end-screen').style.display = 'none';
+      document.getElementById('q-stage').classList.remove('show');
+      const modalTimerPill = document.getElementById('modal-timer-pill');
+      if (modalTimerPill) modalTimerPill.style.display = 'none';
+
+      const timerBadge = document.getElementById('timer-badge');
+      const timerVal = document.getElementById('timer-val');
+      if (timeMode === 'none') {
+        if (timerBadge) timerBadge.style.setProperty('display', 'none', 'important');
+      } else if (timeMode === 'stopwatch') {
+        if (timerBadge) {
+          timerBadge.style.removeProperty('display');
+          timerBadge.style.display = 'inline-flex';
+        }
+        if (timerVal) timerVal.innerText = '0';
+        timerInterval = setInterval(() => {
+          stopwatchSeconds++;
+          if (timerVal) timerVal.innerText = String(stopwatchSeconds);
+        }, 1000);
+      } else {
+        if (timerBadge) {
+          timerBadge.style.removeProperty('display');
+          timerBadge.style.display = 'inline-flex';
+        }
+        if (timerVal) timerVal.innerText = String(timerDuration);
+      }
+
+      updateHearts();
+      updateBadge();
+      renderBoxes();
+      applyTranslations();
+    }
+
+    function updateHearts() {
+      const container = document.getElementById('lives-container');
+      if (!container) return;
+      if (maxLives <= 0) {
+        container.style.setProperty('display', 'none', 'important');
+        container.innerHTML = '';
+        return;
+      }
+      container.style.removeProperty('display');
+      container.style.display = 'inline-flex';
+      let str = '';
+      for (let i = 0; i < maxLives; i++) {
+        const lostCls = i < lives ? '' : ' lost';
+        str += `<span class="heart${lostCls}"><span class="ui-sprite ui-sm ui-heart hud-icon-white"></span></span>`;
+      }
+      container.innerHTML = str;
+    }
+
+    function updateBadge() {
+      document.getElementById('opened-count').innerText = openedCount;
+      document.getElementById('total-count').innerText = questions.length;
+    }
+
+    function renderBoxes() {
+      const grid = document.getElementById('boxes-grid');
+      grid.innerHTML = '';
+
+      questions.forEach((q, idx) => {
+        const boxWrapper = document.createElement('div');
+        boxWrapper.className = 'box-wrapper';
+        boxWrapper.id = `box-wrapper-${idx}`;
+        boxWrapper.onclick = (e) => {
+          e.stopPropagation();
+          openBox(idx);
+        };
+
+        boxWrapper.innerHTML = `
+          <div class="mystery-box" id="mystery-box-${idx}">
+            <div class="box-lid">
+              <div class="lid-handle"></div>
+            </div>
+            <div class="box-interior-glow"></div>
+            <div class="box-body" id="box-body-${idx}">
+              <span class="game-sprite sprite-icon-md sprite-box-closed" style="margin-bottom: 2px;"></span>
+              <div class="box-number">${idx + 1}</div>
+              <div class="box-label">${tr('box.mysteryLabel')}</div>
+            </div>
+          </div>
+        `;
+
+        grid.appendChild(boxWrapper);
+      });
+    }
+
+    function openBox(index) {
+      if (isTransitioning) return;
+      const boxWrapper = document.getElementById(`box-wrapper-${index}`);
+      if (!boxWrapper || boxWrapper.classList.contains('opened') || boxWrapper.classList.contains('opening')) return;
+
+      isTransitioning = true;
+      activeIndex = index;
+      const q = questions[index];
+
+      if (window.SFX) SFX.click();
+      boxWrapper.classList.add('opening');
+
+      clearInterval(questionTimerInterval);
+      clearTimeout(openDelayTimeout);
+      openDelayTimeout = setTimeout(() => {
+        document.getElementById('modal-box-num').innerText = tr('box.mysteryNum', { n: index + 1 });
+        document.getElementById('modal-q-text').innerText = q.text;
+
+        const imgEl = document.getElementById('modal-q-img');
+        imgEl.style.display = 'none';
+        if (q.image) {
+          imgEl.onload = () => { imgEl.style.display = 'inline-block'; };
+          imgEl.onerror = () => { imgEl.style.display = 'none'; };
+          imgEl.src = q.image;
+        } else {
+          imgEl.src = '';
+        }
+
+        const optsContainer = document.getElementById('modal-options');
+        optsContainer.innerHTML = '';
+        optsContainer.style.pointerEvents = 'none';
+
+        const currentOpts = [...q.options];
+        if (activity?.rules?.shuffleAnswers !== false && activity?.settings?.shuffleAnswers !== false) {
+          currentOpts.sort(() => Math.random() - 0.5);
+        }
+
+        const keys = ['A', 'B', 'C', 'D', 'E', 'F'];
+        currentOpts.forEach((opt, oIdx) => {
+          const btn = document.createElement('button');
+          btn.className = 'opt-btn';
+          btn.innerHTML = `
+            <span class="opt-key">${keys[oIdx] || (oIdx + 1)}</span>
+            <span style="flex:1;">${opt.text}</span>
+          `;
+          btn.onclick = (e) => {
+            e.stopPropagation();
+            handleAnswer(opt, btn, currentOpts);
+          };
+          optsContainer.appendChild(btn);
+        });
+
+        const modalTimerPill = document.getElementById('modal-timer-pill');
+        const modalTimerVal = document.getElementById('modal-timer-val');
+        const topTimerVal = document.getElementById('timer-val');
+        if (timeMode === 'timer') {
+          timeLeft = timerDuration;
+          if (modalTimerPill) modalTimerPill.style.display = 'inline-flex';
+          if (modalTimerVal) modalTimerVal.innerText = String(timeLeft);
+          if (topTimerVal) topTimerVal.innerText = String(timeLeft);
+          questionTimerInterval = setInterval(() => {
+            timeLeft--;
+            if (modalTimerVal) modalTimerVal.innerText = String(Math.max(0, timeLeft));
+            if (topTimerVal) topTimerVal.innerText = String(Math.max(0, timeLeft));
+            if (timeLeft <= 5 && timeLeft > 0 && window.SFX && SFX.tick) SFX.tick();
+            if (timeLeft <= 0) {
+              clearInterval(questionTimerInterval);
+              handleQuestionTimeout(currentOpts);
+            }
+          }, 1000);
+        } else if (modalTimerPill) {
+          modalTimerPill.style.display = 'none';
+        }
+
+        document.getElementById('q-stage').classList.add('show');
+
+        clearTimeout(pointerEnableTimeout);
+        pointerEnableTimeout = setTimeout(() => {
+          optsContainer.style.pointerEvents = 'auto';
+          isTransitioning = false;
+        }, 650);
+      }, 450);
+    }
+
+    function handleQuestionTimeout(allOpts) {
+      if (isTransitioning || activeIndex < 0) return;
+      handleAnswer({ isCorrect: false, text: '' }, null, allOpts);
+    }
+
+    function handleAnswer(selectedOpt, btnEl, allOpts) {
+      if (isTransitioning) return;
+      isTransitioning = true;
+      clearInterval(questionTimerInterval);
+      const modalTimerPill = document.getElementById('modal-timer-pill');
+      if (modalTimerPill) modalTimerPill.style.display = 'none';
+
+      const allBtns = document.querySelectorAll('#modal-options .opt-btn');
+      allBtns.forEach(b => b.disabled = true);
+
+      const q = questions[activeIndex];
+      const boxWrapper = document.getElementById(`box-wrapper-${activeIndex}`);
+      const mysteryBox = document.getElementById(`mystery-box-${activeIndex}`);
+      const boxBody = document.getElementById(`box-body-${activeIndex}`);
+
+      const isCorrect = Boolean(selectedOpt && selectedOpt.isCorrect);
+
+      boxWrapper.classList.remove('opening');
+      boxWrapper.classList.add('opened');
+      if (mysteryBox) mysteryBox.classList.add('opened');
+
+      if (isCorrect) {
+        if (window.SFX) SFX.correct();
+        if (btnEl) btnEl.classList.add('correct');
+        score += 100;
+        correctCount++;
+        document.getElementById('score-val').innerText = score;
+        answersSummary.push({ questionId: q.id, correct: true });
+
+        boxWrapper.classList.add('solved-correct');
+        boxBody.innerHTML = `
+          <span class="ui-sprite ui-lg ui-check" style="margin-bottom: 4px;"></span>
+          <div class="box-label box-state-label" style="color: #6ee7b7; font-size: 11px;">${tr('box.correctPlus')}</div>
+          <div style="font-size: 12px; font-weight: 700; color: #ffffff; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">${selectedOpt.text}</div>
+        `;
+      } else {
+        if (window.SFX) SFX.wrong();
+        if (btnEl) btnEl.classList.add('wrong');
+        answersSummary.push({ questionId: q.id, correct: false });
+
+        if (maxLives > 0) {
+          lives = Math.max(0, lives - 1);
+          updateHearts();
+        }
+
+        const correctOptObj = allOpts.find(o => o.isCorrect);
+        allBtns.forEach(b => {
+          if (correctOptObj && b.innerText.includes(correctOptObj.text)) {
+            b.classList.add('correct');
+          }
+        });
+
+        boxWrapper.classList.add('solved-wrong');
+        boxBody.innerHTML = `
+          <span class="ui-sprite ui-lg ui-close" style="margin-bottom: 4px;"></span>
+          <div class="box-label box-state-label" style="color: #fecaca; font-size: 11px;">${tr('box.wrongLabel')}</div>
+          <div style="font-size: 12px; font-weight: 700; color: #ffffff; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">${correctOptObj ? correctOptObj.text : ''}</div>
+        `;
+      }
+
+      openedCount++;
+      updateBadge();
+
+      clearTimeout(closeStageTimeout);
+      closeStageTimeout = setTimeout(() => {
+        document.getElementById('q-stage').classList.remove('show');
+        isTransitioning = false;
+
+        if (openedCount >= questions.length || (maxLives > 0 && lives <= 0)) {
+          clearTimeout(endGameDelayTimeout);
+          endGameDelayTimeout = setTimeout(() => endGame(), 600);
+        }
+      }, 1300);
+    }
+
+    function endGame() {
+      clearInterval(timerInterval);
+      clearInterval(questionTimerInterval);
+      clearTimeout(openDelayTimeout);
+      clearTimeout(pointerEnableTimeout);
+      clearTimeout(closeStageTimeout);
+      clearTimeout(endGameDelayTimeout);
+      hasSubmittedScore = false;
+      if (maxLives > 0 && lives <= 0) {
+        if (window.SFX) SFX.wrong();
+      } else {
+        if (window.SFX) SFX.win();
+        if (window.launchConfetti) window.launchConfetti();
+      }
+
+      const endTitle = document.getElementById('end-title');
+      if (endTitle) endTitle.innerText = (maxLives > 0 && lives <= 0) ? tr('game.outOfLivesTitle') : tr('box.allOpenedTitle');
+      const endSub = document.getElementById('end-sub');
+      if (endSub) endSub.innerText = (maxLives > 0 && lives <= 0) ? tr('game.outOfLivesSub') : tr('box.allOpenedSub');
+      document.getElementById('final-score').innerText = tr('game.totalPoints', { n: score });
+      document.getElementById('final-stats').innerText = tr('box.statsSummary', { ok: correctCount, tot: questions.length });
+
+      const nameInput = document.getElementById('player-name-input');
+      const submitBtn = document.getElementById('btn-submit-score');
+      const alertBox = document.getElementById('score-submitted-alert');
+      if (nameInput) {
+        nameInput.value = '';
+        nameInput.disabled = false;
+      }
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        submitBtn.innerText = tr('game.send');
+      }
+      if (alertBox) alertBox.style.display = 'none';
+
+      renderLeaderboardUI();
+      document.getElementById('end-screen').style.display = 'flex';
+    }
+
+    function submitPlayerScore() {
+      if (hasSubmittedScore) return;
+      const nameInput = document.getElementById('player-name-input');
+      const playerName = (nameInput?.value || '').trim();
+      if (!playerName) {
+        alert(tr('game.enterNameAlert'));
+        if (nameInput) nameInput.focus();
+        return;
+      }
+
+      hasSubmittedScore = true;
+      lastSubmittedName = playerName;
+      const maxScore = questions.length * 100;
+      if (bridge && typeof bridge.finishGame === 'function') {
+        bridge.finishGame(score, maxScore, answersSummary, playerName);
+      }
+
+      const submitBtn = document.getElementById('btn-submit-score');
+      const alertBox = document.getElementById('score-submitted-alert');
+      if (nameInput) nameInput.disabled = true;
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.6';
+        submitBtn.innerText = tr('game.savedBtn');
+      }
+      if (alertBox) {
+        alertBox.innerText = tr('game.scoreSavedBanner', { name: playerName, score });
+        alertBox.style.display = 'block';
+      }
+
+      if (window.SFX) SFX.click();
+      renderLeaderboardUI(playerName);
+    }
+
+    function renderLeaderboardUI(highlightName = '') {
+      const lb = (bridge && bridge.getLeaderboard) ? bridge.getLeaderboard() : [];
+      const lbList = document.getElementById('lb-list');
+      if (!lbList) return;
+      if (!lb || lb.length === 0) {
+        lbList.innerHTML = `<div style="text-align: center; color: #64748b; font-size: 13px; padding: 12px;">${tr('game.emptyLb')}</div>`;
+        return;
+      }
+      lbList.innerHTML = lb.slice(0, 10).map((row, i) => `
+        <div class="lb-row ${row.student_name === highlightName ? 'active' : ''}">
+          <span>#${i + 1} ${row.student_name}</span>
+          <span>${tr('game.ptsShort', { n: row.score })} (${tr('game.timeSec', { n: row.time_taken_seconds })})</span>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>

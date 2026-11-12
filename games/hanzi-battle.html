@@ -1,0 +1,2812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 2P Hanzi Brush Battle — LotusWall</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800;900&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="common/ui-spritesheet.css">
+
+  <!-- MediaPipe Hands CDN (Pose 2P loaded dynamically when selected) -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous" defer></script>
+
+  <!-- Hanzi Databases (Stroke Paths + Meihua DB + Vocab DB) -->
+  <script src="data/brushstrokedb.js"></script>
+  <script src="data/meihuadb.js"></script>
+  <script src="data/vocabdb.js"></script>
+
+  <!-- Shared LotusWall Engines -->
+  <script src="common/i18n.js"></script>
+  <script src="common/sfx.js"></script>
+  <script src="common/confetti.js"></script>
+  <script src="common/themes.js"></script>
+  <script src="common/bridge.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --card-bg: rgba(15, 23, 42, 0.85);
+      --p1-blue: #0284c7;
+      --p1-cyan: #38bdf8;
+      --p1-light: #e0f2fe;
+      --p2-pink: #ec4899;
+      --p2-rose: #f43f5e;
+      --p2-light: #fce7f3;
+      --accent-gold: #f59e0b;
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-glass: rgba(255, 255, 255, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    body.theme-magical {
+      background: radial-gradient(circle at 50% 20%, #2e1065 0%, #0f172a 75%);
+    }
+    body.theme-magical header,
+    body.theme-magical .placeholder-card,
+    body.theme-magical .target-char-card {
+      border-color: rgba(192, 132, 252, 0.45);
+      box-shadow: 0 12px 30px rgba(139, 92, 246, 0.25);
+    }
+
+    /* HEADER */
+    header {
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-glass);
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: nowrap;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 40;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      flex-shrink: 0;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-title h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+    }
+
+    .brand-title h1 span.badge {
+      font-size: 10px;
+      background: #b45309;
+      color: #fef3c7;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .brand-title p {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .header-center-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .chapter-badge {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-glass);
+      padding: 6px 11px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      max-width: 240px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chapter-badge:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: #38bdf8;
+    }
+
+    .ai-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-glass);
+      padding: 5px 11px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .ai-status-pill .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #64748b;
+    }
+
+    .ai-status-pill.loading { color: #fbbf24; border-color: rgba(251, 191, 36, 0.4); }
+    .ai-status-pill.loading .dot { background: #fbbf24; animation: pulseDot 0.9s infinite alternate; }
+    .ai-status-pill.ready { color: #34d399; border-color: rgba(52, 211, 153, 0.4); }
+    .ai-status-pill.ready .dot { background: #10b981; box-shadow: 0 0 8px #10b981; }
+    .ai-status-pill.error { color: #f87171; border-color: rgba(248, 113, 113, 0.4); }
+    .ai-status-pill.error .dot { background: #ef4444; }
+
+    @keyframes pulseDot {
+      from { opacity: 0.4; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1.25); }
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: nowrap;
+      flex-shrink: 0;
+    }
+
+    .btn {
+      padding: 7px 12px;
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .btn-primary {
+      background: #1d4ed8;
+      color: white;
+      border-bottom: 3px solid #1e3a8a;
+    }
+    .btn-primary:hover {
+      background: #1e40af;
+      transform: translateY(-1px);
+    }
+
+    .btn-stop {
+      background: #dc2626;
+      color: white;
+    }
+    .btn-stop:hover { background: #b91c1c; }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e2e8f0;
+      border: 1px solid var(--border-glass);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    select.hand-select {
+      background: rgba(15, 23, 42, 0.92);
+      color: #e2e8f0;
+      border: 1px solid var(--border-glass);
+      padding: 6px 8px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 1120px) {
+      header { flex-wrap: wrap; }
+      .brand-title p { display: none; }
+      .header-actions { flex-wrap: wrap; }
+    }
+
+    /* EMBEDDED & FULLSCREEN CLEAN 16:9 STAGE (ZERO SETTINGS INSIDE GAME WINDOW) */
+    body.is-embedded header,
+    body.is-embedded .controls-bar,
+    body.is-embedded aside.sidebar,
+    body.is-embedded aside.side-panel,
+    body.is-embedded #btnChangeChapterFromWin,
+    body.is-fullscreen header,
+    body.is-fullscreen .controls-bar,
+    body.is-fullscreen aside.sidebar,
+    body.is-fullscreen aside.side-panel,
+    body.is-fullscreen #btnChangeChapterFromWin,
+    :fullscreen header,
+    :fullscreen .controls-bar,
+    :fullscreen aside.sidebar,
+    :fullscreen aside.side-panel,
+    :fullscreen #btnChangeChapterFromWin,
+    :-webkit-full-screen header,
+    :-webkit-full-screen .controls-bar,
+    :-webkit-full-screen aside.sidebar,
+    :-webkit-full-screen aside.side-panel,
+    :-webkit-full-screen #btnChangeChapterFromWin {
+      display: none !important;
+    }
+
+    body.is-embedded,
+    body.is-fullscreen,
+    :fullscreen body,
+    :-webkit-full-screen body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden !important;
+    }
+
+    body.is-embedded .game-viewport,
+    body.is-fullscreen .game-viewport,
+    :fullscreen .game-viewport,
+    :-webkit-full-screen .game-viewport {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+    }
+
+    body.is-embedded .target-char-card,
+    body.is-fullscreen .target-char-card,
+    :fullscreen .target-char-card,
+    :-webkit-full-screen .target-char-card {
+      top: 8px;
+      padding: 6px 14px;
+      gap: 12px;
+      border-radius: 10px;
+    }
+
+    body.is-embedded .target-char-symbol,
+    body.is-fullscreen .target-char-symbol,
+    :fullscreen .target-char-symbol,
+    :-webkit-full-screen .target-char-symbol {
+      font-size: 28px;
+    }
+
+    body.is-embedded .target-pinyin,
+    body.is-fullscreen .target-pinyin,
+    :fullscreen .target-pinyin,
+    :-webkit-full-screen .target-pinyin {
+      font-size: 14px;
+    }
+
+    body.is-embedded .tracking-hud-bar,
+    body.is-fullscreen .tracking-hud-bar,
+    :fullscreen .tracking-hud-bar,
+    :-webkit-full-screen .tracking-hud-bar {
+      bottom: 8px;
+      padding: 5px 14px;
+      font-size: 11.5px;
+    }
+
+    body.is-embedded .placeholder-card,
+    body.is-fullscreen .placeholder-card,
+    :fullscreen .placeholder-card,
+    :-webkit-full-screen .placeholder-card {
+      padding: 18px 24px;
+      max-width: 540px;
+    }
+
+    body.is-embedded .placeholder-card h2,
+    body.is-fullscreen .placeholder-card h2,
+    :fullscreen .placeholder-card h2,
+    :-webkit-full-screen .placeholder-card h2 {
+      font-size: 20px;
+      margin-bottom: 6px;
+    }
+
+    body.is-embedded .placeholder-card p,
+    body.is-fullscreen .placeholder-card p,
+    :fullscreen .placeholder-card p,
+    :-webkit-full-screen .placeholder-card p {
+      font-size: 12.5px;
+      line-height: 1.45;
+      margin-bottom: 12px;
+    }
+
+    body.is-embedded .placeholder-features,
+    body.is-fullscreen .placeholder-features,
+    :fullscreen .placeholder-features,
+    :-webkit-full-screen .placeholder-features {
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    body.is-embedded .feature-pill,
+    body.is-fullscreen .feature-pill,
+    :fullscreen .feature-pill,
+    :-webkit-full-screen .feature-pill {
+      padding: 4px 9px;
+      font-size: 11px;
+    }
+
+    body.is-embedded .btn-big-start,
+    body.is-embedded .btn-big-mouse,
+    body.is-fullscreen .btn-big-start,
+    body.is-fullscreen .btn-big-mouse,
+    :fullscreen .btn-big-start,
+    :fullscreen .btn-big-mouse,
+    :-webkit-full-screen .btn-big-start,
+    :-webkit-full-screen .btn-big-mouse {
+      padding: 10px 18px;
+      font-size: 13.5px;
+    }
+
+    body.is-embedded .winner-overlay,
+    body.is-fullscreen .winner-overlay,
+    :fullscreen .winner-overlay,
+    :-webkit-full-screen .winner-overlay {
+      gap: 10px;
+      padding: 14px;
+    }
+
+    body.is-embedded .winner-title,
+    body.is-fullscreen .winner-title,
+    :fullscreen .winner-title,
+    :-webkit-full-screen .winner-title {
+      font-size: 28px;
+    }
+
+    body.is-embedded .winner-score-card,
+    body.is-fullscreen .winner-score-card,
+    :fullscreen .winner-score-card,
+    :-webkit-full-screen .winner-score-card {
+      padding: 10px 20px;
+    }
+
+    .cam-error-note {
+      display: none;
+      margin: 12px auto 0;
+      max-width: 460px;
+      background: rgba(220, 38, 38, 0.16);
+      color: #fecaca;
+      border: 1px solid rgba(248, 113, 113, 0.45);
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    /* MAIN GAME VIEWPORT */
+    .game-viewport {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      background: #090d16;
+      overflow: hidden;
+    }
+
+    @media (min-width: 900px) {
+      body:not(.is-embedded):not(.is-fullscreen) .game-viewport {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        max-height: calc(100vh - 58px);
+        margin: 0 auto;
+      }
+    }
+
+    #webcam {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+      display: none;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    #gameCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      z-index: 5;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    /* CAMERA PLACEHOLDER / START OVERLAY */
+    .camera-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #1e293b 0%, #090d16 80%);
+      z-index: 15;
+      gap: 16px;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .placeholder-card {
+      background: rgba(15, 23, 42, 0.94);
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      padding: 30px 36px;
+      border-radius: 14px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.55);
+      max-width: 580px;
+    }
+
+    .placeholder-card h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      color: #f8fafc;
+    }
+
+    .placeholder-card p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .placeholder-features {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .feature-pill {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--border-glass);
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .placeholder-actions {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-big-start {
+      background: #15803d;
+      color: white;
+      font-size: 15px;
+      font-weight: 800;
+      padding: 13px 26px;
+      border-radius: 10px;
+      border: none;
+      border-bottom: 3px solid #14532d;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .btn-big-start:hover {
+      background: #166534;
+      transform: translateY(-1px);
+    }
+
+    .btn-big-mouse {
+      background: rgba(255, 255, 255, 0.12);
+      color: #f8fafc;
+      font-size: 14.5px;
+      font-weight: 700;
+      padding: 13px 22px;
+      border-radius: 10px;
+      border: 1.5px solid rgba(255, 255, 255, 0.24);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-big-mouse:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: #38bdf8;
+    }
+
+    /* TOP TARGET CHARACTER CARD HUD */
+    .target-char-card {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid var(--border-glass);
+      padding: 8px 20px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+      z-index: 20;
+    }
+
+    .target-char-symbol {
+      font-family: 'Ma Shan Zheng', 'Noto Sans SC', serif;
+      font-size: 36px;
+      line-height: 1;
+      color: #ffffff;
+      text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    }
+
+    .target-char-details {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .target-pinyin {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--accent-gold);
+    }
+
+    .target-meaning {
+      font-size: 12px;
+      font-weight: 600;
+      color: #cbd5e1;
+      max-width: 240px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .round-tag {
+      background: #1d4ed8;
+      border: 1px solid #60a5fa;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    /* LIVE TRACKING STATUS FOOTER BAR */
+    .tracking-hud-bar {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--border-glass);
+      padding: 6px 18px;
+      border-radius: 8px;
+      z-index: 20;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .p-track-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .track-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .ai-loading-banner {
+      position: absolute;
+      bottom: 52px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(245, 158, 11, 0.16);
+      border: 1px solid rgba(251, 191, 36, 0.45);
+      color: #fde68a;
+      padding: 6px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      z-index: 20;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    /* MODAL POPUPS */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .modal-box {
+      background: #111827;
+      border: 1px solid var(--border-glass);
+      border-radius: 14px;
+      width: 90%;
+      max-width: 560px;
+      padding: 24px 28px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .modal-box h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 19px;
+      font-weight: 800;
+      color: #f8fafc;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-box select, .modal-box input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: #1f2937;
+      border: 1px solid #374151;
+      color: white;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .vocab-tags-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-height: 180px;
+      overflow-y: auto;
+      padding: 10px;
+      background: #1f2937;
+      border-radius: 10px;
+    }
+
+    .vocab-tag {
+      background: #374151;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .vocab-tag strong {
+      color: var(--accent-gold);
+    }
+
+    /* WINNER OVERLAY POPUP */
+    .winner-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(9, 13, 22, 0.9);
+      backdrop-filter: blur(12px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      text-align: center;
+      gap: 16px;
+      padding: 20px;
+    }
+
+    .winner-crown {
+      animation: bounce 1s infinite alternate;
+    }
+
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to { transform: translateY(-10px); }
+    }
+
+    .winner-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 38px;
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
+
+    .winner-subtitle {
+      font-size: 16px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .winner-scores {
+      display: flex;
+      gap: 24px;
+      margin: 6px 0;
+    }
+
+    .winner-score-card {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-glass);
+      padding: 14px 26px;
+      border-radius: 12px;
+      min-width: 140px;
+    }
+
+    .winner-score-card.highlight {
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+      transform: scale(1.05);
+    }
+
+    .score-input-row {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      max-width: 380px;
+    }
+    .score-input-row input {
+      flex: 1;
+      padding: 9px 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .winner-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    (function () {
+      try {
+        var embedded = (window.self !== window.top) || new URLSearchParams(window.location.search).get('embedded') === '1';
+        if (embedded) document.body.classList.add('is-embedded');
+      } catch (e) {
+        document.body.classList.add('is-embedded');
+      }
+    })();
+  </script>
+
+  <!-- HEADER -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon"><span class="ui-sprite ui-md ui-brush"></span></div>
+      <div class="brand-title">
+        <h1><span data-i18n="hb.title">AI 2P Hanzi Brush Battle</span> <span class="badge">BEST OF 3</span></h1>
+        <p data-i18n="hb.sub">2P Split-Screen Air Calligraphy · Best of 3</p>
+      </div>
+    </div>
+
+    <div class="header-center-info">
+      <div class="chapter-badge" id="btnOpenChapterModal" data-i18n-title="hb.chooseChapter" title="Change Unit / Deck">
+        <span class="ui-sprite ui-xs ui-subject"></span>
+        <span id="currentChapterLabel" style="overflow:hidden; text-overflow:ellipsis;">MH1 U1 · 你五个，我五个</span>
+      </div>
+      <div class="ai-status-pill" id="aiStatusPill">
+        <span class="dot"></span>
+        <span id="aiStatusText">AI Standby</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <select class="hand-select" id="selectTrackingMode">
+        <option value="hands" data-i18n="hb.trackingNear">Near (Hands AI)</option>
+        <option value="pose" data-i18n="hb.trackingFar">Far 2P (Pose AI)</option>
+      </select>
+
+      <select class="hand-select" id="selectHandPreference">
+        <option value="auto" data-i18n="hb.handAuto">Hand: Auto</option>
+        <option value="right" data-i18n="hb.handRight">Right Only</option>
+        <option value="left" data-i18n="hb.handLeft">Left Only</option>
+      </select>
+
+      <button class="btn btn-secondary" id="btnNextWord">
+        <span class="ui-sprite ui-xs ui-arrow-right"></span>
+        <span data-i18n="hb.skip">Skip Word</span>
+      </button>
+
+      <button class="btn btn-primary" id="btnToggleCamera">
+        <span class="ui-sprite ui-xs ui-camera"></span>
+        <span data-i18n="hb.startCam">Enable Camera</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- GAME VIEWPORT -->
+  <div class="game-viewport" id="viewport">
+
+    <video id="webcam" playsinline autoplay muted></video>
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- FLOATING HUD: CURRENT TARGET CHARACTER -->
+    <div class="target-char-card" id="targetCard" style="display: none;">
+      <div class="target-char-symbol" id="targetSymbol">我</div>
+      <div class="target-char-details">
+        <div class="target-pinyin" id="targetPinyin">wǒ</div>
+        <div class="target-meaning" id="targetMeaning">I / me</div>
+      </div>
+      <div class="round-tag" id="roundTag">Round 1 / 3</div>
+    </div>
+
+    <!-- AI LOADING INFO BANNER -->
+    <div class="ai-loading-banner" id="aiLoadingBanner" style="display: none;" data-i18n="hb.loadingBanner">
+      Preparing finger-tracking AI... (You can also drag with Mouse/Touch right away!)
+    </div>
+
+    <!-- BOTTOM TRACKING BAR -->
+    <div class="tracking-hud-bar" id="trackingHudBar" style="display: none;">
+      <div class="p-track-pill" style="color: var(--p1-cyan);">
+        <span class="track-dot" style="background: var(--p1-cyan);"></span>
+        <span>P1:</span>
+        <span id="p1TrackLabel" style="color: #94a3b8;">Point Index Finger...</span>
+      </div>
+      <span style="color: #475569;">|</span>
+      <div class="p-track-pill" style="color: var(--p2-pink);">
+        <span class="track-dot" style="background: var(--p2-pink);"></span>
+        <span>P2:</span>
+        <span id="p2TrackLabel" style="color: #94a3b8;">Point Index Finger...</span>
+      </div>
+    </div>
+
+    <!-- START / CAMERA PLACEHOLDER OVERLAY -->
+    <div class="camera-placeholder" id="placeholder">
+      <div class="placeholder-card">
+        <div style="margin-bottom: 10px;"><span class="ui-sprite ui-2xl ui-brush"></span></div>
+        <h2 data-i18n="hb.placeholderTitle">Air-Calligraphy Hanzi Battle</h2>
+        <p data-i18n="hb.placeholderDesc">
+          Stand side by side and trace Hanzi strokes in the air with your index finger—glowing calligraphy ink follows every stroke!
+        </p>
+
+        <div class="placeholder-features">
+          <div class="feature-pill"><span class="ui-sprite ui-xs ui-user"></span> <span data-i18n-html="hb.p1Zone"><strong>P1:</strong> Left Zone</span></div>
+          <div class="feature-pill"><span class="ui-sprite ui-xs ui-user"></span> <span data-i18n-html="hb.p2Zone"><strong>P2:</strong> Right Zone</span></div>
+          <div class="feature-pill"><span class="ui-sprite ui-xs ui-brush"></span> <span data-i18n-html="hb.fxBrush"><strong>Brush:</strong> Living Ink</span></div>
+          <div class="feature-pill"><span class="ui-sprite ui-xs ui-trophy"></span> <span data-i18n-html="hb.formatBo3"><strong>Format:</strong> Best of 3</span></div>
+        </div>
+
+        <div class="placeholder-actions">
+          <button class="btn-big-start" id="btnStartGameBig">
+            <span class="ui-sprite ui-sm ui-camera"></span>
+            <span data-i18n="hb.startBtn">Enable Camera & Start Battle</span>
+          </button>
+          <button class="btn-big-mouse" id="btnMouseMode">
+            <span class="ui-sprite ui-sm ui-gamepad"></span>
+            <span data-i18n="hb.playMouse">Practice with Mouse</span>
+          </button>
+        </div>
+        <div class="cam-error-note" id="camErrorNote"></div>
+      </div>
+    </div>
+
+    <!-- WINNER CELEBRATION OVERLAY -->
+    <div class="winner-overlay" id="winnerOverlay">
+      <div class="winner-crown"><span class="ui-sprite ui-2xl ui-trophy"></span></div>
+      <div class="winner-title" id="winnerTitle">PLAYER 1 WINS!</div>
+      <div class="winner-subtitle" id="winnerSubtitle" data-i18n="hb.winSub">Air-Calligraphy Champion!</div>
+
+      <div class="winner-scores">
+        <div class="winner-score-card" id="cardP1Score">
+          <div style="font-size: 13px; font-weight: 700; color: var(--p1-cyan);">PLAYER 1</div>
+          <div style="font-size: 32px; font-weight: 900;" id="finalScoreP1">2</div>
+          <div style="font-size: 11px; color: var(--text-muted);" data-i18n="hb.roundsWon">Rounds Won</div>
+        </div>
+        <div class="winner-score-card" id="cardP2Score">
+          <div style="font-size: 13px; font-weight: 700; color: var(--p2-pink);">PLAYER 2</div>
+          <div style="font-size: 32px; font-weight: 900;" id="finalScoreP2">1</div>
+          <div style="font-size: 11px; color: var(--text-muted);" data-i18n="hb.roundsWon">Rounds Won</div>
+        </div>
+      </div>
+
+      <div id="score-submit-box" class="score-input-row">
+        <input type="text" id="student-name-input" data-i18n-placeholder="game.yourName" placeholder="Enter your name...">
+        <button class="btn btn-primary" id="btnSubmitScore" data-i18n="game.submitScore">Save Score</button>
+      </div>
+      <div id="score-saved-msg" style="display:none; color:#34d399; font-weight:700; font-size:13px;" data-i18n="game.scoreSaved">Saved!</div>
+
+      <div class="winner-actions">
+        <button class="btn btn-primary" id="btnRematch" style="padding: 12px 24px; font-size: 14px;">
+          <span class="ui-sprite ui-sm ui-refresh"></span>
+          <span data-i18n="hb.rematch">Rematch (Best of 3)</span>
+        </button>
+        <button class="btn btn-secondary" id="btnChangeChapterFromWin" style="padding: 12px 20px; font-size: 14px;">
+          <span class="ui-sprite ui-sm ui-subject"></span>
+          <span data-i18n="hb.chooseChapter">Change Unit / Deck</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL DECK / UNIT SELECTOR -->
+  <div class="modal-overlay" id="chapterModal">
+    <div class="modal-box">
+      <h2>
+        <span data-i18n="hb.modalTitle">Select Deck (Activity / Meihua DB / Vocab DB)</span>
+        <button type="button" id="btnCloseModal" style="background:none; border:none; cursor:pointer; display:inline-flex;">
+          <span class="ui-sprite ui-sm ui-close"></span>
+        </button>
+      </h2>
+
+      <div>
+        <label style="font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 6px; display: block;" data-i18n="hb.modalBook">1. Select Source / Book:</label>
+        <select id="modalBookSelect"></select>
+      </div>
+
+      <div>
+        <label style="font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 6px; display: block;" data-i18n="hb.modalUnit">2. Select Unit / Level:</label>
+        <select id="modalChapterSelect"></select>
+      </div>
+
+      <div>
+        <label id="modalVocabCountLabel" style="font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 6px; display: block;">Vocabulary List:</label>
+        <div class="vocab-tags-preview" id="modalVocabList"></div>
+      </div>
+
+      <button class="btn btn-primary" id="btnApplyChapter" style="width: 100%; justify-content: center; padding: 12px;">
+        <span class="ui-sprite ui-sm ui-check"></span>
+        <span data-i18n="hb.modalApply">Apply & Start New Match</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const T = (k, v) => (window.LotusI18n ? window.LotusI18n.t(k, v) : k);
+
+    // --- SPRITESHEET ENGINE (CALLIGRAPHY BRUSH & INK STROKES) ---
+    const SPRITE_CELL = 256;
+    const brushSpriteImg = new Image();
+    let isSpritesheetReady = false;
+    const tintedSheets = { p1: null, p2: null, gold: null };
+
+    function createTintedSheet(sourceImg, tintColor) {
+      const off = document.createElement('canvas');
+      off.width = sourceImg.width;
+      off.height = sourceImg.height;
+      const octx = off.getContext('2d');
+      octx.drawImage(sourceImg, 0, 0);
+      octx.save();
+      octx.globalCompositeOperation = 'source-in';
+      octx.fillStyle = tintColor;
+      octx.fillRect(0, 0, off.width, SPRITE_CELL * 3);
+      octx.restore();
+      return off;
+    }
+
+    brushSpriteImg.onload = () => {
+      try {
+        tintedSheets.p1 = createTintedSheet(brushSpriteImg, '#38bdf8');
+        tintedSheets.p2 = createTintedSheet(brushSpriteImg, '#f43f5e');
+        tintedSheets.gold = createTintedSheet(brushSpriteImg, '#f59e0b');
+        isSpritesheetReady = true;
+      } catch (e) {
+        isSpritesheetReady = true;
+      }
+    };
+    brushSpriteImg.src = 'assets/brush-spritesheet.png';
+
+    // --- MATCH STATE ---
+    const MATCH_BEST_OF = 3;
+    const POINTS_TO_WIN = Math.ceil(MATCH_BEST_OF / 2);
+
+    let currentBookKey = '';
+    let currentChapterKey = '';
+    let currentVocabList = [];
+    let vocabQueue = [];
+    let currentVocabItem = null;
+    let currentCharStrokeData = null;
+
+    let currentRoundNum = 1;
+    let p1RoundWins = 0;
+    let p2RoundWins = 0;
+    let isRoundOver = false;
+    let isMatchOver = false;
+    let roundTransitionTimer = 0;
+    let matchOverTimeout = null;
+    let isMouseMode = false;
+    let matchWinnerState = 'none'; // 'p1' | 'p2' | 'draw' | 'none'
+
+    function createPlayerState(id, name, color, colorGlow, colorLight, tintKey) {
+      return {
+        id, name, color, colorGlow, colorLight, tintKey,
+        currentStrokeIdx: 0,
+        currentWaypointIdx: 0,
+        completedStrokes: [],
+        mistakesOnCurrentStroke: 0,
+        emergencyHintTimer: 0,
+        flashRedTimer: 0,
+        strokeCooldown: 0,
+        palmPos: null,
+        prevPalmPos: null,
+        targetPalmPos: null,
+        rawPalmVisible: false,
+        lostFrames: 999,
+        handLandmarks: null,
+        handVelocity: 0,
+        handTilt: 0,
+        brushStamps: [],
+        splatters: [],
+        particles: [],
+        box: { x: 0, y: 0, size: 0 },
+        isWinnerOfRound: false
+      };
+    }
+
+    const player1 = createPlayerState(1, 'Player 1', '#0284c7', 'rgba(56, 189, 248, 0.5)', '#38bdf8', 'p1');
+    const player2 = createPlayerState(2, 'Player 2', '#ec4899', 'rgba(244, 63, 94, 0.5)', '#f43f5e', 'p2');
+
+    // Camera & AI State
+    let isCameraRunning = false;
+    let handsTracker = null;
+    let handsReady = false;
+    let poseLandmarker = null;
+    let poseReady = false;
+    let poseLoadingPromise = null;
+    let mediaStream = null;
+    let isDetecting = false;
+    let lastPoseVideoTime = -1;
+    let animTick = 0;
+    let aiFrameCount = 0;
+    let aiCurrentFps = 0;
+    let aiLastFpsTime = performance.now();
+
+    // DOM Elements
+    const videoElement = document.getElementById('webcam');
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const placeholder = document.getElementById('placeholder');
+    const btnToggleCamera = document.getElementById('btnToggleCamera');
+    const btnStartGameBig = document.getElementById('btnStartGameBig');
+    const btnMouseMode = document.getElementById('btnMouseMode');
+    const btnNextWord = document.getElementById('btnNextWord');
+    const selectHandPreference = document.getElementById('selectHandPreference');
+    const selectTrackingMode = document.getElementById('selectTrackingMode');
+
+    const aiStatusPill = document.getElementById('aiStatusPill');
+    const aiStatusText = document.getElementById('aiStatusText');
+    const aiLoadingBanner = document.getElementById('aiLoadingBanner');
+    const trackingHudBar = document.getElementById('trackingHudBar');
+    const p1TrackLabel = document.getElementById('p1TrackLabel');
+    const p2TrackLabel = document.getElementById('p2TrackLabel');
+
+    const targetCard = document.getElementById('targetCard');
+    const targetSymbol = document.getElementById('targetSymbol');
+    const targetPinyin = document.getElementById('targetPinyin');
+    const targetMeaning = document.getElementById('targetMeaning');
+    const roundTag = document.getElementById('roundTag');
+
+    const chapterModal = document.getElementById('chapterModal');
+    const btnOpenChapterModal = document.getElementById('btnOpenChapterModal');
+    const btnCloseModal = document.getElementById('btnCloseModal');
+    const modalBookSelect = document.getElementById('modalBookSelect');
+    const modalChapterSelect = document.getElementById('modalChapterSelect');
+    const modalVocabList = document.getElementById('modalVocabList');
+    const modalVocabCountLabel = document.getElementById('modalVocabCountLabel');
+    const btnApplyChapter = document.getElementById('btnApplyChapter');
+    const currentChapterLabel = document.getElementById('currentChapterLabel');
+
+    const winnerOverlay = document.getElementById('winnerOverlay');
+    const winnerTitle = document.getElementById('winnerTitle');
+    const winnerSubtitle = document.getElementById('winnerSubtitle');
+    const finalScoreP1 = document.getElementById('finalScoreP1');
+    const finalScoreP2 = document.getElementById('finalScoreP2');
+    const btnRematch = document.getElementById('btnRematch');
+    const btnChangeChapterFromWin = document.getElementById('btnChangeChapterFromWin');
+
+    function setAiStatus(state, text) {
+      aiStatusPill.className = 'ai-status-pill ' + state;
+      aiStatusText.textContent = text;
+      if (aiLoadingBanner) {
+        aiLoadingBanner.style.display = (isCameraRunning && state === 'loading') ? 'block' : 'none';
+      }
+    }
+
+    function videoNormToScreen(normX, normY) {
+      const cw = canvas.width || 1280;
+      const ch = canvas.height || 720;
+      const vw = videoElement.videoWidth || 1280;
+      const vh = videoElement.videoHeight || 720;
+      const scale = Math.max(cw / vw, ch / vh);
+      const scaledW = vw * scale;
+      const scaledH = vh * scale;
+      const offsetX = (cw - scaledW) / 2;
+      const offsetY = (ch - scaledH) / 2;
+      return { x: offsetX + (1 - normX) * scaledW, y: offsetY + normY * scaledH };
+    }
+
+    // --- HANZI CATALOG BUILDER (MEIHUA DB + VOCAB DB + ACTIVITY DECK) ---
+    let _catalogDB = {};
+    let lastActivitySig = '';
+
+    function computeActivitySig(act) {
+      if (!act) return '';
+      const rawItems = act.questions || act.content?.items || [];
+      return JSON.stringify({
+        id: act.id || '',
+        title: act.title || '',
+        qCount: rawItems.length,
+        first: rawItems[0] ? (rawItems[0].word || rawItems[0].correctAnswer || rawItems[0].text || rawItems[0].question || '') : ''
+      });
+    }
+
+    function getActiveChapterId() {
+      return (currentBookKey && currentChapterKey) ? `${currentBookKey}::${currentChapterKey}` : '';
+    }
+
+    function getHanziChaptersPayload() {
+      if (Object.keys(_catalogDB).length === 0) initDatabase();
+      const out = [];
+      Object.entries(_catalogDB).forEach(([bookKey, book]) => {
+        if (!book || !book.chapters) return;
+        Object.entries(book.chapters).forEach(([chapKey, chap]) => {
+          out.push({
+            id: `${bookKey}::${chapKey}`,
+            label: chap.shortLabel || `${book.shortName || book.label} · ${chap.label || chapKey}`
+          });
+        });
+      });
+      return out;
+    }
+
+    function applyHanziChapterById(chapterId, shouldEmit = true) {
+      if (!chapterId) return false;
+      if (Object.keys(_catalogDB).length === 0) initDatabase();
+      const raw = String(chapterId).trim();
+      let bKey = '';
+      let cKey = '';
+      if (raw.includes('::')) {
+        const parts = raw.split('::');
+        if (_catalogDB[parts[0]]?.chapters?.[parts[1]]) {
+          bKey = parts[0];
+          cKey = parts[1];
+        }
+      }
+      if (!bKey) {
+        for (const [bk, book] of Object.entries(_catalogDB)) {
+          if (book?.chapters?.[raw]) {
+            bKey = bk;
+            cKey = raw;
+            break;
+          }
+        }
+      }
+      if (!bKey) {
+        const resolvedBook = resolveCatalogBookKey(raw);
+        if (resolvedBook) {
+          bKey = resolvedBook;
+          cKey = Object.keys(_catalogDB[resolvedBook].chapters || {})[0] || '';
+        }
+      }
+      if (bKey && cKey && applySelectedCatalogMaterial(bKey, cKey)) {
+        startNewMatch();
+        if (shouldEmit) emitGameState();
+        return true;
+      }
+      return false;
+    }
+
+    const VOCAB_LEVEL_META = {
+      N1: { title: 'Level N1 (Novice 1)', short: 'Vocab N1' },
+      N2: { title: 'Level N2 (Novice 2)', short: 'Vocab N2' },
+      L1: { title: 'Level L1', short: 'Vocab L1' },
+      L2: { title: 'Level L2', short: 'Vocab L2' },
+      L3: { title: 'Level L3', short: 'Vocab L3' },
+      L4: { title: 'Level L4', short: 'Vocab L4' },
+      L5: { title: 'Level L5', short: 'Vocab L5' }
+    };
+
+    const VOCAB_POS_LABELS = {
+      N: 'Noun', V: 'Verb', Vs: 'Stative Verb', Vst: 'State Verb',
+      Vi: 'Intransitive', Vp: 'Process Verb', Adv: 'Adverb', Adj: 'Adjective',
+      M: 'Measure Word', Conj: 'Conjunction', Prep: 'Preposition', Ptc: 'Particle',
+      Det: 'Determiner', 'V-sep': 'Separable Verb'
+    };
+
+    function extractCleanHanzi(raw) {
+      if (!raw) return [];
+      const cleaned = String(raw).replace(/\([^)]*[˙\u3100-\u312F][^)]*\)/g, '');
+      return cleaned.match(/[\u4e00-\u9fff]/g) || [];
+    }
+
+    function cleanWordDisplay(raw) {
+      if (!raw) return '';
+      return String(raw)
+        .replace(/\([^)]*[˙\u3100-\u312F][^)]*\)/g, '')
+        .replace(/[.…()（）]/g, '')
+        .trim();
+    }
+
+    function buildCatalogDB() {
+      const catalog = {};
+
+      if (typeof _meihuaDB !== 'undefined') {
+        Object.keys(_meihuaDB).forEach((bookKey, idx) => {
+          const bookData = _meihuaDB[bookKey];
+          if (!bookData) return;
+          const numMatch = bookKey.match(/\d+/);
+          const bookNum = numMatch ? numMatch[0] : (idx + 1);
+          const unitKeys = Object.keys(bookData);
+          const chapters = {};
+
+          unitKeys.forEach((uKey, uIdx) => {
+            const unit = bookData[uKey];
+            if (!unit || !Array.isArray(unit.vocab) || unit.vocab.length === 0) return;
+            const uNumMatch = uKey.match(/\d+/);
+            const uNum = uNumMatch ? uNumMatch[0] : (uIdx + 1);
+            const unitTitle = unit.title || '';
+            chapters[uKey] = {
+              label: `Unit ${uNum}${unitTitle ? ' — ' + unitTitle : ''} (${unit.vocab.length})`,
+              shortLabel: `MH${bookNum} U${uNum}${unitTitle ? ' · ' + unitTitle : ''}`,
+              vocab: unit.vocab.map(v => ({
+                char: v.char,
+                pinyin: v.pinyin || '',
+                id: v.id || v.en || ''
+              }))
+            };
+          });
+
+          if (Object.keys(chapters).length > 0) {
+            catalog[bookKey] = {
+              label: `Meihua ${bookNum} (${Object.keys(chapters).length} Units)`,
+              shortName: `Meihua ${bookNum}`,
+              source: 'meihua',
+              chapters
+            };
+          }
+        });
+      }
+
+      if (typeof _vocabDB !== 'undefined') {
+        const tradDuplicatesToSkip = new Set();
+        for (const [k, info] of Object.entries(_vocabDB)) {
+          if (info && info.tr && k !== info.tr && _vocabDB[info.tr]) {
+            tradDuplicatesToSkip.add(info.tr);
+          }
+        }
+
+        const levelBuckets = { N1: [], N2: [], L1: [], L2: [], L3: [], L4: [], L5: [] };
+        for (const [rawKey, info] of Object.entries(_vocabDB)) {
+          if (!info || tradDuplicatesToSkip.has(rawKey)) continue;
+          const hanziChars = extractCleanHanzi(rawKey);
+          if (hanziChars.length === 0) continue;
+
+          const lv = levelBuckets[info.lv] ? info.lv : 'L5';
+          const cleanChar = cleanWordDisplay(rawKey) || hanziChars.join('');
+          const posHint = VOCAB_POS_LABELS[info.t] || (info.t ? info.t : `Level ${lv}`);
+          const meaning = info.m || posHint;
+          const offlineReady = typeof BM_STROKE_DATA !== 'undefined' && hanziChars.every(ch => Boolean(BM_STROKE_DATA[ch]));
+
+          levelBuckets[lv].push({
+            char: cleanChar,
+            pinyin: info.p || '',
+            id: meaning,
+            hasMeaning: Boolean(info.m),
+            offlineReady
+          });
+        }
+
+        const CHUNK_SIZE = 30;
+        Object.keys(VOCAB_LEVEL_META).forEach(lv => {
+          const items = levelBuckets[lv];
+          if (!items || items.length === 0) return;
+
+          items.sort((a, b) => ((b.hasMeaning ? 2 : 0) + (b.offlineReady ? 1 : 0)) - ((a.hasMeaning ? 2 : 0) + (a.offlineReady ? 1 : 0)));
+
+          const meta = VOCAB_LEVEL_META[lv];
+          const chapters = {
+            all: {
+              label: `All ${meta.title} (${items.length})`,
+              shortLabel: `${meta.short} · All (${items.length})`,
+              vocab: items
+            }
+          };
+
+          const totalParts = Math.ceil(items.length / CHUNK_SIZE);
+          for (let pIdx = 0; pIdx < totalParts; pIdx++) {
+            const start = pIdx * CHUNK_SIZE;
+            const slice = items.slice(start, start + CHUNK_SIZE);
+            const previewWords = slice.slice(0, 3).map(x => x.char).join(', ');
+            chapters[`part${pIdx + 1}`] = {
+              label: `Part ${pIdx + 1} (${start + 1}–${start + slice.length}: ${previewWords}...)`,
+              shortLabel: `${meta.short} · Pt.${pIdx + 1} (${slice.length})`,
+              vocab: slice
+            };
+          }
+
+          catalog[`vocab_${lv}`] = {
+            label: `Vocab DB · ${meta.title} (${items.length})`,
+            shortName: meta.short,
+            source: 'vocabdb',
+            chapters
+          };
+        });
+      }
+
+      return catalog;
+    }
+
+    function resolveCatalogBookKey(rawKey) {
+      if (!rawKey) return '';
+      if (_catalogDB[rawKey]) return rawKey;
+      const mhMatch = String(rawKey).match(/^MH(\d+)$/i);
+      if (mhMatch && _catalogDB[`meihua${mhMatch[1]}`]) return `meihua${mhMatch[1]}`;
+      if (_catalogDB[`vocab_${rawKey}`]) return `vocab_${rawKey}`;
+      return '';
+    }
+
+    function resolveCatalogChapterKey(bookKey, rawChKey) {
+      const book = _catalogDB[bookKey];
+      if (!book || !book.chapters) return '';
+      if (book.chapters[rawChKey]) return rawChKey;
+      const uMatch = String(rawChKey).match(/^U(\d+)$/i);
+      if (uMatch && book.chapters[`unit${uMatch[1]}`]) return `unit${uMatch[1]}`;
+      return Object.keys(book.chapters)[0] || '';
+    }
+
+    function applySelectedCatalogMaterial(bookKey, chapterKey, customCharFilter) {
+      const book = _catalogDB[bookKey];
+      const chap = book && book.chapters ? book.chapters[chapterKey] : null;
+      if (!book || !chap) return false;
+
+      currentBookKey = bookKey;
+      currentChapterKey = chapterKey;
+      let list = [...chap.vocab];
+      if (Array.isArray(customCharFilter) && customCharFilter.length > 0) {
+        const filtered = list.filter(v => customCharFilter.includes(v.char));
+        if (filtered.length > 0) list = filtered;
+      }
+
+      currentVocabList = list;
+      currentChapterLabel.textContent = chap.shortLabel || `${book.shortName} · ${chapterKey}`;
+      return true;
+    }
+
+    function injectActivityHanziDeck(act) {
+      if (!act) return false;
+      const rawItems = act.questions || act.content?.items || [];
+      const hanziVocab = [];
+
+      rawItems.forEach(item => {
+        const wordSrc = item.word || item.correctAnswer || item.text || item.question || '';
+        const chars = extractCleanHanzi(wordSrc);
+        if (chars.length > 0) {
+          hanziVocab.push({
+            char: chars.join(''),
+            pinyin: item.pinyin || '',
+            id: item.meaning || item.question || item.text || item.correctAnswer || '-'
+          });
+        }
+      });
+
+      if (hanziVocab.length > 0) {
+        const title = act.title || T('hb.activityDeckLabel', { n: hanziVocab.length });
+        _catalogDB = {
+          lotus_activity: {
+            label: title + ` (${hanziVocab.length})`,
+            shortName: title,
+            source: 'activity',
+            chapters: {
+              act_items: {
+                label: T('hb.activityDeckLabel', { n: hanziVocab.length }),
+                shortLabel: `${title} (${hanziVocab.length})`,
+                vocab: hanziVocab
+              }
+            }
+          },
+          ...buildCatalogDB()
+        };
+        applySelectedCatalogMaterial('lotus_activity', 'act_items');
+        return true;
+      }
+      return false;
+    }
+
+    function initDatabase() {
+      _catalogDB = buildCatalogDB();
+
+      if (window.location.hash.includes('data=')) {
+        try {
+          const rawHash = window.location.hash.split('data=')[1].split('&')[0];
+          const decoded = decodeURIComponent(escape(atob(rawHash)));
+          const payload = JSON.parse(decoded);
+
+          if (payload && payload.b && payload.v) {
+            const bKey = resolveCatalogBookKey(payload.b);
+            if (bKey) {
+              const rawChKeys = Object.keys(payload.v);
+              const chKey = resolveCatalogChapterKey(bKey, rawChKeys[0]);
+              const wantedChars = payload.v[rawChKeys[0]] || [];
+              if (applySelectedCatalogMaterial(bKey, chKey, wantedChars)) {
+                return;
+              }
+            }
+          }
+        } catch (e) {}
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      const qBook = resolveCatalogBookKey(params.get('book') || params.get('source'));
+      if (qBook) {
+        const qChap = resolveCatalogChapterKey(qBook, params.get('unit') || params.get('level') || '');
+        if (applySelectedCatalogMaterial(qBook, qChap)) {
+          return;
+        }
+      }
+
+      const books = Object.keys(_catalogDB);
+      if (books.length > 0) {
+        const defaultBook = books[0];
+        const defaultChap = Object.keys(_catalogDB[defaultBook].chapters)[0];
+        applySelectedCatalogMaterial(defaultBook, defaultChap);
+      }
+    }
+
+    function flattenVocabList(list) {
+      const result = [];
+      list.forEach(item => {
+        const chars = extractCleanHanzi(item.char);
+        if (chars.length === 0) return;
+
+        const wordDisplay = cleanWordDisplay(item.char) || chars.join('');
+        const meaningText = item.id || item.en || '';
+
+        if (chars.length === 1) {
+          result.push({ char: chars[0], pinyin: item.pinyin || '', id: meaningText || '-' });
+        } else {
+          const rawPinyin = item.pinyin ? String(item.pinyin).replace(/[.…()（）]+/g, ' ').trim() : '';
+          const pinyins = rawPinyin ? rawPinyin.split(/\s+/) : [];
+          chars.forEach((c, idx) => {
+            const charPinyin = pinyins.length === chars.length ? pinyins[idx] : (item.pinyin || '');
+            result.push({
+              char: c,
+              pinyin: charPinyin,
+              id: meaningText ? `${meaningText} (${wordDisplay} ${idx + 1}/${chars.length})` : `${wordDisplay} (${idx + 1}/${chars.length})`,
+              fullWord: wordDisplay
+            });
+          });
+        }
+      });
+      return result;
+    }
+
+    // --- MATCH & ROUND MANAGEMENT ---
+    function startNewMatch() {
+      clearTimeout(matchOverTimeout);
+      p1RoundWins = 0;
+      p2RoundWins = 0;
+      currentRoundNum = 1;
+      isMatchOver = false;
+      matchWinnerState = 'none';
+      winnerOverlay.style.display = 'none';
+      document.getElementById('score-submit-box').style.display = 'flex';
+      document.getElementById('score-saved-msg').style.display = 'none';
+
+      const flattened = flattenVocabList(currentVocabList);
+      vocabQueue = [...flattened].sort(() => Math.random() - 0.5);
+      if (vocabQueue.length === 0) {
+        vocabQueue = [
+          { char: '我', pinyin: 'wǒ', id: 'I / me' },
+          { char: '你', pinyin: 'nǐ', id: 'you' },
+          { char: '好', pinyin: 'hǎo', id: 'good' }
+        ];
+      }
+
+      loadNextRound();
+    }
+
+    async function loadNextRound() {
+      if (isMatchOver) return;
+
+      if (vocabQueue.length === 0) {
+        const flattened = flattenVocabList(currentVocabList);
+        vocabQueue = [...flattened].sort(() => Math.random() - 0.5);
+      }
+
+      currentVocabItem = vocabQueue.shift();
+      isRoundOver = false;
+      roundTransitionTimer = 0;
+
+      resetPlayerRoundState(player1);
+      resetPlayerRoundState(player2);
+
+      targetSymbol.textContent = currentVocabItem.char;
+      targetPinyin.textContent = currentVocabItem.pinyin;
+      targetMeaning.textContent = currentVocabItem.id;
+      roundTag.textContent = T('game.roundOf', { n: currentRoundNum, total: MATCH_BEST_OF });
+
+      currentCharStrokeData = await fetchCharStrokeData(currentVocabItem.char);
+    }
+
+    function resetPlayerRoundState(p) {
+      p.currentStrokeIdx = 0;
+      p.currentWaypointIdx = 0;
+      p.completedStrokes = [];
+      p.mistakesOnCurrentStroke = 0;
+      p.emergencyHintTimer = 0;
+      p.flashRedTimer = 0;
+      p.strokeCooldown = 0;
+      p.isWinnerOfRound = false;
+      p.brushStamps = [];
+      p.splatters = [];
+      p.particles = [];
+    }
+
+    async function fetchCharStrokeData(char) {
+      if (typeof BM_STROKE_DATA !== 'undefined' && BM_STROKE_DATA[char]) {
+        return processStrokeData(BM_STROKE_DATA[char]);
+      }
+
+      try {
+        const res = await fetch(`https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/${encodeURIComponent(char)}.json`);
+        if (res.ok) {
+          const data = await res.json();
+          if (typeof BM_STROKE_DATA !== 'undefined') BM_STROKE_DATA[char] = data;
+          return processStrokeData(data);
+        }
+      } catch (err) {}
+
+      return processStrokeData({
+        strokes: ["M 180 409 Q 130 408 106 395 Q 146 348 216 338 Q 400 373 518 382 Q 758 399 900 383 Q 944 405 930 419 Q 845 475 798 473 Q 480 434 180 409 Z"],
+        medians: [[[121, 393], [193, 372], [417, 402], [827, 434], [920, 401]]]
+      });
+    }
+
+    function processStrokeData(data) {
+      const processedMedians = data.medians.map(pts => {
+        if (!pts || pts.length <= 5) return pts;
+        const step = Math.max(1, Math.floor(pts.length / 5));
+        const res = [];
+        for (let i = 0; i < pts.length; i += step) res.push(pts[i]);
+        if (res[res.length - 1] !== pts[pts.length - 1]) res.push(pts[pts.length - 1]);
+        return res;
+      });
+      return { strokes: data.strokes, medians: processedMedians, totalStrokes: data.strokes.length };
+    }
+
+    // --- MEDIAPIPE HANDS & POSE INITIALIZATION ---
+    function initHandsTracker() {
+      if (handsTracker) return;
+      if (typeof Hands === 'undefined') { setAiStatus('loading', T('aiSlicer.aiLoading')); return; }
+      setAiStatus('loading', T('aiSlicer.aiLoading'));
+      try {
+        handsTracker = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+        handsTracker.setOptions({ maxNumHands: 4, modelComplexity: 0, minDetectionConfidence: 0.35, minTrackingConfidence: 0.35 });
+        handsTracker.onResults((results) => onHandResults(results));
+      } catch (err) {
+        setAiStatus('error', T('aiSlicer.aiFail'));
+      }
+    }
+
+    function loadScriptOnce(src) {
+      return new Promise((resolve, reject) => {
+        if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+        const s = document.createElement('script');
+        s.src = src; s.crossOrigin = 'anonymous'; s.onload = resolve;
+        s.onerror = () => reject(new Error('Failed loading ' + src));
+        document.head.appendChild(s);
+      });
+    }
+
+    async function initPoseTracker() {
+      if (poseLandmarker) return;
+      if (poseLoadingPromise) return poseLoadingPromise;
+
+      poseLoadingPromise = (async () => {
+        setAiStatus('loading', T('aiSlicer.aiLoading'));
+        try {
+          if (typeof Vision === 'undefined' || !Vision.PoseLandmarker) {
+            await loadScriptOnce('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.js');
+          }
+          const vision = await Vision.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm');
+          poseLandmarker = await Vision.PoseLandmarker.createFromOptions(vision, {
+            baseOptions: {
+              modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
+              delegate: 'GPU'
+            },
+            runningMode: 'VIDEO',
+            numPoses: 2,
+            minPoseDetectionConfidence: 0.35,
+            minPosePresenceConfidence: 0.35,
+            minTrackingConfidence: 0.35
+          });
+          poseReady = true;
+          setAiStatus('ready', T('aiSlicer.aiActive'));
+        } catch (err) {
+          setAiStatus('error', T('aiSlicer.aiFail'));
+        }
+      })();
+      return poseLoadingPromise;
+    }
+
+    function updateAiFpsPill(labelPrefix) {
+      aiFrameCount++;
+      const now = performance.now();
+      if (now - aiLastFpsTime >= 1000) {
+        aiCurrentFps = aiFrameCount; aiFrameCount = 0; aiLastFpsTime = now;
+        setAiStatus('ready', `${labelPrefix} · ${aiCurrentFps} FPS`);
+      } else if (aiCurrentFps === 0) {
+        setAiStatus('ready', labelPrefix);
+      }
+    }
+
+    function onHandResults(results) {
+      if (!isCameraRunning) return;
+      if (!handsReady) handsReady = true;
+      updateAiFpsPill(T('aiSlicer.aiActive'));
+
+      const handPref = selectHandPreference.value;
+      player1.rawPalmVisible = false;
+      player2.rawPalmVisible = false;
+
+      if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) return;
+
+      const handsList = results.multiHandLandmarks;
+      const handednessList = results.multiHandedness || [];
+      const midX = canvas.width / 2;
+
+      for (let i = 0; i < handsList.length; i++) {
+        const lm = handsList[i];
+        const hInfo = handednessList[i];
+        const rawHandType = hInfo ? hInfo.label : 'Right';
+        const actualHand = rawHandType === 'Left' ? 'right' : 'left';
+
+        if (handPref === 'right' && actualHand !== 'right') continue;
+        if (handPref === 'left' && actualHand !== 'left') continue;
+
+        const indexTip = lm[8];
+        if (!indexTip) continue;
+        const pt = videoNormToScreen(indexTip.x, indexTip.y);
+
+        if (pt.x < midX) {
+          if (!player1.rawPalmVisible) {
+            player1.rawPalmVisible = true; player1.targetPalmPos = pt; player1.handLandmarks = lm;
+          }
+        } else {
+          if (!player2.rawPalmVisible) {
+            player2.rawPalmVisible = true; player2.targetPalmPos = pt; player2.handLandmarks = lm;
+          }
+        }
+      }
+    }
+
+    function onPose2PResults(result) {
+      updateAiFpsPill(T('aiSlicer.aiActive'));
+      player1.rawPalmVisible = false;
+      player2.rawPalmVisible = false;
+
+      if (!result || !result.landmarks || result.landmarks.length === 0) return;
+      const handPref = selectHandPreference.value;
+      const midX = canvas.width / 2;
+
+      for (const lm of result.landmarks) {
+        const rightIdx = lm[20] && lm[20].visibility > 0.25 ? 20 : 16;
+        const leftIdx  = lm[19] && lm[19].visibility > 0.25 ? 19 : 15;
+        const rightPt = lm[rightIdx] && lm[rightIdx].visibility > 0.3 ? videoNormToScreen(lm[rightIdx].x, lm[rightIdx].y) : null;
+        const leftPt  = lm[leftIdx] && lm[leftIdx].visibility > 0.3 ? videoNormToScreen(lm[leftIdx].x, lm[leftIdx].y) : null;
+
+        let chosenPt = null;
+        if (handPref === 'right') chosenPt = rightPt;
+        else if (handPref === 'left') chosenPt = leftPt;
+        else {
+          if (rightPt && leftPt) chosenPt = rightPt.y <= leftPt.y ? rightPt : leftPt;
+          else chosenPt = rightPt || leftPt;
+        }
+        if (!chosenPt) continue;
+
+        if (chosenPt.x < midX) {
+          if (!player1.rawPalmVisible) { player1.rawPalmVisible = true; player1.targetPalmPos = chosenPt; player1.handLandmarks = null; }
+        } else {
+          if (!player2.rawPalmVisible) { player2.rawPalmVisible = true; player2.targetPalmPos = chosenPt; player2.handLandmarks = null; }
+        }
+      }
+    }
+
+    async function detectionLoop() {
+      if (!isCameraRunning) return;
+      const mode = selectTrackingMode.value;
+      if (videoElement.readyState >= 2 && videoElement.videoWidth > 0 && !isDetecting) {
+        isDetecting = true;
+        try {
+          if (mode === 'pose') {
+            if (!poseLandmarker) await initPoseTracker();
+            if (poseLandmarker && videoElement.currentTime !== lastPoseVideoTime) {
+              lastPoseVideoTime = videoElement.currentTime;
+              const res = poseLandmarker.detectForVideo(videoElement, performance.now());
+              onPose2PResults(res);
+            }
+          } else {
+            if (!handsTracker) initHandsTracker();
+            if (handsTracker) await handsTracker.send({ image: videoElement });
+          }
+        } catch (e) {} finally { isDetecting = false; }
+      }
+      requestAnimationFrame(detectionLoop);
+    }
+
+    selectTrackingMode.addEventListener('change', () => {
+      if (isCameraRunning) {
+        if (selectTrackingMode.value === 'pose') initPoseTracker();
+        else initHandsTracker();
+      }
+      emitGameState();
+    });
+    if (selectHandPreference) {
+      selectHandPreference.addEventListener('change', emitGameState);
+    }
+
+    function emitGameState() {
+      try {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({
+            type: 'GAME_STATE',
+            gameId: 'hanzi-battle',
+            cameraActive: Boolean(isCameraRunning),
+            mouseMode: Boolean(isMouseMode),
+            hand: selectHandPreference ? selectHandPreference.value : 'auto',
+            trackingMode: selectTrackingMode ? selectTrackingMode.value : 'hands',
+            hanziChapters: getHanziChaptersPayload(),
+            activeChapterId: getActiveChapterId()
+          }, '*');
+        }
+      } catch (e) {}
+    }
+
+    function showCamError(msg) {
+      const note = document.getElementById('camErrorNote');
+      if (note) {
+        note.textContent = msg;
+        note.style.display = msg ? 'block' : 'none';
+      }
+    }
+
+    function updateCameraButtonUI() {
+      btnToggleCamera.innerHTML = isCameraRunning
+        ? `<span class="ui-sprite ui-xs ui-camera-off"></span><span>${T('hb.stopCam')}</span>`
+        : `<span class="ui-sprite ui-xs ui-camera"></span><span>${T('hb.startCam')}</span>`;
+      btnToggleCamera.className = isCameraRunning ? 'btn btn-stop' : 'btn btn-primary';
+    }
+
+    async function startCamera() {
+      showCamError('');
+      setAiStatus('loading', T('aiSlicer.statusOpening'));
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
+          audio: false
+        });
+
+        videoElement.srcObject = mediaStream;
+        videoElement.muted = true;
+        await videoElement.play();
+
+        videoElement.style.display = 'block';
+        placeholder.style.display = 'none';
+        targetCard.style.display = 'flex';
+        trackingHudBar.style.display = 'flex';
+        isCameraRunning = true;
+        isMouseMode = false;
+
+        updateCameraButtonUI();
+
+        if (selectTrackingMode.value === 'pose') initPoseTracker();
+        else initHandsTracker();
+
+        requestAnimationFrame(detectionLoop);
+        if (window.SFX) window.SFX.flip();
+        emitGameState();
+      } catch (err) {
+        isCameraRunning = false;
+        setAiStatus('error', T('aiSlicer.statusDenied'));
+        showCamError(T('aiSlicer.camAlert'));
+        emitGameState();
+      }
+    }
+
+    function stopCamera() {
+      if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+      isCameraRunning = false;
+      videoElement.style.display = 'none';
+      if (!isMouseMode) {
+        placeholder.style.display = 'flex';
+        trackingHudBar.style.display = 'none';
+        targetCard.style.display = 'none';
+      }
+      updateCameraButtonUI();
+      setAiStatus('', 'AI Standby');
+      emitGameState();
+    }
+
+    function enableMouseMode() {
+      if (isCameraRunning) stopCamera();
+      showCamError('');
+      isMouseMode = true;
+      placeholder.style.display = 'none';
+      targetCard.style.display = 'flex';
+      trackingHudBar.style.display = 'flex';
+      setAiStatus('ready', T('aiSlicer.statusMouse'));
+      updateTrackingLabels();
+      emitGameState();
+    }
+
+    btnToggleCamera.addEventListener('click', () => isCameraRunning ? stopCamera() : startCamera());
+    btnStartGameBig.addEventListener('click', startCamera);
+    btnMouseMode.addEventListener('click', enableMouseMode);
+
+    // --- GAME LOOP & STROKE EVALUATION ---
+    function updateGame() {
+      animTick++;
+      resizeCanvasToViewport();
+
+      smoothPlayerPalm(player1);
+      smoothPlayerPalm(player2);
+      updateTrackingLabels();
+
+      if (!isRoundOver && !isMatchOver && currentCharStrokeData) {
+        evaluateStrokeProgress(player1);
+        evaluateStrokeProgress(player2);
+      }
+
+      if (isRoundOver && !isMatchOver) {
+        roundTransitionTimer++;
+        if (roundTransitionTimer > 120) {
+          loadNextRound();
+        }
+      }
+
+      renderGame();
+      requestAnimationFrame(updateGame);
+    }
+
+    function updateTrackingLabels() {
+      if (!isCameraRunning && !isMouseMode) {
+        p1TrackLabel.textContent = T('hb.p1TrackWait');
+        p2TrackLabel.textContent = T('hb.p2TrackWait');
+        return;
+      }
+      if (player1.lostFrames <= 8) {
+        p1TrackLabel.textContent = T('hb.p1Tracked');
+        p1TrackLabel.style.color = '#38bdf8';
+      } else {
+        p1TrackLabel.textContent = isMouseMode && !isCameraRunning ? T('aiSlicer.statusMouse') : T('hb.p1TrackWait');
+        p1TrackLabel.style.color = '#94a3b8';
+      }
+
+      if (player2.lostFrames <= 8) {
+        p2TrackLabel.textContent = T('hb.p2Tracked');
+        p2TrackLabel.style.color = '#f43f5e';
+      } else {
+        p2TrackLabel.textContent = isMouseMode && !isCameraRunning ? T('aiSlicer.statusMouse') : T('hb.p2TrackWait');
+        p2TrackLabel.style.color = '#94a3b8';
+      }
+    }
+
+    function resizeCanvasToViewport() {
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0 && (canvas.width !== Math.round(rect.width) || canvas.height !== Math.round(rect.height))) {
+        canvas.width = Math.round(rect.width);
+        canvas.height = Math.round(rect.height);
+
+        const halfWidth = canvas.width / 2;
+        const boxSize = Math.min(halfWidth * 0.72, canvas.height * 0.62);
+
+        player1.box = { x: (halfWidth - boxSize) / 2, y: (canvas.height - boxSize) / 2 + 14, size: boxSize };
+        player2.box = { x: halfWidth + (halfWidth - boxSize) / 2, y: (canvas.height - boxSize) / 2 + 14, size: boxSize };
+      }
+    }
+
+    function smoothPlayerPalm(p) {
+      if (p.rawPalmVisible && p.targetPalmPos) {
+        p.lostFrames = 0;
+        p.prevPalmPos = p.palmPos ? { ...p.palmPos } : { ...p.targetPalmPos };
+
+        if (!p.palmPos) p.palmPos = { ...p.targetPalmPos };
+        else {
+          p.palmPos.x += (p.targetPalmPos.x - p.palmPos.x) * 0.58;
+          p.palmPos.y += (p.targetPalmPos.y - p.palmPos.y) * 0.58;
+        }
+
+        const dx = p.palmPos.x - p.prevPalmPos.x;
+        const dy = p.palmPos.y - p.prevPalmPos.y;
+        const speed = Math.hypot(dx, dy);
+        p.handVelocity = p.handVelocity * 0.6 + speed * 0.4;
+        p.handTilt = Math.max(-0.45, Math.min(0.45, dx * 0.015));
+
+        if (speed >= 3.0) {
+          const angle = Math.atan2(dy, dx);
+          const steps = Math.max(1, Math.min(2, Math.ceil(speed / 22)));
+          for (let s = 1; s <= steps; s++) {
+            const t = s / steps;
+            p.brushStamps.push({
+              x: p.prevPalmPos.x + dx * t,
+              y: p.prevPalmPos.y + dy * t,
+              angle,
+              row: speed > 8 ? 1 : 0,
+              col: Math.floor(Math.random() * 4),
+              scale: speed > 8 ? Math.min(0.66, 0.32 + speed * 0.008) : 0.22 + Math.random() * 0.05,
+              alpha: 0.78
+            });
+          }
+          if (p.brushStamps.length > 10) p.brushStamps.splice(0, p.brushStamps.length - 10);
+
+          if (speed > 18 && Math.random() < 0.3) {
+            p.splatters.push({
+              x: p.palmPos.x + (Math.random() - 0.5) * 12,
+              y: p.palmPos.y + (Math.random() - 0.5) * 12,
+              frame: 0, tick: 0, scale: 0.28 + Math.random() * 0.12, tintKey: p.tintKey
+            });
+          }
+        }
+      } else {
+        p.lostFrames++;
+        if (p.lostFrames > 18) { p.palmPos = null; p.handLandmarks = null; }
+      }
+
+      for (let i = p.brushStamps.length - 1; i >= 0; i--) {
+        p.brushStamps[i].alpha -= 0.11;
+        if (p.brushStamps[i].alpha <= 0) p.brushStamps.splice(i, 1);
+      }
+
+      for (let i = p.splatters.length - 1; i >= 0; i--) {
+        const sp = p.splatters[i]; sp.tick++;
+        if (sp.tick % 4 === 0) { sp.frame++; if (sp.frame >= 4) p.splatters.splice(i, 1); }
+      }
+
+      for (let i = p.particles.length - 1; i >= 0; i--) {
+        const pt = p.particles[i]; pt.x += pt.vx; pt.y += pt.vy; pt.alpha -= 0.04;
+        if (pt.alpha <= 0) p.particles.splice(i, 1);
+      }
+
+      if (p.flashRedTimer > 0) p.flashRedTimer--;
+      if (p.emergencyHintTimer > 0) p.emergencyHintTimer--;
+      if (p.strokeCooldown > 0) p.strokeCooldown--;
+    }
+
+    function evaluateStrokeProgress(p) {
+      if (!p.palmPos || !currentCharStrokeData) return;
+      const totalStrokes = currentCharStrokeData.totalStrokes;
+      if (p.currentStrokeIdx >= totalStrokes) return;
+
+      const curStrokeMedians = currentCharStrokeData.medians[p.currentStrokeIdx];
+      if (!curStrokeMedians || curStrokeMedians.length === 0) return;
+
+      const box = p.box;
+      const toScreenCoord = (m) => ({ x: box.x + (m[0] / 1024) * box.size, y: box.y + ((900 - m[1]) / 1024) * box.size });
+
+      const HIT_RADIUS = box.size * 0.18;
+      let matchedIdx = -1;
+      const maxCheckIdx = Math.min(curStrokeMedians.length - 1, p.currentWaypointIdx + 1);
+      for (let wi = p.currentWaypointIdx; wi <= maxCheckIdx; wi++) {
+        const wp = toScreenCoord(curStrokeMedians[wi]);
+        if (Math.hypot(p.palmPos.x - wp.x, p.palmPos.y - wp.y) <= HIT_RADIUS) {
+          matchedIdx = wi;
+          break;
+        }
+      }
+
+      if (matchedIdx !== -1) {
+        const hitPt = toScreenCoord(curStrokeMedians[matchedIdx]);
+        for (let i = 0; i < 4; i++) {
+          p.particles.push({
+            x: hitPt.x, y: hitPt.y, vx: (Math.random() - 0.5) * 4, vy: (Math.random() - 0.5) * 4,
+            size: Math.random() * 6 + 3, color: p.colorLight, alpha: 1
+          });
+        }
+
+        p.currentWaypointIdx = matchedIdx + 1;
+
+        if (p.currentWaypointIdx >= curStrokeMedians.length) {
+          p.completedStrokes.push(p.currentStrokeIdx);
+          p.currentStrokeIdx++;
+          p.currentWaypointIdx = 0;
+          p.mistakesOnCurrentStroke = 0;
+          p.emergencyHintTimer = 0;
+          p.strokeCooldown = 16;
+
+          if (window.SFX) window.SFX.hit();
+
+          p.splatters.push({ x: hitPt.x, y: hitPt.y, frame: 0, tick: 0, scale: 0.72, tintKey: 'gold' });
+
+          for (let i = 0; i < 14; i++) {
+            p.particles.push({
+              x: hitPt.x, y: hitPt.y, vx: (Math.random() - 0.5) * 8, vy: (Math.random() - 0.5) * 8,
+              size: Math.random() * 7 + 4, color: '#f59e0b', alpha: 1
+            });
+          }
+
+          if (p.currentStrokeIdx >= totalStrokes) {
+            handleRoundWin(p);
+          }
+        }
+      } else if (p.currentWaypointIdx === 0 && p.strokeCooldown <= 0) {
+        checkWrongStrokeMistake(p, box, curStrokeMedians, toScreenCoord);
+      }
+    }
+
+    function checkWrongStrokeMistake(p, box, curStrokeMedians, toScreenCoord) {
+      if (p.palmPos.x < box.x || p.palmPos.x > box.x + box.size || p.palmPos.y < box.y || p.palmPos.y > box.y + box.size) return;
+
+      const activeStart = curStrokeMedians[0] ? toScreenCoord(curStrokeMedians[0]) : null;
+      const HIT_RADIUS = box.size * 0.13;
+
+      for (let s = p.currentStrokeIdx + 1; s < currentCharStrokeData.totalStrokes; s++) {
+        const nextMedians = currentCharStrokeData.medians[s];
+        if (!nextMedians || nextMedians.length === 0) continue;
+
+        let testPt = toScreenCoord(nextMedians[0]);
+        if (activeStart && Math.hypot(testPt.x - activeStart.x, testPt.y - activeStart.y) < box.size * 0.16) {
+          if (nextMedians.length > 1) testPt = toScreenCoord(nextMedians[1]);
+          else continue;
+        }
+
+        if (Math.hypot(p.palmPos.x - testPt.x, p.palmPos.y - testPt.y) < HIT_RADIUS) {
+          triggerPlayerMistake(p);
+          return;
+        }
+      }
+    }
+
+    function triggerPlayerMistake(p) {
+      if (p.flashRedTimer > 0) return;
+      p.flashRedTimer = 16;
+      p.mistakesOnCurrentStroke++;
+      if (window.SFX) window.SFX.wrong();
+      if (p.mistakesOnCurrentStroke >= 3) p.emergencyHintTimer = 180;
+    }
+
+    function handleRoundWin(winningPlayer) {
+      if (isRoundOver) return;
+      isRoundOver = true;
+      winningPlayer.isWinnerOfRound = true;
+
+      if (winningPlayer.id === 1) p1RoundWins++;
+      else p2RoundWins++;
+
+      if (window.SFX) window.SFX.correct();
+      if (typeof launchConfetti === 'function') launchConfetti(2200);
+
+      if (p1RoundWins >= POINTS_TO_WIN || p2RoundWins >= POINTS_TO_WIN || currentRoundNum >= MATCH_BEST_OF) {
+        clearTimeout(matchOverTimeout);
+        matchOverTimeout = setTimeout(handleMatchOver, 1400);
+      } else {
+        currentRoundNum++;
+      }
+    }
+
+    function updateWinnerLabels() {
+      if (matchWinnerState === 'p1') {
+        winnerTitle.textContent = T('hb.p1WinTitle');
+        winnerTitle.style.color = 'var(--p1-cyan)';
+      } else if (matchWinnerState === 'p2') {
+        winnerTitle.textContent = T('hb.p2WinTitle');
+        winnerTitle.style.color = 'var(--p2-pink)';
+      } else if (matchWinnerState === 'draw') {
+        winnerTitle.textContent = T('hb.drawTitle');
+        winnerTitle.style.color = 'var(--accent-gold)';
+      }
+      winnerSubtitle.textContent = T('hb.winSub');
+    }
+
+    function handleMatchOver() {
+      isMatchOver = true;
+      winnerOverlay.style.display = 'flex';
+      finalScoreP1.textContent = p1RoundWins;
+      finalScoreP2.textContent = p2RoundWins;
+
+      const cardP1 = document.getElementById('cardP1Score');
+      const cardP2 = document.getElementById('cardP2Score');
+      cardP1.classList.remove('highlight');
+      cardP2.classList.remove('highlight');
+
+      if (p1RoundWins > p2RoundWins) {
+        matchWinnerState = 'p1';
+        cardP1.classList.add('highlight');
+      } else if (p2RoundWins > p1RoundWins) {
+        matchWinnerState = 'p2';
+        cardP2.classList.add('highlight');
+      } else {
+        matchWinnerState = 'draw';
+      }
+      updateWinnerLabels();
+
+      const nameInput = document.getElementById('student-name-input');
+      if (nameInput && window.GameBridge && GameBridge.playerName && !nameInput.value) {
+        nameInput.value = GameBridge.playerName;
+      }
+
+      if (window.SFX) window.SFX.win();
+      if (typeof launchConfetti === 'function') launchConfetti(3500);
+    }
+
+    document.getElementById('btnSubmitScore').addEventListener('click', () => {
+      const val = document.getElementById('student-name-input').value.trim();
+      const topWins = Math.max(p1RoundWins, p2RoundWins);
+      if (window.GameBridge) {
+        GameBridge.finishGame(topWins * 100, MATCH_BEST_OF * 100, [], val || `P1 (${p1RoundWins}) vs P2 (${p2RoundWins})`);
+      }
+      document.getElementById('score-submit-box').style.display = 'none';
+      document.getElementById('score-saved-msg').style.display = 'block';
+    });
+
+    btnRematch.addEventListener('click', startNewMatch);
+    btnChangeChapterFromWin.addEventListener('click', () => {
+      winnerOverlay.style.display = 'none';
+      openChapterModal();
+    });
+    btnNextWord.addEventListener('click', loadNextRound);
+
+    // --- CANVAS RENDERING ---
+    function renderGame() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (isCameraRunning) {
+        ctx.fillStyle = 'rgba(9, 13, 22, 0.22)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      renderCenterDivider();
+      renderPlayerZone(player1);
+      renderPlayerZone(player2);
+
+      if (isRoundOver && !isMatchOver) renderRoundWinBanner();
+    }
+
+    function renderCenterDivider() {
+      const midX = canvas.width / 2;
+      const vsY = canvas.height / 2 + 20;
+
+      ctx.save();
+      ctx.setLineDash([8, 8]);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(midX, 82);
+      ctx.lineTo(midX, canvas.height - 52);
+      ctx.stroke();
+
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+      ctx.beginPath();
+      ctx.arc(midX, vsY, 22, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.font = '800 13px "Outfit", sans-serif';
+      ctx.fillStyle = '#fbbf24';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('VS', midX, vsY);
+      ctx.restore();
+    }
+
+    function renderPlayerZone(p) {
+      const box = p.box;
+      if (!box.size) return;
+
+      ctx.save();
+      const isP1 = p.id === 1;
+      const hudX = isP1 ? box.x : box.x + box.size;
+      const align = isP1 ? 'left' : 'right';
+
+      ctx.textAlign = align;
+      ctx.font = '800 18px "Outfit", sans-serif';
+      ctx.fillStyle = p.colorLight;
+      ctx.shadowColor = 'rgba(0,0,0,0.8)';
+      ctx.shadowBlur = 6;
+      ctx.fillText(p.name, hudX, box.y - 45);
+
+      const wins = isP1 ? p1RoundWins : p2RoundWins;
+      for (let s = 0; s < POINTS_TO_WIN; s++) {
+        const starX = isP1 ? (box.x + 8 + s * 22) : (box.x + box.size - 8 - (POINTS_TO_WIN - 1 - s) * 22);
+        const starY = box.y - 24;
+        ctx.beginPath();
+        ctx.arc(starX, starY, 7, 0, Math.PI * 2);
+        if (s < wins) {
+          ctx.fillStyle = '#f59e0b';
+          ctx.fill();
+        } else {
+          ctx.strokeStyle = '#94a3b8';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+      }
+
+      const totalStrokes = currentCharStrokeData ? currentCharStrokeData.totalStrokes : 0;
+      ctx.textAlign = isP1 ? 'right' : 'left';
+      ctx.font = '700 12px "Plus Jakarta Sans", sans-serif';
+      ctx.fillStyle = '#e2e8f0';
+      const strokeTxt = T('hb.strokesLabel', { cur: Math.min(p.currentStrokeIdx + 1, totalStrokes), tot: totalStrokes });
+      ctx.fillText(strokeTxt, isP1 ? box.x + box.size : box.x, box.y - 20);
+      ctx.shadowBlur = 0;
+
+      // TIANZIGE GRID BOX
+      ctx.fillStyle = p.flashRedTimer > 0 ? 'rgba(239, 68, 68, 0.28)' : 'rgba(15, 23, 42, 0.52)';
+      ctx.fillRect(box.x, box.y, box.size, box.size);
+
+      ctx.strokeStyle = p.flashRedTimer > 0 ? '#ef4444' : 'rgba(248, 113, 113, 0.55)';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(box.x, box.y, box.size, box.size);
+
+      ctx.setLineDash([6, 6]);
+      ctx.strokeStyle = 'rgba(248, 113, 113, 0.32)';
+      ctx.lineWidth = 1.5;
+
+      ctx.beginPath();
+      ctx.moveTo(box.x, box.y + box.size / 2); ctx.lineTo(box.x + box.size, box.y + box.size / 2);
+      ctx.moveTo(box.x + box.size / 2, box.y); ctx.lineTo(box.x + box.size / 2, box.y + box.size);
+      ctx.stroke();
+
+      ctx.setLineDash([3, 6]);
+      ctx.strokeStyle = 'rgba(248, 113, 113, 0.2)';
+      ctx.beginPath();
+      ctx.moveTo(box.x, box.y); ctx.lineTo(box.x + box.size, box.y + box.size);
+      ctx.moveTo(box.x + box.size, box.y); ctx.lineTo(box.x, box.y + box.size);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      if (currentCharStrokeData) renderHanziStrokes(p, box);
+
+      renderTrackedHandSkeleton(p);
+      renderBrushEffects(p);
+      ctx.restore();
+    }
+
+    function renderHanziStrokes(p, box) {
+      const strokes = currentCharStrokeData.strokes;
+      const total = currentCharStrokeData.totalStrokes;
+
+      for (let i = 0; i < total; i++) {
+        const svgPathStr = strokes[i];
+        const isCompleted = p.completedStrokes.includes(i);
+        const isActive = (i === p.currentStrokeIdx);
+
+        ctx.save();
+        ctx.translate(box.x, box.y);
+        ctx.scale(box.size / 1024, box.size / 1024);
+        ctx.translate(0, 900);
+        ctx.scale(1, -1);
+
+        const path = new Path2D(svgPathStr);
+
+        if (isCompleted) {
+          ctx.fillStyle = p.colorLight;
+          ctx.shadowColor = p.colorGlow;
+          ctx.shadowBlur = 14;
+          ctx.fill(path);
+        } else if (isActive && p.emergencyHintTimer > 0) {
+          const pulse = (Math.sin(Date.now() / 150) + 1) / 2;
+          ctx.fillStyle = `rgba(245, 158, 11, ${0.35 + pulse * 0.5})`;
+          ctx.shadowColor = 'rgba(245, 158, 11, 0.85)';
+          ctx.shadowBlur = 18;
+          ctx.fill(path);
+        } else {
+          ctx.fillStyle = 'rgba(226, 232, 240, 0.24)';
+          ctx.fill(path);
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+          ctx.lineWidth = 5;
+          ctx.stroke(path);
+        }
+
+        ctx.restore();
+      }
+
+      if (p.currentStrokeIdx < total && p.currentWaypointIdx > 0) {
+        const activeMedians = currentCharStrokeData.medians[p.currentStrokeIdx];
+        if (activeMedians && activeMedians.length >= 2) {
+          const endIdx = Math.min(activeMedians.length - 1, p.currentWaypointIdx - 1);
+          if (endIdx >= 1) {
+            ctx.save();
+            ctx.strokeStyle = p.colorLight;
+            ctx.shadowColor = p.colorGlow;
+            ctx.shadowBlur = 12;
+            ctx.lineWidth = box.size * 0.048;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            for (let k = 0; k <= endIdx; k++) {
+              const m = activeMedians[k];
+              const sx = box.x + (m[0] / 1024) * box.size;
+              const sy = box.y + ((900 - m[1]) / 1024) * box.size;
+              if (k === 0) ctx.moveTo(sx, sy);
+              else ctx.lineTo(sx, sy);
+            }
+            ctx.stroke();
+            ctx.restore();
+          }
+        }
+      }
+
+      if (p.emergencyHintTimer > 0 && p.currentStrokeIdx < total) {
+        const activeMedians = currentCharStrokeData.medians[p.currentStrokeIdx];
+        if (activeMedians && activeMedians[0]) {
+          const pt = activeMedians[0];
+          const scrX = box.x + (pt[0] / 1024) * box.size;
+          const scrY = box.y + ((900 - pt[1]) / 1024) * box.size;
+
+          ctx.save();
+          ctx.fillStyle = '#f59e0b';
+          ctx.beginPath(); ctx.arc(scrX, scrY, 14, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3; ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '800 11px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(T('hb.startLabel'), scrX, scrY - 22);
+          ctx.restore();
+        }
+      }
+    }
+
+    const INDEX_FINGER_CHAIN = [[5, 6], [6, 7], [7, 8]];
+    const SUBTLE_HAND_CONNECTIONS = [
+      [0, 5], [5, 9], [9, 13], [13, 17], [17, 0],
+      [0, 1], [1, 2], [2, 3], [3, 4],
+      [9, 10], [10, 11], [11, 12],
+      [13, 14], [14, 15], [15, 16],
+      [17, 18], [18, 19], [19, 20]
+    ];
+
+    function renderTrackedHandSkeleton(p) {
+      if (!p.handLandmarks || p.lostFrames > 6) return;
+      const lm = p.handLandmarks;
+      ctx.save();
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      ctx.strokeStyle = p.colorLight;
+      ctx.globalAlpha = 0.18;
+      ctx.lineWidth = 1.5;
+      for (const [a, b] of SUBTLE_HAND_CONNECTIONS) {
+        const pa = videoNormToScreen(lm[a].x, lm[a].y);
+        const pb = videoNormToScreen(lm[b].x, lm[b].y);
+        ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
+      }
+
+      ctx.strokeStyle = p.colorLight;
+      ctx.globalAlpha = 0.85;
+      ctx.lineWidth = 3.5;
+      for (const [a, b] of INDEX_FINGER_CHAIN) {
+        const pa = videoNormToScreen(lm[a].x, lm[a].y);
+        const pb = videoNormToScreen(lm[b].x, lm[b].y);
+        ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
+      }
+
+      ctx.globalAlpha = 0.95;
+      for (const idx of [5, 6, 7, 8]) {
+        const pt = videoNormToScreen(lm[idx].x, lm[idx].y);
+        ctx.fillStyle = idx === 8 ? p.colorLight : '#ffffff';
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, idx === 8 ? 5 : 3, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function renderBrushEffects(p) {
+      const sheet = tintedSheets[p.tintKey] || (isSpritesheetReady ? brushSpriteImg : null);
+
+      if (p.brushStamps.length >= 2) {
+        ctx.save();
+        ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        const len = p.brushStamps.length;
+        for (let i = 1; i < len; i++) {
+          const prev = p.brushStamps[i - 1];
+          const curr = p.brushStamps[i];
+          if (Math.hypot(curr.x - prev.x, curr.y - prev.y) > 70) continue;
+          const tailRatio = i / len;
+          ctx.globalAlpha = Math.max(0, curr.alpha * 0.38 * tailRatio);
+          ctx.strokeStyle = p.colorLight;
+          ctx.lineWidth = Math.max(2, 12 * curr.scale * tailRatio);
+          ctx.beginPath(); ctx.moveTo(prev.x, prev.y); ctx.lineTo(curr.x, curr.y); ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      for (const st of p.brushStamps) {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, st.alpha);
+        ctx.translate(st.x, st.y);
+        ctx.rotate(st.angle);
+
+        if (sheet) {
+          const drawSize = 68 * st.scale;
+          ctx.drawImage(sheet, st.col * SPRITE_CELL, st.row * SPRITE_CELL, SPRITE_CELL, SPRITE_CELL, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+        } else {
+          ctx.fillStyle = p.colorLight;
+          ctx.beginPath(); ctx.ellipse(0, 0, 20 * st.scale, 9 * st.scale, 0, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      for (const sp of p.splatters) {
+        const spSheet = tintedSheets[sp.tintKey] || sheet;
+        if (!spSheet) continue;
+        ctx.save();
+        const drawSize = 170 * sp.scale;
+        ctx.drawImage(spSheet, sp.frame * SPRITE_CELL, 2 * SPRITE_CELL, SPRITE_CELL, SPRITE_CELL, sp.x - drawSize / 2, sp.y - drawSize / 2, drawSize, drawSize);
+        ctx.restore();
+      }
+
+      for (const pt of p.particles) {
+        ctx.save();
+        ctx.fillStyle = pt.color;
+        ctx.globalAlpha = Math.max(0, pt.alpha);
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+
+      if (p.palmPos) {
+        const x = p.palmPos.x;
+        const y = p.palmPos.y;
+
+        ctx.save();
+        const pulseR = 17 + Math.sin(animTick * 0.2) * 3;
+        ctx.strokeStyle = p.colorLight; ctx.lineWidth = 2.5;
+        ctx.shadowColor = p.colorGlow; ctx.shadowBlur = 14;
+        ctx.beginPath(); ctx.arc(x, y, pulseR, 0, Math.PI * 2); ctx.stroke();
+
+        ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2); ctx.fill();
+
+        if (isSpritesheetReady) {
+          const brushFrame = Math.floor(animTick / 8) % 4;
+          const brushSize = 112;
+          const tipOffsetX = (74 / 256) * brushSize;
+          const tipOffsetY = (182 / 256) * brushSize;
+
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(p.handTilt);
+          ctx.drawImage(brushSpriteImg, brushFrame * SPRITE_CELL, 3 * SPRITE_CELL, SPRITE_CELL, SPRITE_CELL, -tipOffsetX, -tipOffsetY, brushSize, brushSize);
+          ctx.restore();
+        }
+
+        ctx.shadowBlur = 4; ctx.shadowColor = '#000';
+        ctx.font = '800 12px "Outfit", sans-serif';
+        ctx.fillStyle = p.colorLight;
+        ctx.textAlign = 'center';
+        ctx.fillText(p.name, x, y + 30);
+        ctx.restore();
+      }
+    }
+
+    function renderRoundWinBanner() {
+      const winner = player1.isWinnerOfRound ? player1 : player2;
+      const midX = canvas.width / 2;
+      const midY = canvas.height / 2;
+
+      ctx.save();
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+      ctx.strokeStyle = winner.colorLight;
+      ctx.lineWidth = 3;
+
+      const bw = 460;
+      const bh = 110;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(midX - bw / 2, midY - bh / 2, bw, bh, 20);
+      else ctx.rect(midX - bw / 2, midY - bh / 2, bw, bh);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '900 22px "Outfit", sans-serif';
+      ctx.fillStyle = winner.colorLight;
+      ctx.fillText(T('hb.roundWin', { name: winner.name.toUpperCase() }), midX, midY - 14);
+
+      ctx.font = '600 14px "Plus Jakarta Sans", sans-serif';
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillText(T('hb.nextWordWait'), midX, midY + 22);
+      ctx.restore();
+    }
+
+    // --- POINTER / MOUSE FALLBACK ---
+    let isMouseDown = false;
+    canvas.addEventListener('pointerdown', (e) => {
+      isMouseDown = true;
+      handlePointerMove(e);
+    });
+    canvas.addEventListener('pointermove', (e) => {
+      if (isMouseDown) handlePointerMove(e);
+    });
+    window.addEventListener('pointerup', () => {
+      isMouseDown = false;
+      player1.rawPalmVisible = false;
+      player2.rawPalmVisible = false;
+    });
+
+    function handlePointerMove(e) {
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX - rect.left) * (canvas.width / Math.max(1, rect.width));
+      const y = (e.clientY - rect.top) * (canvas.height / Math.max(1, rect.height));
+
+      if (x < canvas.width / 2) {
+        player1.rawPalmVisible = true;
+        player1.targetPalmPos = { x, y };
+        player2.rawPalmVisible = false;
+      } else {
+        player2.rawPalmVisible = true;
+        player2.targetPalmPos = { x, y };
+        player1.rawPalmVisible = false;
+      }
+    }
+
+    // --- CHAPTER MODAL ---
+    function openChapterModal() {
+      const bookKeys = Object.keys(_catalogDB);
+      if (bookKeys.length === 0) return;
+
+      modalBookSelect.innerHTML = '';
+      bookKeys.forEach(bk => {
+        const opt = document.createElement('option');
+        opt.value = bk;
+        opt.textContent = _catalogDB[bk].label;
+        if (bk === currentBookKey) opt.selected = true;
+        modalBookSelect.appendChild(opt);
+      });
+
+      updateModalChapters();
+      chapterModal.style.display = 'flex';
+    }
+
+    function updateModalChapters() {
+      const selectedBook = modalBookSelect.value;
+      modalChapterSelect.innerHTML = '';
+
+      const book = _catalogDB[selectedBook];
+      if (book && book.chapters) {
+        Object.keys(book.chapters).forEach(ch => {
+          const opt = document.createElement('option');
+          opt.value = ch;
+          opt.textContent = book.chapters[ch].label;
+          if (selectedBook === currentBookKey && ch === currentChapterKey) opt.selected = true;
+          modalChapterSelect.appendChild(opt);
+        });
+      }
+      updateModalVocabPreview();
+    }
+
+    function updateModalVocabPreview() {
+      const selectedBook = modalBookSelect.value;
+      const selectedChap = modalChapterSelect.value;
+      modalVocabList.innerHTML = '';
+
+      const chap = _catalogDB[selectedBook]?.chapters?.[selectedChap];
+      if (chap && Array.isArray(chap.vocab)) {
+        const vocabs = chap.vocab;
+        const PREVIEW_LIMIT = 60;
+        const visibleVocabs = vocabs.slice(0, PREVIEW_LIMIT);
+
+        if (modalVocabCountLabel) {
+          modalVocabCountLabel.textContent = T('hb.modalVocab', { n: vocabs.length });
+        }
+
+        visibleVocabs.forEach(v => {
+          const tag = document.createElement('div');
+          tag.className = 'vocab-tag';
+          const strong = document.createElement('strong');
+          strong.textContent = v.char;
+          tag.appendChild(strong);
+          tag.appendChild(document.createTextNode(` (${v.pinyin || '-'}): ${v.id || '-'}`));
+          modalVocabList.appendChild(tag);
+        });
+
+        if (vocabs.length > PREVIEW_LIMIT) {
+          const moreTag = document.createElement('div');
+          moreTag.className = 'vocab-tag';
+          moreTag.style.color = '#94a3b8';
+          moreTag.textContent = `+ ${vocabs.length - PREVIEW_LIMIT} ...`;
+          modalVocabList.appendChild(moreTag);
+        }
+      }
+    }
+
+    modalBookSelect.addEventListener('change', updateModalChapters);
+    modalChapterSelect.addEventListener('change', updateModalVocabPreview);
+    btnOpenChapterModal.addEventListener('click', openChapterModal);
+    btnCloseModal.addEventListener('click', () => { chapterModal.style.display = 'none'; });
+
+    btnApplyChapter.addEventListener('click', () => {
+      const selectedBook = modalBookSelect.value;
+      const selectedChap = modalChapterSelect.value;
+      if (applySelectedCatalogMaterial(selectedBook, selectedChap)) {
+        chapterModal.style.display = 'none';
+        startNewMatch();
+        emitGameState();
+      }
+    });
+
+    if (window.LotusI18n) {
+      LotusI18n.onChange(() => {
+        roundTag.textContent = T('game.roundOf', { n: currentRoundNum, total: MATCH_BEST_OF });
+        updateCameraButtonUI();
+        updateTrackingLabels();
+        if (isMouseMode && !isCameraRunning) setAiStatus('ready', T('aiSlicer.statusMouse'));
+        if (isMatchOver) updateWinnerLabels();
+      });
+    }
+
+    function syncFullscreenClass() {
+      const isFs = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+      document.body.classList.toggle('is-fullscreen', isFs);
+      if (isFs && chapterModal) chapterModal.style.display = 'none';
+      resizeCanvasToViewport();
+    }
+    document.addEventListener('fullscreenchange', syncFullscreenClass);
+    document.addEventListener('webkitfullscreenchange', syncFullscreenClass);
+
+    window.addEventListener('message', (event) => {
+      const data = event.data;
+      if (!data || typeof data !== 'object') return;
+
+      if (data.type === 'GAME_CMD') {
+        const cmd = String(data.command || data.cmd || data.action || '').toUpperCase();
+        if (cmd === 'TOGGLE_CAMERA') {
+          if (isCameraRunning) stopCamera();
+          else startCamera();
+        } else if (cmd === 'MOUSE_MODE') {
+          enableMouseMode();
+        } else if (cmd === 'RESTART') {
+          startNewMatch();
+        } else if (cmd === 'SKIP_WORD') {
+          if (!isMatchOver) loadNextRound();
+        }
+      } else if (data.type === 'GAME_SETTINGS') {
+        const p = data.payload || data;
+        if (p.trackingMode && selectTrackingMode && ['hands', 'pose'].includes(p.trackingMode)) {
+          selectTrackingMode.value = p.trackingMode;
+          if (isCameraRunning) {
+            if (p.trackingMode === 'pose') initPoseTracker();
+            else initHandsTracker();
+          }
+        }
+        if (p.hand && selectHandPreference && ['auto', 'right', 'left'].includes(p.hand)) {
+          selectHandPreference.value = p.hand;
+        }
+        if (p.hanziChapterId && p.hanziChapterId !== getActiveChapterId()) {
+          applyHanziChapterById(p.hanziChapterId, false);
+        }
+        emitGameState();
+      } else if (data.type === 'UPDATE_SETTINGS') {
+        if (data.theme && window.LotusThemes) {
+          window.LotusThemes.apply(data.theme, true);
+        }
+        const incomingAct = data.activity
+          ? (window.GameBridge && GameBridge.normalizeActivity ? GameBridge.normalizeActivity(data.activity) : data.activity)
+          : null;
+        if (incomingAct) {
+          const sig = computeActivitySig(incomingAct);
+          const changed = sig !== lastActivitySig;
+          lastActivitySig = sig;
+          injectActivityHanziDeck(incomingAct);
+          if (data.restart === true || (data.restart !== false && changed)) {
+            startNewMatch();
+          }
+        } else if (data.restart === true) {
+          startNewMatch();
+        }
+        emitGameState();
+      } else if (data.type === 'INIT_ACTIVITY' && data.activity) {
+        const norm = (window.GameBridge && GameBridge.normalizeActivity) ? GameBridge.normalizeActivity(data.activity) : data.activity;
+        const sig = computeActivitySig(norm);
+        if (sig !== lastActivitySig) {
+          lastActivitySig = sig;
+          injectActivityHanziDeck(norm);
+          startNewMatch();
+        }
+        emitGameState();
+      }
+    });
+
+    // --- BOOTSTRAP ---
+    window.addEventListener('DOMContentLoaded', () => {
+      initDatabase();
+      updateTrackingLabels();
+      if (window.GameBridge) {
+        if (typeof GameBridge.onSettings === 'function') {
+          GameBridge.onSettings(() => {});
+        }
+        GameBridge.onReady((act) => {
+          lastActivitySig = computeActivitySig(act);
+          injectActivityHanziDeck(act);
+          startNewMatch();
+          emitGameState();
+        });
+      } else {
+        startNewMatch();
+        emitGameState();
+      }
+      requestAnimationFrame(updateGame);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Hand Fruit Slicer — LotusWall</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;800;900&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="common/ui-spritesheet.css">
+
+  <!-- MediaPipe Pose CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous" defer></script>
+
+  <script src="common/i18n.js"></script>
+  <script src="common/sfx.js"></script>
+  <script src="common/confetti.js"></script>
+  <script src="common/themes.js"></script>
+  <script src="common/bridge.js"></script>
+
+  <style>
+    :root {
+      --bg-main: #f7f5f0;
+      --card-bg: #ffffff;
+      --primary: #1d4ed8;
+      --primary-hover: #1e40af;
+      --accent-cyan: #d97706;
+      --accent-green: #15803d;
+      --accent-red: #dc2626;
+      --accent-yellow: #d97706;
+      --text-dark: #18181b;
+      --text-muted: #57534e;
+      --border: #d6cfc2;
+      --shadow-sm: 0 2px 0 #e5dfd3;
+      --shadow-md: 0 6px 18px rgba(24, 24, 27, 0.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    body.theme-magical {
+      background: radial-gradient(circle at 50% 15%, #fdf4ff 0%, #faf5ff 55%, #f3e8ff 100%);
+      color: #2e1065;
+    }
+    body.theme-magical .stage-card,
+    body.theme-magical .card,
+    body.theme-magical header {
+      border-color: #d8b4fe;
+      box-shadow: 0 10px 30px rgba(126, 34, 206, 0.12);
+    }
+
+    /* HEADER */
+    header {
+      background: #fcfbf8;
+      border-bottom: 1.5px solid var(--border);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand { display: flex; align-items: center; gap: 10px; }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-bottom: 3px solid #c9c1b2;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-title h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-dark);
+      letter-spacing: -0.3px;
+    }
+
+    .brand-title p {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .header-pills { display: flex; align-items: center; gap: 8px; }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #ffffff;
+      color: var(--text-muted);
+      border: 1.5px solid var(--border);
+    }
+
+    .status-badge.active { background: #f0fdf4; color: #15803d; border-color: #86efac; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+    /* MAIN CONTAINER */
+    main {
+      flex: 1;
+      width: 96%;
+      max-width: 1760px;
+      margin: 0 auto;
+      padding: 14px 18px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 310px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    @media (max-width: 1060px) {
+      main { grid-template-columns: 1fr; }
+    }
+
+    /* EMBEDDED & FULLSCREEN CLEAN 16:9 STAGE (ZERO SETTINGS INSIDE GAME WINDOW) */
+    body.is-embedded,
+    body.is-fullscreen,
+    :fullscreen body,
+    :-webkit-full-screen body {
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden !important;
+      margin: 0;
+      padding: 0;
+    }
+
+    html:has(body.is-embedded),
+    html:has(body.is-fullscreen),
+    html:fullscreen,
+    html:-webkit-full-screen {
+      height: 100%;
+      width: 100%;
+      overflow: hidden !important;
+    }
+
+    body.is-embedded header,
+    body.is-embedded .controls-bar,
+    body.is-embedded .settings-row,
+    body.is-embedded aside.side-panel,
+    body.is-embedded aside.sidebar,
+    body.is-fullscreen header,
+    body.is-fullscreen .controls-bar,
+    body.is-fullscreen .settings-row,
+    body.is-fullscreen aside.side-panel,
+    body.is-fullscreen aside.sidebar,
+    :fullscreen header,
+    :fullscreen .controls-bar,
+    :fullscreen .settings-row,
+    :fullscreen aside.side-panel,
+    :fullscreen aside.sidebar,
+    :-webkit-full-screen header,
+    :-webkit-full-screen .controls-bar,
+    :-webkit-full-screen .settings-row,
+    :-webkit-full-screen aside.side-panel,
+    :-webkit-full-screen aside.sidebar {
+      display: none !important;
+    }
+
+    body.is-embedded main,
+    body.is-fullscreen main,
+    :fullscreen main,
+    :-webkit-full-screen main {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 8px 10px;
+      gap: 0;
+      overflow: hidden;
+    }
+
+    body.is-embedded .stage-card,
+    body.is-fullscreen .stage-card,
+    :fullscreen .stage-card,
+    :-webkit-full-screen .stage-card {
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      height: 100%;
+      padding: 8px 10px;
+      gap: 6px;
+      border-radius: 10px;
+    }
+
+    body.is-embedded .game-stats-bar,
+    body.is-fullscreen .game-stats-bar,
+    :fullscreen .game-stats-bar,
+    :-webkit-full-screen .game-stats-bar {
+      flex-shrink: 0;
+      gap: 6px;
+    }
+
+    body.is-embedded .stat-pill,
+    body.is-fullscreen .stat-pill,
+    :fullscreen .stat-pill,
+    :-webkit-full-screen .stat-pill {
+      padding: 4px 10px;
+      font-size: 12px;
+    }
+
+    body.is-embedded .question-banner,
+    body.is-fullscreen .question-banner,
+    :fullscreen .question-banner,
+    :-webkit-full-screen .question-banner {
+      flex-shrink: 0;
+      padding: 7px 14px;
+    }
+
+    body.is-embedded .q-text,
+    body.is-fullscreen .q-text,
+    :fullscreen .q-text,
+    :-webkit-full-screen .q-text {
+      font-size: 15px;
+      line-height: 1.25;
+    }
+
+    body.is-embedded .viewport,
+    body.is-fullscreen .viewport,
+    :fullscreen .viewport,
+    :-webkit-full-screen .viewport {
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      height: 100%;
+      aspect-ratio: auto;
+    }
+
+    body.is-embedded .camera-placeholder,
+    body.is-fullscreen .camera-placeholder,
+    :fullscreen .camera-placeholder,
+    :-webkit-full-screen .camera-placeholder {
+      padding: 12px 16px;
+      gap: 8px;
+    }
+
+    body.is-embedded .placeholder-icon,
+    body.is-fullscreen .placeholder-icon,
+    :fullscreen .placeholder-icon,
+    :-webkit-full-screen .placeholder-icon {
+      width: 48px;
+      height: 48px;
+    }
+
+    body.is-embedded .placeholder-text h3,
+    body.is-fullscreen .placeholder-text h3,
+    :fullscreen .placeholder-text h3,
+    :-webkit-full-screen .placeholder-text h3 {
+      font-size: 17px;
+      margin-bottom: 2px;
+    }
+
+    body.is-embedded .placeholder-text p,
+    body.is-fullscreen .placeholder-text p,
+    :fullscreen .placeholder-text p,
+    :-webkit-full-screen .placeholder-text p {
+      font-size: 12.5px;
+      line-height: 1.4;
+    }
+
+    .cam-error-note {
+      display: none;
+      max-width: 460px;
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1.5px solid #fecaca;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 12.5px;
+      font-weight: 700;
+    }
+
+    .stage-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      border: 1.5px solid var(--border);
+      padding: 14px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .game-stats-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .stat-pill {
+      background: #fcfbf8;
+      border: 1.5px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-dark);
+    }
+
+    .speed-btn { cursor: pointer; transition: all 0.15s ease; }
+    .speed-btn:hover { background: #fffbeb; border-color: #d97706; }
+
+    .hearts { display: inline-flex; align-items: center; gap: 4px; }
+
+    /* QUESTION BANNER */
+    .question-banner {
+      background: #1e242b;
+      border-radius: 10px;
+      padding: 12px 18px;
+      text-align: center;
+      color: #ffffff;
+      box-shadow: 0 3px 10px rgba(24, 24, 27, 0.1);
+      border-bottom: 3px solid #d97706;
+    }
+
+    .q-num {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.3px;
+      color: #fbbf24;
+      margin-bottom: 2px;
+    }
+
+    .q-text {
+      font-family: 'Poppins', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.35;
+      color: #ffffff;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* VIEWPORT */
+    .viewport {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #141920;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1.5px solid var(--border);
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.18);
+    }
+
+    video#webcam {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+      display: none;
+    }
+
+    canvas#game_canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+      z-index: 2;
+    }
+
+    .camera-placeholder {
+      position: absolute;
+      inset: 0;
+      background: #fcfbf8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      text-align: center;
+      padding: 20px;
+      z-index: 5;
+    }
+
+    .placeholder-icon {
+      width: 64px;
+      height: 64px;
+      background: #fffbeb;
+      border: 2px solid #d97706;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 0 #fde68a;
+    }
+
+    .placeholder-text h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-dark);
+      margin-bottom: 4px;
+    }
+
+    .placeholder-text p {
+      font-size: 13px;
+      color: var(--text-muted);
+      max-width: 460px;
+      line-height: 1.5;
+    }
+
+    .placeholder-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .controls-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-top: 4px;
+    }
+
+    .btn-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    .btn {
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-primary { background: var(--primary); color: #ffffff; border-bottom: 3px solid #1e3a8a; }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+
+    .btn-stop { background: #dc2626; color: #ffffff; border-bottom: 3px solid #991b1b; }
+    .btn-secondary { background: #ffffff; color: var(--text-dark); border: 1.5px solid var(--border); border-bottom: 3px solid #c9c1b2; }
+    .btn-secondary:hover { background: #fcfbf8; border-color: #a89f91; }
+
+    .settings-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+    .custom-select {
+      padding: 7px 10px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      background: #ffffff;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-dark);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-dark);
+      cursor: pointer;
+    }
+    .toggle-input { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+
+    /* SIDEBAR */
+    .side-panel { display: flex; flex-direction: column; gap: 14px; }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      border: 1.5px solid var(--border);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-dark);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .metric-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: #fcfbf8;
+      border-radius: 8px;
+      border: 1px solid #e5dfd3;
+      font-size: 12px;
+    }
+
+    .metric-label { color: var(--text-muted); font-weight: 600; }
+    .metric-val { font-weight: 800; color: var(--primary); font-family: monospace; font-size: 12.5px; }
+
+    .step-item { display: flex; gap: 10px; margin-bottom: 10px; font-size: 12.5px; line-height: 1.45; color: var(--text-dark); }
+    .step-item:last-child { margin-bottom: 0; }
+    .step-num {
+      width: 22px; height: 22px; border-radius: 6px; background: #eff6ff; color: var(--primary); border: 1px solid #bfdbfe;
+      font-weight: 800; font-size: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+
+    /* GAME OVER MODAL */
+    .screen-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(24, 24, 27, 0.78);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 60;
+      padding: 16px;
+      border-radius: 12px;
+    }
+
+    .modal-box {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 24px 28px;
+      max-width: 430px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 45px rgba(24, 24, 27, 0.25);
+      border: 1.5px solid var(--border);
+      border-bottom: 4px solid #c9c1b2;
+    }
+
+    .score-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    .score-input-row input {
+      flex: 1; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: 13px; font-weight: 600; outline: none;
+    }
+    .score-input-row input:focus { border-color: var(--primary); }
+
+    .action-btn {
+      background: #1d4ed8;
+      color: white;
+      border: none;
+      border-bottom: 3px solid #1e3a8a;
+      padding: 11px 24px;
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .action-btn:hover { background: #1e40af; transform: translateY(-1px); }
+  </style>
+</head>
+<body>
+  <script>
+    (function () {
+      try {
+        var embedded = (window.self !== window.top) || new URLSearchParams(window.location.search).get('embedded') === '1';
+        if (embedded) document.body.classList.add('is-embedded');
+      } catch (e) {
+        document.body.classList.add('is-embedded');
+      }
+    })();
+  </script>
+
+  <header>
+    <div class="brand">
+      <div class="brand-icon"><span class="ui-sprite ui-lg ui-hand"></span></div>
+      <div class="brand-title">
+        <h1 data-i18n="aiSlicer.title">AI Hand Fruit Slicer</h1>
+        <p data-i18n="aiSlicer.sub">Slice Falling Answer Fruits with Your Hand Motion</p>
+      </div>
+    </div>
+
+    <div class="header-pills">
+      <div class="status-badge" id="fpsBadge">
+        <span class="dot"></span>
+        <span id="fpsText">0 FPS</span>
+      </div>
+      <div class="status-badge" id="statusBadge">
+        <span class="dot"></span>
+        <span id="statusText">Camera Ready</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="stage-card">
+      <div class="game-stats-bar">
+        <div class="stat-pill"><span class="ui-sprite ui-sm ui-game-slicer"></span> <span id="gameModePill">AI Slicer</span></div>
+        <div class="stat-pill"><span class="ui-sprite ui-sm ui-trophy"></span> <span><span data-i18n="game.score">Score</span>: <span id="score-val" style="color: #1d4ed8; font-weight: 800;">0</span></span></div>
+        <div class="stat-pill" id="timer-stat-pill"><span class="ui-sprite ui-sm ui-clock"></span> <span><span id="timer-val">30</span>s</span></div>
+        <div class="stat-pill hearts" id="lives-container"></div>
+        <div class="stat-pill speed-btn" id="speed-badge" onclick="toggleSpeed()">
+          <span class="ui-sprite ui-sm ui-refresh"></span>
+          <span><span data-i18n="game.speedLabel">Speed</span>: <span id="speed-label" style="color: #15803d; font-weight: 800;">Relaxed</span></span>
+        </div>
+      </div>
+
+      <div class="question-banner">
+        <div class="q-num" id="q-num">Question 1 of 5</div>
+        <div class="q-text" id="q-text">Slice the fruit holding the right answer!</div>
+      </div>
+
+      <div class="viewport" id="viewport">
+        <video id="webcam" playsinline autoplay muted></video>
+        <canvas id="game_canvas"></canvas>
+
+        <div class="camera-placeholder" id="placeholder">
+          <div class="placeholder-icon"><span class="ui-sprite ui-xl ui-hand"></span></div>
+          <div class="placeholder-text">
+            <h3 data-i18n="aiSlicer.camOff">Camera Inactive</h3>
+            <p data-i18n="aiSlicer.camOffDesc">Enable your webcam for AI upper-body hand slicing, or test directly using your mouse!</p>
+          </div>
+          <div class="placeholder-actions">
+            <button class="btn btn-primary" id="btnHeroStart" style="padding: 11px 22px; font-size: 14px;">
+              <span class="ui-sprite ui-sm ui-camera"></span>
+              <span data-i18n="aiSlicer.startCam">Enable Camera</span>
+            </button>
+            <button class="btn btn-secondary" id="btnMouseMode" style="padding: 11px 22px; font-size: 14px;">
+              <span class="ui-sprite ui-sm ui-gamepad"></span>
+              <span data-i18n="aiSlicer.playMouse">Play with Mouse</span>
+            </button>
+          </div>
+          <div class="cam-error-note" id="camErrorNote"></div>
+        </div>
+
+        <div class="screen-overlay" id="end-screen" style="display: none;">
+          <div class="modal-box">
+            <div style="margin-bottom: 8px;"><span class="ui-sprite ui-2xl ui-trophy"></span></div>
+            <h2 style="font-family: 'Outfit'; font-size: 24px; font-weight: 800; margin-bottom: 4px;" data-i18n="game.gameOver">Game Over!</h2>
+            <p style="color: #64748b; font-size: 13px; margin-bottom: 14px;" data-i18n="game.greatJob">Awesome work! You completed the challenge!</p>
+
+            <div style="background: #fcfbf8; border: 1.5px solid #e5dfd3; padding: 14px; border-radius: 10px; margin-bottom: 14px;">
+              <div style="font-size: 30px; font-weight: 800; color: #15803d;" id="final-score">0 Points</div>
+              <div style="font-size: 12.5px; color: #57534e; margin-top: 4px;" id="final-time">Total Time: 0s</div>
+            </div>
+
+            <div id="score-submit-box" class="score-input-row">
+              <input type="text" id="student-name-input" data-i18n-placeholder="game.yourName" placeholder="Enter your name...">
+              <button class="btn btn-primary" id="btnSubmitScore" data-i18n="game.submitScore">Save Score</button>
+            </div>
+            <div id="score-saved-msg" style="display:none; color:#059669; font-weight:700; font-size:13px; margin-bottom:10px;" data-i18n="game.scoreSaved">Saved!</div>
+
+            <button class="action-btn" onclick="initGame()">
+              <span class="ui-sprite ui-sm ui-refresh"></span>
+              <span data-i18n="game.playAgain">Play Again</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls-bar">
+        <div class="btn-group">
+          <button class="btn btn-primary" id="btnToggleCamera">
+            <span class="ui-sprite ui-sm ui-camera"></span>
+            <span data-i18n="aiSlicer.startCam">Enable Camera</span>
+          </button>
+          <button class="btn btn-secondary" onclick="initGame()">
+            <span class="ui-sprite ui-sm ui-refresh"></span>
+            <span data-i18n="aiSlicer.reset">Restart</span>
+          </button>
+        </div>
+
+        <div class="settings-row">
+          <div style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600;">
+            <span data-i18n="aiSlicer.handLabel">Hand:</span>
+            <select id="selectHand" class="custom-select">
+              <option value="auto" data-i18n="aiSlicer.handAuto">Both / Auto</option>
+              <option value="right" data-i18n="aiSlicer.handRight">Right Hand Only</option>
+              <option value="left" data-i18n="aiSlicer.handLeft">Left Hand Only</option>
+            </select>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600;">
+            <span data-i18n="aiSlicer.pointLabel">Blade Point:</span>
+            <select id="selectPoint" class="custom-select">
+              <option value="finger" data-i18n="aiSlicer.pointFinger">Index Fingertip</option>
+              <option value="palm" data-i18n="aiSlicer.pointPalm">Palm / Wrist</option>
+            </select>
+          </div>
+
+          <label class="toggle-label">
+            <input type="checkbox" id="checkSkeleton" class="toggle-input" checked>
+            <span data-i18n="aiSlicer.skeleton">Upper Body Skeleton</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <aside class="side-panel">
+      <div class="card">
+        <h3 class="card-title"><span class="ui-sprite ui-sm ui-dashboard"></span> <span data-i18n="aiSlicer.panelTitle">Upper-Body Tracking Status</span></h3>
+        <div class="metric-list">
+          <div class="metric-row">
+            <span class="metric-label" data-i18n="aiSlicer.lblAi">AI Vision Status</span>
+            <span class="metric-val" id="valAiStatus">-</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label" data-i18n="aiSlicer.lblHand">Active Slicing Hand</span>
+            <span class="metric-val" id="valActiveHand">-</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label" data-i18n="aiSlicer.lblPos">Blade Position</span>
+            <span class="metric-val" id="valBladePos">-</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label" data-i18n="aiSlicer.lblSpd">Swing Velocity</span>
+            <span class="metric-val" id="valBladeSpeed">0 px/f</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label" data-i18n="aiSlicer.lblSlash">Slash State</span>
+            <span class="metric-val" id="valSlashState" style="color: #64748b;">Waiting for Motion</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title"><span class="ui-sprite ui-sm ui-subject"></span> <span data-i18n="aiSlicer.guideTitle">How to Play AI Slicer</span></h3>
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div data-i18n-html="aiSlicer.step1"><strong>Read the Prompt:</strong> Fruits fall gently from the top so you have time to read choices.</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div data-i18n-html="aiSlicer.step2"><strong>Swing Fast to Cut:</strong> Whip your hand (or drag mouse) to slice—slow movement will not cut accidentally.</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div data-i18n-html="aiSlicer.step3"><strong>Complete All Questions:</strong> Slice the correct answer fruit to score points!</div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const T = (k, v) => (window.LotusI18n ? window.LotusI18n.t(k, v) : k);
+
+    const Sound = {
+      slice() { if (window.SFX && SFX.hit) SFX.hit(); else this.proceduralBeep(440, 0.08, 'sawtooth'); },
+      correct() { if (window.SFX && SFX.correct) SFX.correct(); else this.proceduralBeep(659.25, 0.15, 'sine'); },
+      wrong() { if (window.SFX && SFX.wrong) SFX.wrong(); else this.proceduralBeep(180, 0.25, 'square'); },
+      tick() { if (window.SFX && SFX.tick) SFX.tick(); },
+      proceduralBeep(freq, duration = 0.1, type = 'sine') {
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) return;
+          const ctx = new AudioCtx();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, ctx.currentTime);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + duration);
+        } catch (e) {}
+      }
+    };
+
+    const SPEED_CONFIGS = {
+      relaxed: { id: 'relaxed', key: 'game.speed.relaxed', color: '#15803d', minVy: 1.7, maxVy: 2.5, spawnInterval: 1700 },
+      medium:  { id: 'medium',  key: 'game.speed.medium',  color: '#d97706', minVy: 2.7, maxVy: 3.5, spawnInterval: 1400 },
+      fast:    { id: 'fast',    key: 'game.speed.fast',    color: '#dc2626', minVy: 3.7, maxVy: 4.7, spawnInterval: 1100 }
+    };
+    let currentSpeed = 'relaxed';
+
+    function normalizeSpeedValue(val) {
+      const v = String(val || '').toLowerCase().trim();
+      if (v === 'relaxed' || v === 'santai' || v === 'slow') return 'relaxed';
+      if (v === 'normal' || v === 'medium' || v === 'sedang') return 'medium';
+      if (v === 'fast' || v === 'cepat' || v === 'high') return 'fast';
+      return null;
+    }
+
+    function toExternalSpeedValue(internalKey) {
+      return internalKey === 'medium' ? 'normal' : internalKey;
+    }
+
+    function updateSpeedLabel() {
+      const cfg = SPEED_CONFIGS[currentSpeed];
+      const lbl = document.getElementById('speed-label');
+      if (lbl) {
+        lbl.innerText = T(cfg.key);
+        lbl.style.color = cfg.color;
+      }
+    }
+
+    function setSpeed(val, shouldEmit = true) {
+      const norm = normalizeSpeedValue(val);
+      if (!norm) return false;
+      currentSpeed = norm;
+      updateSpeedLabel();
+      if (spawnInterval && !isGameOver) {
+        clearInterval(spawnInterval);
+        spawnInterval = setInterval(spawnFruit, SPEED_CONFIGS[currentSpeed].spawnInterval);
+      }
+      if (shouldEmit) emitGameState();
+      return true;
+    }
+
+    function toggleSpeed() {
+      if (currentSpeed === 'relaxed') currentSpeed = 'medium';
+      else if (currentSpeed === 'medium') currentSpeed = 'fast';
+      else currentSpeed = 'relaxed';
+      updateSpeedLabel();
+      if (spawnInterval && !isGameOver) {
+        clearInterval(spawnInterval);
+        spawnInterval = setInterval(spawnFruit, SPEED_CONFIGS[currentSpeed].spawnInterval);
+      }
+      emitGameState();
+    }
+
+    let currentActivity = null;
+    let questions = [];
+    let currentQIndex = 0;
+    let score = 0;
+    let lives = 3;
+    let maxLives = 3;
+    let timerSeconds = 30;
+    let timeMode = 'timer';
+    let timeRemaining = 30;
+    let totalTimeElapsed = 0;
+    let timerInterval = null;
+    let isGameOver = false;
+    let isMouseMode = false;
+
+    let fruits = [];
+    let popups = [];
+    let particles = [];
+    let spawnInterval = null;
+    let spawnTimeout = null;
+    const FRUIT_EMOJIS = ['🍉', '🍊', '🍎', '🍌', '🍓', '🍍', '🥥'];
+
+    const canvas = document.getElementById('game_canvas');
+    const ctx = canvas.getContext('2d');
+    const videoElement = document.getElementById('webcam');
+    const placeholder = document.getElementById('placeholder');
+    const btnToggleCamera = document.getElementById('btnToggleCamera');
+    const btnHeroStart = document.getElementById('btnHeroStart');
+    const btnMouseMode = document.getElementById('btnMouseMode');
+    const selectHand = document.getElementById('selectHand');
+    const selectPoint = document.getElementById('selectPoint');
+    const checkSkeleton = document.getElementById('checkSkeleton');
+    const statusBadge = document.getElementById('statusBadge');
+    const statusText = document.getElementById('statusText');
+    const fpsText = document.getElementById('fpsText');
+
+    const valAiStatus = document.getElementById('valAiStatus');
+    const valActiveHand = document.getElementById('valActiveHand');
+    const valBladePos = document.getElementById('valBladePos');
+    const valBladeSpeed = document.getElementById('valBladeSpeed');
+    const valSlashState = document.getElementById('valSlashState');
+
+    const knifeImg = new Image();
+    knifeImg.src = 'assets/ninja-knife.png';
+    let isKnifeLoaded = false;
+    knifeImg.onload = () => { isKnifeLoaded = true; };
+
+    const slashSheetImg = new Image();
+    slashSheetImg.src = 'assets/slash-spritesheet.png';
+    let isSlashSheetLoaded = false;
+    let pinkSlashSheetCanvas = null;
+
+    slashSheetImg.onload = () => {
+      isSlashSheetLoaded = true;
+      try {
+        const off = document.createElement('canvas');
+        off.width = slashSheetImg.width;
+        off.height = slashSheetImg.height;
+        const octx = off.getContext('2d');
+        octx.drawImage(slashSheetImg, 0, 0);
+        const imgData = octx.getImageData(0, 0, off.width, off.height);
+        const d = imgData.data;
+        for (let i = 0; i < d.length; i += 4) {
+          if (d[i + 3] > 0) {
+            const r = d[i], g = d[i + 1], b = d[i + 2];
+            const whiteness = Math.min(r, g, b);
+            const cyanEnergy = Math.max(g, b) - whiteness;
+            d[i] = Math.min(255, whiteness + Math.round(cyanEnergy * 0.96));
+            d[i + 1] = Math.min(255, whiteness + Math.round(cyanEnergy * 0.22));
+            d[i + 2] = Math.min(255, whiteness + Math.round(cyanEnergy * 0.65));
+          }
+        }
+        octx.putImageData(imgData, 0, 0);
+        pinkSlashSheetCanvas = off;
+      } catch (e) {}
+    };
+
+    const KNIFE_PIVOT_X = 0.22;
+    const KNIFE_PIVOT_Y = 0.50;
+
+    function createKnifeState(defaultAngle) {
+      return {
+        active: false, gripX: 0, gripY: 0, tipX: 0, tipY: 0, angle: defaultAngle,
+        lastGripX: null, lastGripY: null, lastTipX: null, lastTipY: null,
+        speed: 0, lastSpriteSpawnTime: 0, lostFrames: 0
+      };
+    }
+
+    let rightBladeTrail = [];
+    let leftBladeTrail = [];
+    let slashEffects = [];
+    const rightKnife = createKnifeState(-Math.PI / 4);
+    const leftKnife = createKnifeState(-Math.PI * 0.75);
+
+    let mediaStream = null;
+    let poseTracker = null;
+    let isCameraRunning = false;
+    let isDetecting = false;
+    let frameCount = 0;
+    let lastFpsTime = performance.now();
+    let latestLandmarks = null;
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0 && (canvas.width !== Math.round(rect.width) || canvas.height !== Math.round(rect.height))) {
+        canvas.width = Math.round(rect.width);
+        canvas.height = Math.round(rect.height);
+      }
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    let lastActivitySig = '';
+    function computeActivitySig(act) {
+      if (!act) return '';
+      const r = act.rules || act.settings || {};
+      const qs = act.questions || act.content?.items || [];
+      return JSON.stringify({
+        id: act.id || '',
+        hasLives: r.hasLives,
+        livesCount: r.livesCount ?? r.lives,
+        timeMode: r.timeMode,
+        timerSeconds: r.timerSeconds,
+        shuffleQuestions: r.shuffleQuestions ?? r.shuffle,
+        shuffleAnswers: r.shuffleAnswers,
+        qCount: qs.length,
+        firstQ: qs[0] ? (qs[0].text || qs[0].question || '') : ''
+      });
+    }
+
+    function applyActivityToGame(act) {
+      currentActivity = act;
+      lastActivitySig = computeActivitySig(act);
+      const rules = act?.rules || act?.settings || {};
+      const rawLives = rules.livesCount ?? rules.lives;
+      maxLives = (rules.hasLives === false || rawLives === 0 || rawLives === '0') ? 0 : (Number(rawLives ?? 3) || 3);
+      timerSeconds = Number(rules.timerSeconds ?? 30);
+      timeMode = rules.timeMode || (timerSeconds > 0 ? 'timer' : 'none');
+      if (timeMode === 'timer' && timerSeconds <= 0) timerSeconds = 30;
+
+      let list = (act?.questions || act?.content?.items || []).map(q => {
+        let opts = Array.isArray(q.options) && q.options.length > 0
+          ? q.options.map(o => ({ text: o.text, isCorrect: Boolean(o.isCorrect) }))
+          : [{ text: q.correctAnswer || 'Yes', isCorrect: true }, ...(q.wrongAnswers || ['No']).map(w => ({ text: w, isCorrect: false }))];
+        if (rules.shuffleAnswers && opts.length > 1) {
+          opts = [...opts].sort(() => Math.random() - 0.5);
+        }
+        return { text: q.text || q.question || '', options: opts };
+      }).filter(q => q.text && q.options.length > 0);
+
+      if (rules.shuffleQuestions && list.length > 1) {
+        list = [...list].sort(() => Math.random() - 0.5);
+      }
+      if (list.length > 0) {
+        questions = list;
+      } else if (questions.length === 0) {
+        questions = [{
+          text: T('aiSlicer.questionPrompt'),
+          options: [{ text: 'Mars', isCorrect: true }, { text: 'Venus', isCorrect: false }]
+        }];
+      }
+    }
+
+    function startTimerLoop() {
+      clearInterval(timerInterval);
+      const timerPill = document.getElementById('timer-stat-pill');
+      if (timeMode === 'none') {
+        if (timerPill) timerPill.style.display = 'none';
+        return;
+      }
+      if (timerPill) timerPill.style.display = 'inline-flex';
+      document.getElementById('timer-val').innerText = timeMode === 'stopwatch' ? totalTimeElapsed : timeRemaining;
+      timerInterval = setInterval(() => {
+        if (isGameOver || (!isCameraRunning && !isMouseMode)) return;
+        totalTimeElapsed++;
+        if (timeMode === 'stopwatch') {
+          document.getElementById('timer-val').innerText = totalTimeElapsed;
+        } else if (timeRemaining > 0) {
+          timeRemaining--;
+          document.getElementById('timer-val').innerText = timeRemaining;
+          if (timeRemaining <= 5) Sound.tick();
+        } else {
+          Sound.wrong();
+          if (maxLives > 0) {
+            lives--;
+            updateHearts();
+            if (lives <= 0) {
+              endGame();
+              return;
+            }
+          }
+          loadQuestion(currentQIndex + 1);
+        }
+      }, 1000);
+    }
+
+    function initGame() {
+      if (questions.length === 0) applyActivityToGame(currentActivity);
+      currentQIndex = 0;
+      score = 0;
+      lives = maxLives;
+      isGameOver = false;
+      fruits = [];
+      popups = [];
+      particles = [];
+      rightBladeTrail = [];
+      leftBladeTrail = [];
+      slashEffects = [];
+      totalTimeElapsed = 0;
+
+      document.getElementById('score-val').innerText = score;
+      document.getElementById('end-screen').style.display = 'none';
+      document.getElementById('score-submit-box').style.display = 'flex';
+      document.getElementById('score-saved-msg').style.display = 'none';
+      const nameInput = document.getElementById('student-name-input');
+      if (nameInput && window.GameBridge && GameBridge.playerName && !nameInput.value) {
+        nameInput.value = GameBridge.playerName;
+      }
+
+      updateSpeedLabel();
+      updateHearts();
+      loadQuestion(0);
+
+      clearInterval(spawnInterval);
+      startTimerLoop();
+
+      const cfg = SPEED_CONFIGS[currentSpeed];
+      spawnInterval = setInterval(spawnFruit, cfg.spawnInterval);
+      emitGameState();
+    }
+
+    function updateHearts() {
+      const container = document.getElementById('lives-container');
+      if (maxLives <= 0) {
+        container.style.display = 'none';
+        return;
+      }
+      container.style.display = 'inline-flex';
+      let html = '';
+      for (let i = 0; i < maxLives; i++) {
+        html += `<span class="ui-sprite ui-sm ui-heart" style="${i < lives ? '' : 'filter:grayscale(1);opacity:0.3;'}"></span>`;
+      }
+      container.innerHTML = html;
+    }
+
+    function loadQuestion(index) {
+      if (index >= questions.length) {
+        endGame();
+        return;
+      }
+      currentQIndex = index;
+      const q = questions[index];
+      document.getElementById('q-num').innerText = T('game.questionOf', { n: index + 1, total: questions.length });
+      document.getElementById('q-text').innerText = q.text;
+      fruits = [];
+      timeRemaining = timeMode === 'stopwatch' ? totalTimeElapsed : timerSeconds;
+      document.getElementById('timer-val').innerText = timeRemaining;
+
+      clearTimeout(spawnTimeout);
+      spawnTimeout = setTimeout(spawnFruit, 350);
+    }
+
+    function endGame() {
+      isGameOver = true;
+      clearInterval(timerInterval);
+      clearInterval(spawnInterval);
+      clearTimeout(spawnTimeout);
+      document.getElementById('final-score').innerText = T('game.totalPoints', { n: score });
+      document.getElementById('final-time').innerText = T('game.totalTime', { n: totalTimeElapsed });
+      document.getElementById('end-screen').style.display = 'flex';
+      if (window.confetti) {
+        try { window.confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } }); } catch (e) {}
+      }
+    }
+
+    document.getElementById('btnSubmitScore').addEventListener('click', () => {
+      const val = document.getElementById('student-name-input').value.trim();
+      if (window.GameBridge) {
+        GameBridge.finishGame(score, Math.max(100, questions.length * 100), [], val || null);
+      }
+      document.getElementById('score-submit-box').style.display = 'none';
+      document.getElementById('score-saved-msg').style.display = 'block';
+    });
+
+    function spawnFruit() {
+      if (isGameOver || (!isCameraRunning && !isMouseMode) || fruits.length >= 4) return;
+      const q = questions[currentQIndex];
+      if (!q || !q.options || q.options.length === 0) return;
+
+      const cfg = SPEED_CONFIGS[currentSpeed];
+      const activeTexts = fruits.filter(f => !f.sliced).map(f => f.text);
+      const availableOpts = q.options.filter(o => !activeTexts.includes(o.text));
+      const hasCorrectOnScreen = fruits.some(f => !f.sliced && f.isCorrect);
+
+      let chosenOpt = null;
+      if (!hasCorrectOnScreen && (Math.random() < 0.55 || availableOpts.length === 0)) {
+        chosenOpt = q.options.find(o => o.isCorrect) || q.options[0];
+      } else if (availableOpts.length > 0) {
+        chosenOpt = availableOpts[Math.floor(Math.random() * availableOpts.length)];
+      } else {
+        chosenOpt = q.options[Math.floor(Math.random() * q.options.length)];
+      }
+
+      const emoji = FRUIT_EMOJIS[Math.floor(Math.random() * FRUIT_EMOJIS.length)];
+      const padding = 100;
+      const cw = canvas.width || 960;
+      let x = Math.random() * Math.max(120, cw - padding * 2) + padding;
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const tooClose = fruits.some(f => !f.sliced && Math.abs(f.x - x) < 120 && f.y < (canvas.height || 540) * 0.4);
+        if (!tooClose) break;
+        x = Math.random() * Math.max(120, cw - padding * 2) + padding;
+      }
+
+      const vy = Math.random() * (cfg.maxVy - cfg.minVy) + cfg.minVy;
+      const vx = (Math.random() - 0.5) * 0.8;
+
+      fruits.push({
+        x, y: -48, vx, vy, gravity: 0.015, radius: 46,
+        emoji, text: chosenOpt.text, isCorrect: Boolean(chosenOpt.isCorrect),
+        sliced: false, sliceAngle: (Math.random() - 0.5) * 0.6, splitOffset: 0, alpha: 1
+      });
+    }
+
+    function checkLineCircleCollision(p1, p2, cX, cY, radius) {
+      if (!p1 || !p2) return false;
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      const lenSq = dx * dx + dy * dy;
+      if (lenSq === 0) return ((cX - p1.x) ** 2 + (cY - p1.y) ** 2) <= radius * radius;
+      const t = Math.max(0, Math.min(1, ((cX - p1.x) * dx + (cY - p1.y) * dy) / lenSq));
+      const projX = p1.x + t * dx;
+      const projY = p1.y + t * dy;
+      return ((cX - projX) ** 2 + (cY - projY) ** 2) <= radius * radius;
+    }
+
+    function spawnSlashEffect(x, y, angle, side = 'right', scale = 1.0) {
+      slashEffects.push({ x, y, angle, side, scale, frame: 0, maxFrames: 8, speed: 0.52 });
+    }
+
+    function updateAndDrawSlashEffects(ctx) {
+      if (!isSlashSheetLoaded || slashEffects.length === 0) return;
+      const cellW = slashSheetImg.width / 4;
+      const cellH = slashSheetImg.height / 2;
+
+      for (let i = slashEffects.length - 1; i >= 0; i--) {
+        const fx = slashEffects[i];
+        const frameIdx = Math.floor(fx.frame);
+        if (frameIdx >= fx.maxFrames) { slashEffects.splice(i, 1); continue; }
+        const col = frameIdx % 4;
+        const row = Math.floor(frameIdx / 4);
+        const sheet = (fx.side === 'left' && pinkSlashSheetCanvas) ? pinkSlashSheetCanvas : slashSheetImg;
+        const drawSize = 185 * fx.scale;
+
+        ctx.save();
+        ctx.translate(fx.x, fx.y);
+        ctx.rotate(fx.angle);
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.drawImage(sheet, col * cellW, row * cellH, cellW, cellH, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+        ctx.restore();
+        fx.frame += fx.speed;
+      }
+    }
+
+    function sliceFruit(f, slashAngle = 0, side = 'right') {
+      if (f.sliced || isGameOver) return;
+      f.sliced = true;
+      f.sliceAngle = slashAngle;
+      Sound.slice();
+      createSplatter(f.x, f.y, f.emoji);
+      spawnSlashEffect(f.x, f.y, slashAngle, side, 1.18);
+
+      if (f.isCorrect) {
+        Sound.correct();
+        score += 100;
+        document.getElementById('score-val').innerText = score;
+        popups.push({ x: f.x, y: f.y - 20, text: '+100 ' + T('game.correct'), color: '#10b981', alpha: 1, vy: -1.6 });
+        setTimeout(() => { if (!isGameOver) loadQuestion(currentQIndex + 1); }, 650);
+      } else {
+        Sound.wrong();
+        popups.push({ x: f.x, y: f.y - 20, text: T('game.wrong'), color: '#ef4444', alpha: 1, vy: -1.6 });
+        if (maxLives > 0) {
+          lives--;
+          updateHearts();
+          if (lives <= 0) endGame();
+        }
+      }
+    }
+
+    function createSplatter(x, y, emoji) {
+      const colors = { '🍉': '#ef4444', '🍊': '#f97316', '🍎': '#dc2626', '🍌': '#eab308', '🍓': '#f43f5e', '🍍': '#facc15', '🥥': '#ffffff' };
+      const col = colors[emoji] || '#38bdf8';
+      for (let i = 0; i < 14; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const spd = Math.random() * 6 + 2;
+        particles.push({ x, y, vx: Math.cos(angle) * spd, vy: Math.sin(angle) * spd, radius: Math.random() * 4 + 2, color: col, alpha: 1, gravity: 0.2 });
+      }
+    }
+
+    function gameLoop() {
+      resizeCanvas();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (checkSkeleton.checked && latestLandmarks) {
+        drawTopHalfSkeleton(ctx, latestLandmarks);
+      }
+
+      for (let i = fruits.length - 1; i >= 0; i--) {
+        const f = fruits[i];
+        f.x += f.vx;
+        f.y += f.vy;
+        f.vy += f.gravity;
+
+        if (f.sliced) {
+          f.splitOffset += 4;
+          f.alpha -= 0.025;
+          if (f.alpha <= 0) { fruits.splice(i, 1); continue; }
+        } else if (f.y > canvas.height + 80) {
+          fruits.splice(i, 1);
+          continue;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, f.alpha);
+        if (!f.sliced) {
+          ctx.font = '54px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.shadowColor = 'rgba(0,0,0,0.4)';
+          ctx.shadowBlur = 10;
+          ctx.fillText(f.emoji, f.x, f.y);
+
+          ctx.font = 'bold 15px Plus Jakarta Sans, sans-serif';
+          const textWidth = ctx.measureText(f.text).width || 80;
+          const badgeW = Math.max(100, textWidth + 28);
+          const badgeH = 34;
+          const badgeY = f.y + 38;
+
+          ctx.shadowColor = 'rgba(24,24,27,0.12)';
+          ctx.shadowBlur = 8;
+          ctx.fillStyle = '#ffffff';
+          ctx.strokeStyle = '#18181b';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(f.x - badgeW / 2, badgeY, badgeW, badgeH, 8);
+          else ctx.rect(f.x - badgeW / 2, badgeY, badgeW, badgeH);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = '#18181b';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(f.text, f.x, badgeY + badgeH / 2);
+        } else {
+          ctx.save();
+          ctx.translate(f.x, f.y);
+          ctx.rotate(f.sliceAngle);
+          ctx.font = '48px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(f.emoji, -f.splitOffset, -f.splitOffset * 0.15);
+          ctx.fillText(f.emoji, f.splitOffset, f.splitOffset * 0.15);
+          ctx.restore();
+        }
+        ctx.restore();
+      }
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx; p.y += p.vy; p.vy += p.gravity; p.alpha -= 0.03;
+        if (p.alpha <= 0) { particles.splice(i, 1); continue; }
+        ctx.save(); ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      }
+
+      for (let i = popups.length - 1; i >= 0; i--) {
+        const p = popups[i];
+        p.y += p.vy; p.alpha -= 0.022;
+        if (p.alpha <= 0) { popups.splice(i, 1); continue; }
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.alpha);
+        ctx.font = 'bold 22px Outfit, sans-serif';
+        ctx.fillStyle = p.color;
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.6)';
+        ctx.shadowBlur = 8;
+        ctx.fillText(p.text, p.x, p.y);
+        ctx.restore();
+      }
+
+      updateAndDrawSlashEffects(ctx);
+      drawBladeTrail(ctx, rightBladeTrail, '#06b6d4');
+      drawBladeTrail(ctx, leftBladeTrail, '#ec4899');
+      drawKnifeSprite(ctx, rightKnife, 'right', '#06b6d4');
+      drawKnifeSprite(ctx, leftKnife, 'left', '#ec4899');
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    function getKnifeDimensions() {
+      const scale = Math.max(0.72, Math.min(1.18, canvas.width / 1000));
+      const w = 215 * scale;
+      const h = 38 * scale;
+      return { w, h, tipDist: w * (1 - KNIFE_PIVOT_X), scale };
+    }
+
+    function drawKnifeSprite(ctx, knife, side, glowColor) {
+      if (!knife.active) return;
+      const { w, h, tipDist, scale } = getKnifeDimensions();
+      const gripPxX = -w * KNIFE_PIVOT_X;
+      const gripPxY = -h * KNIFE_PIVOT_Y;
+      const isSwingingFast = knife.speed >= 5.5;
+
+      ctx.save();
+      ctx.translate(knife.gripX, knife.gripY);
+      ctx.rotate(knife.angle);
+      if (side === 'left') ctx.scale(1, -1);
+      ctx.shadowColor = isSwingingFast ? '#ffffff' : glowColor;
+      ctx.shadowBlur = isSwingingFast ? 20 : 10;
+
+      if (isKnifeLoaded) {
+        ctx.drawImage(knifeImg, gripPxX, gripPxY, w, h);
+      } else {
+        ctx.fillStyle = '#e2e8f0';
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, -6 * scale); ctx.lineTo(tipDist, 0); ctx.lineTo(0, 8 * scale);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawBladeTrail(ctx, trail, color) {
+      for (let i = trail.length - 1; i >= 0; i--) {
+        trail[i].life -= 0.085;
+        if (trail[i].life <= 0) trail.splice(i, 1);
+      }
+      if (trail.length < 2) return;
+
+      ctx.save();
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      for (let i = 1; i < trail.length; i++) {
+        const p1 = trail[i - 1], p2 = trail[i];
+        const ratio = (i / trail.length) * Math.max(0, p2.life);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = ratio * 12 + 2;
+        ctx.shadowColor = color;
+        ctx.shadowBlur = ratio * 18;
+        ctx.beginPath();
+        ctx.moveTo(p1.tipX, p1.tipY);
+        ctx.lineTo(p2.tipX, p2.tipY);
+        ctx.stroke();
+
+        ctx.strokeStyle = `rgba(255, 255, 255, ${Math.min(1, ratio * 1.15).toFixed(3)})`;
+        ctx.lineWidth = ratio * 5 + 1;
+        ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.moveTo(p1.tipX, p1.tipY);
+        ctx.lineTo(p2.tipX, p2.tipY);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function videoNormToScreen(normX, normY) {
+      const cw = canvas.width || 1280;
+      const ch = canvas.height || 720;
+      const vw = videoElement.videoWidth || 0;
+      const vh = videoElement.videoHeight || 0;
+      if (vw > 0 && vh > 0) {
+        const scale = Math.max(cw / vw, ch / vh);
+        const scaledW = vw * scale;
+        const scaledH = vh * scale;
+        const offsetX = (cw - scaledW) / 2;
+        const offsetY = (ch - scaledH) / 2;
+        return { x: offsetX + (1 - normX) * scaledW, y: offsetY + normY * scaledH };
+      }
+      return { x: (1 - normX) * cw, y: normY * ch };
+    }
+
+    function drawTopHalfSkeleton(ctx, lm) {
+      const toScreen = (p) => videoNormToScreen(p.x, p.y);
+      const upperConnections = [[11, 12], [11, 13], [13, 15], [15, 19], [12, 14], [14, 16], [16, 20], [11, 23], [12, 24], [23, 24]];
+
+      ctx.save();
+      ctx.lineCap = 'round';
+      upperConnections.forEach(([i, j]) => {
+        const p1 = lm[i], p2 = lm[j];
+        if (!p1 || !p2 || p1.visibility < 0.3 || p2.visibility < 0.3) return;
+        const s1 = toScreen(p1), s2 = toScreen(p2);
+        const isArm = (i >= 11 && i <= 20) && (j >= 11 && j <= 20);
+        ctx.strokeStyle = isArm ? '#38bdf8' : '#cbd5e1';
+        ctx.lineWidth = 3.5;
+        ctx.beginPath(); ctx.moveTo(s1.x, s1.y); ctx.lineTo(s2.x, s2.y); ctx.stroke();
+      });
+      [0, 11, 12, 13, 14, 15, 16, 19, 20, 23, 24].forEach(idx => {
+        const p = lm[idx];
+        if (!p || p.visibility < 0.35) return;
+        const s = toScreen(p);
+        ctx.beginPath(); ctx.arc(s.x, s.y, (idx === 19 || idx === 20) ? 9 : 5, 0, Math.PI * 2);
+        ctx.fillStyle = (idx === 19 || idx === 20) ? '#facc15' : '#ffffff';
+        ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#0f172a'; ctx.stroke();
+      });
+      ctx.restore();
+    }
+
+    function lerpAngle(current, target, t) {
+      let diff = target - current;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      return current + diff * t;
+    }
+
+    function evaluateHandKnife(lm, side, knife, trail, isEnabled, pointPreference, toScreen, minSlashSpeed) {
+      if (!isEnabled) {
+        knife.active = false; knife.lastGripX = null; knife.lastTipX = null; knife.speed = 0; return null;
+      }
+      const pElbow = lm[side === 'right' ? 14 : 13];
+      const pWrist = lm[side === 'right' ? 16 : 15];
+      const pPinky = lm[side === 'right' ? 18 : 17];
+      const pIndex = lm[side === 'right' ? 20 : 19];
+      const pThumb = lm[side === 'right' ? 22 : 21];
+      const primaryLm = pointPreference === 'finger' ? pIndex : pWrist;
+
+      if (!primaryLm || primaryLm.visibility < 0.35) {
+        knife.lostFrames = (knife.lostFrames || 0) + 1;
+        if (knife.lostFrames > 6) { knife.active = false; knife.lastGripX = null; knife.lastTipX = null; knife.speed = 0; }
+        return null;
+      }
+      knife.lostFrames = 0;
+
+      const sElbow = (pElbow && pElbow.visibility > 0.25) ? toScreen(pElbow) : null;
+      const sWrist = (pWrist && pWrist.visibility > 0.30) ? toScreen(pWrist) : null;
+      const sIndex = (pIndex && pIndex.visibility > 0.30) ? toScreen(pIndex) : null;
+      const sPinky = (pPinky && pPinky.visibility > 0.30) ? toScreen(pPinky) : null;
+      const sThumb = (pThumb && pThumb.visibility > 0.30) ? toScreen(pThumb) : null;
+
+      let targetGrip = toScreen(primaryLm);
+      if (pointPreference === 'finger' && sWrist && sIndex) {
+        targetGrip = { x: sWrist.x + (sIndex.x - sWrist.x) * 0.72, y: sWrist.y + (sIndex.y - sWrist.y) * 0.72 };
+      }
+
+      if (!knife.active) {
+        knife.gripX = targetGrip.x; knife.gripY = targetGrip.y; knife.active = true;
+      } else {
+        const jumpDist = Math.hypot(targetGrip.x - knife.gripX, targetGrip.y - knife.gripY);
+        const posLerp = jumpDist > 16 ? 0.76 : 0.48;
+        knife.gripX += (targetGrip.x - knife.gripX) * posLerp;
+        knife.gripY += (targetGrip.y - knife.gripY) * posLerp;
+      }
+
+      let dirX = 0, dirY = 0, hasDir = false;
+      if (sWrist) {
+        const fingerNodes = [sIndex, sPinky, sThumb].filter(Boolean);
+        if (fingerNodes.length > 0) {
+          const fX = fingerNodes.reduce((a, p) => a + p.x, 0) / fingerNodes.length;
+          const fY = fingerNodes.reduce((a, p) => a + p.y, 0) / fingerNodes.length;
+          const hLen = Math.hypot(fX - sWrist.x, fY - sWrist.y);
+          if (hLen > 10) { dirX += ((fX - sWrist.x) / hLen) * 0.68; dirY += ((fY - sWrist.y) / hLen) * 0.68; hasDir = true; }
+        }
+      }
+      if (sElbow && sWrist) {
+        const aLen = Math.hypot(sWrist.x - sElbow.x, sWrist.y - sElbow.y);
+        if (aLen > 20) { dirX += ((sWrist.x - sElbow.x) / aLen) * 0.32; dirY += ((sWrist.y - sElbow.y) / aLen) * 0.32; hasDir = true; }
+      }
+
+      let handSpeed = 0;
+      if (knife.lastGripX !== null) {
+        const moveDx = knife.gripX - knife.lastGripX;
+        const moveDy = knife.gripY - knife.lastGripY;
+        handSpeed = Math.hypot(moveDx, moveDy);
+        if (handSpeed >= 10) {
+          const velWeight = Math.min(0.32, (handSpeed - 10) * 0.018);
+          dirX += (moveDx / handSpeed) * velWeight;
+          dirY += (moveDy / handSpeed) * velWeight;
+          hasDir = true;
+        }
+      }
+
+      if (hasDir && Math.hypot(dirX, dirY) > 0.05) {
+        knife.angle = lerpAngle(knife.angle, Math.atan2(dirY, dirX), 0.38);
+      }
+
+      const { tipDist } = getKnifeDimensions();
+      knife.tipX = knife.gripX + Math.cos(knife.angle) * tipDist;
+      knife.tipY = knife.gripY + Math.sin(knife.angle) * tipDist;
+      knife.speed = handSpeed;
+
+      let tipSpeed = knife.lastTipX !== null ? Math.hypot(knife.tipX - knife.lastTipX, knife.tipY - knife.lastTipY) : 0;
+
+      if (knife.lastGripX !== null) {
+        if (handSpeed >= 3.0 || tipSpeed >= 4.5) {
+          trail.push({ gripX: knife.gripX, gripY: knife.gripY, tipX: knife.tipX, tipY: knife.tipY, angle: knife.angle, speed: Math.max(handSpeed, tipSpeed * 0.75), life: 1.0 });
+          if (trail.length > 14) trail.shift();
+        }
+        if (handSpeed >= minSlashSpeed || (tipSpeed >= minSlashSpeed * 1.65 && handSpeed >= 2.8)) {
+          checkFruitSlices({ x: knife.lastGripX, y: knife.lastGripY }, { x: knife.gripX, y: knife.gripY }, side);
+          if (knife.lastTipX !== null) checkFruitSlices({ x: knife.lastTipX, y: knife.lastTipY }, { x: knife.tipX, y: knife.tipY }, side);
+          checkFruitSlices({ x: knife.gripX, y: knife.gripY }, { x: knife.tipX, y: knife.tipY }, side);
+
+          const now = performance.now();
+          if (Math.max(handSpeed, tipSpeed * 0.7) >= minSlashSpeed * 1.55 && now - knife.lastSpriteSpawnTime > 120) {
+            const fxX = knife.gripX + (knife.tipX - knife.gripX) * 0.58;
+            const fxY = knife.gripY + (knife.tipY - knife.gripY) * 0.58;
+            const swingDir = tipSpeed > 1 && knife.lastTipX !== null ? Math.atan2(knife.tipY - knife.lastTipY, knife.tipX - knife.lastTipX) : knife.angle;
+            spawnSlashEffect(fxX, fxY, swingDir, side, 0.92);
+            knife.lastSpriteSpawnTime = now;
+          }
+        }
+      }
+
+      knife.lastGripX = knife.gripX; knife.lastGripY = knife.gripY;
+      knife.lastTipX = knife.tipX; knife.lastTipY = knife.tipY;
+      return { x: knife.gripX, y: knife.gripY, speed: handSpeed };
+    }
+
+    function onPoseResults(results) {
+      frameCount++;
+      const now = performance.now();
+      if (now - lastFpsTime >= 1000) { fpsText.textContent = `${frameCount} FPS`; frameCount = 0; lastFpsTime = now; }
+
+      if (!results.poseLandmarks) {
+        latestLandmarks = null; rightKnife.active = false; leftKnife.active = false;
+        valSlashState.textContent = T('aiSlicer.stateSearching'); valSlashState.style.color = '#64748b';
+        return;
+      }
+
+      latestLandmarks = results.poseLandmarks;
+      const toScreen = (p) => videoNormToScreen(p.x, p.y);
+      const MIN_SLASH_SPEED = 5.5;
+
+      const rightInfo = evaluateHandKnife(latestLandmarks, 'right', rightKnife, rightBladeTrail, selectHand.value === 'auto' || selectHand.value === 'right', selectPoint.value, toScreen, MIN_SLASH_SPEED);
+      const leftInfo  = evaluateHandKnife(latestLandmarks, 'left', leftKnife, leftBladeTrail, selectHand.value === 'auto' || selectHand.value === 'left', selectPoint.value, toScreen, MIN_SLASH_SPEED);
+
+      const activeSpeed = Math.max(rightInfo ? rightInfo.speed : 0, leftInfo ? leftInfo.speed : 0);
+      valBladeSpeed.textContent = `${Math.round(activeSpeed)} px/f`;
+
+      if (rightInfo && (!leftInfo || rightInfo.speed >= leftInfo.speed)) {
+        valActiveHand.textContent = T('aiSlicer.handRightVal');
+        valBladePos.textContent = `${Math.round(rightInfo.x)}, ${Math.round(rightInfo.y)}`;
+      } else if (leftInfo) {
+        valActiveHand.textContent = T('aiSlicer.handLeftVal');
+        valBladePos.textContent = `${Math.round(leftInfo.x)}, ${Math.round(leftInfo.y)}`;
+      }
+
+      if (activeSpeed >= MIN_SLASH_SPEED) {
+        valSlashState.textContent = T('aiSlicer.stateReady'); valSlashState.style.color = '#0284c7';
+      } else {
+        valSlashState.textContent = T('aiSlicer.stateRelaxed'); valSlashState.style.color = '#64748b';
+      }
+    }
+
+    function checkFruitSlices(p1, p2, side = 'right') {
+      if (!p1 || !p2) return;
+      const slashAngle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+      for (let i = 0; i < fruits.length; i++) {
+        const f = fruits[i];
+        if (!f.sliced && checkLineCircleCollision(p1, p2, f.x, f.y, f.radius + 14)) {
+          sliceFruit(f, slashAngle, side);
+        }
+      }
+    }
+
+    function initMediaPipe() {
+      if (typeof Pose === 'undefined') {
+        valAiStatus.textContent = T('aiSlicer.aiLoading');
+        valAiStatus.style.color = '#d97706';
+        return;
+      }
+      valAiStatus.textContent = T('aiSlicer.aiLoading');
+      valAiStatus.style.color = '#d97706';
+      try {
+        poseTracker = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
+        poseTracker.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+        poseTracker.onResults(onPoseResults);
+        valAiStatus.textContent = T('aiSlicer.aiActive');
+        valAiStatus.style.color = '#059669';
+      } catch (err) {
+        valAiStatus.textContent = T('aiSlicer.aiFail');
+        valAiStatus.style.color = '#ef4444';
+      }
+    }
+
+    async function detectionLoop() {
+      if (!isCameraRunning) return;
+      if (!poseTracker && typeof Pose !== 'undefined') initMediaPipe();
+      if (videoElement.readyState >= 2 && poseTracker && !isDetecting) {
+        isDetecting = true;
+        try { await poseTracker.send({ image: videoElement }); } catch (e) {}
+        isDetecting = false;
+      }
+      requestAnimationFrame(detectionLoop);
+    }
+
+    function emitGameState() {
+      try {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({
+            type: 'GAME_STATE',
+            gameId: 'ai-slicer',
+            cameraActive: Boolean(isCameraRunning),
+            mouseMode: Boolean(isMouseMode),
+            speed: toExternalSpeedValue(currentSpeed),
+            hand: selectHand ? selectHand.value : 'auto',
+            bladePoint: selectPoint ? selectPoint.value : 'finger',
+            skeleton: checkSkeleton ? Boolean(checkSkeleton.checked) : true
+          }, '*');
+        }
+      } catch (e) {}
+    }
+
+    function showCamError(msg) {
+      const note = document.getElementById('camErrorNote');
+      if (note) {
+        note.textContent = msg;
+        note.style.display = msg ? 'block' : 'none';
+      }
+    }
+
+    async function startCamera() {
+      showCamError('');
+      statusBadge.className = 'status-badge active';
+      statusText.textContent = T('aiSlicer.statusOpening');
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' }, audio: false });
+        videoElement.srcObject = mediaStream;
+        await videoElement.play();
+        videoElement.style.display = 'block';
+        placeholder.style.display = 'none';
+        isCameraRunning = true;
+        isMouseMode = false;
+
+        btnToggleCamera.innerHTML = `<span class="ui-sprite ui-sm ui-camera-off"></span><span>${T('aiSlicer.stopCam')}</span>`;
+        btnToggleCamera.className = 'btn btn-stop';
+        statusBadge.className = 'status-badge active';
+        statusText.textContent = T('aiSlicer.statusActive');
+
+        if (!poseTracker) initMediaPipe();
+        requestAnimationFrame(detectionLoop);
+        if (!isGameOver && fruits.length === 0) setTimeout(spawnFruit, 250);
+        emitGameState();
+      } catch (err) {
+        isCameraRunning = false;
+        statusBadge.className = 'status-badge';
+        statusText.textContent = T('aiSlicer.statusDenied');
+        showCamError(T('aiSlicer.camAlert'));
+        emitGameState();
+      }
+    }
+
+    function stopCamera() {
+      if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+      isCameraRunning = false;
+      videoElement.style.display = 'none';
+      if (!isMouseMode) placeholder.style.display = 'flex';
+      latestLandmarks = null;
+      rightKnife.active = false; leftKnife.active = false;
+      btnToggleCamera.innerHTML = `<span class="ui-sprite ui-sm ui-camera"></span><span>${T('aiSlicer.startCam')}</span>`;
+      btnToggleCamera.className = 'btn btn-primary';
+      statusBadge.className = 'status-badge';
+      statusText.textContent = T('aiSlicer.statusReady');
+      fpsText.textContent = '0 FPS';
+      emitGameState();
+    }
+
+    function enableMouseMode() {
+      if (isCameraRunning) stopCamera();
+      showCamError('');
+      isMouseMode = true;
+      placeholder.style.display = 'none';
+      statusBadge.className = 'status-badge active';
+      statusText.textContent = T('aiSlicer.statusMouse');
+      valAiStatus.textContent = T('aiSlicer.statusMouse');
+      valAiStatus.style.color = '#0284c7';
+      if (!isGameOver && fruits.length === 0) setTimeout(spawnFruit, 250);
+      emitGameState();
+    }
+
+    btnToggleCamera.addEventListener('click', () => isCameraRunning ? stopCamera() : startCamera());
+    btnHeroStart.addEventListener('click', startCamera);
+    btnMouseMode.addEventListener('click', enableMouseMode);
+    if (selectHand) selectHand.addEventListener('change', emitGameState);
+    if (selectPoint) selectPoint.addEventListener('change', emitGameState);
+    if (checkSkeleton) checkSkeleton.addEventListener('change', emitGameState);
+
+    let isMouseDown = false;
+    let lastMousePos = null;
+
+    canvas.addEventListener('pointerdown', (e) => {
+      isMouseDown = true;
+      const rect = canvas.getBoundingClientRect();
+      lastMousePos = { x: (e.clientX - rect.left) * (canvas.width / Math.max(1, rect.width)), y: (e.clientY - rect.top) * (canvas.height / Math.max(1, rect.height)) };
+      rightKnife.gripX = lastMousePos.x; rightKnife.gripY = lastMousePos.y;
+      rightKnife.active = true; rightKnife.speed = 10;
+    });
+
+    window.addEventListener('pointerup', () => {
+      isMouseDown = false; lastMousePos = null;
+      if (!isCameraRunning) rightKnife.active = false;
+    });
+
+    canvas.addEventListener('pointermove', (e) => {
+      if (!isMouseDown) return;
+      const rect = canvas.getBoundingClientRect();
+      const currentMouse = { x: (e.clientX - rect.left) * (canvas.width / Math.max(1, rect.width)), y: (e.clientY - rect.top) * (canvas.height / Math.max(1, rect.height)) };
+      if (lastMousePos) {
+        const dx = currentMouse.x - lastMousePos.x;
+        const dy = currentMouse.y - lastMousePos.y;
+        const spd = Math.hypot(dx, dy);
+        if (spd > 2) rightKnife.angle = lerpAngle(rightKnife.angle, Math.atan2(dy, dx), 0.45);
+        const { tipDist } = getKnifeDimensions();
+        rightKnife.gripX = currentMouse.x; rightKnife.gripY = currentMouse.y;
+        rightKnife.tipX = currentMouse.x + Math.cos(rightKnife.angle) * tipDist;
+        rightKnife.tipY = currentMouse.y + Math.sin(rightKnife.angle) * tipDist;
+        rightKnife.speed = spd; rightKnife.active = true;
+        valBladeSpeed.textContent = `${Math.round(spd)} px/f`;
+        valBladePos.textContent = `${Math.round(currentMouse.x)}, ${Math.round(currentMouse.y)}`;
+        valSlashState.textContent = spd >= 4 ? T('aiSlicer.stateReady') : T('aiSlicer.stateRelaxed');
+
+        rightBladeTrail.push({ gripX: rightKnife.gripX, gripY: rightKnife.gripY, tipX: rightKnife.tipX, tipY: rightKnife.tipY, angle: rightKnife.angle, speed: spd, life: 1.0 });
+        if (rightBladeTrail.length > 14) rightBladeTrail.shift();
+        checkFruitSlices(lastMousePos, currentMouse, 'right');
+      }
+      lastMousePos = currentMouse;
+    });
+
+    function syncDynamicStatusLabels() {
+      statusText.textContent = isCameraRunning
+        ? T('aiSlicer.statusActive')
+        : (isMouseMode ? T('aiSlicer.statusMouse') : T('aiSlicer.statusReady'));
+      if (isMouseMode && !isCameraRunning) {
+        valAiStatus.textContent = T('aiSlicer.statusMouse');
+      }
+      if (!isCameraRunning && !isMouseMode) {
+        valSlashState.textContent = T('aiSlicer.stateWait');
+      }
+    }
+
+    if (window.LotusI18n) {
+      LotusI18n.onChange(() => {
+        updateSpeedLabel();
+        syncDynamicStatusLabels();
+        if (questions[currentQIndex]) {
+          document.getElementById('q-num').innerText = T('game.questionOf', { n: currentQIndex + 1, total: questions.length });
+        }
+        btnToggleCamera.innerHTML = isCameraRunning
+          ? `<span class="ui-sprite ui-sm ui-camera-off"></span><span>${T('aiSlicer.stopCam')}</span>`
+          : `<span class="ui-sprite ui-sm ui-camera"></span><span>${T('aiSlicer.startCam')}</span>`;
+      });
+    }
+    syncDynamicStatusLabels();
+
+    function syncFullscreenClass() {
+      const isFs = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+      document.body.classList.toggle('is-fullscreen', isFs);
+      resizeCanvas();
+    }
+    document.addEventListener('fullscreenchange', syncFullscreenClass);
+    document.addEventListener('webkitfullscreenchange', syncFullscreenClass);
+
+    window.addEventListener('message', (event) => {
+      const data = event.data;
+      if (!data || typeof data !== 'object') return;
+
+      if (data.type === 'GAME_CMD') {
+        const cmd = String(data.command || data.cmd || data.action || '').toUpperCase();
+        if (cmd === 'TOGGLE_CAMERA') {
+          if (isCameraRunning) stopCamera();
+          else startCamera();
+        } else if (cmd === 'MOUSE_MODE') {
+          enableMouseMode();
+        } else if (cmd === 'RESTART') {
+          initGame();
+        } else if (cmd === 'SET_SPEED') {
+          const val = data.value ?? data.speed ?? data.payload?.speed;
+          if (!setSpeed(val)) toggleSpeed();
+        }
+      } else if (data.type === 'GAME_SETTINGS') {
+        const p = data.payload || data;
+        if (p.hand && selectHand && ['auto', 'right', 'left'].includes(p.hand)) {
+          selectHand.value = p.hand;
+        }
+        if (p.bladePoint && selectPoint && ['finger', 'palm'].includes(p.bladePoint)) {
+          selectPoint.value = p.bladePoint;
+        }
+        if (p.skeleton !== undefined && checkSkeleton) {
+          checkSkeleton.checked = Boolean(p.skeleton);
+        }
+        if (p.speed !== undefined) {
+          setSpeed(p.speed, false);
+        }
+        emitGameState();
+      } else if (data.type === 'UPDATE_SETTINGS') {
+        if (data.theme && window.LotusThemes) {
+          window.LotusThemes.apply(data.theme, true);
+        }
+        const incomingAct = data.activity
+          ? (window.GameBridge && GameBridge.normalizeActivity ? GameBridge.normalizeActivity(data.activity) : data.activity)
+          : null;
+        if (incomingAct) {
+          if (data.rules) incomingAct.rules = { ...(incomingAct.rules || {}), ...data.rules };
+          applyActivityToGame(incomingAct);
+        } else if (data.rules || data.settings) {
+          const baseAct = (window.GameBridge && GameBridge.activity) || currentActivity || {};
+          const mergedRules = { ...(baseAct.rules || baseAct.settings || {}), ...(data.rules || data.settings) };
+          applyActivityToGame({ ...baseAct, rules: mergedRules, settings: mergedRules });
+        }
+        if (data.restart !== false) {
+          initGame();
+        } else {
+          lives = maxLives > 0 ? Math.min(lives > 0 ? lives : maxLives, maxLives) : 0;
+          updateHearts();
+          timeRemaining = timeMode === 'stopwatch' ? totalTimeElapsed : timerSeconds;
+          startTimerLoop();
+        }
+        emitGameState();
+      } else if (data.type === 'INIT_ACTIVITY' && data.activity) {
+        const norm = (window.GameBridge && GameBridge.normalizeActivity) ? GameBridge.normalizeActivity(data.activity) : data.activity;
+        const sig = computeActivitySig(norm);
+        if (sig !== lastActivitySig) {
+          applyActivityToGame(norm);
+          initGame();
+        } else {
+          emitGameState();
+        }
+      }
+    });
+
+    if (window.GameBridge) {
+      if (typeof GameBridge.onSettings === 'function') {
+        GameBridge.onSettings(() => {});
+      }
+      GameBridge.onReady((act) => {
+        applyActivityToGame(act);
+        initGame();
+      });
+    } else {
+      initGame();
+    }
+    emitGameState();
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>

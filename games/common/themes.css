@@ -1,0 +1,1414 @@
+/**
+ * themes.css: Tema Terpadu LotusWall Games (Wordwall Theme Engine)
+ * Menggunakan 1 Master Spritesheet (1024x1024 px, 64 Sel) secara visual menyeluruh.
+ *
+ * ARSITEKTUR KOMPOSISI PROPORSIONAL & BEBAS DISTORSI (ZERO DISTORTION & ZERO TEXT COLLISION):
+ * - Setiap sprite ilustrasi (Grimoire, Scroll, Perisai Naga, Buku Sihir, Kuali, Kotak Relik)
+ *   dijaga 100% pada aspek rasio proporsional 1:1 (preserveAspectRatio="xMidYMid meet" / contain).
+ * - Container UI (Kartu Soal, Pilihan Jawaban, Slot Menjodohkan, Kotak Modal) diberi ruang
+ *   baca bersih beresolusi tinggi dengan kontras tajam (kombinasi Royal Vellum & Emas Antik).
+ * - Sprite mahkota/crest anggun bertengger di atas atau di samping container (crest, badge, shield)
+ *   sehingga teks pertanyaan & jawaban TIDAK PERNAH bertabrakan dengan ornamen lukisan.
+ */
+
+@import url('spritesheet.css');
+
+/* ==========================================================================
+   1. UNIVERSAL CSS VARIABLES & BODY (TEMA PUTIH BERSIH)
+   ========================================================================== */
+:root,
+body,
+body.theme-light,
+body.theme-white {
+  --spritesheet-url: url('spritesheet.svg');
+  --theme-bg: #f7f5f0;
+  --theme-bg-gradient: none;
+  --theme-panel-bg: #ffffff;
+  --theme-panel-border: #e5dfd3;
+  --theme-accent: #1d4ed8;
+  --theme-accent-alt: #d97706;
+  --theme-text-main: #18181b;
+  --theme-text-muted: #57534e;
+  --theme-card-bg: #ffffff;
+  --theme-card-border: #d6cfc2;
+  --theme-card-hover-border: #a89f91;
+  --theme-btn-bg: #1d4ed8;
+  --theme-btn-hover: #1e40af;
+  --theme-badge-bg: #fcfbf8;
+  --theme-badge-text: #18181b;
+  --theme-glow: 0 2px 10px rgba(24, 24, 27, 0.06);
+  --theme-font: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+  background: #f7f5f0 !important;
+  color: #18181b !important;
+  font-family: var(--theme-font);
+}
+
+/* ==========================================================================
+   1B. TEMA MAGICAL WORLD (UNGU TERANG & SERBUK AJAIB)
+   ========================================================================== */
+body.theme-magical {
+  --spritesheet-url: url('spritesheet-magical.svg') !important;
+  --theme-bg: #f3e8ff !important;
+  --theme-bg-gradient: radial-gradient(circle at 50% 15%, #faf5ff 0%, #f3e8ff 52%, #e9d5ff 100%) !important;
+  --theme-panel-bg: #ffffff !important;
+  --theme-panel-border: #d8b4fe !important;
+  --theme-accent: #9333ea !important;
+  --theme-accent-alt: #c084fc !important;
+  --theme-text-main: #2e1065 !important;
+  --theme-text-muted: #6b21a8 !important;
+  --theme-card-bg: #ffffff !important;
+  --theme-card-border: #a855f7 !important;
+  --theme-card-hover-border: #9333ea !important;
+  --theme-btn-bg: linear-gradient(135deg, #9333ea, #7e22ce) !important;
+  --theme-btn-hover: linear-gradient(135deg, #7e22ce, #6b21a8) !important;
+  --theme-badge-bg: #fdf4ff !important;
+  --theme-badge-text: #3b0764 !important;
+  --theme-glow: 0 4px 20px rgba(192, 132, 252, 0.35) !important;
+  --theme-font: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+  background: #f3e8ff var(--theme-bg-gradient) fixed !important;
+  color: #2e1065 !important;
+  font-family: var(--theme-font);
+}
+
+/* Sembunyikan ikon HUD tema putih saat Magical sprite ::before aktif */
+body.theme-magical .hud-icon-white {
+  display: none !important;
+}
+
+/* Header & Navigasi Atas */
+body.theme-magical .top-bar,
+body.theme-magical header.game-header,
+body.theme-magical .header-bar {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+body.theme-magical .top-bar *,
+body.theme-magical header.game-header *,
+body.theme-magical .header-bar * {
+  color: #3b0764 !important;
+}
+
+/* ==========================================================================
+   2. SPRITESHEET UI INTEGRATION: 100% PROPORSIONAL & BEBAS DISTORSI
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   2A. TOP BAR & UNIVERSAL STAT BADGES (Dragon Bone Rod Pill + 1:1 Crest)
+   -------------------------------------------------------------------------- */
+body.theme-magical .stat-badge,
+body.theme-magical .timer-badge,
+body.theme-magical .badge,
+body.theme-magical .stat-item,
+body.theme-magical #timer-badge,
+body.theme-magical #score-badge,
+body.theme-magical #lives-badge {
+  position: relative !important;
+  background: linear-gradient(135deg, #ffffff 0%, #fdf4ff 100%) !important;
+  border: 2px solid #a855f7 !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 0 0 2px #facc15, 0 4px 12px rgba(126, 34, 206, 0.2) !important;
+  color: #3b0764 !important;
+  font-weight: 800 !important;
+  font-size: 15px !important;
+  padding: 5px 16px 5px 38px !important;
+  min-width: 110px !important;
+  height: 40px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
+
+/* 1:1 Undistorted Medallion Icon on Stat Badges */
+body.theme-magical .stat-badge::before,
+body.theme-magical .timer-badge::before,
+body.theme-magical .badge::before,
+body.theme-magical .stat-item::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 8px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 24px !important;
+  height: 24px !important;
+  background: url('spritesheet-magical.svg#wheel-center') no-repeat center / contain !important;
+  filter: drop-shadow(0 1px 3px rgba(126, 34, 206, 0.35)) !important;
+  pointer-events: none !important;
+}
+
+body.theme-magical #timer-badge::before,
+body.theme-magical .timer-badge::before {
+  background-image: url('spritesheet-magical.svg#clock-timer') !important;
+}
+
+body.theme-magical #score-badge::before {
+  background-image: url('spritesheet-magical.svg#trophy-cup') !important;
+}
+
+body.theme-magical .stat-badge *,
+body.theme-magical .timer-badge *,
+body.theme-magical .badge *,
+body.theme-magical .stat-item * {
+  color: #3b0764 !important;
+  font-weight: 800 !important;
+}
+
+/* Nyawa / Hearts (1:1 Sacred Phoenix Ruby Heart Sprite) */
+body.theme-magical .hearts,
+body.theme-magical .hearts.stat-badge,
+body.theme-magical #lives-container,
+body.theme-magical #lives-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 5px 14px !important;
+  min-width: auto !important;
+}
+
+body.theme-magical .hearts::before,
+body.theme-magical .hearts.stat-badge::before,
+body.theme-magical #lives-container::before,
+body.theme-magical #lives-badge::before {
+  content: none !important;
+  display: none !important;
+}
+
+body.theme-magical .stat-badge.hearts .heart,
+body.theme-magical .hearts i,
+body.theme-magical .hearts .fa-heart,
+body.theme-magical .heart,
+body.theme-magical .life-icon {
+  background: url('spritesheet-magical.svg#heart-life') no-repeat center / contain !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  width: 32px !important;
+  height: 32px !important;
+  display: inline-block !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  color: transparent !important;
+}
+
+body.theme-magical .heart.lost,
+body.theme-magical .hearts i.lost,
+body.theme-magical .hearts i.far {
+  filter: grayscale(1) opacity(0.3) !important;
+}
+
+/* Power-up Badges: Elegant Alabaster & Amethyst Pills */
+body.theme-magical .powerup-tray {
+  background: transparent !important;
+  border: none !important;
+  display: flex !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  padding: 10px 16px !important;
+  flex-wrap: wrap !important;
+}
+
+body.theme-magical .powerup-btn {
+  width: auto !important;
+  min-height: 38px !important;
+  background: linear-gradient(135deg, #ffffff 0%, #fdf4ff 100%) !important;
+  border: 1.5px solid #c084fc !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 0 0 1.5px #facc15, 0 4px 10px rgba(126, 34, 206, 0.2) !important;
+  color: #3b0764 !important;
+  font-weight: 800 !important;
+  font-size: 13px !important;
+  padding: 4px 14px 4px 38px !important;
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  cursor: pointer !important;
+  transition: transform 0.15s ease !important;
+  box-sizing: border-box !important;
+}
+
+body.theme-magical .powerup-btn * {
+  color: #3b0764 !important;
+  font-weight: 800 !important;
+}
+
+body.theme-magical .powerup-btn::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 6px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 24px !important;
+  height: 24px !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: contain !important;
+  pointer-events: none !important;
+}
+
+body.theme-magical #pu-5050::before,
+body.theme-magical .powerup-btn[data-type="5050"]::before,
+body.theme-magical .powerup-btn:first-child::before {
+  background-image: url('spritesheet-magical.svg#powerup-5050') !important;
+}
+
+body.theme-magical #pu-freeze::before,
+body.theme-magical .powerup-btn[data-type="freeze"]::before {
+  background-image: url('spritesheet-magical.svg#powerup-freeze') !important;
+}
+
+body.theme-magical #pu-double::before {
+  background-image: url('spritesheet-magical.svg#star-score') !important;
+}
+
+body.theme-magical #pu-shield::before {
+  background-image: url('spritesheet-magical.svg#btn-true-box') !important;
+}
+
+body.theme-magical .powerup-btn:hover {
+  transform: translateY(-2px) scale(1.05) !important;
+}
+
+/* --------------------------------------------------------------------------
+   2B. SOAL KUIS & PROMPT CARDS (1:1 Open Grimoire Crest + Royal Vellum Card)
+   -------------------------------------------------------------------------- */
+body.theme-magical .question-card,
+body.theme-magical .q-box,
+body.theme-magical .question-box,
+body.theme-magical .prompt-box,
+body.theme-magical .instruction-card,
+body.theme-magical .clue-card,
+body.theme-magical .target-banner,
+body.theme-magical .question-banner,
+body.theme-magical .emerging-card {
+  position: relative !important;
+  background: linear-gradient(180deg, #ffffff 0%, #fdf4ff 60%, #f3e8ff 100%) !important;
+  border: 3px solid #7e22ce !important;
+  border-radius: 24px !important;
+  box-shadow: 0 0 0 3px #facc15, 0 16px 40px rgba(126, 34, 206, 0.22) !important;
+  padding: 44px 44px 28px 44px !important;
+  min-height: 140px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+  margin-top: 26px !important;
+}
+
+/* 1:1 Undistorted Grimoire Crest Floating at Top Center */
+body.theme-magical .question-card::before,
+body.theme-magical .q-box::before,
+body.theme-magical .question-box::before,
+body.theme-magical .prompt-box::before,
+body.theme-magical .instruction-card::before,
+body.theme-magical .clue-card::before,
+body.theme-magical .target-banner::before,
+body.theme-magical .question-banner::before,
+body.theme-magical .emerging-card::before {
+  content: '' !important;
+  position: absolute !important;
+  top: -44px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 86px !important;
+  height: 86px !important;
+  background: url('spritesheet-magical.svg#quiz-question-box') no-repeat center / contain !important;
+  filter: drop-shadow(0 6px 14px rgba(126, 34, 206, 0.45)) !important;
+  pointer-events: none !important;
+  z-index: 5 !important;
+}
+
+body.theme-magical .q-number,
+body.theme-magical .clue-round,
+body.theme-magical .q-num,
+body.theme-magical .banner-sub,
+body.theme-magical .statement-num {
+  color: #7e22ce !important;
+  font-weight: 800 !important;
+  font-size: 15px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 2px !important;
+  margin-bottom: 8px !important;
+}
+
+body.theme-magical .q-text,
+body.theme-magical .question-text,
+body.theme-magical .clue-text,
+body.theme-magical .banner-q,
+body.theme-magical .instruction-card p {
+  color: #2e1065 !important;
+  font-weight: 800 !important;
+  font-size: 23px !important;
+  line-height: 1.4 !important;
+  margin: 0 !important;
+}
+
+body.theme-magical .q-image,
+body.theme-magical .q-img {
+  max-width: 220px !important;
+  max-height: 160px !important;
+  border-radius: 14px !important;
+  border: 2.5px solid #7e22ce !important;
+  box-shadow: 0 0 0 2px #facc15, 0 8px 18px rgba(126, 34, 206, 0.25) !important;
+  object-fit: cover !important;
+  margin: 12px auto !important;
+}
+
+body.theme-magical .q-image[src=""],
+body.theme-magical .q-img[src=""] {
+  display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   2C. PILIHAN JAWABAN KUIS (1:1 Leather Spellbook Seal on Left + Royal Plaque)
+   -------------------------------------------------------------------------- */
+body.theme-magical .opt-btn,
+body.theme-magical .option-btn,
+body.theme-magical .choice-btn:not(.btn-true):not(.btn-false) {
+  position: relative !important;
+  background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%) !important;
+  border: 2.5px solid #d8b4fe !important;
+  border-left: 6px solid #7e22ce !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.15) !important;
+  padding: 14px 20px 14px 72px !important;
+  min-height: 68px !important;
+  display: flex !important;
+  align-items: center !important;
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+  transition: all 0.2s ease !important;
+  text-align: left !important;
+  color: #2e1065 !important;
+}
+
+/* 1:1 Undistorted Spellbook Seal on Left */
+body.theme-magical .opt-btn::before,
+body.theme-magical .option-btn::before,
+body.theme-magical .choice-btn:not(.btn-true):not(.btn-false)::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 48px !important;
+  height: 48px !important;
+  background: url('spritesheet-magical.svg#quiz-answer-box') no-repeat center / contain !important;
+  filter: drop-shadow(0 2px 6px rgba(126, 34, 206, 0.3)) !important;
+  transition: transform 0.2s ease, background-image 0.2s ease !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+}
+
+/* Option Key: Nested cleanly inside Spellbook Seal */
+body.theme-magical .opt-btn .opt-key,
+body.theme-magical .option-btn .opt-key,
+body.theme-magical .choice-btn:not(.btn-true):not(.btn-false) .opt-key {
+  position: absolute !important;
+  left: 20px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 32px !important;
+  height: 32px !important;
+  background: transparent !important;
+  border: none !important;
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  font-size: 15px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-shadow: 0 1px 3px #2e1065 !important;
+  z-index: 2 !important;
+}
+
+/* Force dark purple text for answer text across all text spans */
+body.theme-magical .opt-btn > span:not(.opt-key):not(.multi-check-dot):not(.multi-indicator),
+body.theme-magical .option-btn > span:not(.opt-key):not(.multi-check-dot):not(.multi-indicator),
+body.theme-magical .choice-btn:not(.btn-true):not(.btn-false) > span:not(.opt-key):not(.multi-check-dot):not(.multi-indicator),
+body.theme-magical .opt-btn .opt-text,
+body.theme-magical .option-btn .opt-text,
+body.theme-magical .choice-btn:not(.btn-true):not(.btn-false) .opt-text {
+  color: #2e1065 !important;
+  font-weight: 700 !important;
+  font-size: 18px !important;
+  line-height: 1.35 !important;
+  flex: 1 !important;
+  padding-left: 4px !important;
+}
+
+body.theme-magical .opt-btn > span.multi-check-dot,
+body.theme-magical .opt-btn > span.multi-indicator {
+  flex: 0 0 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  padding: 0 !important;
+  flex-shrink: 0 !important;
+}
+
+/* Hover State */
+body.theme-magical .opt-btn:hover:not(:disabled),
+body.theme-magical .option-btn:hover:not(:disabled),
+body.theme-magical .choice-btn:not(.btn-true):not(.btn-false):hover:not(:disabled) {
+  background: #faf5ff !important;
+  border-color: #a855f7 !important;
+  border-left-color: #9333ea !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 10px 24px rgba(168, 85, 247, 0.3) !important;
+}
+
+body.theme-magical .opt-btn:hover:not(:disabled)::before,
+body.theme-magical .option-btn:hover:not(:disabled)::before,
+body.theme-magical .choice-btn:not(.btn-true):not(.btn-false):hover:not(:disabled)::before {
+  background-image: url('spritesheet-magical.svg#quiz-answer-hover') !important;
+  transform: translateY(-50%) scale(1.08) !important;
+}
+
+/* Correct State */
+body.theme-magical .opt-btn.correct,
+body.theme-magical .option-btn.correct,
+body.theme-magical .choice-btn:not(.btn-true):not(.btn-false).correct {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
+  border-color: #10b981 !important;
+  border-left-color: #059669 !important;
+  box-shadow: 0 10px 24px rgba(16, 185, 129, 0.35) !important;
+}
+
+body.theme-magical .opt-btn.correct::before,
+body.theme-magical .option-btn.correct::before,
+body.theme-magical .choice-btn:not(.btn-true):not(.btn-false).correct::before {
+  background-image: url('spritesheet-magical.svg#quiz-answer-correct') !important;
+}
+
+body.theme-magical .opt-btn.correct > span:not(.opt-key),
+body.theme-magical .option-btn.correct > span:not(.opt-key) {
+  color: #064e3b !important;
+  font-weight: 800 !important;
+}
+
+/* Wrong State */
+body.theme-magical .opt-btn.wrong,
+body.theme-magical .option-btn.wrong,
+body.theme-magical .choice-btn:not(.btn-true):not(.btn-false).wrong {
+  background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%) !important;
+  border-color: #f43f5e !important;
+  border-left-color: #e11d48 !important;
+  box-shadow: 0 10px 24px rgba(244, 63, 94, 0.35) !important;
+}
+
+body.theme-magical .opt-btn.wrong::before,
+body.theme-magical .option-btn.wrong::before,
+body.theme-magical .choice-btn:not(.btn-true):not(.btn-false).wrong::before {
+  background-image: url('spritesheet-magical.svg#quiz-answer-wrong') !important;
+}
+
+body.theme-magical .opt-btn.wrong > span:not(.opt-key),
+body.theme-magical .option-btn.wrong > span:not(.opt-key) {
+  color: #881337 !important;
+  font-weight: 800 !important;
+}
+
+/* --------------------------------------------------------------------------
+   2D. BENAR ATAU SALAH (Royal Decree Scroll & 1:1 Dragon Shields)
+   -------------------------------------------------------------------------- */
+body.theme-magical .card-statement {
+  position: relative !important;
+  background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 60%, #fde68a 100%) !important;
+  border: 3.5px solid #78350f !important;
+  border-radius: 20px !important;
+  box-shadow: 0 0 0 3px #facc15, 0 16px 40px rgba(120, 53, 15, 0.25) !important;
+  padding: 44px 50px 32px 50px !important;
+  min-height: 180px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  margin-top: 26px !important;
+  box-sizing: border-box !important;
+}
+
+/* 1:1 Undistorted Royal Decree Scroll Crest Floating at Top */
+body.theme-magical .card-statement::before {
+  content: '' !important;
+  position: absolute !important;
+  top: -42px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 84px !important;
+  height: 84px !important;
+  background: url('spritesheet-magical.svg#truefalse-card-box') no-repeat center / contain !important;
+  filter: drop-shadow(0 8px 16px rgba(120, 53, 15, 0.45)) !important;
+  pointer-events: none !important;
+  z-index: 5 !important;
+}
+
+body.theme-magical .statement-num {
+  color: #92400e !important;
+  font-weight: 800 !important;
+  font-size: 15px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 2px !important;
+  margin-bottom: 8px !important;
+}
+
+body.theme-magical .statement-text {
+  color: #451a03 !important;
+  font-weight: 800 !important;
+  font-size: 24px !important;
+  line-height: 1.45 !important;
+}
+
+/* Hide fallback emoji/icon spans in True/False buttons */
+body.theme-magical .btn-true > span:first-child,
+body.theme-magical .btn-false > span:first-child {
+  display: none !important;
+}
+
+/* BENAR & SALAH span text: Radiant White */
+body.theme-magical .btn-true > span,
+body.theme-magical .btn-false > span {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  font-size: 24px !important;
+  letter-spacing: 1px !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* BENAR: 1:1 Emerald Dragon Shield + Emerald Plate */
+body.theme-magical .btn-true {
+  min-height: 76px !important;
+  min-width: 190px !important;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  border: 3px solid #10b981 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 0 0 2px #facc15, 0 10px 24px rgba(16, 185, 129, 0.4) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 14px !important;
+  padding: 10px 28px !important;
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  font-size: 24px !important;
+  letter-spacing: 1px !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+  cursor: pointer !important;
+  transition: transform 0.15s ease !important;
+}
+
+body.theme-magical .btn-true::before {
+  content: '' !important;
+  width: 52px !important;
+  height: 52px !important;
+  background: url('spritesheet-magical.svg#btn-true-box') no-repeat center / contain !important;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3)) !important;
+  flex-shrink: 0 !important;
+  pointer-events: none !important;
+}
+
+body.theme-magical .btn-true:hover {
+  transform: translateY(-3px) scale(1.03) !important;
+}
+
+/* SALAH: 1:1 Crimson Demon Aegis Shield + Ruby Plate */
+body.theme-magical .btn-false {
+  min-height: 76px !important;
+  min-width: 190px !important;
+  background: linear-gradient(135deg, #e11d48 0%, #be123c 100%) !important;
+  border: 3px solid #f43f5e !important;
+  border-radius: 20px !important;
+  box-shadow: 0 0 0 2px #facc15, 0 10px 24px rgba(244, 63, 94, 0.4) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 14px !important;
+  padding: 10px 28px !important;
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  font-size: 24px !important;
+  letter-spacing: 1px !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+  cursor: pointer !important;
+  transition: transform 0.15s ease !important;
+}
+
+body.theme-magical .btn-false::before {
+  content: '' !important;
+  width: 52px !important;
+  height: 52px !important;
+  background: url('spritesheet-magical.svg#btn-false-box') no-repeat center / contain !important;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3)) !important;
+  flex-shrink: 0 !important;
+  pointer-events: none !important;
+}
+
+body.theme-magical .btn-false:hover {
+  transform: translateY(-3px) scale(1.03) !important;
+}
+
+/* --------------------------------------------------------------------------
+   2E. BUKA KOTAK / MYSTERY BOX (1:1 Archmage Relic Chest Sprites)
+   -------------------------------------------------------------------------- */
+body.theme-magical .mystery-box {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  width: 130px !important;
+  height: 130px !important;
+  position: relative !important;
+  margin: 0 auto !important;
+}
+
+body.theme-magical .mystery-box .box-lid,
+body.theme-magical .mystery-box .lid-handle,
+body.theme-magical .mystery-box .box-interior-glow {
+  display: none !important;
+}
+
+body.theme-magical .mystery-box .box-body {
+  background: url('spritesheet-magical.svg#box-closed') no-repeat center / contain !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+  padding-bottom: 8px !important;
+  transition: transform 0.2s ease !important;
+  filter: drop-shadow(0 6px 16px rgba(126, 34, 206, 0.3)) !important;
+}
+
+body.theme-magical .mystery-box .box-body .game-sprite {
+  display: none !important;
+}
+
+body.theme-magical .mystery-box:hover:not(.opened) .box-body {
+  transform: translateY(-4px) scale(1.05) !important;
+  filter: drop-shadow(0 10px 24px rgba(192, 132, 252, 0.5)) !important;
+}
+
+body.theme-magical .mystery-box.opened .box-body,
+body.theme-magical .mystery-box.open .box-body {
+  background-image: url('spritesheet-magical.svg#box-open') !important;
+  filter: drop-shadow(0 12px 30px rgba(250, 204, 21, 0.6)) !important;
+}
+
+body.theme-magical .mystery-box .box-number {
+  position: absolute !important;
+  bottom: 6px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  background: rgba(46, 16, 101, 0.88) !important;
+  border: 1.5px solid #facc15 !important;
+  border-radius: 9999px !important;
+  padding: 2px 14px !important;
+  color: #facc15 !important;
+  font-weight: 900 !important;
+  font-size: 15px !important;
+  text-shadow: 0 1px 3px #000 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35) !important;
+  z-index: 3 !important;
+}
+
+body.theme-magical .mystery-box .box-label {
+  display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   2F. FLIP TILES (1:1 Tarot Grimoire Mandala + Unobstructed Bottom Badge)
+   -------------------------------------------------------------------------- */
+body.theme-magical .tile-card {
+  min-height: 140px !important;
+  aspect-ratio: 4 / 3.4 !important;
+  position: relative !important;
+}
+
+body.theme-magical .tile-inner {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+}
+
+/* Front Face: Centered 1:1 Tarot Mandala with Clean Bottom Pill Badge */
+body.theme-magical .tile-front {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: #1c1033 url('spritesheet-magical.svg#card-back') no-repeat center / contain !important;
+  border: 2.5px solid #9333ea !important;
+  border-radius: 18px !important;
+  box-shadow: 0 0 0 2px #facc15, 0 8px 24px rgba(126, 34, 206, 0.35) !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+  padding-bottom: 12px !important;
+  box-sizing: border-box !important;
+}
+
+body.theme-magical .tile-front .game-sprite {
+  display: none !important;
+}
+
+body.theme-magical .tile-front .card-number {
+  position: absolute !important;
+  bottom: 8px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  background: rgba(46, 16, 101, 0.88) !important;
+  border: 1.5px solid #facc15 !important;
+  border-radius: 9999px !important;
+  padding: 2px 14px !important;
+  color: #facc15 !important;
+  font-weight: 900 !important;
+  font-size: 15px !important;
+  text-shadow: 0 1px 3px #000000 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35) !important;
+  white-space: nowrap !important;
+  z-index: 2 !important;
+}
+
+/* Revealed Face */
+body.theme-magical .tile-back {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(135deg, #ffffff 0%, #fdf4ff 100%) !important;
+  border: 2.5px solid #7e22ce !important;
+  border-radius: 18px !important;
+  box-shadow: 0 0 0 2px #facc15, 0 8px 24px rgba(126, 34, 206, 0.3) !important;
+  padding: 18px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #2e1065 !important;
+  font-weight: 800 !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+}
+
+body.theme-magical .tile-card.is-matched .tile-back,
+body.theme-magical .tile-inner.matched .tile-back {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 2px #facc15, 0 8px 24px rgba(16, 185, 129, 0.4) !important;
+}
+
+body.theme-magical .role-badge {
+  background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%) !important;
+  border: 1.5px solid #9333ea !important;
+  border-radius: 9999px !important;
+  color: #581c87 !important;
+  font-weight: 800 !important;
+  font-size: 12px !important;
+  padding: 3px 12px !important;
+  margin-bottom: 8px !important;
+}
+
+/* --------------------------------------------------------------------------
+   2G. MENJODOHKAN / MATCH UP (Ritual Stone Socket & Floating Rune Slate)
+   -------------------------------------------------------------------------- */
+body.theme-magical .pairs-grid {
+  gap: 20px !important;
+}
+
+body.theme-magical .target-slot {
+  position: relative !important;
+  background: linear-gradient(135deg, #2e1065 0%, #1e1b4b 100%) !important;
+  border: 2.5px solid #7e22ce !important;
+  border-radius: 18px !important;
+  box-shadow: 0 0 0 2px #facc15, 0 8px 20px rgba(126, 34, 206, 0.3) !important;
+  padding: 18px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  color: #ffffff !important;
+  box-sizing: border-box !important;
+}
+
+body.theme-magical .drop-zone {
+  position: relative !important;
+  background: rgba(0, 0, 0, 0.35) !important;
+  border: 2px dashed #c084fc !important;
+  border-radius: 14px !important;
+  min-height: 64px !important;
+  padding: 10px 16px 10px 56px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  color: #f3e8ff !important;
+  font-weight: 700 !important;
+  box-sizing: border-box !important;
+}
+
+/* 1:1 Undistorted Ritual Stone Socket on Drop Zone */
+body.theme-magical .drop-zone::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 10px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 36px !important;
+  height: 36px !important;
+  background: url('spritesheet-magical.svg#matchup-slot-box') no-repeat center / contain !important;
+  pointer-events: none !important;
+}
+
+body.theme-magical .target-desc {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 3px #0f172a !important;
+}
+
+body.theme-magical .drag-item {
+  position: relative !important;
+  background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%) !important;
+  border: 2.5px solid #7e22ce !important;
+  border-radius: 14px !important;
+  box-shadow: 0 0 0 1.5px #facc15, 0 4px 14px rgba(126, 34, 206, 0.25) !important;
+  padding: 12px 20px 12px 58px !important;
+  min-height: 56px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #3b0764 !important;
+  font-weight: 800 !important;
+  font-size: 16px !important;
+  cursor: grab !important;
+  transition: transform 0.15s ease !important;
+  box-sizing: border-box !important;
+}
+
+/* 1:1 Undistorted Floating Rune Slate on Left */
+body.theme-magical .drag-item::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 10px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 38px !important;
+  height: 38px !important;
+  background: url('spritesheet-magical.svg#matchup-item-box') no-repeat center / contain !important;
+  pointer-events: none !important;
+}
+
+body.theme-magical .drag-item:hover {
+  transform: translateY(-2px) scale(1.02) !important;
+}
+
+body.theme-magical .bank-area,
+body.theme-magical .items-bank {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   2H. PENGELOMPOKAN / GROUP SORT (1:1 Cauldron Crests + Royal Vellum Card)
+   -------------------------------------------------------------------------- */
+body.theme-magical .bucket {
+  position: relative !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 2.5px solid #7e22ce !important;
+  border-radius: 20px !important;
+  box-shadow: 0 0 0 2px #facc15, 0 8px 24px rgba(126, 34, 206, 0.2) !important;
+  padding: 58px 16px 16px 16px !important;
+  min-height: 220px !important;
+  margin-top: 36px !important;
+  box-sizing: border-box !important;
+}
+
+/* 1:1 Undistorted Cauldron Crest Floating at Top */
+body.theme-magical .bucket::before {
+  content: '' !important;
+  position: absolute !important;
+  top: -38px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 72px !important;
+  height: 72px !important;
+  background: url('spritesheet-magical.svg#groupsort-bucket-1') no-repeat center / contain !important;
+  filter: drop-shadow(0 6px 14px rgba(126, 34, 206, 0.4)) !important;
+  pointer-events: none !important;
+}
+
+body.theme-magical .bucket:nth-child(2)::before {
+  background-image: url('spritesheet-magical.svg#groupsort-bucket-2') !important;
+}
+
+body.theme-magical .bucket:nth-child(3)::before {
+  background-image: url('spritesheet-magical.svg#groupsort-bucket-3') !important;
+}
+
+body.theme-magical .bucket:nth-child(4)::before {
+  background-image: url('spritesheet-magical.svg#groupsort-bucket-2') !important;
+}
+
+body.theme-magical .bucket:nth-child(5)::before {
+  background-image: url('spritesheet-magical.svg#groupsort-bucket-1') !important;
+}
+
+body.theme-magical .bucket-title {
+  color: #4c1d95 !important;
+  font-weight: 900 !important;
+  font-size: 18px !important;
+  text-align: center !important;
+  margin-bottom: 12px !important;
+}
+
+body.theme-magical .bucket-title i,
+body.theme-magical .bucket-title span:first-child {
+  display: none !important;
+}
+
+body.theme-magical .deck-area {
+  background: transparent !important;
+  border: none !important;
+}
+
+body.theme-magical .active-card {
+  position: relative !important;
+  background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%) !important;
+  border: 3px solid #7e22ce !important;
+  border-radius: 18px !important;
+  box-shadow: 0 0 0 2px #facc15, 0 10px 28px rgba(126, 34, 206, 0.3) !important;
+  padding: 22px 28px 22px 76px !important;
+  color: #2e1065 !important;
+  font-weight: 800 !important;
+  font-size: 20px !important;
+  text-align: left !important;
+  box-sizing: border-box !important;
+}
+
+/* 1:1 Undistorted Vellum Scroll Card on Left */
+body.theme-magical .active-card::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 14px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 48px !important;
+  height: 48px !important;
+  background: url('spritesheet-magical.svg#groupsort-card-box') no-repeat center / contain !important;
+  pointer-events: none !important;
+}
+
+body.theme-magical .category-btn {
+  background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%) !important;
+  border: 2px solid #c084fc !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 0 0 2px #facc15, 0 4px 14px rgba(126, 34, 206, 0.3) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  padding: 10px 24px !important;
+}
+
+/* --------------------------------------------------------------------------
+   2I. PUTAR RODA / RANDOM WHEEL (1:1 Astro Pointer & Pill Button)
+   -------------------------------------------------------------------------- */
+body.theme-magical .pointer {
+  background: url('spritesheet-magical.svg#wheel-pointer') no-repeat center / contain !important;
+  background-color: transparent !important;
+  border: none !important;
+  width: 54px !important;
+  height: 54px !important;
+}
+
+body.theme-magical .spin-btn {
+  width: auto !important;
+  min-width: 220px !important;
+  height: 56px !important;
+  background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%) !important;
+  border: 2.5px solid #c084fc !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 0 0 2px #facc15, 0 8px 24px rgba(126, 34, 206, 0.4) !important;
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  font-size: 18px !important;
+  letter-spacing: 1px !important;
+  padding: 10px 32px 10px 60px !important;
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  filter: drop-shadow(0 6px 18px rgba(168, 85, 247, 0.4)) !important;
+  transition: transform 0.15s ease !important;
+}
+
+body.theme-magical .spin-btn::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 36px !important;
+  height: 36px !important;
+  background: url('spritesheet-magical.svg#wheel-btn-box') no-repeat center / contain !important;
+  pointer-events: none !important;
+}
+
+body.theme-magical .spin-btn:hover {
+  transform: scale(1.06) !important;
+}
+
+/* --------------------------------------------------------------------------
+   2J. WHACK-A-MOLE (1:1 Abyssal Void Hole, Wizard Mole & Non-overlapping Card)
+   -------------------------------------------------------------------------- */
+body.theme-magical .hole {
+  background: url('spritesheet-magical.svg#mole-hole') no-repeat center / contain !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+}
+
+body.theme-magical .mole {
+  background: url('spritesheet-magical.svg#mole-normal') no-repeat center / contain !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Hide mole completely when submerged */
+body.theme-magical .mole:not(.up) {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  display: none !important;
+}
+
+body.theme-magical .mole-face {
+  display: none !important;
+}
+
+body.theme-magical .mole.whacked,
+body.theme-magical .mole.hit {
+  background: url('spritesheet-magical.svg#mole-hit') no-repeat center / contain !important;
+}
+
+/* Mole Card: Positioned at Bottom so it NEVER Covers the Wizard Mole Face */
+body.theme-magical .mole-card {
+  position: absolute !important;
+  bottom: 8px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%) !important;
+  border: 2px solid #7e22ce !important;
+  border-radius: 12px !important;
+  box-shadow: 0 0 0 1.5px #facc15, 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+  padding: 5px 14px !important;
+  color: #2e1065 !important;
+  font-weight: 800 !important;
+  font-size: 14px !important;
+  white-space: nowrap !important;
+  z-index: 5 !important;
+}
+
+/* --------------------------------------------------------------------------
+   2K. KATA & ANAGRAM (1:1 Rune Stone Letter Tile & Alabaster Grid Cells)
+   -------------------------------------------------------------------------- */
+body.theme-magical .target-word-pill {
+  position: relative !important;
+  background: linear-gradient(135deg, #ffffff 0%, #fdf4ff 100%) !important;
+  border: 2px solid #a855f7 !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 0 0 2px #facc15, 0 4px 12px rgba(126, 34, 206, 0.2) !important;
+  color: #3b0764 !important;
+  font-weight: 800 !important;
+  font-size: 15px !important;
+  padding: 8px 20px 8px 46px !important;
+  min-width: 140px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+}
+
+body.theme-magical .target-word-pill::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 10px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 26px !important;
+  height: 26px !important;
+  background: url('spritesheet-magical.svg#star-score') no-repeat center / contain !important;
+  pointer-events: none !important;
+}
+
+body.theme-magical .letter-tile {
+  background: url('spritesheet-magical.svg#tile-letter-box') no-repeat center / contain !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  width: 58px !important;
+  height: 58px !important;
+  color: #2e1065 !important;
+  font-weight: 900 !important;
+  font-size: 26px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: grab !important;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8) !important;
+}
+
+body.theme-magical .slot-box {
+  background: url('spritesheet-magical.svg#tile-letter-slot') no-repeat center / contain !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  width: 58px !important;
+  height: 58px !important;
+}
+
+body.theme-magical .cell,
+body.theme-magical .grid-cell {
+  background: url('spritesheet-magical.svg#wordsearch-cell-box') no-repeat center / contain !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  color: #2e1065 !important;
+  font-weight: 800 !important;
+  font-size: 17px !important;
+}
+
+body.theme-magical .cell.found,
+body.theme-magical .grid-cell.found {
+  background: url('spritesheet-magical.svg#wordsearch-found-box') no-repeat center / contain !important;
+  color: #78350f !important;
+  font-weight: 900 !important;
+  text-shadow: 0 1px 2px #fef08a !important;
+}
+
+body.theme-magical .cell.selected {
+  background: url('spritesheet-magical.svg#wordsearch-found-box') no-repeat center / contain !important;
+  color: #78350f !important;
+  transform: scale(1.08) !important;
+}
+
+body.theme-magical .grid-container {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+body.theme-magical .sidebar-title {
+  color: #3b0764 !important;
+  font-weight: 900 !important;
+  font-size: 18px !important;
+  margin-bottom: 12px !important;
+}
+
+body.theme-magical .words-sidebar,
+body.theme-magical .words-list {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   2L. FRUIT SLICER HINTS & BANNERS
+   -------------------------------------------------------------------------- */
+body.theme-magical .slice-hint {
+  background: transparent !important;
+  color: #7e22ce !important;
+  font-weight: 700 !important;
+  font-size: 15px !important;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9) !important;
+  border: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   2M. MODAL HASIL & ACTION BUTTONS (1:1 Great Grimoire Crest + Gold Plaque)
+   -------------------------------------------------------------------------- */
+body.theme-magical .modal-box,
+body.theme-magical .result-modal .modal-content,
+body.theme-magical .end-box {
+  position: relative !important;
+  background: linear-gradient(180deg, #ffffff 0%, #fdf4ff 70%, #f3e8ff 100%) !important;
+  border: 3.5px solid #7e22ce !important;
+  border-radius: 28px !important;
+  box-shadow: 0 0 0 3px #facc15, 0 20px 60px rgba(46, 16, 101, 0.45) !important;
+  padding: 56px 48px 40px 48px !important;
+  color: #2e1065 !important;
+  box-sizing: border-box !important;
+  margin-top: 30px !important;
+}
+
+/* 1:1 Undistorted Great Grimoire Crest Floating at Top */
+body.theme-magical .modal-box::before,
+body.theme-magical .result-modal .modal-content::before,
+body.theme-magical .end-box::before {
+  content: '' !important;
+  position: absolute !important;
+  top: -48px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 96px !important;
+  height: 96px !important;
+  background: url('spritesheet-magical.svg#modal-dialog-box') no-repeat center / contain !important;
+  filter: drop-shadow(0 8px 18px rgba(126, 34, 206, 0.5)) !important;
+  pointer-events: none !important;
+  z-index: 10 !important;
+}
+
+body.theme-magical .modal-box *,
+body.theme-magical .result-modal .modal-content *,
+body.theme-magical .end-box * {
+  color: #2e1065 !important;
+}
+
+body.theme-magical .action-btn,
+body.theme-magical .modal-btn,
+body.theme-magical .btn-action,
+body.theme-magical .submit-btn,
+body.theme-magical .multi-submit-btn {
+  position: relative !important;
+  background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%) !important;
+  border: 2.5px solid #c084fc !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 0 0 2px #facc15, 0 6px 18px rgba(126, 34, 206, 0.4) !important;
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  font-size: 18px !important;
+  padding: 12px 32px 12px 54px !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+  transition: transform 0.15s ease !important;
+  box-sizing: border-box !important;
+}
+
+/* 1:1 Action Crest on Left */
+body.theme-magical .action-btn::before,
+body.theme-magical .modal-btn::before,
+body.theme-magical .btn-action::before,
+body.theme-magical .submit-btn::before,
+body.theme-magical .multi-submit-btn::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 34px !important;
+  height: 34px !important;
+  background: url('spritesheet-magical.svg#action-button-box') no-repeat center / contain !important;
+  pointer-events: none !important;
+}
+
+body.theme-magical .action-btn:hover,
+body.theme-magical .modal-btn:hover,
+body.theme-magical .btn-action:hover,
+body.theme-magical .submit-btn:hover,
+body.theme-magical .multi-submit-btn:hover {
+  transform: translateY(-2px) scale(1.03) !important;
+}
+
+body.theme-magical .leaderboard-list,
+body.theme-magical .lb-row {
+  background: transparent !important;
+  border-bottom: 1px dashed #d8b4fe !important;
+  color: #3b0764 !important;
+}
+
+/* ==========================================================================
+   3. 16:9 WIDESCREEN & RESPONSIVE STAGE LAYOUT (ALL THEMES)
+   ========================================================================== */
+body .game-area,
+body.theme-white .game-area,
+body.theme-magical .game-area,
+body .game-container,
+body.theme-white .game-container,
+body.theme-magical .game-container,
+body .main-stage,
+body.theme-white .main-stage,
+body.theme-magical .main-stage {
+  width: 100%;
+  max-width: 1480px;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+
+body .wheel-container {
+  width: 100%;
+  max-width: 1480px;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+
+@media (min-width: 1024px) {
+  body .game-area,
+  body.theme-white .game-area,
+  body.theme-magical .game-area,
+  body .game-container,
+  body .main-stage {
+    padding-left: clamp(24px, 3vw, 48px);
+    padding-right: clamp(24px, 3vw, 48px);
+  }
+
+  body .question-banner .q-text {
+    max-width: 1320px;
+  }
+
+  body .options-grid {
+    gap: 16px;
+  }
+
+  body .holes-grid {
+    max-width: 1120px;
+    gap: 24px;
+  }
+
+  body .hole {
+    height: 156px;
+  }
+
+  body .words-sidebar {
+    min-width: 300px;
+    max-width: 420px;
+  }
+
+  body .active-card {
+    max-width: 680px;
+  }
+}
+
+@media (max-width: 520px) {
+  body.theme-magical .btn-true,
+  body.theme-magical .btn-false {
+    min-width: 0 !important;
+    padding: 10px 14px !important;
+    font-size: 18px !important;
+    gap: 8px !important;
+  }
+
+  body.theme-magical .btn-true::before,
+  body.theme-magical .btn-false::before {
+    width: 38px !important;
+    height: 38px !important;
+  }
+}

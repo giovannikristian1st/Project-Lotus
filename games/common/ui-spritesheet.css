@@ -1,0 +1,133 @@
+/**
+ * ui-spritesheet.css: Crisp 8x8 Vector Atlas for LotusWall Portal, Dashboard & Games
+ * Keeps 100% 1:1 proportions at any size (15px..46px) with zero distortion.
+ */
+
+.ui-sprite {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  aspect-ratio: 1 / 1;
+  background-image: url('ui-spritesheet.svg');
+  background-size: 800% 800%;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.ui-xs  { width: 15px; height: 15px; }
+.ui-sm  { width: 18px; height: 18px; }
+.ui-md  { width: 22px; height: 22px; }
+.ui-lg  { width: 28px; height: 28px; }
+.ui-xl  { width: 38px; height: 38px; }
+.ui-2xl { width: 46px; height: 46px; }
+
+/* Grid positions: col * 14.285714% , row * 14.285714% */
+/* Row 0 */
+.ui-lotus      { background-position: 0% 0%; }
+.ui-home       { background-position: 14.2857% 0%; }
+.ui-login      { background-position: 28.5714% 0%; }
+.ui-community  { background-position: 42.8571% 0%; }
+.ui-lang-en    { background-position: 57.1429% 0%; }
+.ui-lang-id    { background-position: 71.4286% 0%; }
+.ui-dashboard  { background-position: 85.7143% 0%; }
+.ui-sparkles   { background-position: 100% 0%; }
+
+/* Row 1 */
+.ui-play       { background-position: 0% 14.2857%; }
+.ui-pencil     { background-position: 14.2857% 14.2857%; }
+.ui-copy       { background-position: 28.5714% 14.2857%; }
+.ui-sliders    { background-position: 42.8571% 14.2857%; }
+.ui-trash      { background-position: 57.1429% 14.2857%; }
+.ui-aa         { background-position: 71.4286% 14.2857%; }
+.ui-folder     { background-position: 85.7143% 14.2857%; }
+.ui-restore    { background-position: 100% 14.2857%; }
+
+/* Row 2 */
+.ui-user         { background-position: 0% 28.5714%; }
+.ui-lock         { background-position: 14.2857% 28.5714%; }
+.ui-eye          { background-position: 28.5714% 28.5714%; }
+.ui-eye-off      { background-position: 42.8571% 28.5714%; }
+.ui-key          { background-position: 57.1429% 28.5714%; }
+.ui-logout       { background-position: 71.4286% 28.5714%; }
+.ui-users-switch { background-position: 85.7143% 28.5714%; }
+.ui-download     { background-position: 100% 28.5714%; }
+
+/* Row 3 */
+.ui-level    { background-position: 0% 42.8571%; }
+.ui-subject  { background-position: 14.2857% 42.8571%; }
+.ui-language { background-position: 28.5714% 42.8571%; }
+.ui-search   { background-position: 42.8571% 42.8571%; }
+.ui-plus     { background-position: 57.1429% 42.8571%; }
+.ui-close    { background-position: 71.4286% 42.8571%; }
+.ui-check    { background-position: 85.7143% 42.8571%; }
+.ui-refresh  { background-position: 100% 42.8571%; }
+
+/* Row 4 */
+.ui-gamepad    { background-position: 0% 57.1429%; }
+.ui-camera     { background-position: 14.2857% 57.1429%; }
+.ui-camera-off { background-position: 28.5714% 57.1429%; }
+.ui-trophy     { background-position: 42.8571% 57.1429%; }
+.ui-heart      { background-position: 57.1429% 57.1429%; }
+.ui-clock      { background-position: 71.4286% 57.1429%; }
+.ui-palette    { background-position: 85.7143% 57.1429%; }
+.ui-fullscreen { background-position: 100% 57.1429%; }
+
+/* Row 5 */
+.ui-game-quiz       { background-position: 0% 71.4286%; }
+.ui-game-slicer     { background-position: 14.2857% 71.4286%; }
+.ui-game-flashcards { background-position: 28.5714% 71.4286%; }
+.ui-game-wheel      { background-position: 42.8571% 71.4286%; }
+.ui-game-match      { background-position: 57.1429% 71.4286%; }
+.ui-game-box        { background-position: 71.4286% 71.4286%; }
+.ui-game-word       { background-position: 85.7143% 71.4286%; }
+.ui-game-tf         { background-position: 100% 71.4286%; }
+
+/* Row 6 */
+.ui-hand        { background-position: 0% 85.7143%; }
+.ui-basket      { background-position: 14.2857% 85.7143%; }
+.ui-brush       { background-position: 28.5714% 85.7143%; }
+.ui-mole        { background-position: 42.8571% 85.7143%; }
+.ui-arrow-left  { background-position: 57.1429% 85.7143%; }
+.ui-arrow-right { background-position: 71.4286% 85.7143%; }
+.ui-cloud       { background-position: 85.7143% 85.7143%; }
+.ui-alert       { background-position: 100% 85.7143%; }
+
+/* Icon-Only Segmented Language Switcher (Crisp Rectangles, Zero Text) */
+.lang-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 8px;
+  background: #f4f1ea;
+  border: 1px solid #d6cfc2;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+  flex-shrink: 0;
+}
+.lang-toggle-btn:hover {
+  border-color: #1d4ed8;
+  background: #ffffff;
+}
+.lang-flag-chip {
+  width: 26px;
+  height: 24px;
+  border-radius: 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+  opacity: 0.45;
+}
+.lang-flag-chip.active {
+  opacity: 1;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1.5px #1d4ed8;
+}
+
+/* Hide White-theme inline sprite icons when Magical theme displays its own ::before crests/hearts */
+body.theme-magical .hud-icon-white {
+  display: none !important;
+}

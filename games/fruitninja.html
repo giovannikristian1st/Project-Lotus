@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fruit Slicer Quiz — LotusWall</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="common/ui-spritesheet.css">
+  <link rel="stylesheet" href="common/themes.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; user-select: none; }
+    body { background: #f7f5f0; height: 100vh; min-height: 100vh; color: #18181b; overflow: hidden; display: flex; flex-direction: column; }
+    
+    .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 28px; background: #ffffff; border-bottom: 1.5px solid #e5dfd3; color: #18181b; z-index: 10; flex-wrap: wrap; gap: 8px; }
+    .stat-badge { background: #fcfbf8; border: 1.5px solid #d6cfc2; color: #18181b; padding: 6px 13px; border-radius: 8px; font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 6px; box-shadow: 0 1px 2px rgba(24,24,27,0.04); }
+    .hearts { gap: 4px; }
+    .heart { display: inline-flex; align-items: center; justify-content: center; }
+    .heart.lost { opacity: 0.25; filter: grayscale(1); }
+
+    .speed-btn { cursor: pointer; transition: all 0.15s ease; }
+    .speed-btn:hover { background: #f3efe6; border-color: #18181b; }
+    .speed-btn:active { transform: translateY(1px); }
+
+    /* Target Question Banner */
+    .question-banner {
+      z-index: 10;
+      background: #1e242b;
+      border-bottom: 2px solid #334155;
+      padding: 13px 24px;
+      text-align: center;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .q-num { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.4px; color: #fbbf24; margin-bottom: 3px; }
+    .q-text { font-size: clamp(18px, 1.8vw, 22px); font-weight: 700; color: #f8fafc; max-width: 1480px; width: 96%; margin: 0 auto; line-height: 1.3; }
+
+    .canvas-stage {
+      flex: 1;
+      min-height: 220px;
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+    }
+    #game-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+    }
+
+    .slice-hint {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 13px;
+      font-weight: 600;
+      color: #18181b;
+      background: #ffffff;
+      border: 1.5px solid #d6cfc2;
+      padding: 6px 14px;
+      border-radius: 8px;
+      pointer-events: none;
+      z-index: 5;
+      box-shadow: 0 2px 8px rgba(24,24,27,0.08);
+      white-space: nowrap;
+      max-width: 92vw;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Game Over Modal */
+    .screen-overlay { position: fixed; inset: 0; background: rgba(24, 24, 27, 0.7); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50; padding: 24px; }
+    .modal-box { background: #ffffff; border: 2px solid #d6cfc2; color: #18181b; border-radius: 14px; padding: 32px; max-width: 500px; width: 100%; text-align: center; box-shadow: 0 20px 40px rgba(24,24,27,0.22); }
+    .end-sub { color: #57534e; margin-bottom: 18px; font-size: 14px; }
+    .end-score-box { background: #fcfbf8; border: 1.5px solid #e5dfd3; padding: 16px; border-radius: 10px; margin-bottom: 16px; }
+    .end-score-num { font-size: 32px; font-weight: 800; color: #15803d; }
+    .end-score-time { font-size: 13px; color: #57534e; margin-top: 4px; font-weight: 600; }
+    .lb-submit-card { background: #fcfbf8; padding: 16px; border-radius: 10px; border: 1.5px solid #e5dfd3; margin-bottom: 16px; text-align: left; }
+    .lb-submit-label { display: block; font-size: 13px; font-weight: 700; color: #18181b; margin-bottom: 8px; }
+    .lb-input { flex: 1; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #d6cfc2; background: #ffffff; color: #18181b; font-size: 14px; font-weight: 600; outline: none; }
+    .action-btn { background: #1d4ed8; color: white; border: none; border-bottom: 3px solid #1e3a8a; padding: 12px 32px; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 16px; transition: all 0.15s; }
+    .action-btn:hover { background: #1e40af; }
+  </style>
+</head>
+<body class="theme-white">
+
+  <div class="top-bar">
+    <div class="stat-badge">
+      <span class="ui-sprite ui-sm ui-game-slicer hud-icon-white"></span>
+      <span data-i18n="fn.title">Fruit Slicer</span>
+    </div>
+    <div class="stat-badge" id="score-badge">
+      <span class="ui-sprite ui-sm ui-trophy hud-icon-white"></span>
+      <span><span data-i18n="game.score">Score</span>: <span id="score-val">0</span></span>
+    </div>
+    <div class="stat-badge" id="timer-badge">
+      <span class="ui-sprite ui-sm ui-clock hud-icon-white"></span>
+      <span><span id="timer-val">30</span>s</span>
+    </div>
+    <div class="stat-badge hearts" id="lives-container"></div>
+    <div class="stat-badge speed-btn" id="speed-badge" onclick="toggleSpeed()" data-i18n-title="fn.speedTitle" title="Click to change fruit speed">
+      <span class="ui-sprite ui-xs ui-refresh hud-icon-white"></span>
+      <span data-i18n="fn.speedBadge">Speed:</span>
+      <span id="speed-dot" style="display:inline-block;width:9px;height:9px;border-radius:99px;background:#16a34a;"></span>
+      <span id="speed-label" style="color: #16a34a; font-weight: 800;">Relaxed</span>
+    </div>
+  </div>
+
+  <div class="question-banner">
+    <div class="q-num" id="q-num">Question 1 of 5</div>
+    <div class="q-text" id="q-text">Slice the fruit holding the right answer!</div>
+  </div>
+
+  <div class="canvas-stage" id="canvas-stage">
+    <canvas id="game-canvas"></canvas>
+    <div class="slice-hint" id="slice-hint">Drag cursor or tap fruit to slice the right answer! (Click Speed to adjust)</div>
+  </div>
+
+  <!-- Game Over Screen -->
+  <div class="screen-overlay" id="end-screen" style="display: none;">
+    <div class="modal-box">
+      <div style="margin-bottom: 12px; display:flex; justify-content:center;" id="end-icon">
+        <span class="ui-sprite ui-2xl ui-trophy"></span>
+      </div>
+      <h2 style="font-size: 26px; font-weight: 800; margin-bottom: 8px;" id="end-title" data-i18n="game.gameOver">Game Over!</h2>
+      <p class="end-sub" id="end-subtitle" data-i18n="fn.doneSub">Your slicing reflexes are awesome!</p>
+      
+      <div class="end-score-box">
+        <div class="end-score-num" id="final-score">0 pts</div>
+        <div class="end-score-time" id="final-time">Total Time: 0s</div>
+      </div>
+
+      <!-- Student Name Input for Leaderboard -->
+      <div id="score-submit-box" class="lb-submit-card">
+        <label for="player-name-input" class="lb-submit-label" data-i18n="game.lbNamePrompt">
+          Write your name for the Leaderboard:
+        </label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="player-name-input" class="lb-input" data-i18n-placeholder="game.namePlaceholder" placeholder="Your name (e.g. Budi, Siti, Andi)..." onkeydown="if(event.key==='Enter') submitPlayerScore();">
+          <button id="btn-submit-score" onclick="submitPlayerScore()" style="background: #15803d; color: #ffffff; border: none; border-bottom: 3px solid #14532d; padding: 11px 18px; border-radius: 8px; font-weight: 800; font-size: 14px; cursor: pointer; white-space: nowrap;" data-i18n="game.send">
+            Submit
+          </button>
+        </div>
+        <div id="score-submitted-alert" style="display: none; margin-top: 8px; color: #15803d; font-size: 13px; font-weight: 700;"></div>
+      </div>
+
+      <button class="action-btn" onclick="initGame()" data-i18n="game.playAgain">Play Again</button>
+    </div>
+  </div>
+
+  <script src="common/i18n.js"></script>
+  <script src="common/sfx.js"></script>
+  <script src="common/confetti.js"></script>
+  <script src="common/themes.js"></script>
+  <script src="common/bridge.js"></script>
+  <script>
+    const tr = (k, v) => (window.LotusI18n ? LotusI18n.t(k, v) : k);
+
+    const canvas = document.getElementById('game-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let activity = null;
+    let questions = [];
+    let currentQIndex = 0;
+    let score = 0;
+    let lives = 3;
+    let maxLives = 3;
+    let timeMode = 'timer'; // 'timer', 'stopwatch', 'none'
+    let timerSeconds = 30;
+    let timeRemaining = 30;
+    let totalTimeElapsed = 0;
+    let timerInterval = null;
+    let isGameOver = false;
+    let hasSubmittedScore = false;
+    let lastPlayerName = '';
+    let rafId = null;
+    let spawnDelayTimeout = null;
+    let nextQTimeout = null;
+    let endDelayTimeout = null;
+    let hasBootedOnce = false;
+    let lastActivitySig = '';
+    let lastSettingsSyncTs = 0;
+    const processedBridgeMsgs = new WeakSet();
+
+    const SPEED_CONFIGS = {
+      santai: { id: 'santai', eng: 'relaxed', i18nKey: 'game.speed.relaxed', color: '#16a34a', gravity: 0.08, apexMin: 0.18, apexMax: 0.32, vxScale: 1.5, spawnInterval: 1700 },
+      sedang: { id: 'sedang', eng: 'normal',  i18nKey: 'game.speed.medium',  color: '#d97706', gravity: 0.11, apexMin: 0.20, apexMax: 0.35, vxScale: 2.0, spawnInterval: 1400 },
+      cepat:  { id: 'cepat',  eng: 'fast',    i18nKey: 'game.speed.fast',    color: '#dc2626', gravity: 0.15, apexMin: 0.22, apexMax: 0.38, vxScale: 2.6, spawnInterval: 1100 }
+    };
+
+    function normalizeSpeedKey(val) {
+      const s = String(val || '').toLowerCase().trim();
+      if (s === 'relaxed' || s === 'santai' || s === 'slow') return 'santai';
+      if (s === 'normal' || s === 'medium' || s === 'sedang') return 'sedang';
+      if (s === 'fast' || s === 'cepat') return 'cepat';
+      return null;
+    }
+
+    let currentSpeed = normalizeSpeedKey(localStorage.getItem('lotus_fruit_speed')) || 'santai';
+
+    function postSpeedState() {
+      try {
+        if (window.parent && window.parent !== window) {
+          const engSpeed = SPEED_CONFIGS[currentSpeed]?.eng || 'relaxed';
+          window.parent.postMessage({ type: 'GAME_STATE', gameId: 'fruitninja', speed: engSpeed }, '*');
+        }
+      } catch (e) {}
+    }
+
+    function updateSpeedUI() {
+      const cfg = SPEED_CONFIGS[currentSpeed];
+      const lbl = document.getElementById('speed-label');
+      const dot = document.getElementById('speed-dot');
+      if (lbl) {
+        lbl.innerText = tr(cfg.i18nKey);
+        lbl.style.color = cfg.color;
+      }
+      if (dot) dot.style.background = cfg.color;
+    }
+
+    function updateHintBanner() {
+      const hint = document.getElementById('slice-hint');
+      if (!hint) return;
+      hint.innerText = currentThemeActive === 'magical' ? tr('fn.hintMagical') : tr('fn.hintBanner');
+    }
+
+    function syncStaticTexts() {
+      document.title = tr('fn.pageTitle');
+      if (window.LotusI18n) LotusI18n.applyDomTranslations(document);
+      updateSpeedUI();
+      updateHintBanner();
+    }
+
+    function setSpeed(val, silent = false) {
+      const mapped = normalizeSpeedKey(val);
+      if (!mapped) return;
+      currentSpeed = mapped;
+      localStorage.setItem('lotus_fruit_speed', currentSpeed);
+      updateSpeedUI();
+
+      if (spawnInterval && !isGameOver) {
+        clearInterval(spawnInterval);
+        spawnInterval = setInterval(spawnFruit, SPEED_CONFIGS[currentSpeed].spawnInterval);
+      }
+      if (!silent && window.SFX) SFX.click();
+      postSpeedState();
+    }
+
+    function toggleSpeed() {
+      if (currentSpeed === 'santai') setSpeed('sedang');
+      else if (currentSpeed === 'sedang') setSpeed('cepat');
+      else setSpeed('santai');
+    }
+
+    let spritesheetLoaded = false;
+    let spritesheetImg = null;
+    let currentThemeActive = 'white';
+
+    const THEME_OBJECTS = {
+      white: ['🍉', '🍊', '🍎', '🍌', '🍓'],
+      magical: ['🧪', '🔮', '💎', '📜', '⭐']
+    };
+
+    if (typeof Image !== 'undefined') {
+      spritesheetImg = new Image();
+      spritesheetImg.onload = () => { spritesheetLoaded = true; };
+      spritesheetImg.src = 'common/spritesheet.svg';
+    }
+
+    window.onLotusThemeChanged = function(theme) {
+      currentThemeActive = theme;
+      if (spritesheetImg) {
+        spritesheetLoaded = false;
+        spritesheetImg.src = theme === 'magical' ? 'common/spritesheet-magical.svg' : 'common/spritesheet.svg';
+      }
+      updateHintBanner();
+      setTimeout(resizeCanvas, 50);
+    };
+
+    if (window.LotusI18n) {
+      LotusI18n.onChange(() => {
+        syncStaticTexts();
+        if (questions.length > 0 && currentQIndex < questions.length) {
+          document.getElementById('q-num').innerText = tr('game.questionOf', { n: currentQIndex + 1, total: questions.length });
+        }
+        if (isGameOver) {
+          document.getElementById('final-score').innerText = tr('game.totalPoints', { n: score });
+          document.getElementById('final-time').innerText = tr('game.totalTime', { n: totalTimeElapsed });
+          const submitBtn = document.getElementById('btn-submit-score');
+          const alertBox = document.getElementById('score-submitted-alert');
+          if (submitBtn) submitBtn.innerText = hasSubmittedScore ? tr('game.savedBtn') : tr('game.send');
+          if (alertBox && hasSubmittedScore) alertBox.innerText = tr('game.scoreSavedBanner', { name: lastPlayerName, score });
+        }
+      });
+    }
+
+    let fruits = [];
+    let popups = [];
+    let spawnInterval = null;
+    let bladeTrail = [];
+    let isMouseDown = false;
+
+    function resizeCanvas() {
+      const stage = document.getElementById('canvas-stage');
+      if (stage) {
+        canvas.width = Math.max(320, stage.clientWidth || window.innerWidth);
+        canvas.height = Math.max(220, stage.clientHeight || (window.innerHeight - 140));
+      } else {
+        canvas.width = window.innerWidth;
+        canvas.height = Math.max(240, window.innerHeight - 130);
+      }
+    }
+    window.addEventListener('resize', resizeCanvas);
+    if (typeof ResizeObserver !== 'undefined') {
+      const stageEl = document.getElementById('canvas-stage');
+      if (stageEl) new ResizeObserver(resizeCanvas).observe(stageEl);
+    }
+    resizeCanvas();
+
+    const bridge = window.GameBridge || (typeof GameBridge !== 'undefined' ? GameBridge : null);
+
+    function computeActivitySig(act) {
+      if (!act) return '';
+      const qLen = (act.questions || act.content?.items || []).length;
+      return JSON.stringify({
+        id: act.id || '',
+        title: act.title || '',
+        qLen,
+        rules: act.rules || null,
+        settings: act.settings || null,
+        theme: act.theme || ''
+      });
+    }
+
+    function applyMergedSettings(payload) {
+      if (!payload) return;
+      const base = payload.activity ? { ...payload.activity } : { ...(activity || {}) };
+      if (payload.rules) base.rules = { ...(base.rules || {}), ...payload.rules };
+      if (payload.settings) base.settings = { ...(base.settings || {}), ...payload.settings };
+      if (payload.theme) base.theme = payload.theme;
+      if (base.rules) {
+        base.settings = {
+          ...(base.settings || {}),
+          timerSeconds: base.rules.timerSeconds ?? base.settings?.timerSeconds ?? 30,
+          lives: base.rules.hasLives === false ? 0 : (base.rules.livesCount ?? base.settings?.lives ?? 3),
+          hasLives: base.rules.hasLives,
+          timeMode: base.rules.timeMode,
+          shuffle: base.rules.shuffleQuestions,
+          shuffleAnswers: base.rules.shuffleAnswers
+        };
+      }
+      const norm = (bridge && typeof bridge.normalizeActivity === 'function') ? bridge.normalizeActivity(base) : base;
+      activity = norm;
+      if (bridge) bridge.activity = norm;
+      lastActivitySig = computeActivitySig(norm);
+      if (payload.theme && window.LotusThemes) LotusThemes.apply(payload.theme, true);
+      else if (norm.theme && window.LotusThemes) LotusThemes.apply(norm.theme);
+      if (payload.speed) setSpeed(payload.speed, true);
+      if (payload.restart !== false) initGame();
+    }
+
+    function handleExternalMessage(data) {
+      if (!data || typeof data !== 'object') return;
+      if (data.type === 'GAME_CMD') {
+        const cmd = data.command || data.cmd;
+        if (cmd === 'RESTART') initGame();
+        else if (cmd === 'SET_SPEED') setSpeed(data.value ?? data.speed ?? data.payload);
+      } else if (data.type === 'UPDATE_SETTINGS') {
+        lastSettingsSyncTs = Date.now();
+        applyMergedSettings(data);
+      } else if (data.type === 'GAME_SETTINGS') {
+        lastSettingsSyncTs = Date.now();
+        const p = data.payload && typeof data.payload === 'object' ? { ...data, ...data.payload } : data;
+        if (p.speed && !p.rules && !p.settings && !p.activity && !p.theme) {
+          setSpeed(p.speed, true);
+        } else if (p.rules || p.settings || p.activity || p.theme || p.speed) {
+          applyMergedSettings(p);
+        }
+      } else if (data.type === 'INIT_ACTIVITY' && data.activity) {
+        const norm = (bridge && typeof bridge.normalizeActivity === 'function') ? bridge.normalizeActivity(data.activity) : data.activity;
+        const sig = computeActivitySig(norm);
+        if (!hasBootedOnce || sig !== lastActivitySig || data.forceRestart || data.restart === true) {
+          activity = norm;
+          if (bridge) bridge.activity = norm;
+          lastActivitySig = sig;
+          hasBootedOnce = true;
+          initGame();
+        }
+      }
+    }
+
+    if (bridge && typeof bridge.onReady === 'function') {
+      bridge.onReady((act) => {
+        if (hasBootedOnce && (Date.now() - lastSettingsSyncTs) < 50) return;
+        activity = act;
+        lastActivitySig = computeActivitySig(act);
+        hasBootedOnce = true;
+        initGame();
+      });
+      if (typeof bridge.onSettings === 'function') {
+        bridge.onSettings((payload) => {
+          if (payload && typeof payload === 'object') processedBridgeMsgs.add(payload);
+          handleExternalMessage(payload);
+        });
+      }
+    } else {
+      setTimeout(() => { hasBootedOnce = true; initGame(); }, 100);
+    }
+
+    const hasBridgeSettings = Boolean(bridge && typeof bridge.onSettings === 'function');
+
+    window.addEventListener('message', (event) => {
+      if (!event.data || typeof event.data !== 'object') return;
+      if (processedBridgeMsgs.has(event.data)) return;
+      if (hasBridgeSettings && (event.data.type === 'UPDATE_SETTINGS' || event.data.type === 'GAME_SETTINGS' || event.data.type === 'GAME_CMD')) {
+        return;
+      }
+      processedBridgeMsgs.add(event.data);
+      handleExternalMessage(event.data);
+    });
+
+    function initGame() {
+      clearInterval(timerInterval);
+      clearInterval(spawnInterval);
+      clearTimeout(spawnDelayTimeout);
+      clearTimeout(nextQTimeout);
+      clearTimeout(endDelayTimeout);
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+
+      syncStaticTexts();
+
+      const rawItems = activity?.questions || activity?.content?.items || [];
+      questions = rawItems.map((item, idx) => {
+        let opts = [];
+        if (item.options && Array.isArray(item.options) && item.options.length > 0) {
+          opts = item.options.map(o => typeof o === 'string' ? { text: o, isCorrect: false } : o);
+        } else if (item.correctAnswer) {
+          opts = [
+            { text: item.correctAnswer, isCorrect: true },
+            ...(item.wrongAnswers || []).map(w => ({ text: w, isCorrect: false }))
+          ];
+        } else {
+          opts = [
+            { text: tr('game.defaultOpt', { n: 1 }), isCorrect: true },
+            { text: tr('game.defaultOpt', { n: 2 }), isCorrect: false }
+          ];
+        }
+        return {
+          id: item.id || String(idx + 1),
+          text: item.text || item.question || tr('game.defaultQuestion', { n: idx + 1 }),
+          options: opts
+        };
+      });
+
+      if (questions.length === 0) {
+        const isId = (window.LotusI18n && LotusI18n.getLang() === 'id');
+        questions = [{
+          text: isId ? "Planet Merah dalam tata surya adalah..." : "Which planet is called the Red Planet?",
+          options: [{ text: "Mars", isCorrect: true }, { text: "Venus", isCorrect: false }, { text: "Jupiter", isCorrect: false }]
+        }];
+      }
+
+      const rules = activity?.rules || {};
+      const settings = activity?.settings || {};
+
+      timeMode = rules.timeMode || settings.timeMode || (Number(rules.timerSeconds ?? settings.timerSeconds ?? 30) > 0 ? 'timer' : 'none');
+      timerSeconds = Number(rules.timerSeconds ?? settings.timerSeconds ?? 30);
+      if (timerSeconds <= 0 && timeMode === 'timer') timerSeconds = 30;
+
+      const hasLives = rules.hasLives !== undefined ? Boolean(rules.hasLives) : (settings.lives !== 0);
+      maxLives = hasLives ? (Number(rules.livesCount ?? settings.lives ?? 3) || 3) : 0;
+
+      if (rules.shuffleQuestions !== false && settings.shuffle !== false) {
+        questions.sort(() => Math.random() - 0.5);
+      }
+      if (rules.shuffleAnswers !== false && settings.shuffleAnswers !== false) {
+        questions.forEach(q => {
+          if (Array.isArray(q.options)) q.options = [...q.options].sort(() => Math.random() - 0.5);
+        });
+      }
+
+      if (window.LotusThemes) LotusThemes.apply(activity?.theme || 'white');
+
+      currentQIndex = 0;
+      score = 0;
+      lives = maxLives;
+      isGameOver = false;
+      fruits = [];
+      popups = [];
+      bladeTrail = [];
+      totalTimeElapsed = 0;
+      document.getElementById('score-val').innerText = score;
+      document.getElementById('end-screen').style.display = 'none';
+
+      const timerBadge = document.getElementById('timer-badge');
+      if (timerBadge) {
+        if (timeMode === 'none') {
+          timerBadge.style.setProperty('display', 'none', 'important');
+        } else {
+          timerBadge.style.removeProperty('display');
+          timerBadge.style.display = 'flex';
+        }
+      }
+
+      resizeCanvas();
+      updateHearts();
+      updateSpeedUI();
+      postSpeedState();
+      loadQuestion(0);
+
+      timerInterval = setInterval(() => {
+        if (isGameOver) return;
+        totalTimeElapsed++;
+        if (timeMode === 'stopwatch') {
+          document.getElementById('timer-val').innerText = totalTimeElapsed;
+        } else if (timeMode === 'timer') {
+          if (timeRemaining > 0) {
+            timeRemaining--;
+            document.getElementById('timer-val').innerText = timeRemaining;
+            if (timeRemaining <= 5 && window.SFX) SFX.tick();
+          } else {
+            if (window.SFX) SFX.wrong();
+            if (maxLives > 0) {
+              lives--;
+              updateHearts();
+              if (lives <= 0) {
+                endGame();
+                return;
+              }
+            }
+            loadQuestion(currentQIndex + 1);
+          }
+        }
+      }, 1000);
+
+      const cfg = SPEED_CONFIGS[currentSpeed];
+      spawnInterval = setInterval(spawnFruit, cfg.spawnInterval);
+      rafId = requestAnimationFrame(gameLoop);
+    }
+
+    function updateHearts() {
+      const container = document.getElementById('lives-container');
+      if (maxLives <= 0) {
+        container.style.setProperty('display', 'none', 'important');
+        return;
+      }
+      container.style.removeProperty('display');
+      container.style.display = 'flex';
+      let str = '';
+      for (let i = 0; i < maxLives; i++) {
+        const lostCls = i < lives ? '' : ' lost';
+        str += `<span class="heart${lostCls}"><span class="ui-sprite ui-sm ui-heart hud-icon-white"></span></span>`;
+      }
+      container.innerHTML = str;
+    }
+
+    function loadQuestion(index) {
+      if (index >= questions.length) {
+        endGame();
+        return;
+      }
+      currentQIndex = index;
+      const q = questions[index];
+      document.getElementById('q-num').innerText = tr('game.questionOf', { n: index + 1, total: questions.length });
+      document.getElementById('q-text').innerText = q.text;
+      fruits = [];
+      timeRemaining = timerSeconds;
+      document.getElementById('timer-val').innerText = timeMode === 'stopwatch' ? totalTimeElapsed : timeRemaining;
+      clearTimeout(spawnDelayTimeout);
+      spawnDelayTimeout = setTimeout(spawnFruit, 400);
+    }
+
+    function spawnFruit() {
+      if (isGameOver || fruits.length >= 4) return;
+      const q = questions[currentQIndex];
+      if (!q || !q.options || q.options.length === 0) return;
+
+      const cfg = SPEED_CONFIGS[currentSpeed];
+      const activeTexts = fruits.filter(f => !f.sliced).map(f => f.text);
+      const availableOpts = q.options.filter(o => !activeTexts.includes(o.text));
+      const hasCorrectOnScreen = fruits.some(f => !f.sliced && f.isCorrect);
+
+      let chosenOpt = null;
+      if (!hasCorrectOnScreen && (Math.random() < 0.55 || availableOpts.length === 0)) {
+        chosenOpt = q.options.find(o => o.isCorrect) || q.options[0];
+      } else if (availableOpts.length > 0) {
+        chosenOpt = availableOpts[Math.floor(Math.random() * availableOpts.length)];
+      } else {
+        chosenOpt = q.options[Math.floor(Math.random() * q.options.length)];
+      }
+
+      const objList = THEME_OBJECTS[currentThemeActive] || THEME_OBJECTS.white;
+      const fruitIdx = Math.floor(Math.random() * objList.length);
+      const emoji = objList[fruitIdx];
+
+      const padding = Math.min(140, Math.floor(canvas.width * 0.2));
+      const x = Math.random() * Math.max(80, canvas.width - padding * 2) + padding;
+
+      const targetApexY = canvas.height * (cfg.apexMin + Math.random() * (cfg.apexMax - cfg.apexMin));
+      const deltaY = (canvas.height + 40) - targetApexY;
+      const vy = -Math.sqrt(2 * cfg.gravity * deltaY);
+      const centerFactor = (canvas.width / 2 - x) / (canvas.width / 2);
+      const vx = (Math.random() - 0.5 + centerFactor * 0.3) * cfg.vxScale * 1.4;
+
+      fruits.push({
+        x, y: canvas.height + 40, vx, vy, gravity: cfg.gravity,
+        radius: 48, fruitIndex: fruitIdx, emoji,
+        text: chosenOpt.text, isCorrect: Boolean(chosenOpt.isCorrect),
+        sliced: false, sliceAngle: (Math.random() - 0.5) * 0.6, splitOffset: 0, alpha: 1
+      });
+    }
+
+    function gameLoop() {
+      if (isGameOver) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = fruits.length - 1; i >= 0; i--) {
+        const f = fruits[i];
+        f.x += f.vx;
+        f.y += f.vy;
+        f.vy += f.gravity;
+
+        if (f.sliced) {
+          f.splitOffset += 3.5;
+          f.alpha -= 0.025;
+          if (f.alpha <= 0) { fruits.splice(i, 1); continue; }
+        } else if (f.y > canvas.height + 80) {
+          fruits.splice(i, 1); continue;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, f.alpha);
+
+        if (!f.sliced) {
+          if (spritesheetLoaded) {
+            const sx = (f.fruitIndex || 0) * 128;
+            const sy = 4 * 128;
+            ctx.drawImage(spritesheetImg, sx, sy, 128, 128, f.x - 42, f.y - 42, 84, 84);
+          } else {
+            ctx.font = '54px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.shadowBlur = 8;
+            ctx.fillText(f.emoji, f.x, f.y);
+          }
+
+          ctx.font = 'bold 15px Poppins, sans-serif';
+          const textMetrics = ctx.measureText(f.text);
+          const textWidth = textMetrics.width || 80;
+          const badgeW = Math.max(100, textWidth + 28);
+          const badgeH = 34;
+          const badgeY = f.y + 40;
+
+          if (currentThemeActive === 'magical' && spritesheetLoaded) {
+            ctx.drawImage(spritesheetImg, 768, 512, 128, 128, f.x - badgeW / 2, badgeY, badgeW, badgeH);
+            ctx.fillStyle = '#3b0764';
+          } else {
+            ctx.shadowColor = 'rgba(24,24,27,0.12)';
+            ctx.shadowBlur = 6;
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#18181b';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(f.x - badgeW / 2, badgeY, badgeW, badgeH, 8);
+            else ctx.rect(f.x - badgeW / 2, badgeY, badgeW, badgeH);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = '#18181b';
+          }
+
+          ctx.shadowBlur = 0;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(f.text, f.x, badgeY + badgeH / 2);
+        } else {
+          ctx.save();
+          ctx.translate(f.x, f.y);
+          ctx.rotate(f.sliceAngle);
+
+          if (spritesheetLoaded) {
+            const sx = (f.fruitIndex || 0) * 128;
+            const sy = 4 * 128;
+            ctx.drawImage(spritesheetImg, sx, sy, 64, 128, -f.splitOffset - 42, -42, 42, 84);
+            ctx.drawImage(spritesheetImg, sx + 64, sy, 64, 128, f.splitOffset, -42, 42, 84);
+          } else {
+            ctx.font = '48px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(f.emoji, -f.splitOffset, -f.splitOffset * 0.15);
+            ctx.fillText(f.emoji, f.splitOffset, f.splitOffset * 0.15);
+          }
+          ctx.restore();
+        }
+        ctx.restore();
+      }
+
+      for (let i = popups.length - 1; i >= 0; i--) {
+        const p = popups[i];
+        p.y += p.vy;
+        p.alpha -= 0.022;
+        if (p.alpha <= 0) { popups.splice(i, 1); continue; }
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.alpha);
+        ctx.font = 'bold 20px Poppins, sans-serif';
+        ctx.fillStyle = p.color;
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.6)';
+        ctx.shadowBlur = 6;
+        ctx.fillText(p.text, p.x, p.y);
+        ctx.restore();
+      }
+
+      drawBladeTrail();
+      rafId = requestAnimationFrame(gameLoop);
+    }
+
+    function drawBladeTrail() {
+      if (bladeTrail.length < 2) return;
+      ctx.save();
+      ctx.strokeStyle = '#1d4ed8';
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
+      ctx.shadowColor = '#60a5fa';
+      ctx.shadowBlur = 10;
+
+      ctx.beginPath();
+      ctx.moveTo(bladeTrail[0].x, bladeTrail[0].y);
+      for (let i = 1; i < bladeTrail.length; i++) ctx.lineTo(bladeTrail[i].x, bladeTrail[i].y);
+      ctx.stroke();
+      ctx.restore();
+
+      bladeTrail.shift();
+    }
+
+    function getPointerPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.clientX ?? (e.touches && e.touches[0]?.clientX);
+      const clientY = e.clientY ?? (e.touches && e.touches[0]?.clientY);
+      if (clientX === undefined || clientY === undefined) return null;
+      return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+
+    function addTrailPoint(e) {
+      const pos = getPointerPos(e);
+      if (!pos) return;
+      bladeTrail.push(pos);
+      if (bladeTrail.length > 8) bladeTrail.shift();
+    }
+
+    function handlePointerDown(e) {
+      isMouseDown = true;
+      bladeTrail = [];
+      addTrailPoint(e);
+      checkTapSlice(e);
+    }
+
+    function handlePointerMove(e) {
+      if (!isMouseDown) return;
+      addTrailPoint(e);
+      checkSlice(e);
+    }
+
+    function handlePointerUp() {
+      isMouseDown = false;
+      bladeTrail = [];
+    }
+
+    function sliceFruit(f) {
+      if (f.sliced || isGameOver) return;
+      f.sliced = true;
+      if (window.SFX) SFX.hit();
+
+      if (f.isCorrect) {
+        if (window.SFX) SFX.correct();
+        score += 100;
+        document.getElementById('score-val').innerText = score;
+        popups.push({ x: f.x, y: f.y - 20, text: '+100', color: '#16a34a', alpha: 1, vy: -1.6 });
+        clearTimeout(nextQTimeout);
+        nextQTimeout = setTimeout(() => { if (!isGameOver) loadQuestion(currentQIndex + 1); }, 650);
+      } else {
+        if (window.SFX) SFX.wrong();
+        popups.push({ x: f.x, y: f.y - 20, text: tr('game.wrong'), color: '#dc2626', alpha: 1, vy: -1.6 });
+        if (maxLives > 0) {
+          lives--;
+          updateHearts();
+          if (lives <= 0) {
+            clearTimeout(endDelayTimeout);
+            endDelayTimeout = setTimeout(endGame, 350);
+          }
+        }
+      }
+    }
+
+    function checkTapSlice(e) {
+      const pos = getPointerPos(e);
+      if (!pos) return;
+      fruits.forEach(f => {
+        if (f.sliced) return;
+        const distFruit = Math.hypot(f.x - pos.x, f.y - pos.y);
+        const distBadge = Math.hypot(f.x - pos.x, (f.y + 45) - pos.y);
+        if (distFruit < f.radius + 15 || distBadge < 42) sliceFruit(f);
+      });
+    }
+
+    function checkSlice(e) {
+      if (bladeTrail.length < 2) return;
+      const p1 = bladeTrail[bladeTrail.length - 2];
+      const p2 = bladeTrail[bladeTrail.length - 1];
+      fruits.forEach(f => {
+        if (f.sliced) return;
+        const distFruit = distToSegment({ x: f.x, y: f.y }, p1, p2);
+        const distBadge = distToSegment({ x: f.x, y: f.y + 45 }, p1, p2);
+        if (distFruit < f.radius + 12 || distBadge < 40) sliceFruit(f);
+      });
+    }
+
+    function distToSegment(p, v, w) {
+      const l2 = (v.x - w.x) ** 2 + (v.y - w.y) ** 2;
+      if (l2 === 0) return Math.hypot(p.x - v.x, p.y - v.y);
+      let t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+      t = Math.max(0, Math.min(1, t));
+      return Math.hypot(p.x - (v.x + t * (w.x - v.x)), p.y - (v.y + t * (w.y - v.y)));
+    }
+
+    canvas.addEventListener('mousedown', handlePointerDown);
+    canvas.addEventListener('mousemove', handlePointerMove);
+    window.addEventListener('mouseup', handlePointerUp);
+    canvas.addEventListener('touchstart', handlePointerDown, { passive: true });
+    canvas.addEventListener('touchmove', handlePointerMove, { passive: true });
+    window.addEventListener('touchend', handlePointerUp);
+
+    function endGame() {
+      if (isGameOver) return;
+      isGameOver = true;
+      hasSubmittedScore = false;
+      lastPlayerName = '';
+      clearInterval(timerInterval);
+      clearInterval(spawnInterval);
+      clearTimeout(spawnDelayTimeout);
+      clearTimeout(nextQTimeout);
+      clearTimeout(endDelayTimeout);
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+
+      if (score > 0 && (maxLives === 0 || lives > 0)) {
+        if (window.SFX) SFX.win();
+        if (window.launchConfetti) window.launchConfetti();
+      } else {
+        if (window.SFX) SFX.wrong();
+      }
+
+      document.getElementById('final-score').innerText = tr('game.totalPoints', { n: score });
+      document.getElementById('final-time').innerText = tr('game.totalTime', { n: totalTimeElapsed });
+
+      const nameInput = document.getElementById('player-name-input');
+      const submitBtn = document.getElementById('btn-submit-score');
+      const alertBox = document.getElementById('score-submitted-alert');
+      if (nameInput) { nameInput.value = ''; nameInput.disabled = false; }
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.style.opacity = '1'; submitBtn.innerText = tr('game.send'); }
+      if (alertBox) alertBox.style.display = 'none';
+
+      document.getElementById('end-screen').style.display = 'flex';
+    }
+
+    function submitPlayerScore() {
+      if (hasSubmittedScore) return;
+      const nameInput = document.getElementById('player-name-input');
+      const playerName = (nameInput?.value || '').trim();
+      if (!playerName) {
+        alert(tr('game.enterNameAlert'));
+        if (nameInput) nameInput.focus();
+        return;
+      }
+
+      hasSubmittedScore = true;
+      lastPlayerName = playerName;
+      const maxScore = questions.length * 100;
+      GameBridge.finishGame(score, maxScore, [], playerName);
+
+      const submitBtn = document.getElementById('btn-submit-score');
+      const alertBox = document.getElementById('score-submitted-alert');
+      if (nameInput) nameInput.disabled = true;
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.6';
+        submitBtn.innerText = tr('game.savedBtn');
+      }
+      if (alertBox) {
+        alertBox.innerText = tr('game.scoreSavedBanner', { name: playerName, score });
+        alertBox.style.display = 'block';
+      }
+      if (window.SFX) SFX.click();
+    }
+  </script>
+</body>
+</html>

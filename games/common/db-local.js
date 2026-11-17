@@ -1312,6 +1312,338 @@ class LocalDatabase {
       console.warn('LotusDB: Could not delete project from Supabase:', e);
     }
   }
+  // --- ASSIGNMENTS & STUDENT SUBMISSIONS ---
+  getAllAssignments() {
+    try {
+      const list = JSON.parse(localStorage.getItem('lotus_assignments') || '[]') || [];
+      return Array.isArray(list) ? list : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  saveAllAssignments(assignments) {
+    localStorage.setItem('lotus_assignments', JSON.stringify(assignments || []));
+  }
+
+  getTeacherAssignments(teacherId) {
+    return this.getAllAssignments()
+      .filter(a => a.teacher_id === teacherId)
+      .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  }
+
+  getAssignmentById(id) {
+    if (!id) return null;
+    return this.getAllAssignments().find(a => a.id === id) || null;
+  }
+
+  async getAssignmentByIdAsync(id) {
+    if (!id) return null;
+    let asg = this.getAssignmentById(id);
+    if (!asg && this.hasSupabase()) {
+      const sb = this.getSupabaseClient();
+      if (sb) {
+        try {
+          const { data, error } = await sb.from('assignments').select('*').eq('id', id).maybeSingle();
+          if (!error && data) {
+            const list = this.getAllAssignments();
+            const idx = list.findIndex(a => a.id === id);
+            if (idx >= 0) list[idx] = data;
+            else list.push(data);
+            this.saveAllAssignments(list);
+            return data;
+          }
+        } catch (e) {}
+      }
+    }
+    return asg;
+  }
+
+  async createAssignment({ projectId, teacherId, title, templateType, rules = {}, allowMultiple = false, showAnswers = true, deadline = null }) {
+    const id = 'asg-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6);
+    const newAsg = {
+      id,
+      project_id: projectId,
+      teacher_id: teacherId,
+      title: (title || 'Tugas').trim(),
+      template_type: templateType || 'quiz',
+      rules: rules || {},
+      allow_multiple: Boolean(allowMultiple),
+      show_answers: showAnswers !== false,
+      status: 'active',
+      deadline: deadline || null,
+      created_at: new Date().toISOString()
+    };
+
+    const all = this.getAllAssignments();
+    all.unshift(newAsg);
+    this.saveAllAssignments(all);
+
+    if (this.hasSupabase()) {
+      const sb = this.getSupabaseClient();
+      if (sb) {
+        try {
+          await sb.from('assignments').upsert(newAsg);
+        } catch (err) {
+          console.warn('LotusDB: Could not sync assignment to Supabase:', err);
+        }
+      }
+    }
+
+    return newAsg;
+  }
+
+  async updateAssignmentStatus(assignmentId, status) {
+    const all = this.getAllAssignments();
+    const asg = all.find(a => a.id === assignmentId);
+    if (!asg) return null;
+
+    asg.status = status;
+    this.saveAllAssignments(all);
+
+    if (this.hasSupabase()) {
+      const sb = this.getSupabaseClient();
+      if (sb) {
+        try {
+          await sb.from('assignments').update({ status }).eq('id', assignmentId);
+        } catch (e) {
+          console.warn('LotusDB: Could not update assignment status in Supabase:', e);
+        }
+      }
+    }
+    return asg;
+  }
+
+  async deleteAssignment(assignmentId) {
+    let all = this.getAllAssignments();
+    all = all.filter(a => a.id !== assignmentId);
+    this.saveAllAssignments(all);
+
+    // Also delete local submissions for this assignment
+    let subs = this.getAllSubmissions();
+    subs = subs.filter(s => s.assignment_id !== assignmentId);
+    this.saveAllSubmissions(subs);
+
+    if (this.hasSupabase()) {
+      const sb = this.getSupabaseClient();
+      if (sb) {
+        try {
+          await sb.from('assignment_submissions').delete().eq('assignment_id', assignmentId);
+          await sb.from('assignments').delete().eq('id', assignmentId);
+        } catch (e) {
+          console.warn('LotusDB: Could not delete assignment from Supabase:', e);
+        }
+      }
+    }
+    return true;
+  }
+
+  // --- SUBMISSIONS ---
+  getAllSubmissions() {
+    try {
+      const list = JSON.parse(localStorage.getItem('lotus_assignment_submissions') || '[]') || [];
+      return Array.isArray(list) ? list : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  saveAllSubmissions(submissions) {
+    localStorage.setItem('lotus_assignment_submissions', JSON.stringify(submissions || []));
+  }
+
+  hasStudentSubmittedLocally(assignmentId, studentName) {
+    const clean = String(studentName || '').trim().toLowerCase();
+    if (!clean) return false;
+    return this.getAllSubmissions().some(s =>
+      s.assignment_id === assignmentId &&
+      String(s.student_name || '').trim().toLowerCase() === clean
+    );
+  }
+
+  async submitAssignmentResult({ assignmentId, studentName, studentClass = '-', score = 0, maxScore = 0, percentage = 0, timeTakenSeconds = 0, answersSummary = [] }) {
+    const id = 'sub-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6);
+    const subRecord = {
+      id,
+      assignment_id: assignmentId,
+      student_name: (studentName || 'Siswa').trim(),
+      student_class: (studentClass || '-').trim(),
+      score: Number(score) || 0,
+      max_score: Number(maxScore) || 0,
+      percentage: Number(percentage) || 0,
+      time_taken_seconds: Number(timeTakenSeconds) || 0,
+      answers_summary: Array.isArray(answersSummary) ? answersSummary : [],
+      created_at: new Date().toISOString()
+    };
+
+    const all = this.getAllSubmissions();
+    all.push(subRecord);
+    this.saveAllSubmissions(all);
+
+    if (this.hasSupabase()) {
+      const sb = this.getSupabaseClient();
+      if (sb) {
+        try {
+          await sb.from('assignment_submissions').insert(subRecord);
+        } catch (err) {
+          console.warn('LotusDB: Could not insert submission to Supabase:', err);
+        }
+      }
+    }
+
+    return subRecord;
+  }
+
+  async getAssignmentSubmissions(assignmentId) {
+    if (!assignmentId) return [];
+    let cloudSubs = null;
+
+    if (this.hasSupabase()) {
+      const sb = this.getSupabaseClient();
+      if (sb) {
+        try {
+          const { data, error } = await sb
+            .from('assignment_submissions')
+            .select('*')
+            .eq('assignment_id', assignmentId)
+            .order('created_at', { ascending: false });
+          if (!error && Array.isArray(data)) {
+            cloudSubs = data;
+          }
+        } catch (e) {
+          console.warn('LotusDB: Could not fetch submissions from Supabase:', e);
+        }
+      }
+    }
+
+    if (cloudSubs !== null) {
+      const localSubs = this.getAllSubmissions().filter(s => s.assignment_id === assignmentId);
+      const map = new Map();
+      cloudSubs.forEach(s => map.set(s.id, s));
+      localSubs.forEach(s => {
+        if (!map.has(s.id)) map.set(s.id, s);
+      });
+      const merged = Array.from(map.values()).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+      return merged;
+    }
+
+    return this.getAllSubmissions()
+      .filter(s => s.assignment_id === assignmentId)
+      .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  }
+
+  async syncAssignmentsFromCloud() {
+    const sb = this.getSupabaseClient();
+    if (!sb) return null;
+    try {
+      const { data, error } = await sb.from('assignments').select('*');
+      if (!error && Array.isArray(data)) {
+        this.saveAllAssignments(data);
+        return data;
+      }
+    } catch (e) {
+      console.warn('LotusDB: Could not fetch assignments from Supabase:', e);
+    }
+    return null;
+  }
+
+  computeAssignmentAnalytics(submissions = [], projectQuestions = []) {
+    const total = submissions.length;
+    if (total === 0) {
+      return {
+        totalStudents: 0,
+        averageScore: 0,
+        averagePercentage: 0,
+        highestScore: 0,
+        lowestScore: 0,
+        averageTimeSeconds: 0,
+        questionBreakdown: []
+      };
+    }
+
+    const totalScores = submissions.reduce((acc, s) => acc + (s.score || 0), 0);
+    const totalPerc = submissions.reduce((acc, s) => acc + (s.percentage || 0), 0);
+    const totalTime = submissions.reduce((acc, s) => acc + (s.time_taken_seconds || 0), 0);
+    const scores = submissions.map(s => s.score || 0);
+
+    // Analyze per question
+    const qMap = new Map();
+    (projectQuestions || []).forEach((q, idx) => {
+      qMap.set(String(q.id || idx + 1), {
+        questionId: q.id || String(idx + 1),
+        questionIndex: idx + 1,
+        questionText: q.text || q.question || `Pertanyaan #${idx + 1}`,
+        correctAnswer: (q.options && q.options.find(o => o.isCorrect))?.text || q.correctAnswer || '-',
+        correctCount: 0,
+        wrongCount: 0,
+        totalAnswers: 0,
+        wrongAnswersMap: {}
+      });
+    });
+
+    submissions.forEach(sub => {
+      const ansList = Array.isArray(sub.answers_summary) ? sub.answers_summary : [];
+      ansList.forEach((ans, idx) => {
+        const qId = String(ans.questionId || ans.id || idx + 1);
+        let qStat = qMap.get(qId);
+        if (!qStat) {
+          qStat = {
+            questionId: qId,
+            questionIndex: idx + 1,
+            questionText: ans.questionText || `Pertanyaan #${idx + 1}`,
+            correctAnswer: ans.correctAnswer || '-',
+            correctCount: 0,
+            wrongCount: 0,
+            totalAnswers: 0,
+            wrongAnswersMap: {}
+          };
+          qMap.set(qId, qStat);
+        }
+
+        qStat.totalAnswers++;
+        if (ans.isCorrect) {
+          qStat.correctCount++;
+        } else {
+          qStat.wrongCount++;
+          const given = String(ans.studentAnswer || ans.userAnswer || 'Salah').trim();
+          qStat.wrongAnswersMap[given] = (qStat.wrongAnswersMap[given] || 0) + 1;
+        }
+      });
+    });
+
+    const questionBreakdown = Array.from(qMap.values()).map(q => {
+      const accuracy = q.totalAnswers > 0 ? Math.round((q.correctCount / q.totalAnswers) * 100) : 0;
+      let topWrong = '-';
+      let maxWrongCount = 0;
+      Object.entries(q.wrongAnswersMap).forEach(([ans, count]) => {
+        if (count > maxWrongCount) {
+          maxWrongCount = count;
+          topWrong = `${ans} (${count} siswa)`;
+        }
+      });
+
+      let difficultyLabel = 'Sedang';
+      if (accuracy >= 80) difficultyLabel = 'Mudah';
+      else if (accuracy < 50) difficultyLabel = 'Sulit';
+
+      return {
+        ...q,
+        accuracyPercent: accuracy,
+        topWrongAnswer: topWrong,
+        difficultyLabel
+      };
+    });
+
+    return {
+      totalStudents: total,
+      averageScore: Math.round((totalScores / total) * 10) / 10,
+      averagePercentage: Math.round(totalPerc / total),
+      highestScore: Math.max(...scores),
+      lowestScore: Math.min(...scores),
+      averageTimeSeconds: Math.round(totalTime / total),
+      questionBreakdown
+    };
+  }
 }
 
 window.LotusDB = new LocalDatabase();

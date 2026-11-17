@@ -40,19 +40,53 @@ CREATE TABLE IF NOT EXISTS public.projects (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Index untuk mempercepat pencarian PIN murid & penyaringan komunitas
+-- 3. Buat Tabel Penugasan Siswa (Assignments)
+CREATE TABLE IF NOT EXISTS public.assignments (
+    id TEXT PRIMARY KEY,
+    project_id TEXT REFERENCES public.projects(id) ON DELETE CASCADE,
+    teacher_id TEXT REFERENCES public.teachers(id) ON DELETE SET NULL,
+    title TEXT NOT NULL,
+    template_type TEXT NOT NULL,
+    rules JSONB DEFAULT '{"hasLives": true, "livesCount": 3, "timeMode": "timer", "timerSeconds": 30, "shuffleQuestions": true, "shuffleAnswers": true}'::jsonb,
+    allow_multiple BOOLEAN DEFAULT false,
+    show_answers BOOLEAN DEFAULT true,
+    status TEXT DEFAULT 'active',
+    deadline TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 4. Buat Tabel Pengumpulan Jawaban Siswa (Assignment Submissions)
+CREATE TABLE IF NOT EXISTS public.assignment_submissions (
+    id TEXT PRIMARY KEY,
+    assignment_id TEXT REFERENCES public.assignments(id) ON DELETE CASCADE,
+    student_name TEXT NOT NULL,
+    student_class TEXT DEFAULT '-',
+    score INTEGER NOT NULL,
+    max_score INTEGER NOT NULL,
+    percentage INTEGER NOT NULL,
+    time_taken_seconds INTEGER NOT NULL,
+    answers_summary JSONB DEFAULT '[]'::jsonb,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Index untuk mempercepat pencarian PIN murid & penyaringan komunitas & penugasan
 CREATE INDEX IF NOT EXISTS idx_projects_pin ON public.projects(pin);
 CREATE INDEX IF NOT EXISTS idx_projects_teacher ON public.projects(teacher_id);
 CREATE INDEX IF NOT EXISTS idx_projects_community ON public.projects(is_public, is_deleted);
+CREATE INDEX IF NOT EXISTS idx_assignments_teacher ON public.assignments(teacher_id);
+CREATE INDEX IF NOT EXISTS idx_assignments_project ON public.assignments(project_id);
+CREATE INDEX IF NOT EXISTS idx_submissions_assign ON public.assignment_submissions(assignment_id);
 
 -- ==============================================================================
--- 3. PENGATURAN IZIN AKSES (Row Level Security / RLS)
+-- 5. PENGATURAN IZIN AKSES (Row Level Security / RLS)
 -- ==============================================================================
--- Mengizinkan murid main game lewat PIN & guru simpan soal menggunakan Supabase Publishable Key / Anon Key
+-- Mengizinkan murid main game lewat PIN/Link & guru simpan soal menggunakan Supabase Publishable Key / Anon Key
 -- RLS memastikan Secret Key tidak pernah diperlukan di sisi browser client.
 
 ALTER TABLE public.teachers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.assignments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.assignment_submissions ENABLE ROW LEVEL SECURITY;
 
 -- Policy Teachers: Izinkan baca akun untuk verifikasi login & pendaftaran akun baru
 DROP POLICY IF EXISTS "Public can view teachers" ON public.teachers;
@@ -77,8 +111,31 @@ CREATE POLICY "Anyone can create projects" ON public.projects FOR INSERT WITH CH
 DROP POLICY IF EXISTS "Anyone can update projects" ON public.projects;
 CREATE POLICY "Anyone can update projects" ON public.projects FOR UPDATE USING (true);
 
+-- Policy Assignments: Siapa saja dengan link bisa membaca tugas; Guru bisa mengelola tugas
+DROP POLICY IF EXISTS "Anyone can read assignments" ON public.assignments;
+CREATE POLICY "Anyone can read assignments" ON public.assignments FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Anyone can create assignments" ON public.assignments;
+CREATE POLICY "Anyone can create assignments" ON public.assignments FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Anyone can update assignments" ON public.assignments;
+CREATE POLICY "Anyone can update assignments" ON public.assignments FOR UPDATE USING (true);
+
+DROP POLICY IF EXISTS "Anyone can delete assignments" ON public.assignments;
+CREATE POLICY "Anyone can delete assignments" ON public.assignments FOR DELETE USING (true);
+
+-- Policy Submissions: Murid bisa submit jawaban tugas; Siapa saja/Guru bisa membaca hasil penugasan
+DROP POLICY IF EXISTS "Anyone can read submissions" ON public.assignment_submissions;
+CREATE POLICY "Anyone can read submissions" ON public.assignment_submissions FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Anyone can insert submissions" ON public.assignment_submissions;
+CREATE POLICY "Anyone can insert submissions" ON public.assignment_submissions FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Anyone can delete submissions" ON public.assignment_submissions;
+CREATE POLICY "Anyone can delete submissions" ON public.assignment_submissions FOR DELETE USING (true);
+
 -- ==============================================================================
--- 4. SEED DATA: 1 AKUN GURU DEMO (username: demo, password: demo)
+-- 6. SEED DATA: 1 AKUN GURU DEMO (username: demo, password: demo)
 -- ==============================================================================
 INSERT INTO public.teachers (id, name, username, email, password, subject, school)
 VALUES (
@@ -99,7 +156,7 @@ ON CONFLICT (id) DO UPDATE SET
     school = EXCLUDED.school;
 
 -- ==============================================================================
--- 5. SEED DATA: 3 PROYEK LENGKAP MILIK GURU DEMO (MASING-MASING 10 SOAL)
+-- 7. SEED DATA: 3 PROYEK LENGKAP MILIK GURU DEMO (MASING-MASING 10 SOAL)
 -- ==============================================================================
 
 -- Proyek 1: Solar System & Space Exploration (Kuis Klasik - 10 Soal)

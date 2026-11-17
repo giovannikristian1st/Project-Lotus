@@ -1205,6 +1205,7 @@
 
     function renderPortalUserMenu() {
       const teacher = LotusDB.getCurrentTeacherStrict();
+      updatePortalAuthNav();
       const wrapper = document.getElementById('portal-user-menu-wrapper');
       if (!wrapper) return;
 
@@ -1243,9 +1244,65 @@
     });
 
     // -------------------------------------------------------------------------
-    // NAVIGATION BETWEEN 3 TABS: Home / Teacher Login / Community
+    // NAVIGATION BETWEEN 3 TABS: Home / Teacher Login or Dashboard / Community
     // -------------------------------------------------------------------------
+    function goToTeacherProjectsDashboard() {
+      try {
+        localStorage.setItem('lotus_active_navigation', JSON.stringify({ view: 'view-dashboard', dashboardTab: 'projects' }));
+        sessionStorage.setItem('lotus_active_navigation', JSON.stringify({ view: 'view-dashboard', dashboardTab: 'projects' }));
+      } catch (e) {}
+      window.location.href = 'teacher-dashboard.html';
+    }
+
+    function updatePortalAuthNav() {
+      const teacher = LotusDB.getCurrentTeacherStrict();
+      const loginTabBtn = document.getElementById('nav-tab-login');
+      const homeCtaBtn = document.getElementById('home-cta-try-now');
+
+      if (teacher) {
+        if (loginTabBtn) {
+          loginTabBtn.onclick = () => goToTeacherProjectsDashboard();
+          loginTabBtn.innerHTML = `
+            <span class="ui-sprite ui-sm ui-dashboard"></span>
+            <span class="truncate">Dashboard</span>
+          `;
+          loginTabBtn.setAttribute('title', LotusI18n.getLang() === 'id' ? 'Buka Dashboard Proyek' : 'Open Projects Dashboard');
+        }
+
+        if (homeCtaBtn) {
+          homeCtaBtn.onclick = () => goToTeacherProjectsDashboard();
+          const spanText = homeCtaBtn.querySelector('span:first-child');
+          if (spanText) {
+            spanText.textContent = LotusI18n.getLang() === 'id' ? 'Buka Dashboard Saya' : 'Open My Dashboard';
+          }
+        }
+      } else {
+        if (loginTabBtn) {
+          loginTabBtn.onclick = () => switchPortalTab('login');
+          loginTabBtn.innerHTML = `
+            <span class="ui-sprite ui-sm ui-login"></span>
+            <span data-i18n="nav.login" class="truncate">${escapeHtml(LotusI18n.t('nav.login'))}</span>
+          `;
+          loginTabBtn.removeAttribute('title');
+        }
+
+        if (homeCtaBtn) {
+          homeCtaBtn.onclick = () => switchPortalTab('login');
+          const spanText = homeCtaBtn.querySelector('span:first-child');
+          if (spanText) {
+            spanText.textContent = LotusI18n.t('home.ctaTryNow');
+          }
+        }
+      }
+    }
+
     function switchPortalTab(tab, updateHash = true) {
+      const teacher = LotusDB.getCurrentTeacherStrict();
+      if (teacher && tab === 'login') {
+        goToTeacherProjectsDashboard();
+        return;
+      }
+
       const valid = ['home', 'login', 'community'].includes(tab) ? tab : 'home';
       activePortalTab = valid;
 
@@ -1286,9 +1343,16 @@
       const raw = (window.location.hash || '').replace(/^#/, '');
       const hashParams = new URLSearchParams(raw);
       const searchParams = new URLSearchParams(window.location.search);
-      const requestedTab = hashParams.get('tab') || searchParams.get('tab') || 'home';
+      let requestedTab = hashParams.get('tab') || searchParams.get('tab') || 'home';
       const pinParam = hashParams.get('pin') || searchParams.get('pin') || '';
 
+      const teacher = LotusDB.getCurrentTeacherStrict();
+      if (teacher && requestedTab === 'login') {
+        goToTeacherProjectsDashboard();
+        return;
+      }
+
+      updatePortalAuthNav();
       switchPortalTab(requestedTab, false);
 
       if (pinParam) {
@@ -1470,8 +1534,10 @@
       } catch (e) {}
       LotusDB.logoutTeacher();
       closePortalUserDropdown();
+      updatePortalAuthNav();
       renderLoginBanner();
       renderPortalUserMenu();
+      switchPortalTab('home');
     }
 
     function quickLoginTeacher(teacherId) {

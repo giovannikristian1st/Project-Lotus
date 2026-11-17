@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="games/common/ui-spritesheet.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -1107,15 +1108,8 @@
       if (!currentTeacher) return;
       const state = getSavedNavigation();
 
-      if (state.view === 'view-game-player' && state.projectId) {
-        const proj = LotusDB.getProjectById(state.projectId);
-        if (proj && proj.teacher_id === currentTeacher.id && !proj.is_deleted) {
-          if (state.templateId) proj.template_type = state.templateId;
-          openGamePlayer(state.projectId, !!state.isPlaying, false);
-          return;
-        }
-      }
-
+      // Note: Never auto-open view-game-player on initial page load/login;
+      // Teachers always land on their Projects Dashboard view first!
       if (state.view === 'view-edit-activity' && state.projectId) {
         const proj = LotusDB.getProjectById(state.projectId);
         if (proj && proj.teacher_id === currentTeacher.id) {
@@ -3429,6 +3423,23 @@
         closeSwitchAccountModal();
       }
     });
+
+    // Update Bottom-Left Version Badge
+    (function initVersionBadge() {
+      const el = document.getElementById('version-badge-text');
+      if (!el) return;
+      const v = window.LOTUS_SUPABASE_CONFIG ? window.LOTUS_SUPABASE_CONFIG.version : '2026.11.17';
+      const mode = (window.LotusDB && LotusDB.hasSupabase()) ? 'Cloud' : 'Local';
+      el.textContent = `v${v} • ${mode}`;
+    })();
   </script>
+
+  <!-- Floating Version / Cloud Mode Badge (Bottom-Left) -->
+  <div id="lotus-version-badge" class="fixed bottom-3 left-3 z-40 bg-white/95 backdrop-blur border border-[#d6cfc2] shadow-sm rounded-full px-3 py-1 flex items-center gap-2 text-[11px] font-semibold text-[#57534e] select-none hover:border-[#1d4ed8] transition-colors" title="LotusWall Build Version & Cloud Status">
+    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+    <span id="version-badge-text">v2026.11.17 • Cloud</span>
+    <span class="text-[#a1a1aa]">•</span>
+    <span class="font-mono text-[10px] text-[#71717a]">Build e8e4</span>
+  </div>
 </body>
 </html>

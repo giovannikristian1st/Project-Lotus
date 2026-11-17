@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="games/common/ui-spritesheet.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -439,49 +440,46 @@
           </form>
         </div>
 
-        <!-- Right Sidebar: Collapsible 10 Demo Teachers + Cloud Sync (5 columns) -->
+        <!-- Right Sidebar: Teacher Cloud Platform Info & Cloud Sync (5 columns) -->
         <div class="lg:col-span-5 space-y-4">
-          <div class="bg-white rounded-xl border border-[#e5dfd3] p-5 space-y-4">
-            <button type="button" id="toggle-demo-btn" onclick="toggleDemoDrawer()"
-              class="w-full flex items-center justify-between gap-2 text-left cursor-pointer group">
-              <div class="flex items-center gap-2.5">
-                <span class="w-9 h-9 rounded-lg bg-[#fef3c7] border border-[#f59e0b]/40 flex items-center justify-center shrink-0">
-                  <span class="ui-sprite ui-sm ui-users-switch"></span>
-                </span>
-                <div>
-                  <div class="text-xs sm:text-sm font-bold text-[#18181b] group-hover:text-[#1d4ed8] transition-colors" data-i18n="login.demoBtn">
-                    Quick 1-Click Demo Teacher (demo / demo)
-                  </div>
-                  <div class="text-[11px] text-[#78716c]" data-i18n="login.demoPasswordNote">Demo credentials: demo / demo</div>
-                </div>
+          <div class="bg-white rounded-xl border border-[#e5dfd3] p-5 space-y-3.5">
+            <div class="flex items-center gap-2.5 text-[#18181b] font-bold text-sm">
+              <span class="w-8 h-8 rounded-lg bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-center text-[#1d4ed8]">
+                <span class="ui-sprite ui-sm ui-sparkles"></span>
+              </span>
+              <span>LotusWall Teacher Cloud</span>
+            </div>
+            <p class="text-xs text-[#57534e] leading-relaxed">
+              Create, edit, and launch classroom games across 15 interactive modes. All activities sync seamlessly to Supabase Cloud for live student participation.
+            </p>
+            <div class="space-y-2 pt-1 border-t border-[#f4f1ea] text-xs text-[#57534e]">
+              <div class="flex items-center gap-2">
+                <span class="ui-sprite ui-xs ui-check text-[#15803d]"></span>
+                <span>Automatic Supabase Cloud Synchronization</span>
               </div>
-              <span id="demo-drawer-arrow" class="ui-sprite ui-sm ui-arrow-right transition-transform"></span>
-            </button>
-
-            <div id="demo-teachers-drawer" class="hidden space-y-3 pt-2 border-t border-[#eee9df]">
-              <div id="demo-teachers-list" class="space-y-2 max-h-72 overflow-y-auto pr-1">
-                <!-- Rendered via JS -->
+              <div class="flex items-center gap-2">
+                <span class="ui-sprite ui-xs ui-check text-[#15803d]"></span>
+                <span>Direct Student PIN join without student accounts</span>
               </div>
-              <button type="button" onclick="quickLoginTeacher('t-demo')"
-                class="w-full py-2.5 rounded-lg bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer">
-                <span class="ui-sprite ui-sm ui-dashboard"></span>
-                <span>Masuk Cepat Sebagai Demo (1-Klik)</span>
-              </button>
+              <div class="flex items-center gap-2">
+                <span class="ui-sprite ui-xs ui-check text-[#15803d]"></span>
+                <span>15 Standard &amp; AI Camera game templates</span>
+              </div>
             </div>
           </div>
 
-          <div class="bg-white rounded-xl border border-[#e5dfd3] p-5 flex items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-lg bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-center shrink-0">
+          <div class="bg-white rounded-xl border border-[#e5dfd3] p-4 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-center shrink-0">
                 <span class="ui-sprite ui-sm ui-cloud"></span>
               </div>
               <div>
                 <div class="text-xs font-bold text-[#18181b]" data-i18n="login.cloudTitle">Cloud Sync (Supabase)</div>
-                <div class="text-[11px] text-[#78716c]" data-i18n="login.cloudBtn">Cloud Sync Settings</div>
+                <div id="cloud-status-indicator" class="text-[11px] text-[#15803d] font-semibold">Active &amp; Ready</div>
               </div>
             </div>
             <button type="button" onclick="openCloudModal()"
-              class="px-3.5 py-2 rounded-lg bg-[#f4f1ea] hover:bg-[#e7e2d8] text-[#18181b] font-semibold text-xs border border-[#d6cfc2] transition-colors cursor-pointer" data-i18n="login.cloudBtn">
+              class="px-3 py-1.5 rounded-lg bg-[#f4f1ea] hover:bg-[#e7e2d8] text-[#18181b] font-semibold text-xs border border-[#d6cfc2] transition-colors cursor-pointer" data-i18n="login.cloudBtn">
               Cloud Sync Settings
             </button>
           </div>
@@ -667,6 +665,87 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: ADMINISTRATOR PANEL (Username: admin, Password: admin)
+       ========================================================================= -->
+  <div id="modal-admin" class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center p-4" onclick="closeAdminModal()">
+    <div class="bg-white rounded-xl p-6 max-w-lg w-full shadow-2xl border border-[#d6cfc2] space-y-5" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between border-b border-[#eee9df] pb-3">
+        <h3 class="text-base font-bold text-[#18181b] flex items-center gap-2">
+          <span class="w-8 h-8 rounded-lg bg-[#fef3c7] border border-[#f59e0b]/40 flex items-center justify-center text-[#b45309]">
+            <span class="ui-sprite ui-sm ui-lock"></span>
+          </span>
+          <span data-i18n="admin.title">LotusWall Administrator Panel</span>
+        </h3>
+        <button type="button" onclick="closeAdminModal()" class="p-1.5 rounded-md bg-[#f4f1ea] hover:bg-[#e7e2d8] cursor-pointer" aria-label="Close">
+          <span class="ui-sprite ui-sm ui-close"></span>
+        </button>
+      </div>
+
+      <p class="text-xs text-[#57534e]" data-i18n="admin.desc">
+        Restricted area for project administrators, demo teacher quick-login, and Supabase database synchronization.
+      </p>
+
+      <!-- Section 1: Quick 1-Click Demo Login -->
+      <div class="bg-[#fcfbf8] rounded-xl border border-[#e5dfd3] p-4 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs font-bold text-[#18181b] uppercase tracking-wider flex items-center gap-1.5" data-i18n="admin.demoHeading">
+            <span class="ui-sprite ui-xs ui-users-switch"></span>
+            <span>Quick Demo Access</span>
+          </h4>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#eff6ff] text-[#1d4ed8] border border-[#bfdbfe]">Demo: demo / demo</span>
+        </div>
+        <p class="text-[11px] text-[#78716c]" data-i18n="admin.demoDesc">
+          Log in directly as Demo Teacher with pre-seeded classroom projects (Solar System, Fruit Slicer, AI Hand Slicer).
+        </p>
+        <button type="button" onclick="quickLoginTeacher('t-demo')"
+          class="w-full py-2.5 rounded-lg bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer" data-i18n="admin.demoBtn">
+          <span class="ui-sprite ui-sm ui-dashboard"></span>
+          <span>Launch Demo Teacher Dashboard</span>
+        </button>
+      </div>
+
+      <!-- Section 2: Supabase Cloud Operations -->
+      <div class="bg-[#fcfbf8] rounded-xl border border-[#e5dfd3] p-4 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs font-bold text-[#18181b] uppercase tracking-wider flex items-center gap-1.5" data-i18n="admin.cloudHeading">
+            <span class="ui-sprite ui-xs ui-cloud"></span>
+            <span>Supabase Cloud Status</span>
+          </h4>
+          <span id="admin-cloud-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Connected</span>
+        </div>
+        <div class="text-[11px] text-[#57534e] space-y-1">
+          <div><span class="font-semibold text-[#18181b]">Config File:</span> <code class="font-mono text-[10px] bg-white px-1.5 py-0.5 rounded border border-[#e5dfd3]">supabase-config.js</code></div>
+          <div id="admin-cloud-url-display" class="truncate font-mono text-[10px] text-[#78716c]">URL: Not set</div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <button type="button" onclick="triggerAdminCloudSync()"
+            class="py-2 px-3 rounded-lg bg-[#15803d] hover:bg-[#166534] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer" data-i18n="admin.cloudSyncBtn">
+            <span class="ui-sprite ui-xs ui-refresh"></span>
+            <span>Re-sync from Cloud</span>
+          </button>
+          <button type="button" onclick="openCloudModal(); closeAdminModal();"
+            class="py-2 px-3 rounded-lg bg-white hover:bg-[#f4f1ea] text-[#18181b] font-bold text-xs border border-[#d6cfc2] flex items-center justify-center gap-1.5 transition-colors cursor-pointer" data-i18n="admin.configBtn">
+            <span class="ui-sprite ui-xs ui-sliders"></span>
+            <span>Cloud Settings</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Section 3: Cache Maintenance -->
+      <div class="flex items-center justify-between pt-1">
+        <button type="button" onclick="purgeLocalGamesCache()"
+          class="px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 font-semibold text-xs border border-red-200 cursor-pointer" data-i18n="admin.purgeBtn">
+          Purge Stale Cache
+        </button>
+        <button type="button" onclick="closeAdminModal()"
+          class="px-4 py-1.5 rounded-lg bg-[#f4f1ea] hover:bg-[#e7e2d8] text-[#18181b] font-bold text-xs border border-[#d6cfc2] cursor-pointer" data-i18n="admin.close">
+          Close
+        </button>
+      </div>
     </div>
   </div>
 
@@ -1273,9 +1352,21 @@
         return;
       }
 
+      // Admin Panel Access (Username: admin, Password: admin)
+      if (identifier.toLowerCase() === 'admin' && password === 'admin') {
+        errBox.classList.add('hidden');
+        openAdminModal();
+        return;
+      }
+
       const res = LotusDB.authenticateTeacher(identifier, password, remember);
       if (res.success) {
         errBox.classList.add('hidden');
+        // Clear active navigation to guarantee landing directly on Projects Dashboard
+        try {
+          localStorage.removeItem('lotus_active_navigation');
+          sessionStorage.removeItem('lotus_active_navigation');
+        } catch (err) {}
         window.location.href = 'teacher-dashboard.html';
       } else {
         errText.textContent = res.message || LotusI18n.t('login.errWrong');
@@ -1297,6 +1388,10 @@
       const res = LotusDB.registerTeacher({ name, email, subject, school, password }, remember);
       if (res.success) {
         errBox.classList.add('hidden');
+        try {
+          localStorage.removeItem('lotus_active_navigation');
+          sessionStorage.removeItem('lotus_active_navigation');
+        } catch (err) {}
         window.location.href = 'teacher-dashboard.html';
       } else {
         errText.textContent = res.message || LotusI18n.t('login.errRegFields');
@@ -1315,53 +1410,87 @@
       renderPortalUserMenu();
     }
 
-    function toggleDemoDrawer() {
-      const drawer = document.getElementById('demo-teachers-drawer');
-      const arrow = document.getElementById('demo-drawer-arrow');
-      const isHidden = drawer.classList.toggle('hidden');
-      if (arrow) arrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(90deg)';
-      if (!isHidden) renderDemoTeachersList();
-    }
-
-    function renderDemoTeachersList() {
-      const container = document.getElementById('demo-teachers-list');
-      if (!container) return;
-      const teachers = LotusDB.getTeachers();
-      const actionLabel = LotusI18n.t('login.oneClickSignIn');
-
-      container.innerHTML = teachers.map(t => `
-        <button type="button" onclick="quickLoginTeacher('${escapeHtml(t.id)}')"
-          class="w-full p-2.5 rounded-lg border border-[#e5dfd3] hover:border-[#1d4ed8] bg-[#fcfbf8] hover:bg-[#eff6ff]/60 flex items-center justify-between gap-2 text-left transition-colors cursor-pointer group">
-          <div class="flex items-center gap-2.5 min-w-0">
-            <div class="w-8 h-8 rounded-md bg-[#eff6ff] border border-[#bfdbfe] text-[#1d4ed8] font-bold text-[11px] flex items-center justify-center shrink-0">
-              ${escapeHtml(getTeacherInitials(t.name))}
-            </div>
-            <div class="min-w-0">
-              <div class="text-xs font-bold text-[#18181b] truncate">${escapeHtml(t.name)}</div>
-              <div class="text-[10px] text-[#78716c] truncate">${escapeHtml(t.subject)} • ${escapeHtml(t.email)}</div>
-            </div>
-          </div>
-          <span class="px-2.5 py-1 rounded-md bg-[#1d4ed8] group-hover:bg-[#1e40af] text-white font-semibold text-[10px] shrink-0">
-            ${escapeHtml(actionLabel)}
-          </span>
-        </button>
-      `).join('');
-    }
-
     function quickLoginTeacher(teacherId) {
       const teacher = LotusDB.getTeacherById(teacherId);
       if (!teacher) return;
       const remember = Boolean(document.getElementById('signin-remember')?.checked);
       LotusDB.setCurrentTeacher(teacher, remember);
+      try {
+        localStorage.removeItem('lotus_active_navigation');
+        sessionStorage.removeItem('lotus_active_navigation');
+      } catch (e) {}
       window.location.href = 'teacher-dashboard.html';
+    }
+
+    // Admin Control Panel Modal (admin / admin)
+    function openAdminModal() {
+      const cfg = LotusDB.getSupabaseConfig();
+      const badge = document.getElementById('admin-cloud-badge');
+      const urlDisp = document.getElementById('admin-cloud-url-display');
+      if (cfg && cfg.url) {
+        if (badge) {
+          badge.textContent = 'Cloud Active';
+          badge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200';
+        }
+        if (urlDisp) urlDisp.textContent = 'URL: ' + cfg.url;
+      } else {
+        if (badge) {
+          badge.textContent = 'Local Offline';
+          badge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200';
+        }
+        if (urlDisp) urlDisp.textContent = 'URL: Belum diatur (cek supabase-config.js)';
+      }
+      document.getElementById('modal-admin')?.classList.remove('hidden');
+    }
+
+    function closeAdminModal() {
+      document.getElementById('modal-admin')?.classList.add('hidden');
+    }
+
+    async function triggerAdminCloudSync() {
+      if (!LotusDB.hasSupabase()) {
+        alert(LotusI18n.getLang() === 'id'
+          ? 'Supabase belum terkonfigurasi. Silakan isi URL & Key di supabase-config.js atau modal Cloud Sync Settings.'
+          : 'Supabase is not configured yet. Please enter URL & Key in supabase-config.js or Cloud Sync Settings.');
+        return;
+      }
+      try {
+        const synced = await LotusDB.syncProjectsFromCloud();
+        await LotusDB.syncTeachersFromCloud();
+        renderCommunityCards();
+        alert(LotusI18n.getLang() === 'id'
+          ? `Sukses! Berhasil menyinkronkan ${synced ? synced.length : 0} proyek langsung dari Supabase Cloud.`
+          : `Success! Synced ${synced ? synced.length : 0} projects directly from Supabase Cloud.`);
+      } catch (err) {
+        alert('Cloud Sync Error: ' + (err.message || err));
+      }
+    }
+
+    function purgeLocalGamesCache() {
+      if (!confirm(LotusI18n.getLang() === 'id'
+        ? 'Bersihkan semua cache game lama di browser dan segarkan ulang data murni dari Supabase?'
+        : 'Purge all stale local games cache and refresh directly from Supabase?')) {
+        return;
+      }
+      localStorage.removeItem('lotus_projects');
+      localStorage.removeItem('lotus_seeded_project_ids');
+      localStorage.removeItem('lotus_seed_version');
+      localStorage.removeItem('lotus_active_navigation');
+      LotusDB.initStorage().then(() => {
+        renderCommunityCards();
+        alert(LotusI18n.getLang() === 'id'
+          ? 'Cache game lama berhasil dibersihkan! Halaman akan dimuat ulang.'
+          : 'Stale games cache purged! Reloading page.');
+        window.location.reload();
+      });
     }
 
     // Cloud Sync Modal
     function openCloudModal() {
       try {
-        const saved = JSON.parse(localStorage.getItem('supabase_config') || '{}');
-        document.getElementById('sb-url').value = saved.url || '';
-        document.getElementById('sb-key').value = saved.key || '';
+        const cfg = LotusDB.getSupabaseConfig();
+        document.getElementById('sb-url').value = cfg.url || '';
+        document.getElementById('sb-key').value = cfg.key || '';
       } catch (e) {}
       document.getElementById('modal-cloud').classList.remove('hidden');
     }
@@ -1403,16 +1532,25 @@
       const sb = LotusDB.getSupabaseClient();
       if (!sb) {
         alert(LotusI18n.getLang() === 'id'
-          ? 'Silakan masukkan Supabase URL & Publishable/Anon Key terlebih dahulu di menu "Cloud Sync Settings" agar fitur Login Google aktif.'
-          : 'Please enter your Supabase URL & Publishable/Anon Key in "Cloud Sync Settings" first to activate Google Sign-In.');
+          ? 'Silakan masukkan Supabase URL & Publishable/Anon Key terlebih dahulu di file "supabase-config.js" atau menu "Cloud Sync Settings" agar fitur Login Google aktif.'
+          : 'Please enter your Supabase URL & Publishable/Anon Key in "supabase-config.js" or "Cloud Sync Settings" first to activate Google Sign-In.');
         openCloudModal();
         return;
       }
+
+      if (window.location.protocol === 'file:') {
+        alert(LotusI18n.getLang() === 'id'
+          ? 'Catatan Penting: Login Google memerlukan web server (seperti Live Server di http://localhost:5500 atau GitHub Pages) karena Google dan Supabase tidak mengizinkan redirect ke file:// di komputer lokal. Silakan buka website melalui web server lokal atau link GitHub Pages Anda.'
+          : 'Google Sign-In requires an HTTP/HTTPS web server (such as Live Server at http://localhost:5500 or GitHub Pages) because Google and Supabase forbid redirecting to file:// URLs. Please open via a local server or GitHub Pages.');
+        return;
+      }
+
       try {
+        const cleanRedirectUrl = window.location.href.split('#')[0].split('?')[0];
         const { error } = await sb.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: window.location.origin + window.location.pathname
+            redirectTo: cleanRedirectUrl
           }
         });
         if (error) alert('Google Sign-In Error: ' + error.message);
@@ -1428,15 +1566,38 @@
         const { data: { session } } = await sb.auth.getSession();
         if (session && session.user) {
           const u = session.user;
+          const teacherId = 'g-' + u.id.slice(0, 8);
+          const teacherName = u.user_metadata?.full_name || u.email?.split('@')[0] || 'Google Teacher';
+          const teacherEmail = u.email || 'google@user.com';
+          const teacherUsername = u.email?.split('@')[0] || 'teacher';
+
           const teacher = {
-            id: 'g-' + u.id.slice(0, 8),
-            name: u.user_metadata?.full_name || u.email?.split('@')[0] || 'Google Teacher',
-            email: u.email || 'google@user.com',
-            username: u.email?.split('@')[0] || 'teacher',
+            id: teacherId,
+            name: teacherName,
+            email: teacherEmail,
+            username: teacherUsername,
             subject: 'IPA & Umum',
             school: 'Google Connected Teacher'
           };
+
+          // Auto-provision Google teacher in Supabase if not registered yet!
+          try {
+            await sb.from('teachers').upsert({
+              id: teacherId,
+              name: teacherName,
+              email: teacherEmail,
+              username: teacherUsername,
+              password: 'oauth-google-user',
+              subject: 'IPA & Umum',
+              school: 'Google Connected Teacher'
+            }, { onConflict: 'id' });
+          } catch (e) {}
+
           LotusDB.setCurrentTeacher(teacher, true);
+          try {
+            sessionStorage.removeItem('lotus_active_navigation');
+            localStorage.removeItem('lotus_active_navigation');
+          } catch (e) {}
           window.location.href = 'teacher-dashboard.html';
         }
       } catch (e) {}
@@ -2314,7 +2475,23 @@
       populateSubjectFilterOptions();
       syncTabFromLocation();
       window.addEventListener('hashchange', syncTabFromLocation);
+
+      // Update Bottom-Left Release / Cloud Status Badge
+      const vBadge = document.getElementById('version-badge-text');
+      if (vBadge) {
+        const v = window.LOTUS_SUPABASE_CONFIG ? window.LOTUS_SUPABASE_CONFIG.version : '2026.11.17';
+        const mode = (window.LotusDB && LotusDB.hasSupabase()) ? 'Cloud' : 'Local';
+        vBadge.textContent = `v${v} • ${mode}`;
+      }
     });
   </script>
+
+  <!-- Floating Version / Cloud Mode Badge (Bottom-Left) -->
+  <div id="lotus-version-badge" class="fixed bottom-3 left-3 z-40 bg-white/95 backdrop-blur border border-[#d6cfc2] shadow-sm rounded-full px-3 py-1 flex items-center gap-2 text-[11px] font-semibold text-[#57534e] select-none hover:border-[#1d4ed8] transition-colors" title="LotusWall Build Version & Cloud Status">
+    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+    <span id="version-badge-text">v2026.11.17 • Cloud</span>
+    <span class="text-[#a1a1aa]">•</span>
+    <span class="font-mono text-[10px] text-[#71717a]">Build e8e4</span>
+  </div>
 </body>
 </html>

@@ -4,7 +4,7 @@
  * (Standard & AI Camera templates, TK-SMK levels, multi-language), media blobs, & leaderboards.
  */
 
-const LOTUS_SEED_VERSION = '2026.11.demo';
+const LOTUS_SEED_VERSION = '2026.11.17-pure-cloud';
 
 const DEFAULT_TEACHERS = [
   {
@@ -455,17 +455,24 @@ class LocalDatabase {
       try {
         currentProjects = JSON.parse(existingProjectsRaw || '[]');
       } catch (e) {}
+      const oldMockTeacherIds = ['t-1', 't-2', 't-3', 't-4', 't-5', 't-6', 't-7', 't-8', 't-9', 't-10'];
       const defaultIds = INITIAL_PROJECTS.map(p => p.id);
-      const userProjects = currentProjects.filter(p => !defaultIds.includes(p.id) && !p.id.startsWith('proj-demo-old'));
+      // Cleanly remove all old mock teacher projects to prevent unwanted games from cluttering community
+      const userProjects = currentProjects.filter(p =>
+        !defaultIds.includes(p.id) &&
+        !p.id.startsWith('proj-demo-old') &&
+        !oldMockTeacherIds.includes(p.teacher_id)
+      );
       const mergedProjects = [...INITIAL_PROJECTS, ...userProjects].map(p => this.normalizeProjectMeta(p));
       localStorage.setItem('lotus_projects', JSON.stringify(mergedProjects));
       localStorage.setItem('lotus_seeded_project_ids', JSON.stringify(defaultIds));
       localStorage.setItem('lotus_seed_version', LOTUS_SEED_VERSION);
     }
 
-    // 4. Background cloud sync if Supabase configured
+    // 4. Background cloud sync if Supabase configured (Pure Supabase Sync)
     if (this.hasSupabase()) {
       this.syncProjectsFromCloud().catch(() => {});
+      this.syncTeachersFromCloud().catch(() => {});
     }
 
     // 3. IndexedDB for media assets
@@ -966,12 +973,23 @@ class LocalDatabase {
 
   // --- SUPABASE CLOUD SYNC ENGINE ---
   getSupabaseConfig() {
-    try {
-      const raw = localStorage.getItem('supabase_config');
-      return raw ? JSON.parse(raw) : {};
-    } catch (e) {
-      return {};
+    let url = '';
+    let key = '';
+    if (typeof window !== 'undefined' && window.LOTUS_SUPABASE_CONFIG && window.LOTUS_SUPABASE_CONFIG.url) {
+      url = String(window.LOTUS_SUPABASE_CONFIG.url || '').trim();
+      key = String(window.LOTUS_SUPABASE_CONFIG.publishableKey || window.LOTUS_SUPABASE_CONFIG.key || '').trim();
     }
+    if (!url || !key) {
+      try {
+        const raw = localStorage.getItem('supabase_config');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          url = url || String(parsed.url || '').trim();
+          key = key || String(parsed.key || '').trim();
+        }
+      } catch (e) {}
+    }
+    return { url, key };
   }
 
   setSupabaseConfig(url, key) {
@@ -1045,18 +1063,30 @@ class LocalDatabase {
     if (!sb) return null;
     try {
       const { data, error } = await sb.from('projects').select('*').order('updated_at', { ascending: false });
-      if (!error && Array.isArray(data) && data.length > 0) {
-        const localProjects = this.getAllProjects();
-        const map = new Map(localProjects.map(p => [p.id, p]));
-        data.forEach(cp => {
-          map.set(cp.id, this.normalizeProjectMeta(cp));
-        });
-        const merged = Array.from(map.values()).sort((a, b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0));
-        this.saveAllProjects(merged);
-        return merged;
+      if (!error && Array.isArray(data)) {
+        // PURE SUPABASE CLOUD MODE: Supabase is the SINGLE SOURCE OF TRUTH!
+        // Directly overwrite local cache with Supabase projects (no merging with stale local projects)
+        const cloudProjects = data.map(cp => this.normalizeProjectMeta(cp));
+        this.saveAllProjects(cloudProjects);
+        return cloudProjects;
       }
     } catch (e) {
       console.warn('LotusDB: Could not fetch projects from Supabase:', e);
+    }
+    return null;
+  }
+
+  async syncTeachersFromCloud() {
+    const sb = this.getSupabaseClient();
+    if (!sb) return null;
+    try {
+      const { data, error } = await sb.from('teachers').select('*');
+      if (!error && Array.isArray(data) && data.length > 0) {
+        localStorage.setItem('lotus_teachers', JSON.stringify(data));
+        return data;
+      }
+    } catch (e) {
+      console.warn('LotusDB: Could not fetch teachers from Supabase:', e);
     }
     return null;
   }

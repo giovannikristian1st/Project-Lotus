@@ -582,7 +582,7 @@ class LocalDatabase {
     if (found) {
       this.setCurrentTeacher(found, Boolean(rememberMe));
       if (rememberMe) {
-        this.saveRememberedCredentials(emailOrName.trim(), password);
+        this.saveRememberedCredentials(found.username || emailOrName.trim(), password);
       } else {
         this.clearRememberedCredentials();
       }
@@ -590,14 +590,30 @@ class LocalDatabase {
     }
     const errMsg = window.LotusI18n
       ? window.LotusI18n.t('login.errWrong')
-      : 'Email/Name or password is incorrect! (Demo password: 1qaz2wsx)';
+      : 'Email/Name or password is incorrect! (Demo password: demo)';
     return { success: false, message: errMsg };
   }
 
-  registerTeacher({ name, email, password, subject, school }, rememberMe = true) {
+  async authenticateTeacherAsync(emailOrName, password, rememberMe = false) {
+    let res = this.authenticateTeacher(emailOrName, password, rememberMe);
+    if (!res.success && this.hasSupabase()) {
+      try {
+        await this.syncTeachersFromCloud();
+        res = this.authenticateTeacher(emailOrName, password, rememberMe);
+      } catch (e) {}
+    }
+    return res;
+  }
+
+  async registerTeacher({ name, username, email, password, subject, school }, rememberMe = true) {
     const cleanName = (name || '').trim();
     const cleanEmail = (email || '').trim().toLowerCase();
     const cleanPass = password || '';
+    let cleanUsername = (username || cleanEmail.split('@')[0]).trim().toLowerCase().replace(/[^a-z0-9_.-]/g, '');
+    if (!cleanUsername) {
+      cleanUsername = 'guru_' + Math.floor(1000 + Math.random() * 9000);
+    }
+
     if (!cleanName || !cleanEmail || !cleanPass) {
       return {
         success: false,
@@ -605,29 +621,225 @@ class LocalDatabase {
       };
     }
 
+    // Refresh teachers from Supabase if connected
+    if (this.hasSupabase()) {
+      try {
+        await this.syncTeachersFromCloud();
+      } catch (e) {}
+    }
+
     const teachers = [...this.getTeachers()];
-    if (teachers.some(t => t.email.toLowerCase() === cleanEmail)) {
+    if (teachers.some(t => t.email && t.email.toLowerCase() === cleanEmail)) {
       return {
         success: false,
         message: window.LotusI18n ? window.LotusI18n.t('login.errEmailExists') : 'A teacher account with this email already exists.'
       };
     }
 
+    if (teachers.some(t => t.username && t.username.toLowerCase() === cleanUsername)) {
+      return {
+        success: false,
+        message: (window.LotusI18n && window.LotusI18n.getLang() === 'id')
+          ? 'Username tersebut sudah digunakan oleh guru lain. Silakan pilih username lain.'
+          : 'This username is already taken. Please choose another username.'
+      };
+    }
+
     const newTeacher = {
       id: 't-' + Date.now(),
       name: cleanName,
+      username: cleanUsername,
       email: cleanEmail,
       password: cleanPass,
       subject: (subject || 'General').trim(),
       school: (school || 'LotusWall Partner School').trim()
     };
+
     teachers.push(newTeacher);
     localStorage.setItem('lotus_teachers', JSON.stringify(teachers));
     this.setCurrentTeacher(newTeacher, Boolean(rememberMe));
     if (rememberMe) {
-      this.saveRememberedCredentials(cleanEmail, cleanPass);
+      this.saveRememberedCredentials(cleanUsername, cleanPass);
     }
+
+    // Sync to Supabase Cloud
+    if (this.hasSupabase()) {
+      const sb = this.getSupabaseClient();
+      if (sb) {
+        try {
+          await sb.from('teachers').upsert(newTeacher);
+          try {
+            await sb.auth.signUp({
+              email: cleanEmail,
+              password: cleanPass,
+              options: {
+                data: {
+                  name: cleanName,
+                  username: cleanUsername
+                }
+              }
+            });
+          } catch (_) {}
+        } catch (err) {
+          console.warn('LotusDB: Could not sync teacher to Supabase Cloud:', err);
+        }
+      }
+    }
+
     return { success: true, teacher: newTeacher };
+  }
+
+  async findTeacherByEmail(email) {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    if (!cleanEmail) return null;
+
+    // Check Supabase first if available
+    if (this.hasSupabase()) {
+      const sb = this.getSupabaseClient();
+      if (sb) {
+        try {
+          const { data, error } = await sb
+            .from('teachers')
+            .select('*')
+            .ilike('email', cleanEmail)
+            .maybeSingle();
+          if (!error && data) {
+            const teachers = this.getTeachers();
+            const idx = teachers.findIndex(t => t.id === data.id || (t.email && t.email.toLowerCase() === cleanEmail));
+            if (idx >= 0) {
+              teachers[idx] = data;
+            } else {
+              teachers.push(data);
+            }
+            localStorage.setItem('lotus_teachers', JSON.stringify(teachers));
+            return data;
+          }
+        } catch (e) {
+          console.warn('LotusDB findTeacherByEmail Supabase error:', e);
+        }
+      }
+    }
+
+    // Fallback to local storage
+    const teachers = this.getTeachers();
+    return teachers.find(t => t.email && t.email.toLowerCase() === cleanEmail) || null;
+  }
+
+  async resetTeacherPassword(email, newPassword) {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanPass = String(newPassword || '').trim();
+    if (!cleanEmail || !cleanPass) {
+      return {
+        success: false,
+        message: (window.LotusI18n && window.LotusI18n.getLang() === 'id')
+          ? 'Email dan kata sandi baru harus diisi.'
+          : 'Email and new password are required.'
+      };
+    }
+    if (cleanPass.length < 4) {
+      return {
+        success: false,
+        message: (window.LotusI18n && window.LotusI18n.getLang() === 'id')
+          ? 'Kata sandi baru minimal 4 karakter.'
+          : 'Password must be at least 4 characters.'
+      };
+    }
+
+    // Verify teacher exists
+    const teacher = await this.findTeacherByEmail(cleanEmail);
+    if (!teacher) {
+      return {
+        success: false,
+        message: window.LotusI18n ? window.LotusI18n.t('forgot.userNotFound') : 'No account found with this email.'
+      };
+    }
+
+    // Update in Supabase
+    if (this.hasSupabase()) {
+      const sb = this.getSupabaseClient();
+      if (sb) {
+        try {
+          const { error } = await sb
+            .from('teachers')
+            .update({ password: cleanPass })
+            .ilike('email', cleanEmail);
+          if (error) console.warn('Supabase password update error:', error);
+        } catch (err) {
+          console.warn('Supabase password update exception:', err);
+        }
+      }
+    }
+
+    // Update in Local Storage
+    const teachers = this.getTeachers();
+    const idx = teachers.findIndex(t => t.email && t.email.toLowerCase() === cleanEmail);
+    if (idx >= 0) {
+      teachers[idx].password = cleanPass;
+      localStorage.setItem('lotus_teachers', JSON.stringify(teachers));
+    }
+
+    // Update remembered credentials if matches
+    const remembered = this.getRememberedCredentials();
+    if (remembered && (remembered.identifier.toLowerCase() === cleanEmail || (teacher.username && remembered.identifier.toLowerCase() === teacher.username.toLowerCase()))) {
+      this.saveRememberedCredentials(remembered.identifier, cleanPass);
+    }
+
+    return {
+      success: true,
+      teacher: { ...teacher, password: cleanPass },
+      message: window.LotusI18n ? window.LotusI18n.t('forgot.resetSuccess') : 'Password updated successfully!'
+    };
+  }
+
+  async sendPasswordResetEmail(email) {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    if (!cleanEmail) {
+      return {
+        success: false,
+        message: 'Email must be provided.'
+      };
+    }
+
+    // Verify teacher exists first
+    const teacher = await this.findTeacherByEmail(cleanEmail);
+    if (!teacher) {
+      return {
+        success: false,
+        message: window.LotusI18n ? window.LotusI18n.t('forgot.userNotFound') : 'No account found with this email.'
+      };
+    }
+
+    if (!this.hasSupabase()) {
+      return {
+        success: false,
+        message: (window.LotusI18n && window.LotusI18n.getLang() === 'id')
+          ? 'Koneksi Supabase Cloud belum aktif.'
+          : 'Supabase Cloud connection is not active.'
+      };
+    }
+
+    const sb = this.getSupabaseClient();
+    try {
+      const redirectUrl = window.location.origin + window.location.pathname;
+      const { error } = await sb.auth.resetPasswordForEmail(cleanEmail, {
+        redirectTo: redirectUrl
+      });
+      if (error) {
+        return {
+          success: false,
+          message: error.message
+        };
+      }
+      return {
+        success: true,
+        message: window.LotusI18n ? window.LotusI18n.t('forgot.linkSent') : 'Password reset link sent to your email!'
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err.message || 'Failed to send reset link.'
+      };
+    }
   }
 
   // --- PROJECTS (MY PROJECTS, RECYCLE BIN & COMMUNITY) ---

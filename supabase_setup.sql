@@ -61,6 +61,12 @@ CREATE POLICY "Public can view teachers" ON public.teachers FOR SELECT USING (tr
 DROP POLICY IF EXISTS "Public can insert teacher" ON public.teachers;
 CREATE POLICY "Public can insert teacher" ON public.teachers FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Public can update teachers" ON public.teachers;
+CREATE POLICY "Public can update teachers" ON public.teachers FOR UPDATE USING (true);
+
+DROP POLICY IF EXISTS "Public can delete teachers" ON public.teachers;
+CREATE POLICY "Public can delete teachers" ON public.teachers FOR DELETE USING (true);
+
 -- Policy Projects: Murid & Guru bisa membaca semua proyek publik yang tidak dihapus
 DROP POLICY IF EXISTS "Anyone can read public projects" ON public.projects;
 CREATE POLICY "Anyone can read public projects" ON public.projects FOR SELECT USING (is_deleted = false);

@@ -1201,6 +1201,13 @@
       renderDashboard();
       initMediaUploadDropzone();
       restoreSavedNavigation();
+
+      // Auto-pull fresh data from Supabase Cloud on boot
+      if (window.LotusDB && LotusDB.hasSupabase()) {
+        LotusDB.syncProjectsFromCloud().then(() => {
+          renderDashboard();
+        }).catch(() => {});
+      }
     });
 
     window.addEventListener('hashchange', () => {

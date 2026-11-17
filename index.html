@@ -2476,6 +2476,15 @@
       syncTabFromLocation();
       window.addEventListener('hashchange', syncTabFromLocation);
 
+      // Auto-pull fresh data from Supabase Cloud on boot
+      if (window.LotusDB && LotusDB.hasSupabase()) {
+        LotusDB.syncProjectsFromCloud().then(() => {
+          populateSubjectFilterOptions();
+          renderCommunityCards();
+        }).catch(() => {});
+        LotusDB.syncTeachersFromCloud().catch(() => {});
+      }
+
       // Update Bottom-Left Release / Cloud Status Badge
       const vBadge = document.getElementById('version-badge-text');
       if (vBadge) {

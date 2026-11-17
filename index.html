@@ -652,8 +652,11 @@
           <input type="url" id="sb-url" placeholder="https://xxxxxxxx.supabase.co" class="w-full px-3.5 py-2 rounded-lg border border-[#d6cfc2] text-xs font-mono focus:outline-none focus:border-[#1d4ed8]">
         </div>
         <div>
-          <label for="sb-key" class="block text-xs font-bold text-[#3f3f46] mb-1">Supabase Anon Key</label>
-          <input type="text" id="sb-key" placeholder="eyJhbGciOi..." class="w-full px-3.5 py-2 rounded-lg border border-[#d6cfc2] text-xs font-mono focus:outline-none focus:border-[#1d4ed8]">
+          <label for="sb-key" class="block text-xs font-bold text-[#3f3f46] mb-1" data-i18n="login.cloudKeyLabel">Supabase Publishable / Anon Key</label>
+          <input type="text" id="sb-key" placeholder="sb_publishable_... or eyJ..." class="w-full px-3.5 py-2 rounded-lg border border-[#d6cfc2] text-xs font-mono focus:outline-none focus:border-[#1d4ed8]">
+          <p class="text-[11px] text-[#78716c] mt-1" data-i18n="login.cloudKeyHint">
+            Use the new Publishable Key (sb_publishable_...) or legacy Anon Key (eyJ...). Never use Secret Key (service_role)!
+          </p>
         </div>
         <div class="flex gap-2">
           <button type="button" onclick="handleResetCloudConfig()" class="px-4 py-2 rounded-lg bg-[#f4f1ea] hover:bg-[#e7e2d8] text-[#18181b] font-semibold text-xs cursor-pointer" data-i18n="login.cloudReset">
@@ -1371,7 +1374,11 @@
       e.preventDefault();
       const url = document.getElementById('sb-url').value.trim();
       const key = document.getElementById('sb-key').value.trim();
-      localStorage.setItem('supabase_config', JSON.stringify({ url, key }));
+      if (LotusDB && typeof LotusDB.setSupabaseConfig === 'function') {
+        LotusDB.setSupabaseConfig(url, key);
+      } else {
+        localStorage.setItem('supabase_config', JSON.stringify({ url, key }));
+      }
       closeCloudModal();
       alert(LotusI18n.t('login.cloudSuccess'));
       if (LotusDB && typeof LotusDB.syncProjectsFromCloud === 'function') {
@@ -1382,7 +1389,11 @@
     }
 
     function handleResetCloudConfig() {
-      localStorage.removeItem('supabase_config');
+      if (LotusDB && typeof LotusDB.setSupabaseConfig === 'function') {
+        LotusDB.setSupabaseConfig('', '');
+      } else {
+        localStorage.removeItem('supabase_config');
+      }
       document.getElementById('sb-url').value = '';
       document.getElementById('sb-key').value = '';
       closeCloudModal();
@@ -1392,8 +1403,8 @@
       const sb = LotusDB.getSupabaseClient();
       if (!sb) {
         alert(LotusI18n.getLang() === 'id'
-          ? 'Silakan masukkan Supabase URL & Anon Key terlebih dahulu di menu "Cloud Sync Settings" agar fitur Login Google aktif.'
-          : 'Please enter your Supabase URL & Anon Key in "Cloud Sync Settings" first to activate Google Sign-In.');
+          ? 'Silakan masukkan Supabase URL & Publishable/Anon Key terlebih dahulu di menu "Cloud Sync Settings" agar fitur Login Google aktif.'
+          : 'Please enter your Supabase URL & Publishable/Anon Key in "Cloud Sync Settings" first to activate Google Sign-In.');
         openCloudModal();
         return;
       }

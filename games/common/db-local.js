@@ -4,19 +4,18 @@
  * (Standard & AI Camera templates, TK-SMK levels, multi-language), media blobs, & leaderboards.
  */
 
-const LOTUS_SEED_VERSION = '2026.11';
+const LOTUS_SEED_VERSION = '2026.11.demo';
 
 const DEFAULT_TEACHERS = [
-  { id: 't-1', name: 'Budi Prasetyo, S.Pd.', email: 'budi.prasetyo@sekolah.sch.id', password: '1qaz2wsx', subject: 'IPA / Sains', school: 'SMP Negeri 1 Bunga Bangsa' },
-  { id: 't-2', name: 'Siti Rahmawati, M.Pd.', email: 'siti.rahmawati@sekolah.sch.id', password: '1qaz2wsx', subject: 'Matematika', school: 'SMP Negeri 1 Bunga Bangsa' },
-  { id: 't-3', name: 'Agus Setiawan, S.Si.', email: 'agus.setiawan@sekolah.sch.id', password: '1qaz2wsx', subject: 'Fisika / Kimia', school: 'SMA Bintang Cemerlang' },
-  { id: 't-4', name: 'Dewi Lestari, S.Pd.', email: 'dewi.lestari@sekolah.sch.id', password: '1qaz2wsx', subject: 'Bahasa Indonesia', school: 'SD Pertiwi 01' },
-  { id: 't-5', name: 'Hendra Wijaya, B.Ed.', email: 'hendra.wijaya@sekolah.sch.id', password: '1qaz2wsx', subject: 'Bahasa Inggris', school: 'SMP Harapan Nusantara' },
-  { id: 't-6', name: 'Rina Marlina, S.Pd.', email: 'rina.marlina@sekolah.sch.id', password: '1qaz2wsx', subject: 'Biologi', school: 'SMA Cendekia Bangsa' },
-  { id: 't-7', name: 'Ahmad Fauzi, S.Ag.', email: 'ahmad.fauzi@sekolah.sch.id', password: '1qaz2wsx', subject: 'Pendidikan Agama', school: 'SMP Al-Hikmah' },
-  { id: 't-8', name: 'Nurul Hidayah, S.Pd.', email: 'nurul.hidayah@sekolah.sch.id', password: '1qaz2wsx', subject: 'IPS / Geografi', school: 'SMP Negeri 2 Merdeka' },
-  { id: 't-9', name: 'Fajar Nugroho, S.Kom.', email: 'fajar.nugroho@sekolah.sch.id', password: '1qaz2wsx', subject: 'Informatika / TIK', school: 'SMK Bintang Juara' },
-  { id: 't-10', name: 'Sri Wahyuni, S.Pd.', email: 'sri.wahyuni@sekolah.sch.id', password: '1qaz2wsx', subject: 'Seni & Budaya', school: 'SD Mandiri Jaya' }
+  {
+    id: 't-demo',
+    name: 'Guru Demo',
+    username: 'demo',
+    email: 'demo@lotuswall.com',
+    password: 'demo',
+    subject: 'IPA & Umum',
+    school: 'Sekolah LotusWall'
+  }
 ];
 
 const _NOW = new Date().toISOString();
@@ -25,7 +24,7 @@ const INITIAL_PROJECTS = [
   {
     id: 'proj-1',
     pin: '100101',
-    teacher_id: 't-1',
+    teacher_id: 't-demo',
     title: 'Solar System & Space Exploration',
     subject: 'IPA / Sains',
     level: 'SD',
@@ -46,10 +45,10 @@ const INITIAL_PROJECTS = [
         audio: '',
         category: 'Terrestrial Planet',
         options: [
-          { text: 'Mars', isCorrect: true, image: '' },
-          { text: 'Venus', isCorrect: false, image: '' },
-          { text: 'Jupiter', isCorrect: false, image: '' },
-          { text: 'Mercury', isCorrect: false, image: '' }
+          { text: 'Mars', isCorrect: true },
+          { text: 'Venus', isCorrect: false },
+          { text: 'Jupiter', isCorrect: false },
+          { text: 'Mercury', isCorrect: false }
         ]
       },
       {
@@ -59,22 +58,98 @@ const INITIAL_PROJECTS = [
         audio: '',
         category: 'Star',
         options: [
-          { text: 'The Sun', isCorrect: true, image: '' },
-          { text: 'Polaris', isCorrect: false, image: '' },
-          { text: 'The Moon', isCorrect: false, image: '' }
+          { text: 'The Sun', isCorrect: true },
+          { text: 'Polaris', isCorrect: false },
+          { text: 'The Moon', isCorrect: false },
+          { text: 'Sirius', isCorrect: false }
         ]
       },
       {
         id: 'q3',
         text: 'Which of these are Gas Giant planets? (Select all that apply)',
-        image: '',
-        audio: '',
         category: 'Gas Giant',
         options: [
-          { text: 'Jupiter', isCorrect: true, image: '' },
-          { text: 'Saturn', isCorrect: true, image: '' },
-          { text: 'Earth', isCorrect: false, image: '' },
-          { text: 'Mars', isCorrect: false, image: '' }
+          { text: 'Jupiter', isCorrect: true },
+          { text: 'Saturn', isCorrect: true },
+          { text: 'Earth', isCorrect: false },
+          { text: 'Mars', isCorrect: false }
+        ]
+      },
+      {
+        id: 'q4',
+        text: 'What is the hottest planet in our solar system due to its thick greenhouse atmosphere?',
+        category: 'Terrestrial Planet',
+        options: [
+          { text: 'Venus', isCorrect: true },
+          { text: 'Mercury', isCorrect: false },
+          { text: 'Mars', isCorrect: false },
+          { text: 'Jupiter', isCorrect: false }
+        ]
+      },
+      {
+        id: 'q5',
+        text: 'Which planet is famous for its large, bright ring system made of ice and rock?',
+        category: 'Gas Giant',
+        options: [
+          { text: 'Saturn', isCorrect: true },
+          { text: 'Neptune', isCorrect: false },
+          { text: 'Uranus', isCorrect: false },
+          { text: 'Jupiter', isCorrect: false }
+        ]
+      },
+      {
+        id: 'q6',
+        text: "What is Earth's only natural satellite that causes ocean tides?",
+        category: 'Satellite',
+        options: [
+          { text: 'The Moon', isCorrect: true },
+          { text: 'Europa', isCorrect: false },
+          { text: 'Titan', isCorrect: false },
+          { text: 'Phobos', isCorrect: false }
+        ]
+      },
+      {
+        id: 'q7',
+        text: 'What celestial body was reclassified in 2006 as a dwarf planet in the Kuiper Belt?',
+        category: 'Dwarf Planet',
+        options: [
+          { text: 'Pluto', isCorrect: true },
+          { text: 'Ceres', isCorrect: false },
+          { text: 'Eris', isCorrect: false },
+          { text: 'Haumea', isCorrect: false }
+        ]
+      },
+      {
+        id: 'q8',
+        text: 'What natural phenomenon occurs when the Moon passes directly between the Earth and the Sun?',
+        category: 'Astronomy',
+        options: [
+          { text: 'Solar Eclipse', isCorrect: true },
+          { text: 'Lunar Eclipse', isCorrect: false },
+          { text: 'Meteor Shower', isCorrect: false },
+          { text: 'Equinox', isCorrect: false }
+        ]
+      },
+      {
+        id: 'q9',
+        text: 'Which planet is known as an Ice Giant and has an axis that tilts almost completely on its side?',
+        category: 'Ice Giant',
+        options: [
+          { text: 'Uranus', isCorrect: true },
+          { text: 'Neptune', isCorrect: false },
+          { text: 'Saturn', isCorrect: false },
+          { text: 'Mars', isCorrect: false }
+        ]
+      },
+      {
+        id: 'q10',
+        text: 'What is the largest planet in our solar system, famous for its Great Red Spot?',
+        category: 'Gas Giant',
+        options: [
+          { text: 'Jupiter', isCorrect: true },
+          { text: 'Saturn', isCorrect: false },
+          { text: 'Earth', isCorrect: false },
+          { text: 'Neptune', isCorrect: false }
         ]
       }
     ]
@@ -82,7 +157,7 @@ const INITIAL_PROJECTS = [
   {
     id: 'proj-2',
     pin: '100102',
-    teacher_id: 't-1',
+    teacher_id: 't-demo',
     title: 'Tebas Buah: Satwa & Ekosistem Nusantara',
     subject: 'IPA / Sains',
     level: 'SD',
@@ -103,7 +178,7 @@ const INITIAL_PROJECTS = [
         options: [
           { text: 'Paus Biru', isCorrect: true },
           { text: 'Hiu Putih', isCorrect: false },
-          { text: 'Gajah', isCorrect: false }
+          { text: 'Gajah Laut', isCorrect: false }
         ]
       },
       {
@@ -118,12 +193,82 @@ const INITIAL_PROJECTS = [
       },
       {
         id: 'q-fn3',
-        text: 'Zat hijau daun yang membantu tumbuhan membuat makanan disebut...',
+        text: 'Zat hijau daun yang membantu tumbuhan memasak makanan lewat fotosintesis disebut...',
         category: 'Botani',
         options: [
           { text: 'Klorofil', isCorrect: true },
           { text: 'Oksigen', isCorrect: false },
           { text: 'Glukosa', isCorrect: false }
+        ]
+      },
+      {
+        id: 'q-fn4',
+        text: 'Kadal terbesar di dunia yang merupakan satwa purba asli Nusa Tenggara Timur adalah...',
+        category: 'Reptil',
+        options: [
+          { text: 'Komodo', isCorrect: true },
+          { text: 'Biawak Air', isCorrect: false },
+          { text: 'Iguana', isCorrect: false }
+        ]
+      },
+      {
+        id: 'q-fn5',
+        text: 'Burung endemik Papua yang terkenal dengan keindahan bulu ekor hiasnya adalah...',
+        category: 'Burung',
+        options: [
+          { text: 'Cendrawasih', isCorrect: true },
+          { text: 'Kasuari', isCorrect: false },
+          { text: 'Merak Jawa', isCorrect: false }
+        ]
+      },
+      {
+        id: 'q-fn6',
+        text: 'Kera besar berambut kemerahan yang hidup di hutan Sumatera dan Kalimantan adalah...',
+        category: 'Primata',
+        options: [
+          { text: 'Orangutan', isCorrect: true },
+          { text: 'Bekantan', isCorrect: false },
+          { text: 'Siamang', isCorrect: false }
+        ]
+      },
+      {
+        id: 'q-fn7',
+        text: 'Tumbuhan parasit langka raksasa tanpa akar dan daun yang ditemukan di Bengkulu adalah...',
+        category: 'Botani',
+        options: [
+          { text: 'Rafflesia Arnoldii', isCorrect: true },
+          { text: 'Bunga Bangkai', isCorrect: false },
+          { text: 'Kantung Semar', isCorrect: false }
+        ]
+      },
+      {
+        id: 'q-fn8',
+        text: 'Mamalia bercula satu yang sangat langka dan dilindungi di Taman Nasional Ujung Kulon adalah...',
+        category: 'Konservasi',
+        options: [
+          { text: 'Badak Jawa', isCorrect: true },
+          { text: 'Tapir', isCorrect: false },
+          { text: 'Anoa', isCorrect: false }
+        ]
+      },
+      {
+        id: 'q-fn9',
+        text: 'Hewan khas Sulawesi yang berbadan kecil menyerupai kerbau liar bertanduk runcing adalah...',
+        category: 'Mamalia',
+        options: [
+          { text: 'Anoa', isCorrect: true },
+          { text: 'Babirusa', isCorrect: false },
+          { text: 'Kancil', isCorrect: false }
+        ]
+      },
+      {
+        id: 'q-fn10',
+        text: 'Proses penguapan air laut dan sungai menjadi uap air oleh sinar matahari disebut...',
+        category: 'Siklus Air',
+        options: [
+          { text: 'Evaporasi', isCorrect: true },
+          { text: 'Kondensasi', isCorrect: false },
+          { text: 'Presipitasi', isCorrect: false }
         ]
       }
     ]
@@ -131,408 +276,7 @@ const INITIAL_PROJECTS = [
   {
     id: 'proj-3',
     pin: '100103',
-    teacher_id: 't-2',
-    title: 'Kuis Matematika SMP: Bilangan, Aljabar & Geometri',
-    subject: 'Matematika',
-    level: 'SMP',
-    language: 'id',
-    template_type: 'quiz',
-    theme: 'white',
-    is_public: true,
-    rules: { hasLives: true, livesCount: 3, timeMode: 'timer', timerSeconds: 30, shuffleQuestions: true, shuffleAnswers: true },
-    is_deleted: false,
-    deleted_at: null,
-    updated_at: _NOW,
-    created_at: _NOW,
-    questions: [
-      {
-        id: 'q-math-1',
-        text: 'Hasil dari -18 + 25 - (-7) adalah...',
-        category: 'Bilangan',
-        options: [
-          { text: '14', isCorrect: true },
-          { text: '-14', isCorrect: false },
-          { text: '0', isCorrect: false },
-          { text: '10', isCorrect: false }
-        ]
-      },
-      {
-        id: 'q-math-2',
-        text: 'Nilai dari 36 ÷ (-4) × 5 adalah...',
-        category: 'Bilangan',
-        options: [
-          { text: '-45', isCorrect: true },
-          { text: '45', isCorrect: false },
-          { text: '-35', isCorrect: false },
-          { text: '25', isCorrect: false }
-        ]
-      },
-      {
-        id: 'q-math-3',
-        text: 'Jika 3x - 5 = 16, berapakah nilai x?',
-        category: 'Aljabar',
-        options: [
-          { text: '7', isCorrect: true },
-          { text: '5', isCorrect: false },
-          { text: '6', isCorrect: false },
-          { text: '9', isCorrect: false }
-        ]
-      },
-      {
-        id: 'q-math-4',
-        text: 'Luas segitiga dengan alas 12 cm dan tinggi 9 cm adalah...',
-        category: 'Geometri',
-        options: [
-          { text: '54 cm²', isCorrect: true },
-          { text: '108 cm²', isCorrect: false },
-          { text: '42 cm²', isCorrect: false },
-          { text: '21 cm²', isCorrect: false }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'proj-4',
-    pin: '100104',
-    teacher_id: 't-10',
-    title: 'Kindergarten Colors, Shapes & Friendly Animals',
-    subject: 'Seni & Budaya',
-    level: 'TK',
-    language: 'en',
-    template_type: 'truefalse',
-    theme: 'white',
-    is_public: true,
-    rules: { hasLives: true, livesCount: 3, timeMode: 'none', timerSeconds: 0, shuffleQuestions: true, shuffleAnswers: true },
-    is_deleted: false,
-    deleted_at: null,
-    updated_at: _NOW,
-    created_at: _NOW,
-    questions: [
-      {
-        id: 'q-tk-1',
-        text: 'Mixing red and yellow paint creates bright orange.',
-        category: 'Colors',
-        options: [
-          { text: 'True', isCorrect: true },
-          { text: 'False', isCorrect: false }
-        ]
-      },
-      {
-        id: 'q-tk-2',
-        text: 'A triangle always has four equal sides.',
-        category: 'Shapes',
-        options: [
-          { text: 'False', isCorrect: true },
-          { text: 'True', isCorrect: false }
-        ]
-      },
-      {
-        id: 'q-tk-3',
-        text: 'Bananas and sunflowers share a sunny yellow color.',
-        category: 'Colors',
-        options: [
-          { text: 'True', isCorrect: true },
-          { text: 'False', isCorrect: false }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'proj-5',
-    pin: '100105',
-    teacher_id: 't-5',
-    title: 'English Grammar & Everyday Phrasal Verbs',
-    subject: 'Bahasa Inggris',
-    level: 'SMP',
-    language: 'en',
-    template_type: 'quiz-powerup',
-    theme: 'white',
-    is_public: true,
-    rules: { hasLives: true, livesCount: 3, timeMode: 'timer', timerSeconds: 25, shuffleQuestions: true, shuffleAnswers: true },
-    is_deleted: false,
-    deleted_at: null,
-    updated_at: _NOW,
-    created_at: _NOW,
-    questions: [
-      {
-        id: 'q-en-1',
-        text: 'She ____ to the science museum every Sunday morning.',
-        category: 'Present Simple',
-        options: [
-          { text: 'goes', isCorrect: true },
-          { text: 'go', isCorrect: false },
-          { text: 'going', isCorrect: false },
-          { text: 'gone', isCorrect: false }
-        ]
-      },
-      {
-        id: 'q-en-2',
-        text: 'Please "turn off" the projector before leaving. What does "turn off" mean?',
-        category: 'Phrasal Verbs',
-        options: [
-          { text: 'Switch off / power down', isCorrect: true },
-          { text: 'Make louder', isCorrect: false },
-          { text: 'Carry outside', isCorrect: false },
-          { text: 'Paint blue', isCorrect: false }
-        ]
-      },
-      {
-        id: 'q-en-3',
-        text: 'Choose the correct past tense form: Yesterday we ____ our robotics project.',
-        category: 'Past Tense',
-        options: [
-          { text: 'finished', isCorrect: true },
-          { text: 'finish', isCorrect: false },
-          { text: 'finishing', isCorrect: false },
-          { text: 'finishes', isCorrect: false }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'proj-6',
-    pin: '100106',
-    teacher_id: 't-9',
-    title: 'SMK Web & Networking Fundamentals',
-    subject: 'Informatika / TIK',
-    level: 'SMK',
-    language: 'en',
-    template_type: 'wordsearch',
-    theme: 'white',
-    is_public: true,
-    rules: { hasLives: false, livesCount: 0, timeMode: 'stopwatch', timerSeconds: 0, shuffleQuestions: true, shuffleAnswers: true },
-    is_deleted: false,
-    deleted_at: null,
-    updated_at: _NOW,
-    created_at: _NOW,
-    questions: [
-      {
-        id: 'q-it-1',
-        text: 'Primary style language used for web layout and responsive design',
-        word: 'STYLESHEET',
-        correctAnswer: 'STYLESHEET',
-        wrongAnswers: ['COMPILER', 'KERNEL', 'MODEM'],
-        options: [{ text: 'STYLESHEET', isCorrect: true }, { text: 'COMPILER', isCorrect: false }, { text: 'KERNEL', isCorrect: false }]
-      },
-      {
-        id: 'q-it-2',
-        text: 'Device forwarding packets across computer networks',
-        word: 'ROUTER',
-        correctAnswer: 'ROUTER',
-        wrongAnswers: ['PRINTER', 'SCANNER', 'PIXEL'],
-        options: [{ text: 'ROUTER', isCorrect: true }, { text: 'PRINTER', isCorrect: false }, { text: 'SCANNER', isCorrect: false }]
-      },
-      {
-        id: 'q-it-3',
-        text: 'Core markup language used to structure web pages',
-        word: 'HTML',
-        correctAnswer: 'HTML',
-        wrongAnswers: ['BIOS', 'SATA', 'BASH'],
-        options: [{ text: 'HTML', isCorrect: true }, { text: 'BIOS', isCorrect: false }, { text: 'SATA', isCorrect: false }]
-      },
-      {
-        id: 'q-it-4',
-        text: 'Server system holding structured tables and records',
-        word: 'DATABASE',
-        correctAnswer: 'DATABASE',
-        wrongAnswers: ['MONITOR', 'CURSOR', 'CABLE'],
-        options: [{ text: 'DATABASE', isCorrect: true }, { text: 'MONITOR', isCorrect: false }, { text: 'CURSOR', isCorrect: false }]
-      }
-    ]
-  },
-  {
-    id: 'proj-7',
-    pin: '100107',
-    teacher_id: 't-3',
-    title: 'SMA Fisika & Reaksi Kimia: Cepat Tangkap AI',
-    subject: 'Fisika / Kimia',
-    level: 'SMA',
-    language: 'id',
-    template_type: 'ai-slicer',
-    theme: 'white',
-    is_public: true,
-    rules: { hasLives: true, livesCount: 3, timeMode: 'timer', timerSeconds: 30, shuffleQuestions: true, shuffleAnswers: true },
-    is_deleted: false,
-    deleted_at: null,
-    updated_at: _NOW,
-    created_at: _NOW,
-    questions: [
-      {
-        id: 'q-fk-1',
-        text: 'Satuan Internasional (SI) untuk Gaya menurut Hukum Newton adalah...',
-        category: 'Mekanika',
-        options: [
-          { text: 'Newton (N)', isCorrect: true },
-          { text: 'Joule (J)', isCorrect: false },
-          { text: 'Watt (W)', isCorrect: false },
-          { text: 'Pascal (Pa)', isCorrect: false }
-        ]
-      },
-      {
-        id: 'q-fk-2',
-        text: 'Lambang unsur kimia untuk Natrium (Sodium) adalah...',
-        category: 'Tabel Periodik',
-        options: [
-          { text: 'Na', isCorrect: true },
-          { text: 'N', isCorrect: false },
-          { text: 'K', isCorrect: false },
-          { text: 'Ni', isCorrect: false }
-        ]
-      },
-      {
-        id: 'q-fk-3',
-        text: 'Hukum kekekalan energi menyatakan energi tidak dapat dimusnahkan melainkan hanya...',
-        category: 'Energi',
-        options: [
-          { text: 'Berubah bentuk', isCorrect: true },
-          { text: 'Hilang menjadi udara', isCorrect: false },
-          { text: 'Membeku total', isCorrect: false }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'proj-8',
-    pin: '100108',
-    teacher_id: 't-6',
-    title: 'AI Head Catcher 2P: Cellular Biology Duel',
-    subject: 'Biologi',
-    level: 'SMA',
-    language: 'en',
-    template_type: 'head-catcher',
-    theme: 'white',
-    is_public: true,
-    rules: { hasLives: true, livesCount: 3, timeMode: 'timer', timerSeconds: 30, shuffleQuestions: true, shuffleAnswers: true },
-    is_deleted: false,
-    deleted_at: null,
-    updated_at: _NOW,
-    created_at: _NOW,
-    questions: [
-      {
-        id: 'q-bio-1',
-        text: 'Which organelle is known as the powerhouse of the cell?',
-        category: 'Cell Structure',
-        options: [
-          { text: 'Mitochondria', isCorrect: true },
-          { text: 'Ribosome', isCorrect: false },
-          { text: 'Golgi Body', isCorrect: false }
-        ]
-      },
-      {
-        id: 'q-bio-2',
-        text: 'Which pigment captures sunlight during photosynthesis in plants?',
-        category: 'Botany',
-        options: [
-          { text: 'Chlorophyll', isCorrect: true },
-          { text: 'Hemoglobin', isCorrect: false },
-          { text: 'Melanin', isCorrect: false }
-        ]
-      },
-      {
-        id: 'q-bio-3',
-        text: 'DNA stores genetic instructions inside which structure in eukaryotes?',
-        category: 'Genetics',
-        options: [
-          { text: 'Nucleus', isCorrect: true },
-          { text: 'Vacuole', isCorrect: false },
-          { text: 'Cell Wall', isCorrect: false }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'proj-9',
-    pin: '100109',
-    teacher_id: 't-4',
-    title: 'Mandarin Calligraphy: Dasar Goresan Hanzi HSK 1',
-    subject: 'Bahasa Mandarin',
-    level: 'SD',
-    language: 'zh',
-    template_type: 'hanzi-battle',
-    theme: 'white',
-    is_public: true,
-    rules: { hasLives: false, livesCount: 0, timeMode: 'none', timerSeconds: 0, shuffleQuestions: true, shuffleAnswers: true },
-    is_deleted: false,
-    deleted_at: null,
-    updated_at: _NOW,
-    created_at: _NOW,
-    questions: [
-      {
-        id: 'q-zh-1',
-        text: '你 (nǐ) — You / Kamu',
-        word: '你',
-        pinyin: 'nǐ',
-        meaning: 'you / kamu',
-        correctAnswer: '你',
-        options: [{ text: '你', isCorrect: true }, { text: '我', isCorrect: false }, { text: '好', isCorrect: false }]
-      },
-      {
-        id: 'q-zh-2',
-        text: '好 (hǎo) — Good / Baik',
-        word: '好',
-        pinyin: 'hǎo',
-        meaning: 'good / baik',
-        correctAnswer: '好',
-        options: [{ text: '好', isCorrect: true }, { text: '大', isCorrect: false }, { text: '人', isCorrect: false }]
-      },
-      {
-        id: 'q-zh-3',
-        text: '我 (wǒ) — I / Me / Saya',
-        word: '我',
-        pinyin: 'wǒ',
-        meaning: 'I / saya',
-        correctAnswer: '我',
-        options: [{ text: '我', isCorrect: true }, { text: '你', isCorrect: false }, { text: '山', isCorrect: false }]
-      },
-      {
-        id: 'q-zh-4',
-        text: '水 (shuǐ) — Water / Air',
-        word: '水',
-        pinyin: 'shuǐ',
-        meaning: 'water / air',
-        correctAnswer: '水',
-        options: [{ text: '水', isCorrect: true }, { text: '火', isCorrect: false }, { text: '日', isCorrect: false }]
-      },
-      {
-        id: 'q-zh-5',
-        text: '山 (shān) — Mountain / Gunung',
-        word: '山',
-        pinyin: 'shān',
-        meaning: 'mountain / gunung',
-        correctAnswer: '山',
-        options: [{ text: '山', isCorrect: true }, { text: '月', isCorrect: false }, { text: '木', isCorrect: false }]
-      }
-    ]
-  },
-  {
-    id: 'proj-10',
-    pin: '100110',
-    teacher_id: 't-8',
-    title: 'IPS Geografi: Pulau & Ibu Kota Provinsi Indonesia',
-    subject: 'IPS / Geografi',
-    level: 'SMP',
-    language: 'id',
-    template_type: 'groupsort',
-    theme: 'white',
-    is_public: true,
-    rules: { hasLives: true, livesCount: 3, timeMode: 'stopwatch', timerSeconds: 0, shuffleQuestions: true, shuffleAnswers: true },
-    is_deleted: false,
-    deleted_at: null,
-    updated_at: _NOW,
-    created_at: _NOW,
-    questions: [
-      { id: 'q-ips-1', text: 'Medan', category: 'Sumatera', correctAnswer: 'Medan', options: [{ text: 'Medan', isCorrect: true }] },
-      { id: 'q-ips-2', text: 'Palembang', category: 'Sumatera', correctAnswer: 'Palembang', options: [{ text: 'Palembang', isCorrect: true }] },
-      { id: 'q-ips-3', text: 'Bandung', category: 'Jawa', correctAnswer: 'Bandung', options: [{ text: 'Bandung', isCorrect: true }] },
-      { id: 'q-ips-4', text: 'Surabaya', category: 'Jawa', correctAnswer: 'Surabaya', options: [{ text: 'Surabaya', isCorrect: true }] },
-      { id: 'q-ips-5', text: 'Makassar', category: 'Sulawesi', correctAnswer: 'Makassar', options: [{ text: 'Makassar', isCorrect: true }] },
-      { id: 'q-ips-6', text: 'Manado', category: 'Sulawesi', correctAnswer: 'Manado', options: [{ text: 'Manado', isCorrect: true }] }
-    ]
-  },
-  {
-    id: 'proj-11',
-    pin: '100111',
-    teacher_id: 't-1',
+    teacher_id: 't-demo',
     title: 'AI Motion Hand Slicer: Everyday Science Trivia',
     subject: 'IPA / Sains',
     level: 'SMP',
@@ -559,7 +303,7 @@ const INITIAL_PROJECTS = [
       },
       {
         id: 'q-ais-2',
-        text: 'At standard pressure, water boils at what Celsius temperature?',
+        text: 'At standard atmospheric pressure, water boils at what Celsius temperature?',
         category: 'Physics',
         options: [
           { text: '100°C', isCorrect: true },
@@ -570,12 +314,90 @@ const INITIAL_PROJECTS = [
       },
       {
         id: 'q-ais-3',
-        text: 'How many legs does a butterfly or ant (insect) have?',
+        text: 'How many legs does an insect such as an ant, bee, or butterfly have?',
         category: 'Zoology',
         options: [
           { text: 'Six', isCorrect: true },
           { text: 'Eight', isCorrect: false },
-          { text: 'Four', isCorrect: false }
+          { text: 'Four', isCorrect: false },
+          { text: 'Ten', isCorrect: false }
+        ]
+      },
+      {
+        id: 'q-ais-4',
+        text: 'What force pulls dropped objects downward toward the center of planet Earth?',
+        category: 'Physics',
+        options: [
+          { text: 'Gravity', isCorrect: true },
+          { text: 'Magnetism', isCorrect: false },
+          { text: 'Friction', isCorrect: false },
+          { text: 'Centrifugal', isCorrect: false }
+        ]
+      },
+      {
+        id: 'q-ais-5',
+        text: 'What state of matter is water steam or air trapped inside a balloon?',
+        category: 'Chemistry',
+        options: [
+          { text: 'Gas', isCorrect: true },
+          { text: 'Liquid', isCorrect: false },
+          { text: 'Solid', isCorrect: false },
+          { text: 'Plasma', isCorrect: false }
+        ]
+      },
+      {
+        id: 'q-ais-6',
+        text: 'Which essential mineral makes human bones and teeth strong and healthy?',
+        category: 'Health',
+        options: [
+          { text: 'Calcium', isCorrect: true },
+          { text: 'Iron', isCorrect: false },
+          { text: 'Sodium', isCorrect: false },
+          { text: 'Potassium', isCorrect: false }
+        ]
+      },
+      {
+        id: 'q-ais-7',
+        text: 'What is the closest star to our planet Earth?',
+        category: 'Astronomy',
+        options: [
+          { text: 'The Sun', isCorrect: true },
+          { text: 'Proxima Centauri', isCorrect: false },
+          { text: 'Betelgeuse', isCorrect: false },
+          { text: 'Sirius', isCorrect: false }
+        ]
+      },
+      {
+        id: 'q-ais-8',
+        text: 'What simple machine consists of a grooved wheel with a rope to lift heavy loads?',
+        category: 'Mechanics',
+        options: [
+          { text: 'Pulley', isCorrect: true },
+          { text: 'Lever', isCorrect: false },
+          { text: 'Wedge', isCorrect: false },
+          { text: 'Screw', isCorrect: false }
+        ]
+      },
+      {
+        id: 'q-ais-9',
+        text: 'Which clean energy source is captured directly from sunlight using solar panels?',
+        category: 'Energy',
+        options: [
+          { text: 'Solar Energy', isCorrect: true },
+          { text: 'Geothermal', isCorrect: false },
+          { text: 'Wind Power', isCorrect: false },
+          { text: 'Fossil Fuel', isCorrect: false }
+        ]
+      },
+      {
+        id: 'q-ais-10',
+        text: 'What muscular organ pumps oxygen-rich blood throughout the human body?',
+        category: 'Human Body',
+        options: [
+          { text: 'Heart', isCorrect: true },
+          { text: 'Lungs', isCorrect: false },
+          { text: 'Liver', isCorrect: false },
+          { text: 'Kidneys', isCorrect: false }
         ]
       }
     ]
@@ -607,53 +429,43 @@ class LocalDatabase {
   }
 
   async initStorage() {
-    // 1. Teachers
-    if (!localStorage.getItem('lotus_teachers')) {
-      localStorage.setItem('lotus_teachers', JSON.stringify(DEFAULT_TEACHERS));
+    // 1. Supabase Cloud Sync check & init
+    this.getSupabaseClient();
+
+    // 2. Teachers & non-destructive seed migration
+    const savedSeedVersion = localStorage.getItem('lotus_seed_version');
+    const existingTeachersRaw = localStorage.getItem('lotus_teachers');
+
+    if (!existingTeachersRaw || savedSeedVersion !== LOTUS_SEED_VERSION) {
+      // Cleanly remove obsolete old mock teachers (t-1 through t-10), keep demo and custom registered teachers
+      let currentTeachers = [];
+      try {
+        currentTeachers = JSON.parse(existingTeachersRaw || '[]');
+      } catch (e) {}
+      const oldMockIds = ['t-1', 't-2', 't-3', 't-4', 't-5', 't-6', 't-7', 't-8', 't-9', 't-10'];
+      const customTeachers = currentTeachers.filter(t => !oldMockIds.includes(t.id) && t.id !== 't-demo');
+      const finalTeachers = [...DEFAULT_TEACHERS, ...customTeachers];
+      localStorage.setItem('lotus_teachers', JSON.stringify(finalTeachers));
     }
 
-    // 2. Projects & non-destructive seed migration
+    // 3. Projects & seed migration
     const existingProjectsRaw = localStorage.getItem('lotus_projects');
-    const savedSeedVersion = localStorage.getItem('lotus_seed_version');
-
-    if (!existingProjectsRaw) {
-      localStorage.setItem('lotus_projects', JSON.stringify(INITIAL_PROJECTS));
-      localStorage.setItem('lotus_seeded_project_ids', JSON.stringify(INITIAL_PROJECTS.map(p => p.id)));
-      localStorage.setItem('lotus_seed_version', LOTUS_SEED_VERSION);
-    } else {
+    if (!existingProjectsRaw || savedSeedVersion !== LOTUS_SEED_VERSION) {
+      let currentProjects = [];
       try {
-        let existingProjects = JSON.parse(existingProjectsRaw);
-        if (Array.isArray(existingProjects)) {
-          existingProjects = existingProjects.map(p => this.normalizeProjectMeta(p));
+        currentProjects = JSON.parse(existingProjectsRaw || '[]');
+      } catch (e) {}
+      const defaultIds = INITIAL_PROJECTS.map(p => p.id);
+      const userProjects = currentProjects.filter(p => !defaultIds.includes(p.id) && !p.id.startsWith('proj-demo-old'));
+      const mergedProjects = [...INITIAL_PROJECTS, ...userProjects].map(p => this.normalizeProjectMeta(p));
+      localStorage.setItem('lotus_projects', JSON.stringify(mergedProjects));
+      localStorage.setItem('lotus_seeded_project_ids', JSON.stringify(defaultIds));
+      localStorage.setItem('lotus_seed_version', LOTUS_SEED_VERSION);
+    }
 
-          let seededIds = [];
-          try {
-            const parsed = JSON.parse(localStorage.getItem('lotus_seeded_project_ids') || '[]');
-            seededIds = Array.isArray(parsed) ? parsed : ['proj-1', 'proj-2', 'proj-3'];
-          } catch (e) {
-            seededIds = ['proj-1', 'proj-2', 'proj-3'];
-          }
-
-          const newDefaults = [];
-          INITIAL_PROJECTS.forEach(proj => {
-            if (!seededIds.includes(proj.id)) {
-              if (!existingProjects.some(ep => ep.id === proj.id)) {
-                newDefaults.push(proj);
-              }
-              seededIds.push(proj.id);
-            }
-          });
-
-          if (newDefaults.length > 0 || savedSeedVersion !== LOTUS_SEED_VERSION) {
-            const merged = [...existingProjects, ...newDefaults].map(p => this.normalizeProjectMeta(p));
-            localStorage.setItem('lotus_projects', JSON.stringify(merged));
-            localStorage.setItem('lotus_seeded_project_ids', JSON.stringify(seededIds));
-            localStorage.setItem('lotus_seed_version', LOTUS_SEED_VERSION);
-          }
-        }
-      } catch (e) {
-        console.warn('Seed sync warning:', e);
-      }
+    // 4. Background cloud sync if Supabase configured
+    if (this.hasSupabase()) {
+      this.syncProjectsFromCloud().catch(() => {});
     }
 
     // 3. IndexedDB for media assets
@@ -752,7 +564,11 @@ class LocalDatabase {
     const cleanInput = (emailOrName || '').trim().toLowerCase();
 
     const found = teachers.find(t =>
-      (t.email.toLowerCase() === cleanInput || t.name.toLowerCase() === cleanInput) &&
+      (
+        (t.email && t.email.toLowerCase() === cleanInput) ||
+        (t.username && t.username.toLowerCase() === cleanInput) ||
+        (t.name && t.name.toLowerCase() === cleanInput)
+      ) &&
       t.password === password
     );
 
@@ -894,6 +710,7 @@ class LocalDatabase {
     }
 
     this.saveAllProjects(all);
+    this.syncProjectToCloud(existingIdx >= 0 ? all[existingIdx] : all[0]);
     return projectData;
   }
 
@@ -904,6 +721,7 @@ class LocalDatabase {
       proj.title = newTitle.trim();
       proj.updated_at = new Date().toISOString();
       this.saveAllProjects(all);
+      this.syncProjectToCloud(proj);
       return true;
     }
     return false;
@@ -941,6 +759,7 @@ class LocalDatabase {
       proj.is_deleted = true;
       proj.deleted_at = new Date().toISOString();
       this.saveAllProjects(all);
+      this.syncProjectToCloud(proj);
       return true;
     }
     return false;
@@ -954,6 +773,7 @@ class LocalDatabase {
       proj.deleted_at = null;
       proj.updated_at = new Date().toISOString();
       this.saveAllProjects(all);
+      this.syncProjectToCloud(proj);
       return true;
     }
     return false;
@@ -1141,6 +961,113 @@ class LocalDatabase {
       return [];
     } catch (e) {
       return [];
+    }
+  }
+
+  // --- SUPABASE CLOUD SYNC ENGINE ---
+  getSupabaseConfig() {
+    try {
+      const raw = localStorage.getItem('supabase_config');
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  setSupabaseConfig(url, key) {
+    if (!url || !key) {
+      localStorage.removeItem('supabase_config');
+    } else {
+      localStorage.setItem('supabase_config', JSON.stringify({ url: url.trim(), key: key.trim() }));
+    }
+    this._supabaseClient = null;
+    this._supabaseClientUrl = null;
+    this._supabaseClientKey = null;
+  }
+
+  hasSupabase() {
+    const cfg = this.getSupabaseConfig();
+    return Boolean(cfg.url && cfg.key);
+  }
+
+  getSupabaseClient() {
+    const cfg = this.getSupabaseConfig();
+    if (!cfg.url || !cfg.key) {
+      this._supabaseClient = null;
+      return null;
+    }
+    if (this._supabaseClient && this._supabaseClientUrl === cfg.url && this._supabaseClientKey === cfg.key) {
+      return this._supabaseClient;
+    }
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+      try {
+        this._supabaseClient = window.supabase.createClient(cfg.url, cfg.key);
+        this._supabaseClientUrl = cfg.url;
+        this._supabaseClientKey = cfg.key;
+        return this._supabaseClient;
+      } catch (e) {
+        console.warn('LotusDB Supabase initialization error:', e);
+      }
+    }
+    return null;
+  }
+
+  async syncProjectToCloud(project) {
+    const sb = this.getSupabaseClient();
+    if (!sb || !project) return;
+    try {
+      const payload = {
+        id: project.id,
+        pin: String(project.pin || this.generatePin()),
+        teacher_id: project.teacher_id || 't-demo',
+        title: project.title || 'Untitled Project',
+        subject: project.subject || 'IPA / Sains',
+        level: project.level || 'SD',
+        language: project.language || 'id',
+        template_type: project.template_type || 'quiz',
+        theme: project.theme || 'white',
+        rules: project.rules || {},
+        questions: project.questions || [],
+        is_public: project.is_public !== false,
+        is_deleted: Boolean(project.is_deleted),
+        deleted_at: project.deleted_at || null,
+        updated_at: project.updated_at || new Date().toISOString(),
+        created_at: project.created_at || new Date().toISOString()
+      };
+      await sb.from('projects').upsert(payload, { onConflict: 'id' });
+    } catch (e) {
+      console.warn('LotusDB: Could not sync project to Supabase:', e);
+    }
+  }
+
+  async syncProjectsFromCloud() {
+    const sb = this.getSupabaseClient();
+    if (!sb) return null;
+    try {
+      const { data, error } = await sb.from('projects').select('*').order('updated_at', { ascending: false });
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const localProjects = this.getAllProjects();
+        const map = new Map(localProjects.map(p => [p.id, p]));
+        data.forEach(cp => {
+          map.set(cp.id, this.normalizeProjectMeta(cp));
+        });
+        const merged = Array.from(map.values()).sort((a, b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0));
+        this.saveAllProjects(merged);
+        return merged;
+      }
+    } catch (e) {
+      console.warn('LotusDB: Could not fetch projects from Supabase:', e);
+    }
+    return null;
+  }
+
+  async syncDeleteFromCloud(projectId) {
+    const sb = this.getSupabaseClient();
+    if (!sb || !projectId) return;
+    try {
+      await sb.from('projects').delete().eq('id', projectId);
+    } catch (e) {
+      console.warn('LotusDB: Could not delete project from Supabase:', e);
     }
   }
 }

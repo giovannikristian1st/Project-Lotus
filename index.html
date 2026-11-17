@@ -297,17 +297,17 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div class="max-w-xl mx-auto w-full">
 
-        <!-- Auth Form Card (7 columns) -->
-        <div class="lg:col-span-7 bg-white rounded-xl border border-[#e5dfd3] shadow-[0_2px_8px_rgba(24,24,27,0.04)] p-6 sm:p-7 space-y-5">
+        <!-- Auth Form Card -->
+        <div class="bg-white rounded-xl border border-[#e5dfd3] shadow-[0_2px_8px_rgba(24,24,27,0.04)] p-6 sm:p-8 space-y-5">
           <div class="flex items-center gap-3">
             <div class="w-11 h-11 rounded-lg bg-[#f4f1ea] border border-[#e5dfd3] flex items-center justify-center shrink-0">
               <span class="ui-sprite ui-md ui-login"></span>
             </div>
             <div>
               <h2 class="text-xl font-bold text-[#18181b]" data-i18n="login.heroTitle">Welcome Back, Teacher!</h2>
-              <p class="text-xs text-[#57534e] mt-0.5 max-w-4xl" data-i18n="login.heroDesc">Sign in to manage projects, customize game templates, inspect leaderboards, and publish to the LotusWall Community.</p>
+              <p class="text-xs text-[#57534e] mt-0.5" data-i18n="login.heroDesc">Sign in to manage projects, customize game templates, inspect leaderboards, and publish to the LotusWall Community.</p>
             </div>
           </div>
 
@@ -438,51 +438,6 @@
               <span data-i18n="login.regSubmit">Register &amp; Enter Dashboard</span>
             </button>
           </form>
-        </div>
-
-        <!-- Right Sidebar: Teacher Cloud Platform Info & Cloud Sync (5 columns) -->
-        <div class="lg:col-span-5 space-y-4">
-          <div class="bg-white rounded-xl border border-[#e5dfd3] p-5 space-y-3.5">
-            <div class="flex items-center gap-2.5 text-[#18181b] font-bold text-sm">
-              <span class="w-8 h-8 rounded-lg bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-center text-[#1d4ed8]">
-                <span class="ui-sprite ui-sm ui-sparkles"></span>
-              </span>
-              <span>LotusWall Teacher Cloud</span>
-            </div>
-            <p class="text-xs text-[#57534e] leading-relaxed">
-              Create, edit, and launch classroom games across 15 interactive modes. All activities sync seamlessly to Supabase Cloud for live student participation.
-            </p>
-            <div class="space-y-2 pt-1 border-t border-[#f4f1ea] text-xs text-[#57534e]">
-              <div class="flex items-center gap-2">
-                <span class="ui-sprite ui-xs ui-check text-[#15803d]"></span>
-                <span>Automatic Supabase Cloud Synchronization</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="ui-sprite ui-xs ui-check text-[#15803d]"></span>
-                <span>Direct Student PIN join without student accounts</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="ui-sprite ui-xs ui-check text-[#15803d]"></span>
-                <span>15 Standard &amp; AI Camera game templates</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white rounded-xl border border-[#e5dfd3] p-4 flex items-center justify-between gap-3">
-            <div class="flex items-center gap-2.5">
-              <div class="w-8 h-8 rounded-lg bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-center shrink-0">
-                <span class="ui-sprite ui-sm ui-cloud"></span>
-              </div>
-              <div>
-                <div class="text-xs font-bold text-[#18181b]" data-i18n="login.cloudTitle">Cloud Sync (Supabase)</div>
-                <div id="cloud-status-indicator" class="text-[11px] text-[#15803d] font-semibold">Active &amp; Ready</div>
-              </div>
-            </div>
-            <button type="button" onclick="openCloudModal()"
-              class="px-3 py-1.5 rounded-lg bg-[#f4f1ea] hover:bg-[#e7e2d8] text-[#18181b] font-semibold text-xs border border-[#d6cfc2] transition-colors cursor-pointer" data-i18n="login.cloudBtn">
-              Cloud Sync Settings
-            </button>
-          </div>
         </div>
 
       </div>
@@ -1532,9 +1487,8 @@
       const sb = LotusDB.getSupabaseClient();
       if (!sb) {
         alert(LotusI18n.getLang() === 'id'
-          ? 'Silakan masukkan Supabase URL & Publishable/Anon Key terlebih dahulu di file "supabase-config.js" atau menu "Cloud Sync Settings" agar fitur Login Google aktif.'
-          : 'Please enter your Supabase URL & Publishable/Anon Key in "supabase-config.js" or "Cloud Sync Settings" first to activate Google Sign-In.');
-        openCloudModal();
+          ? 'Silakan periksa konfigurasi Supabase Anda di file "supabase-config.js".'
+          : 'Please check your Supabase configuration in "supabase-config.js".');
         return;
       }
 
@@ -1546,6 +1500,25 @@
       }
 
       try {
+        // Pre-check if Google provider is enabled in Supabase to prevent Supabase 400/404 error page
+        const cfg = LotusDB.getSupabaseConfig();
+        if (cfg.url && cfg.key) {
+          try {
+            const resp = await fetch(`${cfg.url}/auth/v1/settings`, {
+              headers: { 'apikey': cfg.key }
+            });
+            if (resp.ok) {
+              const settings = await resp.json();
+              if (settings.external && settings.external.google === false) {
+                alert(LotusI18n.getLang() === 'id'
+                  ? 'Fitur "Login Google" saat ini BELUM DIAKTIFKAN di project Supabase Anda (inilah penyebab error 404/Bad Request di halaman Supabase).\n\nUntuk mengaktifkannya:\n1. Buka Supabase -> Authentication -> Providers -> Google.\n2. Klik switch "Enable Google provider".\n3. Masukkan Google Client ID & Secret dari Google Cloud Console.\n\nSementara itu, Anda dan guru lain bisa langsung login/register menggunakan form email di atas!'
+                  : 'Google Sign-In is NOT ENABLED yet in your Supabase dashboard (this is why Supabase showed a 404/Bad Request error).\n\nTo enable it:\n1. Open Supabase -> Authentication -> Providers -> Google.\n2. Toggle "Enable Google provider".\n3. Enter your Google Client ID & Secret.\n\nIn the meantime, you can sign in directly using the email form above!');
+                return;
+              }
+            }
+          } catch (e) {}
+        }
+
         const cleanRedirectUrl = window.location.href.split('#')[0].split('?')[0];
         const { error } = await sb.auth.signInWithOAuth({
           provider: 'google',

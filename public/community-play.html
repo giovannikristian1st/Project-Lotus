@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LotusWall — Community Game Player</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="games/common/ui-spritesheet.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Plus Jakarta Sans', 'Poppins', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { font-family: 'Plus Jakarta Sans', 'Poppins', sans-serif; }
+    body {
+      overflow-x: hidden;
+      background-color: #f7f5f0;
+      color: #18181b;
+    }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #efebe2; }
+    ::-webkit-scrollbar-thumb { background: #c9c1b2; border-radius: 4px; }
+
+    /* Pure Game Fullscreen Rules (ONLY the 16:9 game stage container fills viewport) */
+    #game-window-container:fullscreen,
+    #game-window-container:-webkit-full-screen {
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+      border-radius: 0 !important;
+      border: none !important;
+      background: #090d16 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    #game-window-container:fullscreen #game-iframe,
+    #game-window-container:-webkit-full-screen #game-iframe {
+      width: 100% !important;
+      height: 100% !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top Navbar -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#e5dfd3]">
+    <div class="w-full max-w-[1840px] mx-auto px-4 sm:px-8 lg:px-12 h-16 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <a href="index.html#tab=community" class="flex items-center gap-2.5 group shrink-0">
+          <div class="w-9 h-9 rounded-lg bg-[#1e242b] flex items-center justify-center shrink-0">
+            <span class="ui-sprite ui-md ui-lotus"></span>
+          </div>
+          <div class="leading-tight">
+            <div class="text-base sm:text-lg font-extrabold tracking-tight text-[#18181b] group-hover:text-[#1d4ed8] transition-colors">
+              LotusWall
+            </div>
+            <div class="text-[10px] font-semibold text-[#78716c] uppercase tracking-wider hidden sm:block">
+              Community Player
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+        <a href="index.html#tab=community"
+          class="px-3 py-1.5 rounded-lg bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] text-[#18181b] font-semibold text-xs inline-flex items-center gap-1.5 transition-colors">
+          <span class="ui-sprite ui-xs ui-community"></span>
+          <span id="nav-back-comm-label">Community</span>
+        </a>
+
+        <button type="button" id="player-lang-toggle" onclick="LotusI18n.toggleLang()" class="lang-toggle-btn" title="Switch Language (English / Bahasa Indonesia)" aria-label="Switch Language (English / Bahasa Indonesia)">
+          <span class="lang-flag-chip active" data-lang-flag="en">
+            <span class="ui-sprite ui-sm ui-lang-en"></span>
+          </span>
+          <span class="lang-flag-chip" data-lang-flag="id">
+            <span class="ui-sprite ui-sm ui-lang-id"></span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 w-full max-w-[1840px] mx-auto px-4 sm:px-8 lg:px-12 py-5 sm:py-6">
+
+    <!-- Loading State -->
+    <div id="state-loading" class="bg-white rounded-xl border border-[#e5dfd3] p-10 text-center space-y-3 max-w-xl mx-auto mt-10">
+      <div class="w-12 h-12 mx-auto rounded-xl bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-center animate-pulse">
+        <span class="ui-sprite ui-md ui-gamepad"></span>
+      </div>
+      <div class="text-base font-bold text-[#18181b]" id="loading-title">Loading Activity...</div>
+      <div class="text-xs text-[#57534e]" id="loading-sub">Fetching game data from LotusWall Cloud</div>
+    </div>
+
+    <!-- Error / Not Found State -->
+    <div id="state-not-found" class="hidden bg-white rounded-xl border border-[#e5dfd3] p-10 text-center space-y-4 max-w-xl mx-auto mt-10">
+      <div class="w-14 h-14 mx-auto rounded-xl bg-red-50 border border-red-200 flex items-center justify-center">
+        <span class="ui-sprite ui-lg ui-close"></span>
+      </div>
+      <div class="space-y-1">
+        <h2 class="text-lg font-bold text-[#18181b]" id="nf-title">Activity Not Found</h2>
+        <p class="text-xs sm:text-sm text-[#57534e]" id="nf-sub">This community game may have been deleted or set to private by its creator.</p>
+      </div>
+      <div>
+        <a href="index.html#tab=community"
+          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-xs sm:text-sm transition-colors">
+          <span class="ui-sprite ui-xs ui-arrow-left"></span>
+          <span id="nf-back-btn">Back to Community Library</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- =======================================================================
+         COMMUNITY GAME PLAYER (Identical Layout to Teacher Dashboard Player)
+         ======================================================================= -->
+    <section id="view-game-player" class="hidden space-y-4">
+
+      <!-- Player Header Bar (No Edit Questions / No Edit Settings) -->
+      <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-xl border border-[#e5dfd3]">
+        <div class="flex items-center gap-3 min-w-0">
+          <button type="button" onclick="handleBackToCommunity()"
+            class="px-3 py-2 bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] rounded-lg text-[#18181b] font-semibold text-xs flex items-center gap-1.5 cursor-pointer shrink-0">
+            <span class="ui-sprite ui-xs ui-arrow-left"></span>
+            <span id="btn-back-comm-text">Back to Community</span>
+          </button>
+          <div class="min-w-0">
+            <h1 class="text-base sm:text-lg font-bold text-[#18181b] truncate" id="player-title">Game Title</h1>
+            <div class="text-xs font-medium text-[#78716c] truncate" id="player-game-badge">Quiz</div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" onclick="copyShareGameLink(this)"
+            class="px-3 py-2 bg-[#eff6ff] hover:bg-[#dbeafe] border border-[#bfdbfe] text-[#1d4ed8] font-semibold text-xs rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer">
+            <span class="ui-sprite ui-xs ui-share"></span>
+            <span class="hidden sm:inline" id="btn-share-link-text">Copy Link</span>
+          </button>
+
+          <button type="button" onclick="resetToPlayScreen()"
+            class="px-3 py-2 bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] text-[#18181b] font-semibold text-xs rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer">
+            <span class="ui-sprite ui-xs ui-refresh"></span>
+            <span class="hidden sm:inline" data-i18n="player.replay">Restart</span>
+          </button>
+
+          <button type="button" id="player-fullscreen-btn" onclick="togglePlayerFullscreen()"
+            data-i18n-title="player.openFullscreenPure" title="Fullscreen (Game Only)"
+            class="px-3 py-2 bg-[#18181b] hover:bg-[#27272a] text-white font-semibold text-xs rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer">
+            <span class="ui-sprite ui-xs ui-fullscreen"></span>
+            <span class="hidden sm:inline" data-i18n="player.fullscreen">Fullscreen</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Frame + Side Switcher Grid (Fluid 16:9 Stage Layout) -->
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+
+        <div class="xl:col-span-9 2xl:col-span-10 space-y-5">
+          <!-- Pure 16:9 Window Container (Only this container enters fullscreen) -->
+          <div id="game-window-container" class="relative bg-[#18181b] rounded-xl overflow-hidden shadow-lg border-4 border-[#27303a] aspect-video w-full flex items-center justify-center">
+
+            <!-- Play Splash Screen -->
+            <div id="player-splash-screen" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#1e242b] p-6 text-center space-y-5">
+              <div class="w-16 h-16 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center">
+                <span id="splash-icon" class="ui-sprite ui-xl ui-gamepad"></span>
+              </div>
+              <div class="space-y-1.5 max-w-lg">
+                <span id="splash-game-badge" class="inline-block px-2.5 py-0.5 rounded-md text-xs font-bold bg-[#27303a] text-[#cbd5e1] border border-[#3d4856]">Quiz</span>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white" id="splash-title">Ready to Play?</h2>
+                <p class="text-xs sm:text-sm text-[#cbd5e1]" id="splash-sub">Click Play below to start!</p>
+              </div>
+              <button type="button" onclick="startActualGame()"
+                class="px-8 py-3.5 bg-[#15803d] hover:bg-[#166534] text-white font-bold text-base sm:text-lg rounded-lg border-b-[3px] border-[#14532d] active:translate-y-[1px] transition-colors flex items-center gap-3 cursor-pointer">
+                <span class="ui-sprite ui-md ui-play"></span>
+                <span class="tracking-wide" data-i18n="player.playBtn">PLAY GAME</span>
+              </button>
+            </div>
+
+            <!-- Real Game Iframe (Supports all 15 games including AI Camera games!) -->
+            <iframe id="game-iframe" class="w-full h-full border-none bg-white" allow="camera; microphone; autoplay; fullscreen"></iframe>
+          </div>
+
+          <!-- Collapsible Game Settings Panel (Session-Only: Never Saved as Default) -->
+          <div id="player-settings-card" class="bg-white rounded-xl border border-[#e5dfd3] overflow-hidden">
+            <div id="player-settings-accordion">
+              <button type="button" id="player-settings-toggle-btn" onclick="togglePlayerSettingsAccordion()"
+                aria-expanded="false" aria-controls="player-settings-body"
+                class="w-full px-5 py-3.5 flex flex-wrap items-center justify-between gap-3 text-left hover:bg-[#fcfbf8] transition-colors cursor-pointer">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-9 h-9 rounded-lg bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-center shrink-0">
+                    <span class="ui-sprite ui-sm ui-sliders"></span>
+                  </div>
+                  <div class="min-w-0">
+                    <div class="text-sm sm:text-base font-bold text-[#18181b] truncate flex items-center gap-2">
+                      <span data-i18n="player.settingsTitle">Game Settings</span>
+                      <span id="session-only-pill" class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#fef3c7] text-[#92400e] border border-[#f59e0b]/40">Session Only</span>
+                    </div>
+                    <div class="text-[11px] font-medium text-[#78716c] truncate" id="session-only-hint">
+                      Adjust rules, theme, or AI camera controls for this session only (does not overwrite creator defaults)
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2.5 ml-auto shrink-0">
+                  <span id="player-settings-summary" class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-[#f4f1ea] text-[#3f3f46] border border-[#d6cfc2]">
+                    3 Lives • 30s
+                  </span>
+                  <svg id="player-settings-chevron" class="w-4 h-4 text-[#57534e] transition-transform duration-150" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m6 9 6 6 6-6"/>
+                  </svg>
+                </div>
+              </button>
+
+              <div id="player-settings-body" class="hidden border-t border-[#eee9df] p-5 sm:p-6 bg-[#fcfbf8] space-y-5">
+                <!-- Gameplay Rules (All 15 Games) -->
+                <div class="space-y-3">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-[#57534e] flex items-center gap-1.5">
+                      <span class="ui-sprite ui-xs ui-sliders"></span>
+                      <span data-i18n="player.settingsRulesHead">Gameplay Rules</span>
+                    </h4>
+                    <button type="button" id="ps-apply-rules-btn" onclick="applyPlayerRulesAndRestart()"
+                      class="px-4 py-2 bg-[#15803d] hover:bg-[#166534] text-white font-bold text-xs rounded-lg border-b-2 border-[#14532d] flex items-center gap-1.5 transition-colors cursor-pointer">
+                      <span class="ui-sprite ui-xs ui-refresh"></span>
+                      <span data-i18n="player.settingsApply">Apply &amp; Restart Game</span>
+                    </button>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
+                      <label for="ps-lives-select" class="block text-[11px] font-bold text-[#3f3f46] mb-1" data-i18n="editAct.livesLabel">Lives Limit</label>
+                      <select id="ps-lives-select" class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                        <option value="1" id="ps-opt-lives1">1 Heart</option>
+                        <option value="3" data-i18n="dash.lives3">3 Hearts (Standard)</option>
+                        <option value="5" data-i18n="dash.lives5">5 Hearts (Relaxed)</option>
+                        <option value="0" data-i18n="dash.lives0">Unlimited Lives</option>
+                      </select>
+                    </div>
+
+                    <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
+                      <label for="ps-time-mode" class="block text-[11px] font-bold text-[#3f3f46] mb-1" data-i18n="editAct.timerLabel">Time Mode</label>
+                      <select id="ps-time-mode" onchange="onPlayerTimeModeChange()" class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                        <option value="timer" data-i18n="editAct.timerTimer">Countdown Timer</option>
+                        <option value="stopwatch" data-i18n="editAct.timerStopwatch">Stopwatch (No Limit)</option>
+                        <option value="none" data-i18n="editAct.timerNone">Relaxed (No Timer)</option>
+                      </select>
+                    </div>
+
+                    <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
+                      <label for="ps-timer-seconds" class="block text-[11px] font-bold text-[#3f3f46] mb-1" data-i18n="editAct.secondsLabel">Seconds per Question</label>
+                      <input type="number" id="ps-timer-seconds" min="5" max="300" step="5" value="30"
+                        class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                    </div>
+
+                    <div class="bg-white p-3 rounded-lg border border-[#e5dfd3] flex flex-col justify-center gap-2 text-xs font-semibold text-[#18181b]">
+                      <label class="inline-flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="ps-shuffle-q" checked class="w-4 h-4 rounded accent-[#1d4ed8]">
+                        <span data-i18n="editAct.shuffleQ">Shuffle Questions</span>
+                      </label>
+                      <label class="inline-flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="ps-shuffle-a" checked class="w-4 h-4 rounded accent-[#1d4ed8]">
+                        <span data-i18n="editAct.shuffleA">Shuffle Answer Choices</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Mode-Specific Live Controls (3 AI Camera Games + Fruit Slicer) -->
+                <div id="ps-mode-controls" class="hidden border-t border-[#e5dfd3] pt-4 space-y-3">
+                  <!-- Rendered dynamically by JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Leaderboard Panel Below Window -->
+          <div class="bg-white rounded-xl p-5 sm:p-6 border border-[#e5dfd3] space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#eee9df] pb-3.5">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-[#fef3c7] border border-[#f59e0b]/40 flex items-center justify-center shrink-0">
+                  <span class="ui-sprite ui-sm ui-trophy"></span>
+                </div>
+                <div>
+                  <h4 class="text-base font-bold text-[#18181b] flex items-center gap-2">
+                    <span data-i18n="player.lbTitle">Activity Leaderboard</span>
+                    <span id="leaderboard-count-badge" class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#f4f1ea] text-[#57534e] border border-[#e5dfd3]">0 Players</span>
+                  </h4>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="refreshLeaderboardFromCloud()"
+                  class="px-3 py-1.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] hover:bg-[#f4f1ea] text-xs font-semibold text-[#18181b] flex items-center gap-1.5 transition-colors cursor-pointer">
+                  <span class="ui-sprite ui-xs ui-refresh"></span>
+                  <span data-i18n="player.lbRefresh">Refresh</span>
+                </button>
+                <!-- STRICTLY HIDDEN UNLESS LOGGED-IN USER IS CREATOR -->
+                <button type="button" id="lb-clear-all-btn" onclick="promptClearAllLeaderboard()"
+                  class="hidden px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 text-xs font-semibold text-red-700 flex items-center gap-1.5 transition-colors cursor-pointer">
+                  <span class="ui-sprite ui-xs ui-trash"></span>
+                  <span data-i18n="player.lbClearAll">Clear All</span>
+                </button>
+              </div>
+            </div>
+
+            <div id="dashboard-leaderboard-container">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Side Switcher: Game Modes + Theme (Session-Only) -->
+        <div class="xl:col-span-3 2xl:col-span-2 bg-white rounded-xl p-4 border border-[#e5dfd3] space-y-3 xl:sticky xl:top-20">
+          <div class="border-b border-[#eee9df] pb-3 flex items-center justify-between">
+            <h4 class="text-xs font-bold text-[#18181b] uppercase tracking-wider flex items-center gap-1.5">
+              <span class="ui-sprite ui-xs ui-gamepad"></span>
+              <span data-i18n="player.switchModeHeader">Switch Game</span>
+            </h4>
+            <button type="button" onclick="openAllGamesModal()"
+              class="text-[11px] px-2 py-0.5 rounded font-semibold bg-[#eff6ff] hover:bg-[#dbeafe] text-[#1d4ed8] border border-[#bfdbfe] transition-colors cursor-pointer" data-i18n="player.moreGames">
+              All 15 Games
+            </button>
+          </div>
+
+          <div id="player-sidebar-game-list" class="space-y-1.5">
+            <!-- Rendered by JS -->
+          </div>
+
+          <button type="button" onclick="openAllGamesModal()"
+            class="w-full py-2 px-3 rounded-lg border border-dashed border-[#c9c1b2] hover:border-[#1d4ed8] bg-[#fcfbf8] hover:bg-[#eff6ff] text-[#18181b] hover:text-[#1d4ed8] transition-colors flex items-center justify-between gap-2 text-xs font-bold cursor-pointer">
+            <span class="flex items-center gap-2">
+              <span class="ui-sprite ui-sm ui-dashboard"></span>
+              <span data-i18n="player.moreGames">All 15 Games</span>
+            </span>
+            <span class="ui-sprite ui-xs ui-arrow-right"></span>
+          </button>
+
+          <!-- Theme Selector -->
+          <div class="border-t border-[#eee9df] pt-3 mt-2">
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="text-xs font-bold text-[#18181b] uppercase tracking-wider flex items-center gap-1.5">
+                <span class="ui-sprite ui-xs ui-palette"></span>
+                <span data-i18n="editAct.themeSection">Visual Theme</span>
+              </h4>
+              <span id="player-active-theme-label" class="text-[10px] px-2 py-0.5 rounded font-bold bg-[#f4f1ea] text-[#57534e] border border-[#d6cfc2]">
+                White
+              </span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="switchPlayerGameTheme('white')" id="theme-btn-white"
+                class="p-2.5 rounded-lg border-2 transition-colors flex flex-col items-center justify-center gap-1 cursor-pointer text-center bg-[#fcfbf8] border-[#18181b]">
+                <span class="w-7 h-7 rounded-md bg-white border border-[#d6cfc2] flex items-center justify-center">
+                  <span class="ui-sprite ui-sm ui-palette"></span>
+                </span>
+                <span class="text-[11px] font-bold text-[#18181b]" data-i18n="player.themeWhite">Crisp White</span>
+                <span class="text-[9px] text-[#78716c]" data-i18n="player.themeCrispDesc">Classic crisp UI</span>
+              </button>
+
+              <button type="button" onclick="switchPlayerGameTheme('magical')" id="theme-btn-magical"
+                class="p-2.5 rounded-lg border-2 transition-colors flex flex-col items-center justify-center gap-1 cursor-pointer text-center bg-white border-[#e5dfd3] hover:border-[#7e22ce]">
+                <span class="w-7 h-7 rounded-md bg-[#faf5ff] border border-[#d8b4fe] flex items-center justify-center">
+                  <span class="ui-sprite ui-sm ui-sparkles"></span>
+                </span>
+                <span class="text-[11px] font-bold text-[#6b21a8]" data-i18n="player.themeMagical">Magical World</span>
+                <span class="text-[9px] text-[#7e22ce] font-medium" data-i18n="player.themeMagicDesc">Sparkling violet</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Session-only Reminder -->
+          <div class="border-t border-[#eee9df] pt-3 text-[11px] text-[#78716c] leading-relaxed" id="sidebar-session-note">
+            Mode, theme, and rule changes only apply to your current session and will not modify the original game defaults.
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       MODAL: ALL 15 GAMES SWITCHER
+       ========================================================================= -->
+  <div id="modal-all-games" class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center p-4" onclick="closeAllGamesModal()">
+    <div class="bg-white rounded-xl max-w-5xl w-full max-h-[88vh] flex flex-col overflow-hidden shadow-2xl border border-[#d6cfc2]" onclick="event.stopPropagation()">
+      <div class="px-5 py-4 border-b border-[#e5dfd3] flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-lg bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-center">
+            <span class="ui-sprite ui-sm ui-gamepad"></span>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-[#18181b]" data-i18n="player.moreGames">All 15 Games</h3>
+            <p class="text-[11px] text-[#57534e]" id="all-games-session-sub">Switch format for this session without altering the creator's default mode.</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeAllGamesModal()" class="p-1.5 rounded-lg bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] cursor-pointer" aria-label="Close">
+          <span class="ui-sprite ui-sm ui-close"></span>
+        </button>
+      </div>
+      <div id="all-games-modal-grid" class="flex-1 overflow-y-auto p-5 space-y-5 bg-[#fcfbf8]">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="games/common/i18n.js"></script>
+  <script src="games/common/db-local.js"></script>
+  <script>
+    const GAME_TEMPLATES_CONFIG = [
+      { id: 'quiz', category: 'standard', sprite: 'ui-game-quiz' },
+      { id: 'quiz-powerup', category: 'standard', sprite: 'ui-sparkles' },
+      { id: 'fruitninja', category: 'standard', sprite: 'ui-game-slicer' },
+      { id: 'flashcards', category: 'standard', sprite: 'ui-game-flashcards' },
+      { id: 'wheel', category: 'standard', sprite: 'ui-game-wheel' },
+      { id: 'matchup', category: 'standard', sprite: 'ui-game-match' },
+      { id: 'openbox', category: 'standard', sprite: 'ui-game-box' },
+      { id: 'wordsearch', category: 'standard', sprite: 'ui-game-word' },
+      { id: 'anagram', category: 'standard', sprite: 'ui-aa' },
+      { id: 'truefalse', category: 'standard', sprite: 'ui-game-tf' },
+      { id: 'whackamole', category: 'standard', sprite: 'ui-mole' },
+      { id: 'groupsort', category: 'standard', sprite: 'ui-folder' },
+      { id: 'ai-slicer', category: 'camera', sprite: 'ui-hand' },
+      { id: 'head-catcher', category: 'camera', sprite: 'ui-basket' },
+      { id: 'hanzi-battle', category: 'camera', sprite: 'ui-brush' }
+    ];
+
+    // Local session-only clone of the project (NEVER saved back to LotusDB!)
+    let activePlayerProject = null;
+    let initialStudentName = '';
+    let isPlayerGameStarted = false;
+    let playerIframeReady = false;
+    let hasPlayerSentInit = false;
+    let pendingPlayerMessages = [];
+    let playerLoadFallbackTimer = null;
+    let playerSettingsOpen = false;
+    let playerLiveState = {
+      cameraActive: false,
+      mouseMode: false,
+      speed: 'relaxed',
+      hand: 'auto',
+      bladePoint: 'finger',
+      skeleton: true,
+      trackingMode: 'hands',
+      hanziChapters: [],
+      activeChapterId: ''
+    };
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    }
+
+    function tx(key, enFallback, idFallback) {
+      const val = LotusI18n.t(key);
+      if (val && val !== key) return val;
+      return LotusI18n.getLang() === 'id' ? (idFallback || enFallback) : enFallback;
+    }
+
+    function getTplMeta(tplId) {
+      return GAME_TEMPLATES_CONFIG.find(g => g.id === tplId) || GAME_TEMPLATES_CONFIG[0];
+    }
+
+    function isCurrentUserCreator() {
+      if (!activePlayerProject) return false;
+      const teacher = LotusDB.getCurrentTeacherStrict();
+      return Boolean(teacher && activePlayerProject.teacher_id && teacher.id === activePlayerProject.teacher_id);
+    }
+
+    function updateStaticBilingualLabels() {
+      const isId = LotusI18n.getLang() === 'id';
+      const setText = (id, en, idStr) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = isId ? idStr : en;
+      };
+      setText('nav-back-comm-label', 'Community', 'Komunitas');
+      setText('btn-back-comm-text', 'Back to Community', 'Kembali ke Komunitas');
+      setText('btn-share-link-text', 'Copy Link', 'Salin Link');
+      setText('loading-title', 'Loading Activity...', 'Memuat Aktivitas...');
+      setText('loading-sub', 'Fetching game data from LotusWall Cloud', 'Mengambil data game dari LotusWall Cloud');
+      setText('nf-title', 'Activity Not Found', 'Aktivitas Tidak Ditemukan');
+      setText('nf-sub', 'This community game may have been deleted or set to private by its creator.', 'Game komunitas ini mungkin telah dihapus atau diatur menjadi privat oleh pembuatnya.');
+      setText('nf-back-btn', 'Back to Community Library', 'Kembali ke Perpustakaan Komunitas');
+      setText('session-only-pill', 'Session Only', 'Khusus Sesi Ini');
+      setText('session-only-hint', 'Adjust rules, theme, or AI camera controls for this session only (does not overwrite creator defaults)', 'Atur aturan, tema, atau kontrol kamera AI hanya untuk sesi ini (tidak mengubah pengaturan asli pembuat)');
+      setText('sidebar-session-note', 'Mode, theme, and rule changes only apply to your current session and will not modify the original game defaults.', 'Perubahan mode, tema, dan aturan hanya berlaku untuk sesi Anda saat ini dan tidak mengubah pengaturan default game asli.');
+      setText('all-games-session-sub', 'Switch format for this session without altering the creator\'s default mode.', 'Ganti format game khusus untuk sesi ini tanpa mengubah mode bawaan pembuat game.');
+      setText('ps-opt-lives1', '1 Heart', '1 Nyawa');
+    }
+
+    function handleBackToCommunity() {
+      window.location.href = 'index.html#tab=community';
+    }
+
+    function copyShareGameLink(btn) {
+      if (!activePlayerProject) return;
+      const url = `${window.location.origin}${window.location.pathname}?id=${encodeURIComponent(activePlayerProject.id)}`;
+      const isId = LotusI18n.getLang() === 'id';
+      const labelEl = document.getElementById('btn-share-link-text');
+      const done = () => {
+        if (labelEl) {
+          labelEl.textContent = isId ? 'Link Tersalin!' : 'Link Copied!';
+          setTimeout(() => { labelEl.textContent = isId ? 'Salin Link' : 'Copy Link'; }, 1800);
+        }
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(() => { prompt('Copy link:', url); });
+      } else {
+        prompt('Copy link:', url);
+      }
+    }
+
+    function normalizeSpeedKey(val) {
+      const s = String(val || '').toLowerCase();
+      if (s === 'relaxed' || s === 'santai' || s === 'slow') return 'relaxed';
+      if (s === 'normal' || s === 'sedang' || s === 'medium') return 'normal';
+      if (s === 'fast' || s === 'cepat') return 'fast';
+      return '';
+    }
+
+    function getSpeedLabelText(speedKey) {
+      const norm = normalizeSpeedKey(speedKey) || 'relaxed';
+      if (norm === 'fast') return tx('player.speedFast', 'Fast', 'Cepat');
+      if (norm === 'normal') return tx('player.speedNormal', 'Normal', 'Sedang');
+      return tx('player.speedRelaxed', 'Relaxed', 'Santai');
+    }
+
+    function resetPlayerLiveState() {
+      playerLiveState = {
+        cameraActive: false,
+        mouseMode: false,
+        speed: 'relaxed',
+        hand: 'auto',
+        bladePoint: 'finger',
+        skeleton: true,
+        trackingMode: 'hands',
+        hanziChapters: [],
+        activeChapterId: ''
+      };
+    }
+
+    function getNormalizedProjectRules(proj) {
+      const r = proj?.rules || {};
+      const s = proj?.settings || {};
+      const livesVal = (r.lives !== undefined) ? Number(r.lives) : (s.lives !== undefined ? Number(s.lives) : 3);
+      const timeMode = r.timeMode || s.timerMode || ((Number(s.timerSeconds) > 0) ? 'timer' : 'timer');
+      const timerSeconds = Math.max(5, Number(r.timerSeconds ?? s.timerSeconds ?? 30) || 30);
+      return {
+        lives: isNaN(livesVal) ? 3 : livesVal,
+        timeMode: ['timer', 'stopwatch', 'none'].includes(timeMode) ? timeMode : 'timer',
+        timerSeconds,
+        shuffleQuestions: r.shuffleQuestions !== undefined ? Boolean(r.shuffleQuestions) : (s.shuffleQuestions !== false),
+        shuffleAnswers: r.shuffleAnswers !== undefined ? Boolean(r.shuffleAnswers) : (s.shuffleOptions !== false)
+      };
+    }
+
+    function populatePlayerRulesInputs() {
+      if (!activePlayerProject) return;
+      const rules = getNormalizedProjectRules(activePlayerProject);
+      const livesEl = document.getElementById('ps-lives-select');
+      const modeEl = document.getElementById('ps-time-mode');
+      const secEl = document.getElementById('ps-timer-seconds');
+      const sqEl = document.getElementById('ps-shuffle-q');
+      const saEl = document.getElementById('ps-shuffle-a');
+
+      if (livesEl) {
+        const strVal = String(rules.lives);
+        if (!Array.from(livesEl.options).some(o => o.value === strVal)) {
+          livesEl.value = '3';
+        } else {
+          livesEl.value = strVal;
+        }
+      }
+      if (modeEl) modeEl.value = rules.timeMode;
+      if (secEl) {
+        secEl.value = rules.timerSeconds;
+        secEl.disabled = rules.timeMode !== 'timer';
+        secEl.classList.toggle('opacity-50', rules.timeMode !== 'timer');
+      }
+      if (sqEl) sqEl.checked = rules.shuffleQuestions;
+      if (saEl) saEl.checked = rules.shuffleAnswers;
+    }
+
+    function onPlayerTimeModeChange() {
+      const modeEl = document.getElementById('ps-time-mode');
+      const secEl = document.getElementById('ps-timer-seconds');
+      if (!modeEl || !secEl) return;
+      const isTimer = modeEl.value === 'timer';
+      secEl.disabled = !isTimer;
+      secEl.classList.toggle('opacity-50', !isTimer);
+    }
+
+    function setPlayerSettingsOpen(open) {
+      playerSettingsOpen = Boolean(open);
+      const body = document.getElementById('player-settings-body');
+      const btn = document.getElementById('player-settings-toggle-btn');
+      const chev = document.getElementById('player-settings-chevron');
+      if (body) body.classList.toggle('hidden', !playerSettingsOpen);
+      if (btn) btn.setAttribute('aria-expanded', playerSettingsOpen ? 'true' : 'false');
+      if (chev) chev.style.transform = playerSettingsOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
+
+    function togglePlayerSettingsAccordion() {
+      setPlayerSettingsOpen(!playerSettingsOpen);
+    }
+
+    function updatePlayerSettingsSummary() {
+      const el = document.getElementById('player-settings-summary');
+      if (!el || !activePlayerProject) return;
+      const rules = getNormalizedProjectRules(activePlayerProject);
+      const isId = LotusI18n.getLang() === 'id';
+      const livesText = rules.lives === 0
+        ? (isId ? 'Tanpa Batas Nyawa' : 'Unlimited Lives')
+        : (isId ? `${rules.lives} Nyawa` : `${rules.lives} ${rules.lives === 1 ? 'Life' : 'Lives'}`);
+      const timeText = rules.timeMode === 'timer'
+        ? `${rules.timerSeconds}s`
+        : (rules.timeMode === 'stopwatch' ? 'Stopwatch' : (isId ? 'Santai' : 'Relaxed'));
+      const parts = [livesText, timeText];
+      if (['fruitninja', 'ai-slicer', 'head-catcher'].includes(activePlayerProject.template_type)) {
+        parts.push(getSpeedLabelText(playerLiveState.speed));
+      }
+      el.textContent = parts.join(' • ');
+    }
+
+    function applyPlayerRulesAndRestart() {
+      if (!activePlayerProject) return;
+      const lives = Number(document.getElementById('ps-lives-select')?.value ?? 3);
+      const timeMode = document.getElementById('ps-time-mode')?.value || 'timer';
+      const timerSeconds = Math.max(5, Math.min(300, Number(document.getElementById('ps-timer-seconds')?.value || 30)));
+      const shuffleQuestions = Boolean(document.getElementById('ps-shuffle-q')?.checked);
+      const shuffleAnswers = Boolean(document.getElementById('ps-shuffle-a')?.checked);
+
+      const newRules = { lives, timeMode, timerSeconds, shuffleQuestions, shuffleAnswers };
+
+      // SESSION-ONLY update: mutates local activePlayerProject copy, NEVER calls LotusDB.saveProject()!
+      activePlayerProject.rules = newRules;
+      activePlayerProject.settings = {
+        ...(activePlayerProject.settings || {}),
+        lives,
+        timerMode: timeMode,
+        timerSeconds,
+        shuffleQuestions,
+        shuffleOptions: shuffleAnswers
+      };
+
+      updatePlayerSettingsSummary();
+
+      const themeId = activePlayerProject.theme === 'magical' ? 'magical' : 'white';
+      const iframe = document.getElementById('game-iframe');
+      if (isPlayerGameStarted && iframe && iframe.src && !iframe.src.endsWith('about:blank') && iframe.contentWindow) {
+        try {
+          iframe.contentWindow.postMessage({
+            type: 'UPDATE_SETTINGS',
+            activity: activePlayerProject,
+            rules: newRules,
+            settings: activePlayerProject.settings,
+            theme: themeId,
+            restart: true
+          }, '*');
+        } catch (e) {}
+      } else {
+        startActualGame();
+      }
+    }
+
+    function flushPendingPlayerMessages() {
+      const iframe = document.getElementById('game-iframe');
+      if (!iframe || !iframe.contentWindow) return;
+      if (playerLoadFallbackTimer) {
+        clearTimeout(playerLoadFallbackTimer);
+        playerLoadFallbackTimer = null;
+      }
+      if (!playerIframeReady) {
+        playerIframeReady = true;
+        const tplId = activePlayerProject?.template_type || 'quiz';
+        if (['ai-slicer', 'head-catcher', 'hanzi-battle', 'fruitninja'].includes(tplId)) {
+          try {
+            iframe.contentWindow.postMessage({
+              type: 'GAME_SETTINGS',
+              payload: {
+                speed: playerLiveState.speed,
+                hand: playerLiveState.hand,
+                bladePoint: playerLiveState.bladePoint,
+                skeleton: playerLiveState.skeleton,
+                trackingMode: playerLiveState.trackingMode
+              },
+              speed: playerLiveState.speed
+            }, '*');
+          } catch (e) {}
+        }
+      }
+      while (pendingPlayerMessages.length > 0) {
+        const msg = pendingPlayerMessages.shift();
+        try {
+          iframe.contentWindow.postMessage(msg, '*');
+        } catch (e) {}
+      }
+    }
+
+    function dispatchPlayerMessage(msg) {
+      if (!activePlayerProject) return;
+      const iframe = document.getElementById('game-iframe');
+      const splashVisible = document.getElementById('player-splash-screen')?.style.display !== 'none';
+      if (isPlayerGameStarted && !splashVisible && playerIframeReady && iframe && iframe.contentWindow && iframe.src && !iframe.src.endsWith('about:blank')) {
+        try {
+          iframe.contentWindow.postMessage(msg, '*');
+        } catch (e) {}
+      } else {
+        pendingPlayerMessages.push(msg);
+        if (!isPlayerGameStarted || splashVisible) {
+          startActualGame();
+        }
+      }
+    }
+
+    function sendPlayerGameCmd(command, extra = {}) {
+      dispatchPlayerMessage({ type: 'GAME_CMD', command, ...extra });
+    }
+
+    function sendPlayerGameSettings(partial = {}) {
+      Object.assign(playerLiveState, partial);
+      updatePlayerSettingsSummary();
+      dispatchPlayerMessage({
+        type: 'GAME_SETTINGS',
+        payload: { ...partial },
+        ...partial
+      });
+    }
+
+    function sendPlayerSpeedChange(speedVal) {
+      const norm = normalizeSpeedKey(speedVal) || 'relaxed';
+      playerLiveState.speed = norm;
+      renderPlayerModeControls();
+      updatePlayerSettingsSummary();
+      dispatchPlayerMessage({
+        type: 'GAME_CMD',
+        command: 'SET_SPEED',
+        value: norm,
+        speed: norm,
+        payload: { speed: norm }
+      });
+    }
+
+    function sendPlayerHanziDeckChange(chapterId) {
+      if (!chapterId) return;
+      playerLiveState.activeChapterId = chapterId;
+      sendPlayerGameSettings({ hanziChapterId: chapterId });
+    }
+
+    function renderPlayerModeControls() {
+      const box = document.getElementById('ps-mode-controls');
+      if (!box || !activePlayerProject) return;
+      const tplId = activePlayerProject.template_type || 'quiz';
+      const isCameraGame = ['ai-slicer', 'head-catcher', 'hanzi-battle'].includes(tplId);
+
+      if (!isCameraGame && tplId !== 'fruitninja') {
+        box.classList.add('hidden');
+        box.innerHTML = '';
+        return;
+      }
+
+      box.classList.remove('hidden');
+
+      if (tplId === 'fruitninja') {
+        const speedOptions = [
+          { id: 'relaxed', dot: '#16a34a', label: getSpeedLabelText('relaxed') },
+          { id: 'normal', dot: '#d97706', label: getSpeedLabelText('normal') },
+          { id: 'fast', dot: '#dc2626', label: getSpeedLabelText('fast') }
+        ];
+        box.innerHTML = `
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-[#57534e] flex items-center gap-1.5">
+              <span class="ui-sprite ui-xs ui-game-slicer"></span>
+              <span>${escapeHtml(tx('player.settingsSpeedHead', 'Speed & Flow', 'Kecepatan & Alur'))}</span>
+            </h4>
+            <div class="flex flex-wrap items-center gap-2">
+              ${speedOptions.map(opt => {
+                const active = playerLiveState.speed === opt.id;
+                return `
+                  <button type="button" data-speed-btn="${opt.id}" onclick="sendPlayerSpeedChange('${opt.id}')"
+                    class="px-3.5 py-2 rounded-lg border-2 text-xs font-bold inline-flex items-center gap-2 transition-colors cursor-pointer ${active ? 'border-[#1d4ed8] bg-[#eff6ff] text-[#1d4ed8]' : 'border-[#d6cfc2] bg-white hover:bg-[#f4f1ea] text-[#18181b]'}">
+                    <span class="w-2.5 h-2.5 rounded-full" style="background:${opt.dot};"></span>
+                    <span>${escapeHtml(opt.label)}</span>
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const isId = LotusI18n.getLang() === 'id';
+      const camActive = Boolean(playerLiveState.cameraActive);
+      const mouseActive = Boolean(playerLiveState.mouseMode) && !camActive;
+      const camBtnLabel = camActive
+        ? tx('player.camDisable', 'Stop Camera', 'Matikan Kamera')
+        : tx('player.camEnable', 'Enable Camera', 'Aktifkan Kamera');
+      const mouseBtnLabel = tx('player.mousePlay', 'Play with Mouse', 'Main dengan Mouse');
+      const restartLabel = LotusI18n.t('player.replay');
+      const statePill = camActive
+        ? (isId ? 'Kamera Aktif' : 'Camera Active')
+        : (mouseActive ? (isId ? 'Mode Mouse' : 'Mouse Mode') : (isId ? 'Siap' : 'Standby'));
+
+      let extraFieldsHtml = '';
+
+      if (tplId === 'ai-slicer') {
+        extraFieldsHtml = `
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
+              <label for="ps-ai-hand" class="block text-[11px] font-bold text-[#3f3f46] mb-1">${escapeHtml(LotusI18n.t('aiSlicer.handLabel'))}</label>
+              <select id="ps-ai-hand" onchange="sendPlayerGameSettings({ hand: this.value })"
+                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                <option value="auto" ${playerLiveState.hand === 'auto' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('aiSlicer.handAuto'))}</option>
+                <option value="right" ${playerLiveState.hand === 'right' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('aiSlicer.handRight'))}</option>
+                <option value="left" ${playerLiveState.hand === 'left' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('aiSlicer.handLeft'))}</option>
+              </select>
+            </div>
+            <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
+              <label for="ps-ai-blade" class="block text-[11px] font-bold text-[#3f3f46] mb-1">${escapeHtml(LotusI18n.t('aiSlicer.pointLabel'))}</label>
+              <select id="ps-ai-blade" onchange="sendPlayerGameSettings({ bladePoint: this.value })"
+                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                <option value="finger" ${playerLiveState.bladePoint === 'finger' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('aiSlicer.pointFinger'))}</option>
+                <option value="palm" ${playerLiveState.bladePoint === 'palm' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('aiSlicer.pointPalm'))}</option>
+              </select>
+            </div>
+            <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
+              <label for="ps-speed-select" class="block text-[11px] font-bold text-[#3f3f46] mb-1">${escapeHtml(tx('player.settingsSpeedHead', 'Speed', 'Kecepatan'))}</label>
+              <select id="ps-speed-select" onchange="sendPlayerSpeedChange(this.value)"
+                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                <option value="relaxed" ${playerLiveState.speed === 'relaxed' ? 'selected' : ''}>${escapeHtml(getSpeedLabelText('relaxed'))}</option>
+                <option value="normal" ${playerLiveState.speed === 'normal' ? 'selected' : ''}>${escapeHtml(getSpeedLabelText('normal'))}</option>
+                <option value="fast" ${playerLiveState.speed === 'fast' ? 'selected' : ''}>${escapeHtml(getSpeedLabelText('fast'))}</option>
+              </select>
+            </div>
+            <div class="bg-white p-3 rounded-lg border border-[#e5dfd3] flex items-center">
+              <label class="inline-flex items-center gap-2 text-xs font-semibold text-[#18181b] cursor-pointer">
+                <input type="checkbox" id="ps-ai-skeleton" ${playerLiveState.skeleton !== false ? 'checked' : ''} onchange="sendPlayerGameSettings({ skeleton: this.checked })"
+                  class="w-4 h-4 rounded accent-[#1d4ed8]">
+                <span>${escapeHtml(LotusI18n.t('aiSlicer.skeleton'))}</span>
+              </label>
+            </div>
+          </div>
+        `;
+      } else if (tplId === 'head-catcher') {
+        extraFieldsHtml = `
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
+              <label for="ps-speed-select" class="block text-[11px] font-bold text-[#3f3f46] mb-1">${escapeHtml(tx('player.settingsSpeedHead', 'Speed', 'Kecepatan'))}</label>
+              <select id="ps-speed-select" onchange="sendPlayerSpeedChange(this.value)"
+                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                <option value="relaxed" ${playerLiveState.speed === 'relaxed' ? 'selected' : ''}>${escapeHtml(getSpeedLabelText('relaxed'))}</option>
+                <option value="normal" ${playerLiveState.speed === 'normal' ? 'selected' : ''}>${escapeHtml(getSpeedLabelText('normal'))}</option>
+                <option value="fast" ${playerLiveState.speed === 'fast' ? 'selected' : ''}>${escapeHtml(getSpeedLabelText('fast'))}</option>
+              </select>
+            </div>
+            <div class="bg-white p-3 rounded-lg border border-[#e5dfd3] flex items-center">
+              <label class="inline-flex items-center gap-2 text-xs font-semibold text-[#18181b] cursor-pointer">
+                <input type="checkbox" id="ps-ai-skeleton" ${playerLiveState.skeleton !== false ? 'checked' : ''} onchange="sendPlayerGameSettings({ skeleton: this.checked })"
+                  class="w-4 h-4 rounded accent-[#1d4ed8]">
+                <span>${escapeHtml(LotusI18n.t('hc.aiOverlay'))}</span>
+              </label>
+            </div>
+          </div>
+        `;
+      } else if (tplId === 'hanzi-battle') {
+        const chapters = Array.isArray(playerLiveState.hanziChapters) ? playerLiveState.hanziChapters : [];
+        const chaptersOptionsHtml = chapters.length > 0
+          ? chapters.map(ch => {
+              const id = typeof ch === 'string' ? ch : (ch.id || ch.value || '');
+              const label = typeof ch === 'string' ? ch : (ch.label || id);
+              return `<option value="${escapeHtml(id)}" ${id === playerLiveState.activeChapterId ? 'selected' : ''}>${escapeHtml(label)}</option>`;
+            }).join('')
+          : `<option value="">${escapeHtml(isId ? 'Mulai game untuk memuat daftar unit Hanzi...' : 'Start game to load Hanzi units...')}</option>`;
+
+        extraFieldsHtml = `
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+            <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
+              <label for="ps-hb-tracking" class="block text-[11px] font-bold text-[#3f3f46] mb-1">${escapeHtml(isId ? 'Mode Pelacakan' : 'Tracking Mode')}</label>
+              <select id="ps-hb-tracking" onchange="sendPlayerGameSettings({ trackingMode: this.value })"
+                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                <option value="hands" ${playerLiveState.trackingMode !== 'pose' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('hb.trackingNear'))}</option>
+                <option value="pose" ${playerLiveState.trackingMode === 'pose' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('hb.trackingFar'))}</option>
+              </select>
+            </div>
+            <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
+              <label for="ps-ai-hand" class="block text-[11px] font-bold text-[#3f3f46] mb-1">${escapeHtml(LotusI18n.t('aiSlicer.handLabel'))}</label>
+              <select id="ps-ai-hand" onchange="sendPlayerGameSettings({ hand: this.value })"
+                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                <option value="auto" ${playerLiveState.hand === 'auto' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('hb.handAuto'))}</option>
+                <option value="right" ${playerLiveState.hand === 'right' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('hb.handRight'))}</option>
+                <option value="left" ${playerLiveState.hand === 'left' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('hb.handLeft'))}</option>
+              </select>
+            </div>
+            <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
+              <label for="ps-hb-chapter" class="block text-[11px] font-bold text-[#3f3f46] mb-1">${escapeHtml(tx('player.hanziDeck', 'Hanzi Unit / Deck', 'Unit / Dek Hanzi'))}</label>
+              <select id="ps-hb-chapter" onchange="sendPlayerHanziDeckChange(this.value)" ${chapters.length === 0 ? 'disabled' : ''}
+                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8] disabled:opacity-60">
+                ${chaptersOptionsHtml}
+              </select>
+            </div>
+            <div>
+              <button type="button" id="ps-hb-skip-btn" onclick="sendPlayerGameCmd('SKIP_WORD')"
+                class="w-full px-3.5 py-2.5 rounded-lg bg-[#d97706] hover:bg-[#b45309] text-white font-bold text-xs border-b-2 border-[#92400e] inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+                <span class="ui-sprite ui-xs ui-arrow-right"></span>
+                <span>${escapeHtml(tx('player.hanziSkip', 'Next Character', 'Karakter Berikutnya'))}</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      box.innerHTML = `
+        <div class="space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-[#57534e] flex items-center gap-1.5">
+              <span class="ui-sprite ui-xs ui-camera"></span>
+              <span>${escapeHtml(tx('player.settingsCameraHead', 'AI Motion & Live Controls', 'Kontrol Gerak AI & Kamera'))}</span>
+            </h4>
+            <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-md border ${camActive ? 'bg-[#ecfdf5] text-[#15803d] border-[#86efac]' : (mouseActive ? 'bg-[#eff6ff] text-[#1d4ed8] border-[#bfdbfe]' : 'bg-white text-[#57534e] border-[#d6cfc2]')}">
+              ${escapeHtml(statePill)}
+            </span>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" id="ps-btn-camera" onclick="sendPlayerGameCmd('TOGGLE_CAMERA')"
+              class="px-4 py-2 rounded-lg font-bold text-xs border-b-2 inline-flex items-center gap-2 transition-colors cursor-pointer ${camActive ? 'bg-[#b91c1c] hover:bg-[#991b1b] text-white border-[#7f1d1d]' : 'bg-[#1d4ed8] hover:bg-[#1e40af] text-white border-[#1e3a8a]'}">
+              <span class="ui-sprite ui-xs ${camActive ? 'ui-camera-off' : 'ui-camera'}"></span>
+              <span>${escapeHtml(camBtnLabel)}</span>
+            </button>
+            <button type="button" id="ps-btn-mouse" onclick="sendPlayerGameCmd('MOUSE_MODE')"
+              class="px-4 py-2 rounded-lg font-bold text-xs border inline-flex items-center gap-2 transition-colors cursor-pointer ${mouseActive ? 'bg-[#eff6ff] border-[#1d4ed8] text-[#1d4ed8]' : 'bg-white hover:bg-[#f4f1ea] border-[#d6cfc2] text-[#18181b]'}">
+              <span class="ui-sprite ui-xs ui-gamepad"></span>
+              <span>${escapeHtml(mouseBtnLabel)}</span>
+            </button>
+            ${tplId === 'head-catcher' ? `
+              <button type="button" id="ps-btn-hc-start" onclick="sendPlayerGameCmd('START_GAME')"
+                class="px-4 py-2 rounded-lg font-bold text-xs bg-[#15803d] hover:bg-[#166534] text-white border-b-2 border-[#14532d] inline-flex items-center gap-2 transition-colors cursor-pointer">
+                <span class="ui-sprite ui-xs ui-play"></span>
+                <span>${escapeHtml(LotusI18n.t('hc.startGame'))}</span>
+              </button>
+            ` : ''}
+            <button type="button" id="ps-btn-restart" onclick="sendPlayerGameCmd('RESTART')"
+              class="px-4 py-2 rounded-lg font-bold text-xs bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] text-[#18181b] inline-flex items-center gap-2 transition-colors cursor-pointer">
+              <span class="ui-sprite ui-xs ui-refresh"></span>
+              <span>${escapeHtml(restartLabel)}</span>
+            </button>
+          </div>
+          ${extraFieldsHtml}
+        </div>
+      `;
+    }
+
+    function renderPlayerView(autoStart = false) {
+      if (!activePlayerProject) return;
+
+      const owner = LotusDB.getTeacherById(activePlayerProject.teacher_id);
+      const meta = getTplMeta(activePlayerProject.template_type);
+      const tplName = LotusI18n.getTemplateName(meta.id);
+
+      document.title = `${activePlayerProject.title} — LotusWall`;
+      document.getElementById('player-title').textContent = activePlayerProject.title;
+      const byText = LotusI18n.t('comm.byTeacher', { name: owner ? owner.name : 'LotusWall Teacher' });
+      const pinSuffix = activePlayerProject.pin ? ` • PIN ${activePlayerProject.pin}` : '';
+      document.getElementById('player-game-badge').textContent = `${tplName} • ${byText} • ${activePlayerProject.level || 'SD'}${pinSuffix}`;
+
+      const splashIcon = document.getElementById('splash-icon');
+      if (splashIcon) splashIcon.className = `ui-sprite ui-2xl ${meta.sprite}`;
+
+      document.getElementById('splash-game-badge').textContent = tplName;
+      document.getElementById('splash-title').textContent = activePlayerProject.title;
+      document.getElementById('splash-sub').textContent = LotusI18n.t('player.readySub', {
+        tpl: tplName,
+        n: activePlayerProject.questions?.length || 0
+      });
+
+      resetPlayerLiveState();
+      pendingPlayerMessages = [];
+      playerIframeReady = false;
+      hasPlayerSentInit = false;
+      isPlayerGameStarted = Boolean(autoStart);
+
+      renderPlayerSidebarGameList();
+      updatePlayerThemeUI(activePlayerProject.theme || 'white');
+      populatePlayerRulesInputs();
+      renderPlayerModeControls();
+      updatePlayerSettingsSummary();
+      setPlayerSettingsOpen(false);
+      renderLeaderboard();
+
+      document.getElementById('state-loading').classList.add('hidden');
+      document.getElementById('state-not-found').classList.add('hidden');
+      document.getElementById('view-game-player').classList.remove('hidden');
+
+      if (autoStart) {
+        startActualGame();
+      } else {
+        const iframe = document.getElementById('game-iframe');
+        if (iframe) iframe.src = 'about:blank';
+        document.getElementById('player-splash-screen').style.display = 'flex';
+      }
+    }
+
+    // SESSION-ONLY template switch (never saves to LotusDB!)
+    function switchPlayerGameTemplate(newTplId) {
+      if (!activePlayerProject) return;
+      activePlayerProject.template_type = newTplId;
+      renderPlayerView(false);
+    }
+
+    function resetToPlayScreen() {
+      if (!activePlayerProject) return;
+      renderPlayerView(false);
+    }
+
+    // SESSION-ONLY theme switch (never saves to LotusDB!)
+    function switchPlayerGameTheme(themeId) {
+      if (!activePlayerProject) return;
+      const t = (themeId === 'magical') ? 'magical' : 'white';
+      activePlayerProject.theme = t;
+      updatePlayerThemeUI(t);
+      updatePlayerSettingsSummary();
+
+      const iframe = document.getElementById('game-iframe');
+      if (iframe && iframe.contentWindow) {
+        try {
+          iframe.contentWindow.postMessage({ type: 'THEME_CHANGE', theme: t }, '*');
+        } catch (e) {}
+      }
+    }
+
+    function updatePlayerThemeUI(themeId) {
+      const isMag = (themeId === 'magical');
+      const label = document.getElementById('player-active-theme-label');
+      if (label) {
+        label.className = isMag
+          ? 'text-[10px] px-2 py-0.5 rounded font-bold bg-[#faf5ff] text-[#6b21a8] border border-[#d8b4fe]'
+          : 'text-[10px] px-2 py-0.5 rounded font-bold bg-[#f4f1ea] text-[#57534e] border border-[#d6cfc2]';
+        label.textContent = isMag ? LotusI18n.t('player.themeMagical') : LotusI18n.t('player.themeWhite');
+      }
+
+      const btnW = document.getElementById('theme-btn-white');
+      const btnM = document.getElementById('theme-btn-magical');
+      if (btnW && btnM) {
+        btnW.className = !isMag
+          ? 'p-2.5 rounded-lg border-2 transition-colors flex flex-col items-center justify-center gap-1 cursor-pointer text-center bg-[#fcfbf8] border-[#18181b]'
+          : 'p-2.5 rounded-lg border-2 transition-colors flex flex-col items-center justify-center gap-1 cursor-pointer text-center bg-white border-[#e5dfd3] hover:border-[#a8a29e]';
+        btnM.className = isMag
+          ? 'p-2.5 rounded-lg border-2 transition-colors flex flex-col items-center justify-center gap-1 cursor-pointer text-center bg-[#faf5ff] border-[#7e22ce]'
+          : 'p-2.5 rounded-lg border-2 transition-colors flex flex-col items-center justify-center gap-1 cursor-pointer text-center bg-white border-[#e5dfd3] hover:border-[#c084fc]';
+      }
+    }
+
+    function renderPlayerSidebarGameList() {
+      const container = document.getElementById('player-sidebar-game-list');
+      if (!container || !activePlayerProject) return;
+      const currentTpl = activePlayerProject.template_type || 'quiz';
+      const maxQuick = 4;
+      const activeIdx = GAME_TEMPLATES_CONFIG.findIndex(t => t.id === currentTpl);
+      const quickList = (activeIdx >= maxQuick)
+        ? [GAME_TEMPLATES_CONFIG[activeIdx], ...GAME_TEMPLATES_CONFIG.filter((_, i) => i !== activeIdx).slice(0, maxQuick - 1)]
+        : GAME_TEMPLATES_CONFIG.slice(0, maxQuick);
+
+      container.innerHTML = quickList.map(tpl => {
+        const isActive = tpl.id === currentTpl;
+        const name = LotusI18n.getTemplateName(tpl.id);
+        return `
+          <button type="button" onclick="switchPlayerGameTemplate('${tpl.id}')"
+            class="w-full text-left p-2.5 rounded-lg border-2 transition-colors flex items-center justify-between gap-2 cursor-pointer ${isActive ? 'bg-[#eff6ff]/80 border-[#1d4ed8]' : 'bg-white border-[#e5dfd3] hover:bg-[#fcfbf8]'}">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="w-8 h-8 rounded-md ${isActive ? 'bg-[#dbeafe]' : 'bg-[#f4f1ea]'} flex items-center justify-center shrink-0">
+                <span class="ui-sprite ui-sm ${tpl.sprite}"></span>
+              </span>
+              <span class="text-xs font-bold truncate ${isActive ? 'text-[#1d4ed8]' : 'text-[#18181b]'}">${escapeHtml(name)}</span>
+            </div>
+            ${isActive ? '<span class="ui-sprite ui-xs ui-check shrink-0"></span>' : ''}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function openAllGamesModal() {
+      renderAllGamesModal();
+      document.getElementById('modal-all-games').classList.remove('hidden');
+    }
+
+    function closeAllGamesModal() {
+      document.getElementById('modal-all-games').classList.add('hidden');
+    }
+
+    function renderAllGamesModal() {
+      const grid = document.getElementById('all-games-modal-grid');
+      if (!grid || !activePlayerProject) return;
+      const currentTpl = activePlayerProject.template_type || 'quiz';
+
+      const buildSection = (titleKey, list) => `
+        <div class="space-y-2">
+          <div class="text-xs font-bold uppercase tracking-wider text-[#78716c]">${escapeHtml(LotusI18n.t(titleKey))}</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
+            ${list.map(tpl => {
+              const isActive = tpl.id === currentTpl;
+              return `
+                <button type="button" onclick="closeAllGamesModal(); switchPlayerGameTemplate('${tpl.id}')"
+                  class="text-left p-3.5 rounded-lg border-2 transition-colors flex flex-col justify-between gap-2 cursor-pointer ${isActive ? 'bg-[#eff6ff]/70 border-[#1d4ed8]' : 'bg-white border-[#e5dfd3] hover:border-[#1d4ed8] hover:bg-[#fcfbf8]'}">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="w-9 h-9 rounded-md ${isActive ? 'bg-[#dbeafe]' : 'bg-[#f4f1ea]'} flex items-center justify-center">
+                      <span class="ui-sprite ui-sm ${tpl.sprite}"></span>
+                    </span>
+                    ${isActive ? '<span class="ui-sprite ui-sm ui-check"></span>' : '<span class="ui-sprite ui-xs ui-arrow-right"></span>'}
+                  </div>
+                  <div>
+                    <div class="text-xs font-bold text-[#18181b]">${escapeHtml(LotusI18n.getTemplateName(tpl.id))}</div>
+                    <div class="text-[10px] text-[#57534e] line-clamp-2 mt-0.5">${escapeHtml(LotusI18n.getTemplateDesc(tpl.id))}</div>
+                  </div>
+                </button>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+
+      grid.innerHTML =
+        buildSection('cat.standard', GAME_TEMPLATES_CONFIG.filter(g => g.category === 'standard')) +
+        buildSection('cat.camera', GAME_TEMPLATES_CONFIG.filter(g => g.category === 'camera'));
+    }
+
+    function startActualGame() {
+      if (!activePlayerProject) return;
+      document.getElementById('player-splash-screen').style.display = 'none';
+
+      isPlayerGameStarted = true;
+      playerIframeReady = false;
+      hasPlayerSentInit = false;
+      if (playerLoadFallbackTimer) {
+        clearTimeout(playerLoadFallbackTimer);
+        playerLoadFallbackTimer = null;
+      }
+
+      const tplId = activePlayerProject.template_type || 'quiz';
+      const themeId = activePlayerProject.theme === 'magical' ? 'magical' : 'white';
+      const lang = LotusI18n.getLang();
+      const iframe = document.getElementById('game-iframe');
+
+      // Use sessionStorage / postMessage so we do not overwrite LotusDB defaults
+      try {
+        localStorage.setItem(`activity_${activePlayerProject.id}`, JSON.stringify(activePlayerProject));
+        localStorage.setItem('current_game_activity', JSON.stringify(activePlayerProject));
+      } catch (e) {}
+
+      iframe.onload = () => {
+        if (!hasPlayerSentInit && activePlayerProject && iframe.contentWindow) {
+          hasPlayerSentInit = true;
+          const liveTheme = activePlayerProject.theme === 'magical' ? 'magical' : 'white';
+          const liveLang = LotusI18n.getLang();
+          try {
+            iframe.contentWindow.postMessage({
+              type: 'INIT_ACTIVITY',
+              activity: activePlayerProject,
+              playerName: initialStudentName || '',
+              playerClass: ''
+            }, '*');
+            iframe.contentWindow.postMessage({ type: 'THEME_CHANGE', theme: liveTheme }, '*');
+            iframe.contentWindow.postMessage({ type: 'LANG_CHANGE', lang: liveLang }, '*');
+          } catch (e) {}
+        }
+        playerLoadFallbackTimer = setTimeout(() => {
+          flushPendingPlayerMessages();
+        }, 120);
+      };
+
+      iframe.src = `games/${tplId}.html?id=${encodeURIComponent(activePlayerProject.id)}&theme=${themeId}&lang=${lang}&embedded=1`;
+    }
+
+    window.addEventListener('message', (event) => {
+      if (!event.data || typeof event.data !== 'object') return;
+      if (event.data.type === 'GAME_READY' && activePlayerProject) {
+        const iframe = document.getElementById('game-iframe');
+        const tplId = activePlayerProject.template_type || 'quiz';
+        if (iframe && iframe.contentWindow && !hasPlayerSentInit) {
+          hasPlayerSentInit = true;
+          try {
+            iframe.contentWindow.postMessage({
+              type: 'INIT_ACTIVITY',
+              activity: activePlayerProject,
+              playerName: initialStudentName || '',
+              playerClass: ''
+            }, '*');
+            iframe.contentWindow.postMessage({ type: 'THEME_CHANGE', theme: activePlayerProject.theme === 'magical' ? 'magical' : 'white' }, '*');
+            iframe.contentWindow.postMessage({ type: 'LANG_CHANGE', lang: LotusI18n.getLang() }, '*');
+          } catch (e) {}
+        }
+        const isCamTpl = ['ai-slicer', 'head-catcher', 'hanzi-battle'].includes(tplId);
+        let readyState = '';
+        try { readyState = iframe?.contentDocument?.readyState || ''; } catch (e) {}
+        if (!isCamTpl || (readyState && readyState !== 'loading')) {
+          flushPendingPlayerMessages();
+        }
+      } else if (event.data.type === 'GAME_STATE') {
+        const st = event.data;
+        if (st.cameraActive !== undefined) playerLiveState.cameraActive = Boolean(st.cameraActive);
+        if (st.mouseMode !== undefined) playerLiveState.mouseMode = Boolean(st.mouseMode);
+        if (st.speed !== undefined) {
+          const norm = normalizeSpeedKey(st.speed);
+          if (norm) playerLiveState.speed = norm;
+        }
+        if (st.hand !== undefined) playerLiveState.hand = st.hand;
+        if (st.bladePoint !== undefined) playerLiveState.bladePoint = st.bladePoint;
+        if (st.skeleton !== undefined) playerLiveState.skeleton = Boolean(st.skeleton);
+        if (st.trackingMode !== undefined) playerLiveState.trackingMode = st.trackingMode;
+        if (Array.isArray(st.hanziChapters)) playerLiveState.hanziChapters = st.hanziChapters;
+        if (st.activeChapterId !== undefined || st.hanziChapterId !== undefined) {
+          playerLiveState.activeChapterId = st.activeChapterId || st.hanziChapterId || '';
+        }
+        if (!playerIframeReady || pendingPlayerMessages.length > 0) {
+          flushPendingPlayerMessages();
+        }
+        renderPlayerModeControls();
+        updatePlayerSettingsSummary();
+      } else if (event.data.type === 'GAME_OVER') {
+        renderLeaderboard();
+      }
+    });
+
+    function togglePlayerFullscreen() {
+      const container = document.getElementById('game-window-container');
+      if (!document.fullscreenElement) container?.requestFullscreen?.();
+      else document.exitFullscreen?.();
+    }
+
+    async function refreshLeaderboardFromCloud() {
+      try {
+        if (LotusDB.hasSupabase()) {
+          await LotusDB.syncProjectsFromCloud();
+        }
+      } catch (e) {}
+      renderLeaderboard();
+    }
+
+    function renderLeaderboard() {
+      const container = document.getElementById('dashboard-leaderboard-container');
+      const countBadge = document.getElementById('leaderboard-count-badge');
+      const clearBtn = document.getElementById('lb-clear-all-btn');
+      if (!container || !activePlayerProject) return;
+
+      const isCreator = isCurrentUserCreator();
+      if (clearBtn) clearBtn.classList.toggle('hidden', !isCreator);
+
+      const entries = LotusDB.getLeaderboard(activePlayerProject.id);
+      if (countBadge) countBadge.textContent = LotusI18n.t('player.lbPlayersCount', { n: entries.length });
+
+      if (!entries || entries.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 px-4 bg-[#fcfbf8] rounded-lg border border-dashed border-[#d6cfc2] text-[#78716c] space-y-1.5">
+            <div class="w-10 h-10 mx-auto rounded-md bg-[#fef3c7] border border-[#f59e0b]/40 flex items-center justify-center">
+              <span class="ui-sprite ui-sm ui-trophy"></span>
+            </div>
+            <div class="text-xs font-semibold text-[#57534e]">${escapeHtml(LotusI18n.t('player.lbEmpty'))}</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="text-[#78716c] uppercase tracking-wider text-[10px] border-b border-[#e5dfd3]">
+                <th class="py-2.5 px-3">${escapeHtml(LotusI18n.t('player.lbRank'))}</th>
+                <th class="py-2.5 px-3">${escapeHtml(LotusI18n.t('player.lbPlayer'))}</th>
+                <th class="py-2.5 px-3 text-center">${escapeHtml(LotusI18n.t('player.lbScore'))}</th>
+                <th class="py-2.5 px-3 text-center">${escapeHtml(LotusI18n.t('player.lbTime'))}</th>
+                <th class="py-2.5 px-3">${escapeHtml(LotusI18n.t('player.lbDate'))}</th>
+                ${isCreator ? `<th class="py-2.5 px-3 text-right">${escapeHtml(LotusI18n.t('player.lbAction'))}</th>` : ''}
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#eee9df]">
+              ${entries.map((row, idx) => {
+                const dateStr = row.completed_at ? new Date(row.completed_at).toLocaleDateString(LotusI18n.getLang() === 'id' ? 'id-ID' : 'en-US', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '-';
+                return `
+                  <tr class="hover:bg-[#fcfbf8]">
+                    <td class="py-2.5 px-3 font-bold text-[#18181b]">#${idx + 1}</td>
+                    <td class="py-2.5 px-3 font-semibold text-[#18181b]">${escapeHtml(row.student_name || '-')}</td>
+                    <td class="py-2.5 px-3 text-center font-bold text-[#15803d]">${row.score}</td>
+                    <td class="py-2.5 px-3 text-center text-[#57534e] font-medium">${row.time_taken_seconds || 0}s</td>
+                    <td class="py-2.5 px-3 text-[11px] text-[#78716c]">${escapeHtml(dateStr)}</td>
+                    ${isCreator ? `
+                      <td class="py-2.5 px-3 text-right">
+                        <button type="button" onclick="deleteSingleLeaderboardEntry('${escapeHtml(row.id)}')"
+                          class="p-1.5 text-[#78716c] hover:text-red-700 hover:bg-red-50 rounded-md transition-colors cursor-pointer"
+                          title="${escapeHtml(LotusI18n.t('studio.deleteQuestion'))}">
+                          <span class="ui-sprite ui-xs ui-trash"></span>
+                        </button>
+                      </td>
+                    ` : ''}
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function deleteSingleLeaderboardEntry(entryId) {
+      if (!activePlayerProject || !isCurrentUserCreator()) return;
+      LotusDB.deleteLeaderboardEntry(activePlayerProject.id, entryId);
+      renderLeaderboard();
+    }
+
+    function promptClearAllLeaderboard() {
+      if (!activePlayerProject || !isCurrentUserCreator()) return;
+      if (!confirm(LotusI18n.t('player.lbClearAll') + '?')) return;
+      LotusDB.clearLeaderboard(activePlayerProject.id);
+      renderLeaderboard();
+    }
+
+    async function bootCommunityPlayer() {
+      LotusI18n.applyDomTranslations(document);
+      updateStaticBilingualLabels();
+
+      const params = new URLSearchParams(window.location.search);
+      const projId = (params.get('id') || '').trim();
+      const pinParam = (params.get('pin') || '').trim();
+      initialStudentName = (params.get('name') || '').trim();
+
+      let found = null;
+      const lookup = () => {
+        if (projId) return LotusDB.getProjectById(projId);
+        if (pinParam) return LotusDB.findProjectByPin ? LotusDB.findProjectByPin(pinParam) : null;
+        return null;
+      };
+
+      found = lookup();
+      if (!found && LotusDB.hasSupabase()) {
+        try {
+          await Promise.all([
+            LotusDB.syncProjectsFromCloud(),
+            LotusDB.syncTeachersFromCloud()
+          ]);
+        } catch (e) {}
+        found = lookup();
+      } else if (LotusDB.hasSupabase()) {
+        // Also refresh projects & teachers in background
+        Promise.all([
+          LotusDB.syncProjectsFromCloud(),
+          LotusDB.syncTeachersFromCloud()
+        ]).then(() => {
+          renderLeaderboard();
+        }).catch(() => {});
+      }
+
+      if (!found || found.is_deleted) {
+        document.getElementById('state-loading').classList.add('hidden');
+        document.getElementById('state-not-found').classList.remove('hidden');
+        return;
+      }
+
+      // If private, only allow the creator
+      const currentTeacher = LotusDB.getCurrentTeacherStrict();
+      const isCreator = Boolean(currentTeacher && found.teacher_id && currentTeacher.id === found.teacher_id);
+      if (found.is_public === false && !isCreator) {
+        document.getElementById('state-loading').classList.add('hidden');
+        document.getElementById('state-not-found').classList.remove('hidden');
+        return;
+      }
+
+      // Deep clone so local session adjustments NEVER mutate LotusDB's stored object
+      activePlayerProject = JSON.parse(JSON.stringify(found));
+      renderPlayerView(false);
+    }
+
+    LotusI18n.onChange(() => {
+      LotusI18n.applyDomTranslations(document);
+      updateStaticBilingualLabels();
+      if (activePlayerProject) {
+        const owner = LotusDB.getTeacherById(activePlayerProject.teacher_id);
+        const meta = getTplMeta(activePlayerProject.template_type);
+        const tplName = LotusI18n.getTemplateName(meta.id);
+        const byText = LotusI18n.t('comm.byTeacher', { name: owner ? owner.name : 'LotusWall Teacher' });
+        const pinSuffix = activePlayerProject.pin ? ` • PIN ${activePlayerProject.pin}` : '';
+        document.getElementById('player-game-badge').textContent = `${tplName} • ${byText} • ${activePlayerProject.level || 'SD'}${pinSuffix}`;
+        document.getElementById('splash-game-badge').textContent = tplName;
+        document.getElementById('splash-sub').textContent = LotusI18n.t('player.readySub', {
+          tpl: tplName,
+          n: activePlayerProject.questions?.length || 0
+        });
+        renderPlayerSidebarGameList();
+        updatePlayerThemeUI(activePlayerProject.theme || 'white');
+        renderPlayerModeControls();
+        updatePlayerSettingsSummary();
+        renderLeaderboard();
+        const iframe = document.getElementById('game-iframe');
+        if (iframe && iframe.contentWindow) {
+          try { iframe.contentWindow.postMessage({ type: 'LANG_CHANGE', lang: LotusI18n.getLang() }, '*'); } catch (e) {}
+        }
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeAllGamesModal();
+    });
+
+    window.addEventListener('DOMContentLoaded', bootCommunityPlayer);
+  </script>
+</body>
+</html>

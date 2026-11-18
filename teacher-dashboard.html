@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="games/common/ui-spritesheet.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script src="supabase-config.js"></script>
   <script>
     tailwind.config = {
@@ -187,22 +188,6 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-          <button type="button" id="dash-export-json-btn" onclick="exportTeacherProjectsAction()"
-            data-i18n-title="dash.exportTitle" title="Export your projects as a JSON backup file (portable across Local &amp; GitHub Pages)"
-            class="px-3.5 py-2.5 bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] text-[#18181b] font-semibold text-xs sm:text-sm rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
-            <span class="ui-sprite ui-sm ui-download"></span>
-            <span data-i18n="dash.exportProjects">Export JSON</span>
-          </button>
-
-          <button type="button" id="dash-import-json-btn" onclick="triggerImportProjectsInput()"
-            data-i18n-title="dash.importTitle" title="Import projects from a JSON backup file"
-            class="px-3.5 py-2.5 bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] text-[#18181b] font-semibold text-xs sm:text-sm rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
-            <span class="ui-sprite ui-sm ui-cloud"></span>
-            <span data-i18n="dash.importProjects">Import JSON</span>
-          </button>
-
-          <input type="file" id="dash-import-json-input" accept="application/json,.json" class="hidden" onchange="handleImportProjectsFile(this)">
-
           <button type="button" id="dash-new-btn" onclick="openQuestionStudio()"
             class="px-5 py-2.5 bg-[#15803d] hover:bg-[#166534] text-white font-bold text-xs sm:text-sm rounded-lg border-b-[3px] border-[#14532d] flex items-center justify-center gap-2 transition-colors cursor-pointer">
             <span class="ui-sprite ui-sm ui-plus"></span>
@@ -372,6 +357,47 @@
             </label>
           </div>
         </div>
+      </div>
+
+      <!-- Excel Import / Export Bar (Per-Project Questions) -->
+      <div class="bg-white p-4 sm:p-5 rounded-xl border border-[#e5dfd3] space-y-3">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div class="flex items-start gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-lg bg-[#ecfdf5] border border-[#a7f3d0] text-[#15803d] flex items-center justify-center shrink-0 font-extrabold text-xs">
+              XLS
+            </div>
+            <div class="min-w-0">
+              <h3 class="text-sm font-bold text-[#18181b]" data-i18n="studio.excelTitle">Excel Questions Import / Export (.xlsx)</h3>
+              <p class="text-[11px] text-[#57534e] mt-0.5" data-i18n="studio.excelHint">
+                Columns: No, Pertanyaan, Opsi A–F (C–F optional), Jawaban Benar (e.g. A or A,C).
+              </p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 shrink-0">
+            <button type="button" id="studio-excel-template-btn" onclick="downloadQuestionExcelTemplate()"
+              class="px-3.5 py-2 bg-[#fcfbf8] hover:bg-[#f4f1ea] border border-[#d6cfc2] text-[#18181b] font-semibold text-xs rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer">
+              <span class="ui-sprite ui-xs ui-download"></span>
+              <span data-i18n="studio.excelTemplate">Download Template</span>
+            </button>
+
+            <button type="button" id="studio-excel-import-btn" onclick="triggerProjectExcelImport()"
+              class="px-3.5 py-2 bg-[#15803d] hover:bg-[#166534] text-white font-bold text-xs rounded-lg border-b-2 border-[#14532d] inline-flex items-center gap-1.5 transition-colors cursor-pointer">
+              <span class="ui-sprite ui-xs ui-plus"></span>
+              <span data-i18n="studio.excelImport">Import Excel</span>
+            </button>
+
+            <button type="button" id="studio-excel-export-btn" onclick="exportProjectQuestionsExcel()"
+              class="px-3.5 py-2 bg-[#eff6ff] hover:bg-[#dbeafe] border border-[#bfdbfe] text-[#1d4ed8] font-bold text-xs rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer">
+              <span class="ui-sprite ui-xs ui-download"></span>
+              <span data-i18n="studio.excelExport">Export Excel</span>
+            </button>
+
+            <input type="file" id="studio-excel-import-input" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" class="hidden" onchange="handleProjectExcelImportFile(this)">
+          </div>
+        </div>
+
+        <div id="studio-excel-toast" class="hidden px-3.5 py-2.5 rounded-lg border text-xs font-semibold flex items-center justify-between gap-3"></div>
       </div>
 
       <!-- Questions List -->
@@ -975,6 +1001,42 @@
         </button>
         <button type="button" onclick="confirmDeleteProject()" class="flex-1 py-2.5 bg-[#b91c1c] hover:bg-[#991b1b] text-white font-bold text-xs rounded-lg cursor-pointer" data-i18n="dash.deleteConfirmBtn">
           Move to Bin
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Excel Import Mode Modal (Append vs Replace when project already has questions) -->
+  <div id="modal-excel-import-mode" class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center p-4" onclick="closeExcelImportModeModal()">
+    <div class="bg-white rounded-xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-[#d6cfc2] space-y-4" onclick="event.stopPropagation()">
+      <div class="flex items-start gap-3">
+        <div class="w-11 h-11 bg-[#ecfdf5] border border-[#a7f3d0] text-[#15803d] rounded-lg flex items-center justify-center shrink-0 font-extrabold text-xs">
+          XLS
+        </div>
+        <div class="min-w-0">
+          <h3 class="text-base font-bold text-[#18181b]" data-i18n="studio.excelModeTitle">Import Questions from Excel</h3>
+          <p class="text-xs text-[#57534e] mt-1" id="excel-import-mode-desc">Found questions in your Excel file. How would you like to import them?</p>
+        </div>
+      </div>
+
+      <div class="space-y-2 pt-1">
+        <button type="button" onclick="applyPendingExcelImport('append')"
+          class="w-full p-3 rounded-lg border-2 border-[#15803d] bg-[#f0fdf4] hover:bg-[#dcfce7] text-left transition-colors cursor-pointer">
+          <div class="text-xs font-bold text-[#15803d]" data-i18n="studio.excelModeAppend">Add Below Existing Questions (Append)</div>
+          <div class="text-[11px] text-[#3f3f46] mt-0.5" data-i18n="studio.excelModeAppendDesc">Keep all current questions and add imported ones to the bottom.</div>
+        </button>
+
+        <button type="button" onclick="applyPendingExcelImport('replace')"
+          class="w-full p-3 rounded-lg border border-[#d6cfc2] bg-white hover:bg-[#fef2f2] hover:border-[#fca5a5] text-left transition-colors cursor-pointer">
+          <div class="text-xs font-bold text-[#b91c1c]" data-i18n="studio.excelModeReplace">Replace All Existing Questions</div>
+          <div class="text-[11px] text-[#57534e] mt-0.5" data-i18n="studio.excelModeReplaceDesc">Remove current questions and use only the imported Excel questions.</div>
+        </button>
+      </div>
+
+      <div class="pt-1 flex justify-end">
+        <button type="button" onclick="closeExcelImportModeModal()"
+          class="px-4 py-2 bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] font-semibold text-xs rounded-lg text-[#18181b] cursor-pointer" data-i18n="dash.btnCancel">
+          Cancel
         </button>
       </div>
     </div>
@@ -3602,48 +3664,357 @@
       dashTransferToastTimer = setTimeout(() => box.classList.add('hidden'), 6000);
     }
 
-    function exportTeacherProjectsAction() {
-      if (!currentTeacher) return;
-      const res = LotusDB.downloadProjectsJson(currentTeacher.id);
-      if (!res || res.count === 0) {
-        showDashTransferToast('error', LotusI18n.t('dash.exportEmpty'));
-        return;
-      }
-      showDashTransferToast('success', LotusI18n.t('dash.exportSuccess', { n: res.count }));
+    // -------------------------------------------------------------------------
+    // PER-PROJECT EXCEL (.xlsx) TEMPLATE, IMPORT & EXPORT (Inside Question Studio)
+    // -------------------------------------------------------------------------
+    let studioExcelToastTimer = null;
+    let pendingExcelQuestions = [];
+
+    function showStudioExcelToast(kind, message) {
+      const box = document.getElementById('studio-excel-toast');
+      if (!box) return;
+      if (studioExcelToastTimer) clearTimeout(studioExcelToastTimer);
+      const isErr = kind === 'error';
+      box.className = `px-3.5 py-2.5 rounded-lg border text-xs font-semibold flex items-center justify-between gap-3 ${
+        isErr
+          ? 'bg-[#fef2f2] border-[#fecaca] text-[#991b1b]'
+          : 'bg-[#f0fdf4] border-[#bbf7d0] text-[#166534]'
+      }`;
+      box.innerHTML = `<span>${escapeHtml(message)}</span><button type="button" onclick="this.parentElement.classList.add('hidden')" class="font-bold opacity-70 hover:opacity-100 cursor-pointer">&times;</button>`;
+      box.classList.remove('hidden');
+      studioExcelToastTimer = setTimeout(() => box.classList.add('hidden'), 7000);
     }
 
-    function triggerImportProjectsInput() {
-      const input = document.getElementById('dash-import-json-input');
+    function ensureXlsxLoaded() {
+      if (typeof window.XLSX === 'undefined') {
+        const isId = LotusI18n.getLang() === 'id';
+        showStudioExcelToast('error', isId
+          ? 'Library Excel (SheetJS) gagal dimuat. Periksa koneksi internet lalu muat ulang halaman.'
+          : 'Excel library (SheetJS) failed to load. Please check your internet connection and reload.');
+        return false;
+      }
+      return true;
+    }
+
+    function downloadQuestionExcelTemplate() {
+      if (!ensureXlsxLoaded()) return;
+      const isId = LotusI18n.getLang() === 'id';
+      const header = ['No', 'Pertanyaan', 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Opsi E', 'Opsi F', 'Jawaban Benar'];
+      const sampleRows = isId
+        ? [
+            [1, 'Ibu kota negara Indonesia adalah...', 'Jakarta', 'Surabaya', 'Bandung', 'Medan', '', '', 'A'],
+            [2, 'Manakah yang termasuk bilangan prima? (Bisa lebih dari 1 jawaban benar)', '2', '4', '5', '9', '', '', 'A, C']
+          ]
+        : [
+            [1, 'What is the capital city of Indonesia?', 'Jakarta', 'Surabaya', 'Bandung', 'Medan', '', '', 'A'],
+            [2, 'Which numbers below are prime numbers? (Multiple answers allowed)', '2', '4', '5', '9', '', '', 'A, C']
+          ];
+
+      const wsSoal = XLSX.utils.aoa_to_sheet([header, ...sampleRows]);
+      wsSoal['!cols'] = [
+        { wch: 6 },  // No
+        { wch: 52 }, // Pertanyaan
+        { wch: 22 }, // Opsi A
+        { wch: 22 }, // Opsi B
+        { wch: 22 }, // Opsi C
+        { wch: 22 }, // Opsi D
+        { wch: 18 }, // Opsi E
+        { wch: 18 }, // Opsi F
+        { wch: 18 }  // Jawaban Benar
+      ];
+
+      const guideRows = [
+        ['Panduan Pengisian Template Soal LotusWall / Guide'],
+        [''],
+        ['1. Isi soal di sheet pertama ("Soal"). Jangan hapus baris judul (baris 1).'],
+        ['2. Kolom "Pertanyaan" dan minimal "Opsi A" & "Opsi B" wajib diisi.'],
+        ['3. Kolom "Opsi C" sampai "Opsi F" bersifat opsional — kosongkan jika tidak dipakai.'],
+        ['4. Isi kolom "Jawaban Benar" dengan huruf opsi: contoh "A" atau "B".'],
+        ['5. Untuk soal dengan lebih dari 1 jawaban benar, pisahkan dengan koma: contoh "A, C".'],
+        ['6. Setelah selesai, simpan file (.xlsx) lalu klik tombol "Import Excel" di dalam project LotusWall.']
+      ];
+      const wsGuide = XLSX.utils.aoa_to_sheet(guideRows);
+      wsGuide['!cols'] = [{ wch: 85 }];
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, wsSoal, 'Soal');
+      XLSX.utils.book_append_sheet(wb, wsGuide, 'Panduan');
+      XLSX.writeFile(wb, 'LotusWall-Template-Soal.xlsx');
+
+      showStudioExcelToast('success', isId
+        ? 'Template Excel (LotusWall-Template-Soal.xlsx) berhasil diunduh!'
+        : 'Excel template (LotusWall-Template-Soal.xlsx) downloaded!');
+    }
+
+    function exportProjectQuestionsExcel() {
+      if (!ensureXlsxLoaded()) return;
+      const isId = LotusI18n.getLang() === 'id';
+      const validList = (projectQuestions || []).filter(q =>
+        (q.text && q.text.trim()) || (q.options || []).some(o => o.text && o.text.trim())
+      );
+
+      if (validList.length === 0) {
+        showStudioExcelToast('error', isId
+          ? 'Belum ada soal yang terisi untuk di-export ke Excel.'
+          : 'There are no filled questions to export to Excel yet.');
+        return;
+      }
+
+      const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+      const header = ['No', 'Pertanyaan', 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Opsi E', 'Opsi F', 'Jawaban Benar'];
+      const rows = validList.map((q, idx) => {
+        const opts = Array.isArray(q.options) ? q.options : [];
+        const optTexts = letters.map((_, i) => (opts[i] && opts[i].text ? String(opts[i].text) : ''));
+        const correctKeys = opts
+          .map((o, i) => (o && o.isCorrect && letters[i] ? letters[i] : null))
+          .filter(Boolean);
+        return [
+          idx + 1,
+          String(q.text || ''),
+          ...optTexts,
+          correctKeys.length > 0 ? correctKeys.join(', ') : 'A'
+        ];
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
+      ws['!cols'] = [
+        { wch: 6 },
+        { wch: 52 },
+        { wch: 24 },
+        { wch: 24 },
+        { wch: 24 },
+        { wch: 24 },
+        { wch: 18 },
+        { wch: 18 },
+        { wch: 18 }
+      ];
+
+      const rawTitle = (document.getElementById('project-title')?.value || editingProject?.title || 'LotusWall-Project').trim();
+      const safeSlug = rawTitle.replace(/[^a-zA-Z0-9\u00C0-\u024F\s_-]/g, '').replace(/\s+/g, '-').slice(0, 60) || 'LotusWall-Project';
+      const filename = `${safeSlug}-soal.xlsx`;
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Soal');
+      XLSX.writeFile(wb, filename);
+
+      showStudioExcelToast('success', isId
+        ? `Berhasil meng-export ${validList.length} soal ke ${filename}!`
+        : `Exported ${validList.length} questions to ${filename}!`);
+    }
+
+    function triggerProjectExcelImport() {
+      if (!ensureXlsxLoaded()) return;
+      const input = document.getElementById('studio-excel-import-input');
       if (input) {
         input.value = '';
         input.click();
       }
     }
 
-    function handleImportProjectsFile(inputEl) {
+    function parseExcelQuestionsFromRows(rows2d) {
+      if (!Array.isArray(rows2d) || rows2d.length === 0) return [];
+
+      const norm = (val) => String(val ?? '').trim();
+      const normHeader = (val) => norm(val).toLowerCase().replace(/[^a-z0-9]/g, '');
+
+      // Detect header row within first 5 rows
+      let headerRowIdx = -1;
+      let colMap = { q: 1, opts: [2, 3, 4, 5, 6, 7], ans: 8 };
+
+      for (let r = 0; r < Math.min(5, rows2d.length); r++) {
+        const row = rows2d[r] || [];
+        const hNorms = row.map(normHeader);
+        const qIdx = hNorms.findIndex(h => h.includes('pertanyaan') || h.includes('question') || h === 'soal');
+        const ansIdx = hNorms.findIndex(h => h.includes('jawaban') || h.includes('answer') || h.includes('kunci') || h.includes('correct'));
+
+        if (qIdx !== -1) {
+          headerRowIdx = r;
+          const optLetters = ['a', 'b', 'c', 'd', 'e', 'f'];
+          const foundOpts = optLetters.map((ltr, i) => {
+            let idx = hNorms.findIndex(h =>
+              h === ltr ||
+              h === `opsi${ltr}` ||
+              h === `option${ltr}` ||
+              h === `pilihan${ltr}` ||
+              h === `jawaban${ltr}` ||
+              h === `opt${ltr}` ||
+              h === `choice${ltr}`
+            );
+            return idx;
+          });
+          // Fallback sequential positions right after question column if option headers weren't named explicitly
+          const hasAnyOptHeader = foundOpts.some(i => i !== -1);
+          colMap = {
+            q: qIdx,
+            opts: hasAnyOptHeader ? foundOpts : [qIdx + 1, qIdx + 2, qIdx + 3, qIdx + 4, qIdx + 5, qIdx + 6],
+            ans: ansIdx !== -1 ? ansIdx : (qIdx + 7)
+          };
+          break;
+        }
+      }
+
+      const startRow = headerRowIdx !== -1 ? headerRowIdx + 1 : 0;
+      const parsed = [];
+      const baseTs = Date.now();
+      const letterToIdx = { A: 0, B: 1, C: 2, D: 3, E: 4, F: 5, '1': 0, '2': 1, '3': 2, '4': 3, '5': 4, '6': 5 };
+
+      for (let r = startRow; r < rows2d.length; r++) {
+        const row = rows2d[r] || [];
+        const qText = norm(row[colMap.q]);
+        const rawOptSlots = colMap.opts.map(colIdx => (colIdx >= 0 ? norm(row[colIdx]) : ''));
+        const rawAns = colMap.ans >= 0 ? norm(row[colMap.ans]) : '';
+
+        // Skip completely empty rows
+        const hasAnyOpt = rawOptSlots.some(Boolean);
+        if (!qText && !hasAnyOpt) continue;
+        if (!qText) continue;
+
+        // Determine correct indices (matching slot positions A..F first)
+        const correctSlotSet = new Set();
+        if (rawAns) {
+          const tokens = rawAns.split(/[,;/&+\s]+/).map(t => t.trim().toUpperCase()).filter(Boolean);
+          tokens.forEach(tok => {
+            if (letterToIdx[tok] !== undefined) {
+              correctSlotSet.add(letterToIdx[tok]);
+            }
+          });
+          // Fallback: check if rawAns matches an option text directly (case-insensitive)
+          if (correctSlotSet.size === 0) {
+            const ansLower = rawAns.toLowerCase();
+            rawOptSlots.forEach((txt, idx) => {
+              if (txt && txt.toLowerCase() === ansLower) correctSlotSet.add(idx);
+            });
+          }
+        }
+
+        // Build clean options list skipping empty slots
+        const options = [];
+        rawOptSlots.forEach((txt, slotIdx) => {
+          if (txt) {
+            options.push({
+              text: txt,
+              isCorrect: correctSlotSet.has(slotIdx),
+              image: ''
+            });
+          }
+        });
+
+        // Ensure at least 2 options exist
+        while (options.length < 2) {
+          options.push({ text: '', isCorrect: false, image: '' });
+        }
+
+        // Ensure at least 1 option is marked correct
+        if (!options.some(o => o.isCorrect)) {
+          options[0].isCorrect = true;
+        }
+
+        parsed.push({
+          id: `q-${baseTs}-${parsed.length + 1}-${Math.floor(Math.random() * 1000)}`,
+          text: qText,
+          image: '',
+          audio: '',
+          options
+        });
+      }
+
+      return parsed;
+    }
+
+    function projectHasFilledQuestions() {
+      return (projectQuestions || []).some(q =>
+        (q.text && q.text.trim()) ||
+        q.image ||
+        q.audio ||
+        (q.options || []).some(o => (o.text && o.text.trim()) || o.image)
+      );
+    }
+
+    function handleProjectExcelImportFile(inputEl) {
+      if (!ensureXlsxLoaded()) return;
       const file = inputEl && inputEl.files ? inputEl.files[0] : null;
-      if (!file || !currentTeacher) return;
+      if (!file) return;
+      const isId = LotusI18n.getLang() === 'id';
+
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const stats = LotusDB.importProjectsJson(e.target.result, currentTeacher.id);
-          switchDashboardTab('projects');
-          renderDashboard();
-          showDashTransferToast('success', LotusI18n.t('dash.importSuccess', {
-            added: stats.added,
-            updated: stats.updated
-          }));
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          if (!firstSheetName) throw new Error('Empty workbook');
+          const sheet = workbook.Sheets[firstSheetName];
+          const rows2d = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+          const imported = parseExcelQuestionsFromRows(rows2d);
+
+          if (imported.length === 0) {
+            showStudioExcelToast('error', isId
+              ? 'Tidak ada soal valid yang ditemukan di file Excel. Pastikan menggunakan format kolom Template (Pertanyaan, Opsi A–F, Jawaban Benar).'
+              : 'No valid questions found in the Excel file. Please check the Template format (Pertanyaan, Opsi A–F, Jawaban Benar).');
+            return;
+          }
+
+          if (!projectHasFilledQuestions()) {
+            projectQuestions = imported;
+            renderQuestionCards();
+            showStudioExcelToast('success', isId
+              ? `Berhasil meng-import ${imported.length} soal dari Excel! Klik "Lanjut: Pengaturan Aktivitas" atau simpan project.`
+              : `Imported ${imported.length} questions from Excel!`);
+          } else {
+            pendingExcelQuestions = imported;
+            const descEl = document.getElementById('excel-import-mode-desc');
+            if (descEl) {
+              descEl.textContent = isId
+                ? `Ditemukan ${imported.length} soal valid dari file Excel (saat ini project sudah memiliki ${projectQuestions.length} soal). Pilih cara import:`
+                : `Found ${imported.length} valid questions in Excel (project currently has ${projectQuestions.length} questions). Choose how to import:`;
+            }
+            document.getElementById('modal-excel-import-mode').classList.remove('hidden');
+          }
         } catch (err) {
-          showDashTransferToast('error', LotusI18n.t('dash.importInvalid'));
+          console.error('Excel import error:', err);
+          showStudioExcelToast('error', isId
+            ? 'Gagal membaca file Excel. Pastikan format file adalah .xlsx, .xls, atau .csv yang valid.'
+            : 'Failed to read Excel file. Please make sure it is a valid .xlsx, .xls, or .csv file.');
         } finally {
           inputEl.value = '';
         }
       };
       reader.onerror = () => {
-        showDashTransferToast('error', LotusI18n.t('dash.importInvalid'));
+        showStudioExcelToast('error', isId
+          ? 'Gagal membaca file dari perangkat.'
+          : 'Failed to read file from device.');
         inputEl.value = '';
       };
-      reader.readAsText(file);
+      reader.readAsArrayBuffer(file);
+    }
+
+    function closeExcelImportModeModal() {
+      pendingExcelQuestions = [];
+      const m = document.getElementById('modal-excel-import-mode');
+      if (m) m.classList.add('hidden');
+    }
+
+    function applyPendingExcelImport(mode) {
+      if (!pendingExcelQuestions || pendingExcelQuestions.length === 0) {
+        closeExcelImportModeModal();
+        return;
+      }
+      const isId = LotusI18n.getLang() === 'id';
+      const count = pendingExcelQuestions.length;
+
+      if (mode === 'replace') {
+        projectQuestions = pendingExcelQuestions;
+      } else {
+        projectQuestions = [...projectQuestions, ...pendingExcelQuestions];
+      }
+
+      pendingExcelQuestions = [];
+      document.getElementById('modal-excel-import-mode').classList.add('hidden');
+      renderQuestionCards();
+
+      showStudioExcelToast('success', mode === 'replace'
+        ? (isId ? `Semua soal diganti dengan ${count} soal dari Excel!` : `Replaced all questions with ${count} questions from Excel!`)
+        : (isId ? `${count} soal dari Excel berhasil ditambahkan! Total sekarang: ${projectQuestions.length} soal.` : `Added ${count} questions from Excel! Total: ${projectQuestions.length} questions.`));
     }
 
     function promptDeleteProjectById(id) {

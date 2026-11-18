@@ -263,6 +263,35 @@
             <span data-i18n="home.ctaCommunity">Browse Community Activities</span>
           </button>
         </div>
+
+        <!-- Student Join by Game PIN Bar (Home Only) -->
+        <div class="max-w-2xl mx-auto pt-4">
+          <div class="bg-[#1e242b] text-white rounded-xl border border-[#2d3642] p-4 sm:p-5 shadow-md space-y-3 text-left">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2 text-xs sm:text-sm font-bold text-white">
+                <span class="w-7 h-7 rounded-md bg-[#27303a] border border-[#3d4856] flex items-center justify-center shrink-0">
+                  <span class="ui-sprite ui-xs ui-key"></span>
+                </span>
+                <span id="home-pin-heading" data-i18n="home.pinTitle">Have a Game PIN? Join Directly</span>
+              </div>
+            </div>
+            <form onsubmit="handleHomePinJoin(event)" class="bg-[#27303a] border border-[#3d4856] rounded-lg p-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <div class="flex items-center gap-2 bg-white rounded-md px-3 py-2 flex-1 min-w-0 text-[#18181b]">
+                <span class="ui-sprite ui-sm ui-key shrink-0"></span>
+                <input type="text" id="home-pin-input" data-i18n-placeholder="comm.pinPlaceholder" placeholder="Enter PIN / ID..."
+                  class="w-full min-w-0 text-xs sm:text-sm font-semibold focus:outline-none bg-transparent">
+              </div>
+              <input type="text" id="home-student-name" data-i18n-placeholder="comm.namePlaceholder" placeholder="Student name"
+                class="px-3 py-2 rounded-md bg-white text-[#18181b] placeholder-[#78716c] text-xs sm:text-sm font-medium focus:outline-none sm:w-44 min-w-0">
+              <button type="submit"
+                class="px-4 py-2 rounded-md bg-[#15803d] hover:bg-[#166534] text-white font-bold text-xs sm:text-sm border-b-2 border-[#14532d] flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0">
+                <span class="ui-sprite ui-sm ui-play"></span>
+                <span data-i18n="comm.pinBtn">Join Game</span>
+              </button>
+            </form>
+            <div id="home-pin-error" class="hidden rounded-lg px-3 py-2 bg-red-950/60 border border-red-400/40 text-red-200 text-xs font-semibold"></div>
+          </div>
+        </div>
       </div>
 
     </section>
@@ -444,8 +473,8 @@
          ===================================================================== -->
     <section id="view-community" class="hidden w-full max-w-[1840px] mx-auto px-4 sm:px-8 lg:px-12 py-8 sm:py-10 space-y-6">
 
-      <!-- Community Header & Student PIN Join Bar (Matte Charcoal Slate, No Violet Gradient) -->
-      <div class="bg-[#1e242b] text-white rounded-xl border border-[#2d3642] p-6 sm:p-7 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <!-- Community Header Banner -->
+      <div class="bg-[#1e242b] text-white rounded-xl border border-[#2d3642] p-6 sm:p-7 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div class="space-y-1.5 max-w-4xl">
           <h2 class="text-2xl sm:text-3xl font-bold tracking-tight" data-i18n="comm.title">
             Community Activities Library
@@ -454,22 +483,6 @@
             Explore teacher-created games across TK, SD, SMP, SMA, and SMK—play directly or clone into your projects.
           </p>
         </div>
-
-        <!-- Compact PIN Bar -->
-        <form onsubmit="handleCommunityPinJoin(event)" class="bg-[#27303a] border border-[#3d4856] rounded-lg p-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto lg:min-w-[540px]">
-          <div class="flex items-center gap-2 bg-white rounded-md px-3 py-2 flex-1 min-w-0 sm:min-w-[180px] text-[#18181b]">
-            <span class="ui-sprite ui-sm ui-key shrink-0"></span>
-            <input type="text" id="comm-pin-input" data-i18n-placeholder="comm.pinPlaceholder" placeholder="Enter PIN / ID..."
-              class="w-full min-w-0 text-xs sm:text-sm font-semibold focus:outline-none bg-transparent">
-          </div>
-          <input type="text" id="comm-student-name" data-i18n-placeholder="comm.namePlaceholder" placeholder="Student name"
-            class="px-3 py-2 rounded-md bg-white text-[#18181b] placeholder-[#78716c] text-xs sm:text-sm font-medium focus:outline-none sm:w-44 min-w-0">
-          <button type="submit"
-            class="px-4 py-2 rounded-md bg-[#15803d] hover:bg-[#166534] text-white font-bold text-xs sm:text-sm border-b-2 border-[#14532d] flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0">
-            <span class="ui-sprite ui-sm ui-play"></span>
-            <span data-i18n="comm.pinBtn">Join Game</span>
-          </button>
-        </form>
       </div>
 
       <!-- Inline PIN/Toast Feedback Banner -->
@@ -813,304 +826,6 @@
   </div>
 
   <!-- =========================================================================
-       MODAL: COMMUNITY GAME PLAYER (16:9 Stage + Collapsible Settings + LB)
-       ========================================================================= -->
-  <div id="modal-community-player" class="fixed inset-0 z-50 bg-black/65 hidden flex items-center justify-center p-2 sm:p-4" onclick="closeCommunityPlayer()">
-    <div id="cp-shell" class="bg-white rounded-xl w-full max-w-[1820px] h-[94vh] flex flex-col overflow-hidden shadow-2xl border border-[#d6cfc2]" onclick="event.stopPropagation()">
-
-      <!-- Player Top Toolbar -->
-      <div class="px-3 sm:px-5 py-2.5 border-b border-[#e5dfd3] bg-white flex flex-wrap items-center justify-between gap-2.5 shrink-0">
-        <div class="min-w-0 max-w-full sm:max-w-[36%]">
-          <h3 id="cp-title" class="text-sm sm:text-base font-bold text-[#18181b] truncate">Activity Title</h3>
-          <div id="cp-meta" class="text-[11px] text-[#78716c] font-medium truncate">By Teacher • Level</div>
-        </div>
-
-        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
-          <!-- Switch Game Mode (All 15 Templates) -->
-          <div class="flex items-center gap-1.5 bg-[#f4f1ea] rounded-lg px-2.5 py-1.5 border border-[#d6cfc2]">
-            <span class="ui-sprite ui-xs ui-gamepad"></span>
-            <select id="cp-template-select" onchange="switchCommunityPlayerTemplate(this.value)"
-              class="bg-transparent text-xs font-semibold text-[#18181b] focus:outline-none cursor-pointer max-w-[135px] sm:max-w-[210px]">
-              <!-- Populated dynamically -->
-            </select>
-          </div>
-
-          <!-- Theme Switcher: White vs Magical -->
-          <div class="flex items-center gap-1 bg-[#f4f1ea] p-1 rounded-lg border border-[#d6cfc2]">
-            <button type="button" id="cp-theme-white" onclick="switchCommunityPlayerTheme('white')"
-              class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-white text-[#18181b] border border-[#d6cfc2] transition-colors cursor-pointer" data-i18n="player.themeWhite">
-              Crisp White
-            </button>
-            <button type="button" id="cp-theme-magical" onclick="switchCommunityPlayerTheme('magical')"
-              class="px-2.5 py-1 rounded-md text-[11px] font-semibold text-[#57534e] hover:text-[#6b21a8] transition-colors cursor-pointer" data-i18n="player.themeMagical">
-              Magical World
-            </button>
-          </div>
-
-          <!-- Leaderboard Drawer Toggle -->
-          <button type="button" onclick="toggleCommunityLeaderboard()"
-            class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-[#fef3c7] hover:bg-[#fde68a] text-[#92400e] border border-[#f59e0b]/40 font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer">
-            <span class="ui-sprite ui-xs ui-trophy"></span>
-            <span class="hidden sm:inline" data-i18n="player.leaderboard">Leaderboard</span>
-          </button>
-
-          <!-- Pure Game Fullscreen (Only #cp-stage-wrap) -->
-          <button type="button" onclick="toggleCommunityFullscreen()"
-            class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-[#18181b] hover:bg-[#27272a] text-white font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
-            data-i18n-title="player.openFullscreenPure" title="Fullscreen (Game Only)">
-            <span class="ui-sprite ui-xs ui-fullscreen"></span>
-            <span class="hidden sm:inline" data-i18n="player.fullscreen">Fullscreen</span>
-          </button>
-
-          <!-- Close -->
-          <button type="button" onclick="closeCommunityPlayer()"
-            class="p-1.5 rounded-lg bg-[#f4f1ea] hover:bg-red-50 text-[#57534e] hover:text-red-600 border border-[#d6cfc2] transition-colors cursor-pointer"
-            data-i18n-title="player.close" title="Close">
-            <span class="ui-sprite ui-sm ui-close"></span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Player Body: 16:9 Stage Wrap + Collapsible Game Settings + Leaderboard Wrap -->
-      <div class="flex-1 min-h-0 overflow-y-auto bg-[#f7f5f0] p-2.5 sm:p-4 lg:p-5 flex flex-col gap-3.5">
-
-        <!-- Pure Game Stage Wrapper (ONLY #cp-iframe enters fullscreen) -->
-        <div id="cp-stage-wrap" class="cp-stage-frame w-full mx-auto aspect-video bg-[#141920] rounded-xl overflow-hidden border border-[#27303a] shadow-lg shrink-0">
-          <iframe id="cp-iframe" class="w-full h-full border-none bg-white block" allow="camera; microphone; autoplay; fullscreen"></iframe>
-        </div>
-
-        <!-- Collapsible "Game Settings" Panel right above #cp-lb-wrap -->
-        <div id="cp-settings-card" class="cp-stage-frame w-full mx-auto bg-white rounded-xl border border-[#e5dfd3] overflow-hidden shrink-0">
-          <button type="button" id="cp-settings-toggle-btn" onclick="toggleCommunitySettings()"
-            aria-expanded="false" aria-controls="cp-settings-body"
-            class="w-full px-4 py-3 flex items-center justify-between gap-3 text-left hover:bg-[#fcfbf8] transition-colors cursor-pointer">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <span class="w-8 h-8 rounded-lg bg-[#f4f1ea] border border-[#e5dfd3] flex items-center justify-center shrink-0">
-                <span class="ui-sprite ui-sm ui-sliders"></span>
-              </span>
-              <div class="min-w-0">
-                <div class="text-xs sm:text-sm font-bold text-[#18181b]" data-i18n="player.settingsTitle">Game Settings</div>
-                <div class="text-[11px] text-[#78716c] truncate" data-i18n="player.settingsHint">Adjust rules, theme, or AI camera controls outside the game screen</div>
-              </div>
-            </div>
-            <div class="flex items-center gap-2.5 shrink-0">
-              <span id="cp-settings-summary" class="hidden sm:inline-block px-2.5 py-1 rounded-md bg-[#f4f1ea] border border-[#e5dfd3] text-[11px] font-semibold text-[#3f3f46]">
-                3 Lives • Timer 30s
-              </span>
-              <svg id="cp-settings-chevron" class="w-4 h-4 text-[#57534e] transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </div>
-          </button>
-
-          <div id="cp-settings-body" class="hidden border-t border-[#eee9df] bg-[#fcfbf8] p-4 sm:p-5 space-y-4">
-
-            <!-- AI Motion & Live Camera Controls (Shown for AI Camera games) -->
-            <div id="cp-camera-section" class="hidden bg-white rounded-lg border border-[#e5dfd3] p-3.5 sm:p-4 space-y-3">
-              <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#eee9df] pb-2">
-                <h4 class="text-xs font-bold uppercase tracking-wider text-[#18181b] flex items-center gap-1.5">
-                  <span class="ui-sprite ui-xs ui-camera"></span>
-                  <span data-i18n="player.settingsCameraHead">AI Motion &amp; Live Controls</span>
-                </h4>
-              </div>
-
-              <div class="flex flex-wrap items-center gap-2">
-                <button type="button" id="cp-cam-toggle-btn" onclick="sendCommunityGameCmd('TOGGLE_CAMERA')"
-                  class="px-3.5 py-2 rounded-lg bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-xs border-b-2 border-[#1e3a8a] inline-flex items-center gap-1.5 transition-colors cursor-pointer">
-                  <span id="cp-cam-toggle-sprite" class="ui-sprite ui-xs ui-camera"></span>
-                  <span id="cp-cam-toggle-label" data-i18n="player.camEnable">Enable Camera</span>
-                </button>
-
-                <button type="button" id="cp-mouse-mode-btn" onclick="sendCommunityGameCmd('MOUSE_MODE')"
-                  class="px-3.5 py-2 rounded-lg bg-[#f4f1ea] hover:bg-[#e7e2d8] text-[#18181b] border border-[#d6cfc2] font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer">
-                  <span class="ui-sprite ui-xs ui-gamepad"></span>
-                  <span data-i18n="player.mousePlay">Play with Mouse</span>
-                </button>
-
-                <button type="button" id="cp-cam-restart-btn" onclick="sendCommunityGameCmd('RESTART')"
-                  class="px-3.5 py-2 rounded-lg bg-white hover:bg-[#f4f1ea] text-[#18181b] border border-[#d6cfc2] font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer">
-                  <span class="ui-sprite ui-xs ui-refresh"></span>
-                  <span data-i18n="player.replay">Restart</span>
-                </button>
-
-                <button type="button" id="cp-hc-start-btn" onclick="sendCommunityGameCmd('START_GAME')"
-                  class="hidden px-3.5 py-2 rounded-lg bg-[#15803d] hover:bg-[#166534] text-white border-b-2 border-[#14532d] font-bold text-xs items-center gap-1.5 transition-colors cursor-pointer">
-                  <span class="ui-sprite ui-xs ui-play"></span>
-                  <span data-i18n="hc.startGame">Start Game (Lock Players)</span>
-                </button>
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
-                <!-- Hand Selector (ai-slicer, hanzi-battle) -->
-                <div id="cp-hand-wrap" class="hidden">
-                  <label for="cp-hand-select" class="block text-[11px] font-bold text-[#57534e] mb-1" data-i18n="aiSlicer.handLabel">Hand:</label>
-                  <select id="cp-hand-select" onchange="sendCommunityGameSettings({ hand: this.value })"
-                    class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-white text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
-                    <option value="auto" data-i18n="aiSlicer.handAuto">Both / Auto</option>
-                    <option value="right" data-i18n="aiSlicer.handRight">Right Hand Only</option>
-                    <option value="left" data-i18n="aiSlicer.handLeft">Left Hand Only</option>
-                  </select>
-                </div>
-
-                <!-- Blade Point Selector (ai-slicer) -->
-                <div id="cp-point-wrap" class="hidden">
-                  <label for="cp-blade-point-select" class="block text-[11px] font-bold text-[#57534e] mb-1" data-i18n="aiSlicer.pointLabel">Blade Point:</label>
-                  <select id="cp-blade-point-select" onchange="sendCommunityGameSettings({ bladePoint: this.value })"
-                    class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-white text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
-                    <option value="finger" data-i18n="aiSlicer.pointFinger">Index Fingertip</option>
-                    <option value="palm" data-i18n="aiSlicer.pointPalm">Palm / Wrist</option>
-                  </select>
-                </div>
-
-                <!-- Tracking Mode Selector (hanzi-battle) -->
-                <div id="cp-tracking-wrap" class="hidden">
-                  <label id="cp-tracking-label" for="cp-tracking-mode-select" class="block text-[11px] font-bold text-[#57534e] mb-1">Tracking Mode</label>
-                  <select id="cp-tracking-mode-select" onchange="sendCommunityGameSettings({ trackingMode: this.value })"
-                    class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-white text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
-                    <option value="hands" data-i18n="hb.trackingNear">Near (Hands AI)</option>
-                    <option value="pose" data-i18n="hb.trackingFar">Far 2P (Pose AI)</option>
-                  </select>
-                </div>
-
-                <!-- Hanzi Unit / Deck + Next Character (hanzi-battle) -->
-                <div id="cp-hanzi-wrap" class="hidden sm:col-span-2">
-                  <div class="flex flex-col sm:flex-row sm:items-end gap-2">
-                    <div class="flex-1 min-w-0">
-                      <label for="cp-hanzi-chapter-select" class="block text-[11px] font-bold text-[#57534e] mb-1" data-i18n="player.hanziDeck">Hanzi Unit / Deck</label>
-                      <select id="cp-hanzi-chapter-select" onchange="handleCommunityHanziChapterChange(this.value)"
-                        class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-white text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
-                        <option id="cp-hanzi-default-opt" value="">Default Deck</option>
-                      </select>
-                    </div>
-                    <button type="button" id="cp-hanzi-skip-btn" onclick="sendCommunityGameCmd('SKIP_WORD')"
-                      class="px-3.5 py-2 rounded-lg bg-[#f4f1ea] hover:bg-[#e7e2d8] text-[#18181b] border border-[#d6cfc2] font-bold text-xs inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0">
-                      <span data-i18n="player.hanziSkip">Next Character</span>
-                      <span class="ui-sprite ui-xs ui-arrow-right"></span>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Skeleton Overlay Toggle (ai-slicer, head-catcher) -->
-                <div id="cp-skeleton-wrap" class="hidden">
-                  <div class="flex items-end h-full pb-0.5">
-                    <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] cursor-pointer w-full">
-                      <input type="checkbox" id="cp-skeleton-toggle" checked onchange="sendCommunityGameSettings({ skeleton: this.checked })"
-                        class="w-4 h-4 rounded accent-[#1d4ed8] cursor-pointer">
-                      <span data-i18n="aiSlicer.skeleton">Upper Body Skeleton</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Speed & Flow (fruitninja, ai-slicer, head-catcher) -->
-            <div id="cp-speed-section" class="hidden bg-white rounded-lg border border-[#e5dfd3] p-3.5 sm:p-4">
-              <div class="flex flex-wrap items-center justify-between gap-3">
-                <div class="flex items-center gap-2">
-                  <span class="ui-sprite ui-xs ui-refresh"></span>
-                  <span class="text-xs font-bold uppercase tracking-wider text-[#18181b]" data-i18n="player.settingsSpeedHead">Speed &amp; Flow</span>
-                </div>
-                <div class="flex flex-wrap items-center gap-2">
-                  <select id="cp-speed-select" onchange="applyCommunitySpeed(this.value)"
-                    class="px-3 py-1.5 rounded-lg border border-[#d6cfc2] bg-white text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
-                    <option value="relaxed" data-i18n="player.speedRelaxed">Relaxed</option>
-                    <option value="normal" data-i18n="player.speedNormal">Normal</option>
-                    <option value="fast" data-i18n="player.speedFast">Fast</option>
-                  </select>
-                  <button type="button" onclick="sendCommunityGameCmd('RESTART')"
-                    class="px-3 py-1.5 rounded-lg bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] text-[#18181b] font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer">
-                    <span class="ui-sprite ui-xs ui-refresh"></span>
-                    <span data-i18n="player.replay">Restart</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Universal Gameplay Rules (All 15 Games) -->
-            <div class="bg-white rounded-lg border border-[#e5dfd3] p-3.5 sm:p-4 space-y-3">
-              <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#eee9df] pb-2">
-                <h4 class="text-xs font-bold uppercase tracking-wider text-[#18181b] flex items-center gap-1.5">
-                  <span class="ui-sprite ui-xs ui-sliders"></span>
-                  <span data-i18n="player.settingsRulesHead">Gameplay Rules</span>
-                </h4>
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
-                <div>
-                  <label for="cp-rule-lives" class="block text-[11px] font-bold text-[#57534e] mb-1" data-i18n="editAct.livesLabel">Lives Limit</label>
-                  <select id="cp-rule-lives"
-                    class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-white text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
-                    <option value="1" id="cp-opt-lives1">1 Heart</option>
-                    <option value="3" data-i18n="dash.lives3">3 Hearts (Standard)</option>
-                    <option value="5" data-i18n="dash.lives5">5 Hearts (Relaxed)</option>
-                    <option value="0" data-i18n="dash.lives0">Unlimited Lives</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label for="cp-rule-timemode" class="block text-[11px] font-bold text-[#57534e] mb-1" data-i18n="editAct.timerLabel">Time Mode</label>
-                  <select id="cp-rule-timemode" onchange="syncCommunityTimerInputState()"
-                    class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-white text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
-                    <option value="timer" data-i18n="editAct.timerTimer">Countdown Timer</option>
-                    <option value="stopwatch" data-i18n="editAct.timerStopwatch">Stopwatch (No Limit)</option>
-                    <option value="none" data-i18n="editAct.timerNone">Relaxed (No Timer)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label for="cp-rule-timerseconds" class="block text-[11px] font-bold text-[#57534e] mb-1" data-i18n="editAct.secondsLabel">Seconds per Question</label>
-                  <input type="number" id="cp-rule-timerseconds" min="5" max="300" step="5" value="30"
-                    class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-white text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
-                </div>
-
-                <div class="flex flex-col gap-1.5 pb-1">
-                  <label class="inline-flex items-center gap-2 text-xs font-semibold text-[#18181b] cursor-pointer">
-                    <input type="checkbox" id="cp-rule-shuffle-q" checked class="w-4 h-4 rounded accent-[#1d4ed8] cursor-pointer">
-                    <span data-i18n="editAct.shuffleQ">Shuffle Questions</span>
-                  </label>
-                  <label class="inline-flex items-center gap-2 text-xs font-semibold text-[#18181b] cursor-pointer">
-                    <input type="checkbox" id="cp-rule-shuffle-a" checked class="w-4 h-4 rounded accent-[#1d4ed8] cursor-pointer">
-                    <span data-i18n="editAct.shuffleA">Shuffle Answer Choices</span>
-                  </label>
-                </div>
-              </div>
-
-              <div class="pt-2 flex flex-wrap items-center justify-end gap-2">
-                <button type="button" id="cp-settings-apply-btn" onclick="applyCommunityGameSettings()"
-                  class="px-5 py-2.5 rounded-lg bg-[#15803d] hover:bg-[#166534] text-white font-bold text-xs border-b-2 border-[#14532d] inline-flex items-center gap-1.5 transition-colors cursor-pointer">
-                  <span class="ui-sprite ui-xs ui-check"></span>
-                  <span data-i18n="player.settingsApply">Apply &amp; Restart Game</span>
-                </button>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- Leaderboard Wrapper Right Below Game Settings -->
-        <div id="cp-lb-wrap" class="cp-stage-frame w-full mx-auto shrink-0">
-          <aside id="cp-leaderboard-panel" class="hidden bg-white rounded-xl border border-[#e5dfd3] p-4 sm:p-5 space-y-3">
-            <div class="flex items-center justify-between border-b border-[#eee9df] pb-2.5">
-              <h4 class="text-sm font-bold text-[#18181b] flex items-center gap-2">
-                <span class="ui-sprite ui-sm ui-trophy"></span>
-                <span data-i18n="player.lbTitle">Activity Leaderboard</span>
-              </h4>
-              <button type="button" onclick="toggleCommunityLeaderboard()" class="p-1 rounded-md hover:bg-[#f4f1ea] cursor-pointer">
-                <span class="ui-sprite ui-xs ui-close"></span>
-              </button>
-            </div>
-            <div id="cp-leaderboard-list" class="space-y-2 text-xs">
-              <!-- Rendered via JS -->
-            </div>
-          </aside>
-        </div>
-
-      </div>
-
-    </div>
-  </div>
-
-  <!-- =========================================================================
        SCRIPTS
        ========================================================================= -->
   <script src="games/common/i18n.js"></script>
@@ -1135,28 +850,7 @@
       { id: 'hanzi-battle', category: 'camera', sprite: 'ui-brush' }
     ];
 
-    const AI_CAMERA_TEMPLATES = ['ai-slicer', 'head-catcher', 'hanzi-battle'];
-    const SPEED_CAPABLE_TEMPLATES = ['fruitninja', 'ai-slicer', 'head-catcher'];
-
     let activePortalTab = 'home';
-    let currentCommunityProject = null;
-    let currentCommunityTemplate = 'quiz';
-    let currentCommunityTheme = 'white';
-    let currentCommunityStudentName = '';
-    let currentCommunityRules = null;
-    let isCpSettingsOpen = false;
-    let currentCommunityCameraActive = false;
-    let currentCommunityMouseMode = false;
-    let currentCommunitySpeed = 'relaxed';
-    let currentCommunityHand = 'auto';
-    let currentCommunityBladePoint = 'finger';
-    let currentCommunityTrackingMode = 'hands';
-    let currentCommunitySkeleton = true;
-    let currentCommunityHanziChapterId = '';
-    let currentCommunityHanziChapters = [];
-    let isCpIframeLoaded = false;
-    let hasCpSentInit = false;
-    let pendingCpMessages = [];
 
     function escapeHtml(str) {
       return String(str || '').replace(/[&<>"']/g, c => ({
@@ -1356,8 +1050,8 @@
       switchPortalTab(requestedTab, false);
 
       if (pinParam) {
-        switchPortalTab('community', false);
-        const pinInput = document.getElementById('comm-pin-input');
+        switchPortalTab('home', false);
+        const pinInput = document.getElementById('home-pin-input');
         if (pinInput) pinInput.value = pinParam;
         const proj = LotusDB.findProjectByPin(pinParam);
         if (proj) openCommunityPlayer(proj.id);
@@ -1936,19 +1630,31 @@
       if (box) box.classList.add('hidden');
     }
 
-    function handleCommunityPinJoin(e) {
+    async function handleHomePinJoin(e) {
       e.preventDefault();
-      const pin = document.getElementById('comm-pin-input').value.trim();
-      const studentName = document.getElementById('comm-student-name').value.trim();
+      const pinEl = document.getElementById('home-pin-input');
+      const nameEl = document.getElementById('home-student-name');
+      const errEl = document.getElementById('home-pin-error');
+      const pin = pinEl ? pinEl.value.trim() : '';
+      const studentName = nameEl ? nameEl.value.trim() : '';
       if (!pin) return;
 
-      const proj = LotusDB.findProjectByPin(pin);
+      if (errEl) errEl.classList.add('hidden');
+
+      let proj = LotusDB.findProjectByPin(pin);
+      if (!proj && window.LotusDB && LotusDB.hasSupabase()) {
+        try { await LotusDB.syncProjectsFromCloud(); } catch (err) {}
+        proj = LotusDB.findProjectByPin(pin);
+      }
+
       if (!proj) {
-        showCommunityToast('error', LotusI18n.t('comm.pinNotFound', { pin }));
+        if (errEl) {
+          errEl.textContent = LotusI18n.t('comm.pinNotFound', { pin });
+          errEl.classList.remove('hidden');
+        }
         return;
       }
 
-      hideCommunityToast();
       openCommunityPlayer(proj.id, studentName);
     }
 
@@ -2082,636 +1788,24 @@
     }
 
     // -------------------------------------------------------------------------
-    // BUILT-IN COMMUNITY PLAYER MODAL (16:9 Stage + Collapsible Game Settings)
+    // OPEN COMMUNITY PLAYER IN NEW TAB / WINDOW (Dedicated Page, No Pop-up)
     // -------------------------------------------------------------------------
-    function normalizeCommunityRules(proj) {
-      const rules = proj?.rules || {};
-      const settings = proj?.settings || {};
-      const hasLives = rules.hasLives !== undefined
-        ? Boolean(rules.hasLives)
-        : (settings.lives !== undefined ? Number(settings.lives) > 0 : true);
-      const rawLives = Number(rules.livesCount ?? settings.lives ?? 3);
-      const livesCount = hasLives ? (rawLives > 0 ? rawLives : 3) : 0;
-      const rawSeconds = Number(rules.timerSeconds ?? settings.timerSeconds ?? 30);
-      const timeMode = ['timer', 'stopwatch', 'none'].includes(rules.timeMode || settings.timeMode)
-        ? (rules.timeMode || settings.timeMode)
-        : (rawSeconds > 0 ? 'timer' : 'none');
-      const timerSeconds = timeMode === 'timer'
-        ? Math.max(5, Math.min(300, rawSeconds > 0 ? rawSeconds : 30))
-        : 0;
-      return {
-        hasLives,
-        livesCount,
-        timeMode,
-        timerSeconds,
-        shuffleQuestions: rules.shuffleQuestions !== false && settings.shuffle !== false,
-        shuffleAnswers: rules.shuffleAnswers !== false && settings.shuffleAnswers !== false
-      };
-    }
-
-    function normalizeSpeedForPortal(val) {
-      const s = String(val || '').toLowerCase().trim();
-      if (s === 'fast' || s === 'cepat' || s === 'high') return 'fast';
-      if (s === 'normal' || s === 'medium' || s === 'sedang') return 'normal';
-      return 'relaxed';
-    }
-
-    function buildCurrentActivityPayload() {
-      if (!currentCommunityProject) return null;
-      const rules = currentCommunityRules || normalizeCommunityRules(currentCommunityProject);
-      const copy = JSON.parse(JSON.stringify(currentCommunityProject));
-      copy.template_type = currentCommunityTemplate;
-      copy.theme = currentCommunityTheme;
-      copy.rules = { ...rules };
-      copy.settings = {
-        ...(copy.settings || {}),
-        timerSeconds: rules.timerSeconds,
-        lives: rules.hasLives ? rules.livesCount : 0,
-        hasLives: rules.hasLives,
-        timeMode: rules.timeMode,
-        shuffle: rules.shuffleQuestions,
-        shuffleAnswers: rules.shuffleAnswers,
-        showAnswers: true
-      };
-      return copy;
-    }
-
-    function populateCommunityPlayerTemplates() {
-      const sel = document.getElementById('cp-template-select');
-      if (!sel) return;
-      const std = PORTAL_TEMPLATES.filter(t => t.category === 'standard');
-      const cam = PORTAL_TEMPLATES.filter(t => t.category === 'camera');
-
-      sel.innerHTML = `
-        <optgroup label="${escapeHtml(LotusI18n.t('cat.standard'))}">
-          ${std.map(t => `<option value="${t.id}">${escapeHtml(LotusI18n.getTemplateName(t.id))}</option>`).join('')}
-        </optgroup>
-        <optgroup label="${escapeHtml(LotusI18n.t('cat.camera'))}">
-          ${cam.map(t => `<option value="${t.id}">${escapeHtml(LotusI18n.getTemplateName(t.id))}</option>`).join('')}
-        </optgroup>
-      `;
-      sel.value = currentCommunityTemplate;
-    }
-
-    function setCommunitySettingsOpen(open) {
-      isCpSettingsOpen = Boolean(open);
-      const body = document.getElementById('cp-settings-body');
-      const btn = document.getElementById('cp-settings-toggle-btn');
-      const chev = document.getElementById('cp-settings-chevron');
-      const card = document.getElementById('cp-settings-card');
-      if (body) body.classList.toggle('hidden', !isCpSettingsOpen);
-      if (btn) btn.setAttribute('aria-expanded', isCpSettingsOpen ? 'true' : 'false');
-      if (chev) chev.style.transform = isCpSettingsOpen ? 'rotate(180deg)' : '';
-      if (isCpSettingsOpen && card) {
-        requestAnimationFrame(() => {
-          try { card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
-        });
-      }
-    }
-
-    function toggleCommunitySettings() {
-      setCommunitySettingsOpen(!isCpSettingsOpen);
-    }
-
-    function syncCommunityTimerInputState() {
-      const modeSel = document.getElementById('cp-rule-timemode');
-      const secInput = document.getElementById('cp-rule-timerseconds');
-      if (!modeSel || !secInput) return;
-      const isTimer = modeSel.value === 'timer';
-      secInput.disabled = !isTimer;
-      secInput.classList.toggle('opacity-50', !isTimer);
-      secInput.classList.toggle('bg-[#f4f1ea]', !isTimer);
-      secInput.classList.toggle('bg-white', isTimer);
-    }
-
-    function updateCommunitySettingsSummary() {
-      const sumEl = document.getElementById('cp-settings-summary');
-      if (!sumEl) return;
-      const rules = currentCommunityRules || normalizeCommunityRules(currentCommunityProject);
-      const isId = LotusI18n.getLang() === 'id';
-      const parts = [];
-
-      if (!rules.hasLives || rules.livesCount <= 0) {
-        parts.push(LotusI18n.t('dash.lives0'));
-      } else {
-        parts.push(`${rules.livesCount} ${LotusI18n.t('game.lives')}`);
-      }
-
-      if (rules.timeMode === 'timer') {
-        parts.push(`${rules.timerSeconds}${isId ? 'd' : 's'}`);
-      } else if (rules.timeMode === 'stopwatch') {
-        parts.push(LotusI18n.t('game.stopwatch'));
-      } else {
-        parts.push(LotusI18n.t('player.speedRelaxed'));
-      }
-
-      if (AI_CAMERA_TEMPLATES.includes(currentCommunityTemplate)) {
-        if (currentCommunityCameraActive) {
-          parts.push(LotusI18n.t('aiSlicer.statusActive'));
-        } else if (currentCommunityMouseMode) {
-          parts.push(LotusI18n.t('aiSlicer.statusMouse'));
-        }
-      } else if (currentCommunityTemplate === 'fruitninja') {
-        const spdKey = currentCommunitySpeed === 'fast'
-          ? 'player.speedFast'
-          : (currentCommunitySpeed === 'normal' ? 'player.speedNormal' : 'player.speedRelaxed');
-        parts.push(LotusI18n.t(spdKey));
-      }
-
-      sumEl.textContent = parts.join(' • ');
-    }
-
-    function updateCommunityCameraStateUI() {
-      const camBtn = document.getElementById('cp-cam-toggle-btn');
-      const camSprite = document.getElementById('cp-cam-toggle-sprite');
-      const camLabel = document.getElementById('cp-cam-toggle-label');
-      const mouseBtn = document.getElementById('cp-mouse-mode-btn');
-
-      if (camBtn && camSprite && camLabel) {
-        if (currentCommunityCameraActive) {
-          camBtn.className = 'px-3.5 py-2 rounded-lg bg-[#b91c1c] hover:bg-[#991b1b] text-white font-bold text-xs border-b-2 border-[#7f1d1d] inline-flex items-center gap-1.5 transition-colors cursor-pointer';
-          camSprite.className = 'ui-sprite ui-xs ui-camera-off';
-          camLabel.textContent = LotusI18n.t('player.camDisable');
-        } else {
-          camBtn.className = 'px-3.5 py-2 rounded-lg bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-xs border-b-2 border-[#1e3a8a] inline-flex items-center gap-1.5 transition-colors cursor-pointer';
-          camSprite.className = 'ui-sprite ui-xs ui-camera';
-          camLabel.textContent = LotusI18n.t('player.camEnable');
-        }
-      }
-
-      if (mouseBtn) {
-        const isMouseActive = Boolean(currentCommunityMouseMode && !currentCommunityCameraActive);
-        mouseBtn.className = isMouseActive
-          ? 'px-3.5 py-2 rounded-lg bg-[#eff6ff] text-[#1d4ed8] border border-[#1d4ed8] font-bold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer'
-          : 'px-3.5 py-2 rounded-lg bg-[#f4f1ea] hover:bg-[#e7e2d8] text-[#18181b] border border-[#d6cfc2] font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer';
-      }
-
-      const speedSel = document.getElementById('cp-speed-select');
-      if (speedSel) speedSel.value = currentCommunitySpeed;
-      const handSel = document.getElementById('cp-hand-select');
-      if (handSel) handSel.value = currentCommunityHand;
-      const pointSel = document.getElementById('cp-blade-point-select');
-      if (pointSel) pointSel.value = currentCommunityBladePoint;
-      const trackSel = document.getElementById('cp-tracking-mode-select');
-      if (trackSel) trackSel.value = currentCommunityTrackingMode;
-      const skelCheck = document.getElementById('cp-skeleton-toggle');
-      if (skelCheck) skelCheck.checked = Boolean(currentCommunitySkeleton);
-    }
-
-    function populateCommunityHanziChapters(chapters, activeId) {
-      const sel = document.getElementById('cp-hanzi-chapter-select');
-      if (!sel) return;
-      const defaultLabel = LotusI18n.getLang() === 'id' ? 'Dek Bawaan' : 'Default Deck';
-      if (!Array.isArray(chapters) || chapters.length === 0) {
-        sel.innerHTML = `<option id="cp-hanzi-default-opt" value="">${escapeHtml(defaultLabel)}</option>`;
-        sel.value = '';
-        return;
-      }
-
-      sel.innerHTML = chapters.map(ch => `
-        <option value="${escapeHtml(ch.id)}">${escapeHtml(ch.label || ch.id)}</option>
-      `).join('');
-
-      if (activeId && chapters.some(ch => ch.id === activeId)) {
-        sel.value = activeId;
-        currentCommunityHanziChapterId = activeId;
-      } else if (currentCommunityHanziChapterId && chapters.some(ch => ch.id === currentCommunityHanziChapterId)) {
-        sel.value = currentCommunityHanziChapterId;
-      }
-    }
-
-    function syncCommunitySettingsUI() {
-      const tpl = currentCommunityTemplate || 'quiz';
-      const isCameraGame = AI_CAMERA_TEMPLATES.includes(tpl);
-      const hasSpeed = SPEED_CAPABLE_TEMPLATES.includes(tpl);
-
-      const camSec = document.getElementById('cp-camera-section');
-      const speedSec = document.getElementById('cp-speed-section');
-      const hcStartBtn = document.getElementById('cp-hc-start-btn');
-      const handWrap = document.getElementById('cp-hand-wrap');
-      const pointWrap = document.getElementById('cp-point-wrap');
-      const trackWrap = document.getElementById('cp-tracking-wrap');
-      const hanziWrap = document.getElementById('cp-hanzi-wrap');
-      const skelWrap = document.getElementById('cp-skeleton-wrap');
-
-      if (camSec) camSec.classList.toggle('hidden', !isCameraGame);
-      if (speedSec) speedSec.classList.toggle('hidden', !hasSpeed);
-
-      if (hcStartBtn) {
-        const showHcStart = tpl === 'head-catcher';
-        hcStartBtn.classList.toggle('hidden', !showHcStart);
-        hcStartBtn.classList.toggle('inline-flex', showHcStart);
-      }
-
-      if (handWrap) handWrap.classList.toggle('hidden', !(tpl === 'ai-slicer' || tpl === 'hanzi-battle'));
-      if (pointWrap) pointWrap.classList.toggle('hidden', tpl !== 'ai-slicer');
-      if (trackWrap) trackWrap.classList.toggle('hidden', tpl !== 'hanzi-battle');
-      if (hanziWrap) hanziWrap.classList.toggle('hidden', tpl !== 'hanzi-battle');
-      if (skelWrap) skelWrap.classList.toggle('hidden', !(tpl === 'ai-slicer' || tpl === 'head-catcher'));
-
-      const isId = LotusI18n.getLang() === 'id';
-      const lives1 = document.getElementById('cp-opt-lives1');
-      if (lives1) lives1.textContent = isId ? '1 Nyawa' : '1 Heart';
-      const trackLbl = document.getElementById('cp-tracking-label');
-      if (trackLbl) trackLbl.textContent = isId ? 'Mode Pelacakan' : 'Tracking Mode';
-      const hanziDefOpt = document.getElementById('cp-hanzi-default-opt');
-      if (hanziDefOpt) hanziDefOpt.textContent = isId ? 'Dek Bawaan' : 'Default Deck';
-
-      const rules = currentCommunityRules || normalizeCommunityRules(currentCommunityProject);
-      const livesSel = document.getElementById('cp-rule-lives');
-      if (livesSel) {
-        const targetVal = !rules.hasLives ? '0' : String(rules.livesCount || 3);
-        livesSel.value = ['1', '3', '5', '0'].includes(targetVal) ? targetVal : '3';
-      }
-      const modeSel = document.getElementById('cp-rule-timemode');
-      if (modeSel) modeSel.value = rules.timeMode || 'timer';
-      const secIn = document.getElementById('cp-rule-timerseconds');
-      if (secIn) secIn.value = String(rules.timerSeconds > 0 ? rules.timerSeconds : 30);
-      const shufQ = document.getElementById('cp-rule-shuffle-q');
-      if (shufQ) shufQ.checked = rules.shuffleQuestions !== false;
-      const shufA = document.getElementById('cp-rule-shuffle-a');
-      if (shufA) shufA.checked = rules.shuffleAnswers !== false;
-
-      if (tpl === 'hanzi-battle') {
-        populateCommunityHanziChapters(currentCommunityHanziChapters, currentCommunityHanziChapterId);
-      }
-
-      syncCommunityTimerInputState();
-      updateCommunityCameraStateUI();
-      updateCommunitySettingsSummary();
-    }
-
     function openCommunityPlayer(projId, studentName = '') {
-      const proj = LotusDB.getProjectById(projId);
-      if (!proj) return;
-
-      const owner = LotusDB.getTeacherById(proj.teacher_id);
-      currentCommunityProject = JSON.parse(JSON.stringify(proj));
-      currentCommunityTemplate = currentCommunityProject.template_type || 'quiz';
-      currentCommunityTheme = (currentCommunityProject.theme === 'magical') ? 'magical' : 'white';
-      currentCommunityStudentName = studentName || document.getElementById('comm-student-name')?.value.trim() || '';
-      currentCommunityRules = normalizeCommunityRules(currentCommunityProject);
-      currentCommunityCameraActive = false;
-      currentCommunityMouseMode = false;
-      currentCommunitySpeed = 'relaxed';
-      currentCommunityHand = 'auto';
-      currentCommunityBladePoint = 'finger';
-      currentCommunityTrackingMode = 'hands';
-      currentCommunitySkeleton = true;
-      currentCommunityHanziChapterId = '';
-      currentCommunityHanziChapters = [];
-
-      document.getElementById('cp-title').textContent = currentCommunityProject.title;
-      document.getElementById('cp-meta').textContent = `${LotusI18n.t('comm.byTeacher', { name: owner ? owner.name : 'LotusWall Teacher' })} • ${currentCommunityProject.level || 'SD'} • PIN ${currentCommunityProject.pin || ''}`;
-
-      const lbPanel = document.getElementById('cp-leaderboard-panel');
-      if (lbPanel) lbPanel.classList.add('hidden');
-
-      setCommunitySettingsOpen(false);
-      populateCommunityPlayerTemplates();
-      updateCommunityThemeButtons();
-      syncCommunitySettingsUI();
-      renderCommunityLeaderboard();
-
-      document.getElementById('modal-community-player').classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
-      loadCommunityGameIframe();
-    }
-
-    function flushPendingCpMessages() {
-      const iframe = document.getElementById('cp-iframe');
-      if (!isCpIframeLoaded || !iframe || !iframe.contentWindow || pendingCpMessages.length === 0) return;
-      const queue = pendingCpMessages.splice(0, pendingCpMessages.length);
-      queue.forEach(msg => {
-        try { iframe.contentWindow.postMessage(msg, '*'); } catch (e) {}
-      });
-    }
-
-    function postToCommunityIframe(msg) {
-      if (!msg || typeof msg !== 'object') return;
-      const iframe = document.getElementById('cp-iframe');
-      if (isCpIframeLoaded && iframe && iframe.contentWindow) {
-        try {
-          iframe.contentWindow.postMessage(msg, '*');
-          return;
-        } catch (e) {}
-      }
-      pendingCpMessages.push(msg);
-    }
-
-    function loadCommunityGameIframe() {
-      if (!currentCommunityProject) return;
-      const iframe = document.getElementById('cp-iframe');
-      if (!iframe) return;
-
-      isCpIframeLoaded = false;
-      hasCpSentInit = false;
-      pendingCpMessages = [];
-
-      const initialPayload = buildCurrentActivityPayload();
-      if (!initialPayload) return;
-
-      try {
-        localStorage.setItem(`activity_${initialPayload.id}`, JSON.stringify(initialPayload));
-        localStorage.setItem('current_game_activity', JSON.stringify(initialPayload));
-      } catch (e) {}
-
-      const initialLang = LotusI18n.getLang();
-      const params = new URLSearchParams({
-        id: initialPayload.id,
-        theme: currentCommunityTheme,
-        lang: initialLang,
-        embedded: '1'
-      });
-      if (currentCommunityStudentName) params.set('name', currentCommunityStudentName);
-
-      iframe.onload = () => {
-        isCpIframeLoaded = true;
-        if (!hasCpSentInit && currentCommunityProject) {
-          const freshPayload = buildCurrentActivityPayload();
-          const freshLang = LotusI18n.getLang();
-          if (iframe.contentWindow && freshPayload) {
-            try {
-              iframe.contentWindow.postMessage({
-                type: 'INIT_ACTIVITY',
-                activity: freshPayload,
-                playerName: currentCommunityStudentName || '',
-                playerClass: ''
-              }, '*');
-              iframe.contentWindow.postMessage({ type: 'THEME_CHANGE', theme: currentCommunityTheme }, '*');
-              iframe.contentWindow.postMessage({ type: 'LANG_CHANGE', lang: freshLang }, '*');
-              hasCpSentInit = true;
-            } catch (e) {}
-          }
-        }
-        flushPendingCpMessages();
-      };
-
-      iframe.src = `games/${currentCommunityTemplate}.html?${params.toString()}`;
-    }
-
-    function switchCommunityPlayerTemplate(tplId) {
-      currentCommunityTemplate = tplId || 'quiz';
-      currentCommunityCameraActive = false;
-      currentCommunityMouseMode = false;
-      currentCommunitySpeed = 'relaxed';
-      currentCommunityHand = 'auto';
-      currentCommunityBladePoint = 'finger';
-      currentCommunityTrackingMode = 'hands';
-      currentCommunitySkeleton = true;
-      currentCommunityHanziChapterId = '';
-      currentCommunityHanziChapters = [];
-      syncCommunitySettingsUI();
-      loadCommunityGameIframe();
-    }
-
-    function switchCommunityPlayerTheme(themeId) {
-      currentCommunityTheme = (themeId === 'magical') ? 'magical' : 'white';
-      if (currentCommunityProject) currentCommunityProject.theme = currentCommunityTheme;
-      updateCommunityThemeButtons();
-
-      const payloadProject = buildCurrentActivityPayload();
-      if (payloadProject) {
-        try {
-          localStorage.setItem(`activity_${payloadProject.id}`, JSON.stringify(payloadProject));
-          localStorage.setItem('current_game_activity', JSON.stringify(payloadProject));
-        } catch (e) {}
-      }
-
-      postToCommunityIframe({ type: 'THEME_CHANGE', theme: currentCommunityTheme });
-    }
-
-    function updateCommunityThemeButtons() {
-      const btnW = document.getElementById('cp-theme-white');
-      const btnM = document.getElementById('cp-theme-magical');
-      if (!btnW || !btnM) return;
-      const isMag = currentCommunityTheme === 'magical';
-      btnW.className = !isMag
-        ? 'px-2.5 py-1 rounded-md text-[11px] font-bold bg-white text-[#18181b] border border-[#d6cfc2] transition-colors cursor-pointer'
-        : 'px-2.5 py-1 rounded-md text-[11px] font-semibold text-[#57534e] hover:text-[#18181b] transition-colors cursor-pointer';
-      btnM.className = isMag
-        ? 'px-2.5 py-1 rounded-md text-[11px] font-bold bg-[#7e22ce] text-white transition-colors cursor-pointer'
-        : 'px-2.5 py-1 rounded-md text-[11px] font-semibold text-[#57534e] hover:text-[#6b21a8] transition-colors cursor-pointer';
-    }
-
-    function applyCommunityGameSettings() {
-      if (!currentCommunityProject) return;
-      const livesVal = document.getElementById('cp-rule-lives')?.value ?? '3';
-      const timeModeVal = document.getElementById('cp-rule-timemode')?.value ?? 'timer';
-      const rawSec = Number(document.getElementById('cp-rule-timerseconds')?.value ?? 30);
-      const timerSeconds = timeModeVal === 'timer'
-        ? Math.max(5, Math.min(300, isNaN(rawSec) ? 30 : rawSec))
-        : 0;
-      const hasLives = livesVal !== '0';
-      const livesCount = hasLives ? Math.max(1, Number(livesVal) || 3) : 0;
-
-      currentCommunityRules = {
-        hasLives,
-        livesCount,
-        timeMode: ['timer', 'stopwatch', 'none'].includes(timeModeVal) ? timeModeVal : 'timer',
-        timerSeconds,
-        shuffleQuestions: Boolean(document.getElementById('cp-rule-shuffle-q')?.checked),
-        shuffleAnswers: Boolean(document.getElementById('cp-rule-shuffle-a')?.checked)
-      };
-
-      const actPayload = buildCurrentActivityPayload();
-      if (actPayload) {
-        currentCommunityProject.rules = { ...actPayload.rules };
-        currentCommunityProject.settings = { ...actPayload.settings };
-        try {
-          localStorage.setItem(`activity_${actPayload.id}`, JSON.stringify(actPayload));
-          localStorage.setItem('current_game_activity', JSON.stringify(actPayload));
-        } catch (e) {}
-
-        postToCommunityIframe({
-          type: 'UPDATE_SETTINGS',
-          activity: actPayload,
-          rules: actPayload.rules,
-          settings: actPayload.settings,
-          theme: currentCommunityTheme,
-          restart: true
-        });
-      }
-
-      updateCommunitySettingsSummary();
-    }
-
-    function sendCommunityGameCmd(command, value) {
-      const msg = { type: 'GAME_CMD', command };
-      if (value !== undefined) msg.value = value;
-      postToCommunityIframe(msg);
-    }
-
-    function sendCommunityGameSettings(payload) {
-      if (!payload || typeof payload !== 'object') return;
-      if (payload.hand !== undefined) currentCommunityHand = payload.hand;
-      if (payload.bladePoint !== undefined) currentCommunityBladePoint = payload.bladePoint;
-      if (payload.trackingMode !== undefined) currentCommunityTrackingMode = payload.trackingMode;
-      if (payload.skeleton !== undefined) currentCommunitySkeleton = Boolean(payload.skeleton);
-      if (payload.speed !== undefined) currentCommunitySpeed = normalizeSpeedForPortal(payload.speed);
-      if (payload.hanziChapterId !== undefined) currentCommunityHanziChapterId = String(payload.hanziChapterId || '');
-
-      updateCommunitySettingsSummary();
-
-      postToCommunityIframe({
-        type: 'GAME_SETTINGS',
-        payload,
-        ...payload
-      });
-    }
-
-    function applyCommunitySpeed(val) {
-      const norm = normalizeSpeedForPortal(val);
-      sendCommunityGameSettings({ speed: norm });
-    }
-
-    function handleCommunityHanziChapterChange(chapterVal) {
-      const cleanId = String(chapterVal || '');
-      currentCommunityHanziChapterId = cleanId;
-      sendCommunityGameSettings({ hanziChapterId: cleanId });
-    }
-
-    function toggleCommunityLeaderboard() {
-      const panel = document.getElementById('cp-leaderboard-panel');
-      if (panel) panel.classList.toggle('hidden');
-      renderCommunityLeaderboard();
-    }
-
-    function renderCommunityLeaderboard() {
-      const listEl = document.getElementById('cp-leaderboard-list');
-      if (!listEl || !currentCommunityProject) return;
-      const entries = LotusDB.getLeaderboard(currentCommunityProject.id);
-
-      if (!entries || entries.length === 0) {
-        listEl.innerHTML = `<div class="p-4 rounded-lg bg-[#fcfbf8] border border-dashed border-[#d6cfc2] text-center text-[#78716c] font-semibold">${escapeHtml(LotusI18n.t('player.lbEmpty'))}</div>`;
-        return;
-      }
-
-      listEl.innerHTML = entries.map((row, idx) => `
-        <div class="p-2.5 rounded-lg bg-[#fcfbf8] border border-[#e5dfd3] flex items-center justify-between gap-2">
-          <div class="flex items-center gap-2 min-w-0">
-            <span class="w-6 h-6 rounded-md ${idx === 0 ? 'bg-[#fef3c7] text-[#92400e] border border-[#f59e0b]/40' : 'bg-white text-[#57534e] border border-[#d6cfc2]'} font-bold text-[11px] flex items-center justify-center shrink-0">${idx + 1}</span>
-            <span class="font-semibold text-[#18181b] truncate">${escapeHtml(row.student_name || 'Student')}</span>
-          </div>
-          <div class="text-right shrink-0">
-            <div class="font-bold text-[#1d4ed8]">${row.score}</div>
-            <div class="text-[10px] text-[#78716c]">${row.time_taken_seconds || 0}s</div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function toggleCommunityFullscreen() {
-      const stageWrap = document.getElementById('cp-stage-wrap');
-      if (!stageWrap) return;
-      const activeFs = document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
-      if (!activeFs) {
-        const req = stageWrap.requestFullscreen || stageWrap.webkitRequestFullscreen || stageWrap.msRequestFullscreen;
-        if (typeof req === 'function') {
-          try { req.call(stageWrap); } catch (e) {}
-        }
-      } else {
-        const exit = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
-        if (typeof exit === 'function') {
-          try { exit.call(document); } catch (e) {}
-        }
+      if (!projId) return;
+      const params = new URLSearchParams();
+      params.set('id', projId);
+      if (studentName) params.set('name', studentName);
+      const url = 'community-play.html?' + params.toString();
+      const opened = window.open(url, '_blank', 'noopener');
+      if (!opened) {
+        window.location.href = url;
       }
     }
-
-    function closeCommunityPlayer() {
-      const activeFs = document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
-      if (activeFs) {
-        const exit = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
-        if (typeof exit === 'function') {
-          try { exit.call(document); } catch (e) {}
-        }
-      }
-
-      const modal = document.getElementById('modal-community-player');
-      const iframe = document.getElementById('cp-iframe');
-      if (iframe) iframe.src = 'about:blank';
-      if (modal) modal.classList.add('hidden');
-      document.body.style.overflow = '';
-      currentCommunityProject = null;
-      currentCommunityRules = null;
-      currentCommunityCameraActive = false;
-      currentCommunityMouseMode = false;
-      currentCommunityHanziChapters = [];
-      currentCommunityHanziChapterId = '';
-      isCpIframeLoaded = false;
-      hasCpSentInit = false;
-      pendingCpMessages = [];
-      setCommunitySettingsOpen(false);
-    }
-
-    // Iframe handshake & live state sync inside Community Player
-    window.addEventListener('message', (event) => {
-      const data = event.data;
-      if (!data || typeof data !== 'object') return;
-
-      if (data.type === 'GAME_READY' && currentCommunityProject) {
-        const iframe = document.getElementById('cp-iframe');
-        const payloadProject = buildCurrentActivityPayload();
-        if (iframe && iframe.contentWindow && payloadProject) {
-          try {
-            iframe.contentWindow.postMessage({
-              type: 'INIT_ACTIVITY',
-              activity: payloadProject,
-              playerName: currentCommunityStudentName || '',
-              playerClass: ''
-            }, '*');
-            iframe.contentWindow.postMessage({ type: 'THEME_CHANGE', theme: currentCommunityTheme }, '*');
-            iframe.contentWindow.postMessage({ type: 'LANG_CHANGE', lang: LotusI18n.getLang() }, '*');
-            hasCpSentInit = true;
-          } catch (e) {}
-        }
-        let docInteractive = false;
-        try {
-          docInteractive = Boolean(iframe && iframe.contentDocument && iframe.contentDocument.readyState !== 'loading');
-        } catch (e) {}
-        if (!AI_CAMERA_TEMPLATES.includes(currentCommunityTemplate) || docInteractive) {
-          isCpIframeLoaded = true;
-          flushPendingCpMessages();
-        }
-      } else if (data.type === 'GAME_OVER' && currentCommunityProject) {
-        renderCommunityLeaderboard();
-      } else if (data.type === 'GAME_STATE' && currentCommunityProject) {
-        isCpIframeLoaded = true;
-        flushPendingCpMessages();
-        if (data.cameraActive !== undefined) currentCommunityCameraActive = Boolean(data.cameraActive);
-        if (data.mouseMode !== undefined) currentCommunityMouseMode = Boolean(data.mouseMode);
-        if (data.speed !== undefined) currentCommunitySpeed = normalizeSpeedForPortal(data.speed);
-        if (data.hand !== undefined && ['auto', 'right', 'left'].includes(data.hand)) currentCommunityHand = data.hand;
-        if (data.bladePoint !== undefined && ['finger', 'palm'].includes(data.bladePoint)) currentCommunityBladePoint = data.bladePoint;
-        if (data.trackingMode !== undefined && ['hands', 'pose'].includes(data.trackingMode)) currentCommunityTrackingMode = data.trackingMode;
-        if (data.skeleton !== undefined) currentCommunitySkeleton = Boolean(data.skeleton);
-
-        const chapters = Array.isArray(data.hanziChapters)
-          ? data.hanziChapters
-          : (Array.isArray(data.chapters) ? data.chapters : null);
-        const activeChap = data.activeChapterId ?? data.hanziChapterId ?? data.currentChapterId;
-        if (chapters) {
-          currentCommunityHanziChapters = chapters;
-          populateCommunityHanziChapters(chapters, activeChap);
-        } else if (activeChap) {
-          const sel = document.getElementById('cp-hanzi-chapter-select');
-          if (sel && sel.querySelector(`option[value="${CSS.escape ? CSS.escape(String(activeChap)) : String(activeChap)}"]`)) {
-            sel.value = String(activeChap);
-          }
-          currentCommunityHanziChapterId = String(activeChap);
-        }
-
-        updateCommunityCameraStateUI();
-        updateCommunitySettingsSummary();
-      }
-    });
 
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         closePortalUserDropdown();
         closeCloudModal();
-        const isFs = Boolean(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
-        if (!isFs) closeCommunityPlayer();
       }
     });
 
@@ -2734,17 +1828,6 @@
       renderDemoTeachersList();
       populateSubjectFilterOptions();
       renderCommunityCards();
-      populateCommunityPlayerTemplates();
-      syncCommunitySettingsUI();
-      renderCommunityLeaderboard();
-      if (currentCommunityProject) {
-        const owner = LotusDB.getTeacherById(currentCommunityProject.teacher_id);
-        const metaEl = document.getElementById('cp-meta');
-        if (metaEl) {
-          metaEl.textContent = `${LotusI18n.t('comm.byTeacher', { name: owner ? owner.name : 'LotusWall Teacher' })} • ${currentCommunityProject.level || 'SD'} • PIN ${currentCommunityProject.pin || ''}`;
-        }
-        postToCommunityIframe({ type: 'LANG_CHANGE', lang: LotusI18n.getLang() });
-      }
     });
 
     // Initialize Portal

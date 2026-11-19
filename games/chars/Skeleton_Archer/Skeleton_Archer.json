@@ -1,0 +1,183 @@
+{
+    "frames":  [
+                   {
+                       "filename":  "Arrow.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  1,
+                                     "w":  48,
+                                     "h":  48
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  48,
+                                                "h":  48
+                                            },
+                       "sourceSize":  {
+                                          "w":  48,
+                                          "h":  48
+                                      }
+                   },
+                   {
+                       "filename":  "Dead.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  51,
+                                     "w":  640,
+                                     "h":  128
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  640,
+                                                "h":  128
+                                            },
+                       "sourceSize":  {
+                                          "w":  640,
+                                          "h":  128
+                                      }
+                   },
+                   {
+                       "filename":  "Evasion.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  181,
+                                     "w":  768,
+                                     "h":  128
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  768,
+                                                "h":  128
+                                            },
+                       "sourceSize":  {
+                                          "w":  768,
+                                          "h":  128
+                                      }
+                   },
+                   {
+                       "filename":  "Hurt.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  311,
+                                     "w":  256,
+                                     "h":  128
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  256,
+                                                "h":  128
+                                            },
+                       "sourceSize":  {
+                                          "w":  256,
+                                          "h":  128
+                                      }
+                   },
+                   {
+                       "filename":  "Idle.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  441,
+                                     "w":  896,
+                                     "h":  128
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  896,
+                                                "h":  128
+                                            },
+                       "sourceSize":  {
+                                          "w":  896,
+                                          "h":  128
+                                      }
+                   },
+                   {
+                       "filename":  "Shot_1.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  571,
+                                     "w":  1920,
+                                     "h":  128
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  1920,
+                                                "h":  128
+                                            },
+                       "sourceSize":  {
+                                          "w":  1920,
+                                          "h":  128
+                                      }
+                   },
+                   {
+                       "filename":  "Shot_2.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  701,
+                                     "w":  1920,
+                                     "h":  128
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  1920,
+                                                "h":  128
+                                            },
+                       "sourceSize":  {
+                                          "w":  1920,
+                                          "h":  128
+                                      }
+                   },
+                   {
+                       "filename":  "Walk.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  831,
+                                     "w":  1024,
+                                     "h":  128
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  1024,
+                                                "h":  128
+                                            },
+                       "sourceSize":  {
+                                          "w":  1024,
+                                          "h":  128
+                                      }
+                   }
+               ],
+    "meta":  {
+                 "app":  "http://www.codeandweb.com/texturepacker",
+                 "version":  "1.0",
+                 "image":  "Skeleton_Archer.png",
+                 "format":  "RGBA8888",
+                 "size":  {
+                              "w":  1922,
+                              "h":  960
+                          },
+                 "scale":  "1"
+             }
+}

@@ -4,17 +4,26 @@
  * (Standard & AI Camera templates, TK-SMK levels, multi-language), media blobs, & leaderboards.
  */
 
-const LOTUS_SEED_VERSION = '2026.11.17-pure-cloud';
+const LOTUS_SEED_VERSION = '2026.11.19-daai-meihua-skeleton-v3';
 
 const DEFAULT_TEACHERS = [
   {
     id: 't-demo',
     name: 'Guru Demo',
     username: 'demo',
-    email: 'demo@lotuswall.com',
+    email: 'demo@tzuchi.sch.id',
     password: 'demo',
     subject: 'IPA & Umum',
-    school: 'Sekolah LotusWall'
+    school: 'Sekolah Cinta Kasih Tzu Chi'
+  },
+  {
+    id: 't-meihua',
+    name: 'Guru Bahasa Mandarin',
+    username: 'laoshi',
+    email: 'laoshi@tzuchi.sch.id',
+    password: 'demo',
+    subject: 'Bahasa Mandarin',
+    school: 'Sekolah Cinta Kasih Tzu Chi'
   }
 ];
 
@@ -404,6 +413,228 @@ const INITIAL_PROJECTS = [
   }
 ];
 
+const SKELETON_PROJECT = {
+  id: 'proj-skeleton-3d',
+  pin: '303030',
+  teacher_id: 't-demo',
+  title: 'Anatomi Rangka Tulang Manusia 3D (Human Skeleton 3D Anatomy)',
+  subject: 'IPA / Sains',
+  level: 'SD',
+  language: 'id',
+  template_type: 'quiz',
+  content_format: 'quiz',
+  theme: 'white',
+  is_public: true,
+  visibility: 'public',
+  rules: { hasLives: true, livesCount: 3, timeMode: 'timer', timerSeconds: 30, shuffleQuestions: true, shuffleAnswers: true },
+  is_deleted: false,
+  deleted_at: null,
+  updated_at: _NOW,
+  created_at: _NOW,
+  questions: [
+    {
+      id: 'sk-1',
+      text: 'Bagian rangka kepala yang berfungsi melindungi organ otak manusia adalah...',
+      category: 'Rangka Kepala',
+      options: [
+        { text: 'Tengkorak / Cranium (颅骨)', isCorrect: true },
+        { text: 'Tulang Rusuk / Rib Cage (肋骨)', isCorrect: false },
+        { text: 'Tulang Panggul / Pelvis (骨盆)', isCorrect: false },
+        { text: 'Tulang Belakang / Vertebrae (脊柱)', isCorrect: false }
+      ]
+    },
+    {
+      id: 'sk-2',
+      text: 'Tulang terpanjang dan terkuat pada tubuh manusia yang berada di bagian paha adalah...',
+      category: 'Anggota Gerak Bawah',
+      options: [
+        { text: 'Tulang Paha / Femur (股骨)', isCorrect: true },
+        { text: 'Tulang Kering / Tibia (胫骨)', isCorrect: false },
+        { text: 'Tulang Hasta / Ulna (尺骨)', isCorrect: false },
+        { text: 'Tulang Betis / Fibula (腓骨)', isCorrect: false }
+      ]
+    },
+    {
+      id: 'sk-3',
+      text: 'Sangkar tulang yang berfungsi melindungi organ vital jantung dan paru-paru adalah...',
+      category: 'Rangka Badan',
+      options: [
+        { text: 'Tulang Rusuk / Ribs (肋骨)', isCorrect: true },
+        { text: 'Tulang Selangka / Clavicle (锁骨)', isCorrect: false },
+        { text: 'Tulang Belikat / Scapula (肩胛骨)', isCorrect: false },
+        { text: 'Tulang Panggul / Pelvis (骨盆)', isCorrect: false }
+      ]
+    },
+    {
+      id: 'sk-4',
+      text: 'Susunan ruas tulang yang menopang postur tubuh tegak dan melindungi sumsum saraf adalah...',
+      category: 'Rangka Badan',
+      options: [
+        { text: 'Tulang Belakang / Vertebrae (脊柱)', isCorrect: true },
+        { text: 'Tulang Dada / Sternum (胸骨)', isCorrect: false },
+        { text: 'Tulang Paha / Femur (股骨)', isCorrect: false },
+        { text: 'Tempurung Lutut / Patella (髌骨)', isCorrect: false }
+      ]
+    },
+    {
+      id: 'sk-5',
+      text: 'Tulang pelindung sendi lutut yang berbentuk bulat segitiga tebal (sesamoid) disebut...',
+      category: 'Sendi & Lutut',
+      options: [
+        { text: 'Tempurung Lutut / Patella (髌骨)', isCorrect: true },
+        { text: 'Tulang Kering / Tibia (胫骨)', isCorrect: false },
+        { text: 'Tulang Betis / Fibula (腓骨)', isCorrect: false },
+        { text: 'Tulang Paha / Femur (股骨)', isCorrect: false }
+      ]
+    },
+    {
+      id: 'sk-6',
+      text: 'Satu-satunya tulang pada tengkorak kepala yang dapat digerakkan aktif saat mengunyah dan berbicara adalah...',
+      category: 'Rangka Kepala',
+      options: [
+        { text: 'Rahang Bawah / Mandible (下颌骨)', isCorrect: true },
+        { text: 'Rahang Atas / Maxilla (上颌骨)', isCorrect: false },
+        { text: 'Tulang Dahi / Frontal (额骨)', isCorrect: false },
+        { text: 'Tulang Pipi / Zygomatic (颧骨)', isCorrect: false }
+      ]
+    },
+    {
+      id: 'sk-7',
+      text: 'Tulang berbentuk kurva ganda yang menghubungkan bahu depan dengan tulang dada atas adalah...',
+      category: 'Gelang Bahu',
+      options: [
+        { text: 'Tulang Selangka / Clavicle (锁骨)', isCorrect: true },
+        { text: 'Tulang Belikat / Scapula (肩胛骨)', isCorrect: false },
+        { text: 'Tulang Lengan Atas / Humerus (肱骨)', isCorrect: false },
+        { text: 'Tulang Rusuk / Ribs (肋骨)', isCorrect: false }
+      ]
+    },
+    {
+      id: 'sk-8',
+      text: 'Tulang pipa panjang yang menyusun lengan atas antara sendi bahu dan siku adalah...',
+      category: 'Anggota Gerak Atas',
+      options: [
+        { text: 'Tulang Lengan Atas / Humerus (肱骨)', isCorrect: true },
+        { text: 'Tulang Pengumpil / Radius (桡骨)', isCorrect: false },
+        { text: 'Tulang Hasta / Ulna (尺骨)', isCorrect: false },
+        { text: 'Tulang Selangka / Clavicle (锁骨)', isCorrect: false }
+      ]
+    },
+    {
+      id: 'sk-9',
+      text: 'Struktur gelang panggul yang menyangga berat organ perut dan menghubungkan badan dengan tungkai adalah...',
+      category: 'Gelang Panggul',
+      options: [
+        { text: 'Tulang Panggul / Pelvis (骨盆)', isCorrect: true },
+        { text: 'Tulang Kelangkang / Sacrum (骶骨)', isCorrect: false },
+        { text: 'Tulang Dada / Sternum (胸骨)', isCorrect: false },
+        { text: 'Tulang Ekor / Coccyx (尾骨)', isCorrect: false }
+      ]
+    },
+    {
+      id: 'sk-10',
+      text: 'Pada tungkai bawah bagian depan yang berukuran lebih besar dan menopang beban berat badan adalah...',
+      category: 'Anggota Gerak Bawah',
+      options: [
+        { text: 'Tulang Kering / Tibia (胫骨)', isCorrect: true },
+        { text: 'Tulang Betis / Fibula (腓骨)', isCorrect: false },
+        { text: 'Tulang Paha / Femur (股骨)', isCorrect: false },
+        { text: 'Tempurung Lutut / Patella (髌骨)', isCorrect: false }
+      ]
+    }
+  ]
+};
+
+function generateMeihuaPresets() {
+  const db = (typeof _meihuaDB !== 'undefined' && _meihuaDB) ? _meihuaDB : ((typeof window !== 'undefined' && window._meihuaDB) ? window._meihuaDB : ((typeof global !== 'undefined' && global._meihuaDB) ? global._meihuaDB : null));
+  if (!db) return [];
+  const projects = [];
+  const templates = ['quiz', 'matchup', 'wordmatch', 'flashcards', 'whackamole', 'fliptile', 'tug', 'hanzi-battle', 'wheel', 'fruitninja'];
+  
+  for (let b = 1; b <= 6; b++) {
+    const bookKey = 'meihua' + b;
+    const book = db[bookKey];
+    if (!book) continue;
+    
+    const allBookVocab = [];
+    for (let u = 1; u <= 10; u++) {
+      const uKey = 'unit' + u;
+      if (book[uKey] && Array.isArray(book[uKey].vocab)) {
+        allBookVocab.push(...book[uKey].vocab);
+      }
+    }
+
+    for (let u = 1; u <= 10; u++) {
+      const uKey = 'unit' + u;
+      const unit = book[uKey];
+      if (!unit) continue;
+      
+      const pin = '2' + String(b).padStart(2, '0') + String(u).padStart(3, '0');
+      const tpl = templates[(b + u) % templates.length];
+      const questions = [];
+      const vocabs = unit.vocab || [];
+
+      vocabs.forEach((v, idx) => {
+        const otherVocabs = allBookVocab.filter(item => item.char !== v.char);
+        const shuffled = otherVocabs.sort(() => 0.5 - Math.random()).slice(0, 3);
+        const meaning = v.id || v.en;
+        
+        const options = [
+          { text: meaning + ' (' + v.pinyin + ')', isCorrect: true }
+        ];
+        shuffled.forEach(s => {
+          options.push({ text: (s.id || s.en) + ' (' + s.pinyin + ')', isCorrect: false });
+        });
+        options.sort(() => 0.5 - Math.random());
+        
+        questions.push({
+          id: 'q_' + b + '_' + u + '_' + (idx + 1),
+          text: 'Pilih arti / pinyin yang tepat untuk 「' + v.char + '」:',
+          image: '',
+          audio: '',
+          category: 'Bab ' + u,
+          options: options
+        });
+      });
+
+      if (unit.sentences && unit.sentences.length > 0) {
+        unit.sentences.slice(0, 2).forEach((s, sIdx) => {
+          questions.push({
+            id: 'qs_' + b + '_' + u + '_' + (sIdx + 1),
+            text: 'Kalimat Meihua: 「' + s + '」',
+            image: '',
+            audio: '',
+            category: 'Kalimat',
+            options: [
+              { text: 'Benar / Sudah dipelajari di bab ini', isCorrect: true },
+              { text: 'Salah / Bukan bagian bab ini', isCorrect: false }
+            ]
+          });
+        });
+      }
+
+      projects.push({
+        id: 'meihua-b' + b + '-u' + u,
+        pin: pin,
+        teacher_id: 't-meihua',
+        title: 'Meihua ' + b + ' Bab ' + u + ': ' + unit.title,
+        subject: 'Bahasa Mandarin',
+        level: 'SD',
+        language: 'zh',
+        template_type: tpl,
+        content_format: 'quiz',
+        theme: 'white',
+        is_public: true,
+        visibility: 'public',
+        rules: { hasLives: true, livesCount: 3, timeMode: 'timer', timerSeconds: 30, shuffleQuestions: true, shuffleAnswers: true },
+        is_deleted: false,
+        questions: questions
+      });
+    }
+  }
+  return projects;
+}
+
 class LocalDatabase {
   constructor() {
     this.dbName = 'LotusWallDB';
@@ -422,10 +653,44 @@ class LocalDatabase {
     const copy = { ...p };
     if (!copy.level) copy.level = 'SD';
     if (!copy.language) copy.language = 'id';
-    if (copy.is_public === undefined) copy.is_public = true;
+    if (copy.is_public === undefined) copy.is_public = (copy.visibility !== 'private' && !copy.is_private);
+    if (!copy.visibility) copy.visibility = (copy.is_public && !copy.is_private) ? 'public' : 'private';
+    if (copy.visibility === 'private' || copy.is_private) copy.is_public = false;
+    if (!copy.content_format) copy.content_format = 'quiz';
     if (!copy.pin) copy.pin = this.generatePin();
     if (!copy.theme || copy.theme === 'cyberpunk') copy.theme = 'white';
     return copy;
+  }
+
+  ensureMeihuaPresets() {
+    try {
+      const all = this.getAllProjects();
+      let hasChanges = false;
+      const existingIds = new Set(all.map(p => p.id));
+      
+      if (!existingIds.has(SKELETON_PROJECT.id)) {
+        all.push(this.normalizeProjectMeta(SKELETON_PROJECT));
+        existingIds.add(SKELETON_PROJECT.id);
+        hasChanges = true;
+      }
+      
+      if (typeof generateMeihuaPresets === 'function') {
+        const meihuaList = generateMeihuaPresets();
+        for (const m of meihuaList) {
+          if (!existingIds.has(m.id)) {
+            all.push(this.normalizeProjectMeta(m));
+            existingIds.add(m.id);
+            hasChanges = true;
+          }
+        }
+      }
+      
+      if (hasChanges) {
+        localStorage.setItem('lotus_projects', JSON.stringify(all));
+      }
+    } catch (e) {
+      console.warn('ensureMeihuaPresets error:', e);
+    }
   }
 
   async initStorage() {
@@ -443,7 +708,7 @@ class LocalDatabase {
         currentTeachers = JSON.parse(existingTeachersRaw || '[]');
       } catch (e) {}
       const oldMockIds = ['t-1', 't-2', 't-3', 't-4', 't-5', 't-6', 't-7', 't-8', 't-9', 't-10'];
-      const customTeachers = currentTeachers.filter(t => !oldMockIds.includes(t.id) && t.id !== 't-demo');
+      const customTeachers = currentTeachers.filter(t => !oldMockIds.includes(t.id) && t.id !== 't-demo' && t.id !== 't-meihua');
       const finalTeachers = [...DEFAULT_TEACHERS, ...customTeachers];
       localStorage.setItem('lotus_teachers', JSON.stringify(finalTeachers));
     }
@@ -456,14 +721,15 @@ class LocalDatabase {
         currentProjects = JSON.parse(existingProjectsRaw || '[]');
       } catch (e) {}
       const oldMockTeacherIds = ['t-1', 't-2', 't-3', 't-4', 't-5', 't-6', 't-7', 't-8', 't-9', 't-10'];
-      const defaultIds = INITIAL_PROJECTS.map(p => p.id);
+      const allPresets = [...INITIAL_PROJECTS, SKELETON_PROJECT, ...(typeof generateMeihuaPresets === 'function' ? generateMeihuaPresets() : [])];
+      const defaultIds = allPresets.map(p => p.id);
       // Cleanly remove all old mock teacher projects to prevent unwanted games from cluttering community
       const userProjects = currentProjects.filter(p =>
         !defaultIds.includes(p.id) &&
         !p.id.startsWith('proj-demo-old') &&
         !oldMockTeacherIds.includes(p.teacher_id)
       );
-      const mergedProjects = [...INITIAL_PROJECTS, ...userProjects].map(p => this.normalizeProjectMeta(p));
+      const mergedProjects = [...allPresets, ...userProjects].map(p => this.normalizeProjectMeta(p));
       localStorage.setItem('lotus_projects', JSON.stringify(mergedProjects));
       localStorage.setItem('lotus_seeded_project_ids', JSON.stringify(defaultIds));
       localStorage.setItem('lotus_seed_version', LOTUS_SEED_VERSION);
@@ -880,16 +1146,22 @@ class LocalDatabase {
   getCommunityProjects(filters = {}) {
     const { level = 'all', subject = 'all', language = 'all', search = '' } = filters || {};
     const q = (search || '').trim().toLowerCase();
+
+    // Ensure Meihua & Skeleton presets are loaded
+    if (typeof this.ensureMeihuaPresets === 'function') {
+      this.ensureMeihuaPresets();
+    }
+
     const teachersMap = new Map(this.getTeachers().map(t => [t.id, t]));
 
     return this.getAllProjects()
-      .filter(p => !p.is_deleted && p.is_public !== false)
+      .filter(p => !p.is_deleted && p.is_public !== false && p.visibility !== 'private' && !p.is_private)
       .map(p => {
         const owner = teachersMap.get(p.teacher_id);
         return {
           ...p,
-          teacher_name: owner ? owner.name : 'LotusWall Teacher',
-          teacher_school: owner ? owner.school : ''
+          teacher_name: owner ? owner.name : 'Guru Cinta Kasih',
+          teacher_school: owner ? owner.school : 'Sekolah Cinta Kasih Tzu Chi'
         };
       })
       .filter(p => {
@@ -897,7 +1169,7 @@ class LocalDatabase {
         if (subject && subject !== 'all' && (p.subject || '') !== subject) return false;
         if (language && language !== 'all' && (p.language || 'id') !== language) return false;
         if (q) {
-          const hay = `${p.title} ${p.subject} ${p.teacher_name} ${p.level} ${p.template_type}`.toLowerCase();
+          const hay = `${p.title} ${p.subject} ${p.teacher_name} ${p.level} ${p.template_type} ${p.pin}`.toLowerCase();
           if (!hay.includes(q)) return false;
         }
         return true;

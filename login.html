@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masuk Portal — 大愛學海 DaAi Learning Hub | Sekolah Cinta Kasih Tzu Chi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="games/common/ui-spritesheet.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+
+  <style>
+    :root {
+      --tc-primary: #1E5E3A;
+      --tc-emerald: #2C6E49;
+      --tc-light: #EAF5ED;
+      --tc-dark: #0D2B1B;
+      --tc-gold: #D97706;
+    }
+    * {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    }
+    .tc-gradient {
+      background: linear-gradient(135deg, #1E5E3A 0%, #2C6E49 50%, #174d30 100%);
+    }
+    .custom-shadow {
+      box-shadow: 0 10px 30px -5px rgba(30, 94, 58, 0.12), 0 4px 12px -2px rgba(30, 94, 58, 0.08);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#F4F7F5] text-[#14261C] flex flex-col justify-between selection:bg-[#1E5E3A] selection:text-white">
+
+  <!-- Header Navigation -->
+  <header class="bg-white/95 backdrop-blur-md border-b border-[#D5E9DC] sticky top-0 z-40 shadow-xs">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+      <!-- Logo Branding -->
+      <a href="index.html" class="flex items-center gap-3 group text-decoration-none">
+        <div class="w-10 h-10 rounded-xl tc-gradient flex items-center justify-center text-white shadow-md shadow-emerald-900/20 group-hover:scale-105 transition-transform">
+          <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C10.5 4 8 7 8 10c0 2.2 1.8 4 4 4s4-1.8 4-4c0-3-2.5-6-4-8zm-5 9c-1.5 0-3 1.2-3 2.7 0 2.3 2.7 4.8 5 6.3-.5-1.5-.7-3.1-.7-4.7 0-1.8-.6-3.3-1.3-4.3zm10 0c-.7 1-1.3 2.5-1.3 4.3 0 1.6-.2 3.2-.7 4.7 2.3-1.5 5-4 5-6.3 0-1.5-1.5-2.7-3-2.7zM12 15c-1.8 0-3.4.8-4.5 2 1.3 1.5 2.9 2.7 4.5 3.5 1.6-.8 3.2-2 4.5-3.5-1.1-1.2-2.7-2-4.5-2z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-base sm:text-lg font-extrabold tracking-tight text-[#0D2B1B]">大愛學海</span>
+            <span class="text-xs px-2 py-0.5 rounded-full font-bold bg-[#EAF5ED] text-[#1E5E3A] border border-[#C2E4CD]">DaAi Hub</span>
+          </div>
+          <p class="text-[11px] font-semibold text-[#4A725A] tracking-wide">Sekolah Cinta Kasih Tzu Chi</p>
+        </div>
+      </a>
+
+      <!-- Quick Action Right -->
+      <div class="flex items-center gap-3">
+        <span class="hidden sm:inline text-xs font-semibold text-[#5A6E62]">Belum punya akun?</span>
+        <a href="register.html" class="px-3.5 py-1.5 rounded-lg text-xs font-bold tc-gradient text-white hover:opacity-95 transition-all flex items-center gap-1.5 shadow-2xs">
+          <span>Daftar Akun</span>
+          <span>➔</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Login Section -->
+  <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12 flex flex-col items-center justify-center">
+
+    <!-- Hero Header Title -->
+    <div class="text-center max-w-md mx-auto mb-6 space-y-1.5">
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EAF5ED] border border-[#BCE1C9] text-xs font-bold text-[#1E5E3A]">
+        <span>🔐</span>
+        <span>Masuk Portal Terpadu</span>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-black text-[#0D2B1B] tracking-tight">
+        Selamat Datang Kembali
+      </h1>
+      <p class="text-xs sm:text-sm text-[#465E50]">
+        Silakan masuk sesuai peran Anda untuk membuka dashboard edukasi.
+      </p>
+    </div>
+
+    <!-- Main Container -->
+    <div class="w-full max-w-xl bg-white rounded-3xl border border-[#D5E9DC] p-6 sm:p-9 custom-shadow space-y-6">
+
+      <!-- Role Selector Tabs -->
+      <div>
+        <div class="flex rounded-2xl bg-[#EAF5ED] p-1.5 border border-[#CDE3D5]">
+          <button type="button" id="tab-login-guru" onclick="switchLoginRole('guru')"
+            class="flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition-all cursor-pointer bg-white text-[#1E5E3A] shadow-xs">
+            <span>👨‍🏫</span>
+            <span>Masuk Sebagai Guru</span>
+          </button>
+          <button type="button" id="tab-login-murid" onclick="switchLoginRole('murid')"
+            class="flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer text-[#4A725A] hover:text-[#0D2B1B]">
+            <span>🎓</span>
+            <span>Masuk Sebagai Murid</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Info / Welcome / Error Alert Box -->
+      <div id="login-alert" class="hidden p-3.5 rounded-xl text-xs font-semibold flex items-start gap-2.5">
+        <span id="login-alert-icon" class="text-base">⚠️</span>
+        <div class="flex-1" id="login-alert-text"></div>
+      </div>
+
+      <!-- Login Form -->
+      <form id="form-login" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+        
+        <!-- Identifier Input (Email / Username for Guru, NISN / Email for Murid) -->
+        <div>
+          <label for="login-identifier" id="lbl-identifier" class="block text-xs font-bold text-[#233A2D] mb-1.5">
+            Email, Username, atau NIP Guru <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+            <input type="text" id="login-identifier" required
+              placeholder="Contoh: guru@cintakasih.sch.id atau demo"
+              class="w-full px-4 py-2.5 rounded-xl border border-[#CDE3D5] bg-[#FBFDFB] text-xs sm:text-sm text-[#0D2B1B] font-medium focus:outline-none focus:border-[#1E5E3A] focus:ring-2 focus:ring-[#1E5E3A]/20 transition-all">
+          </div>
+        </div>
+
+        <!-- Password Input -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label for="login-password" class="block text-xs font-bold text-[#233A2D]">
+              Kata Sandi <span class="text-red-500">*</span>
+            </label>
+            <a href="javascript:void(0)" onclick="openForgotPasswordDialog()" class="text-[11px] font-bold text-[#1E5E3A] hover:underline">
+              Lupa sandi?
+            </a>
+          </div>
+          <div class="relative">
+            <input type="password" id="login-password" required placeholder="Masukkan kata sandi"
+              class="w-full px-4 py-2.5 pr-10 rounded-xl border border-[#CDE3D5] bg-[#FBFDFB] text-xs sm:text-sm text-[#0D2B1B] font-medium focus:outline-none focus:border-[#1E5E3A] focus:ring-2 focus:ring-[#1E5E3A]/20 transition-all">
+            <button type="button" onclick="togglePasswordView()" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#637C6E] hover:text-[#1E5E3A] p-1 cursor-pointer">
+              <span id="eye-icon">👁️</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Remember Me Checkbox -->
+        <div class="flex items-center justify-between pt-1">
+          <label class="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#465E50]">
+            <input type="checkbox" id="login-remember" checked class="w-4 h-4 rounded text-[#1E5E3A] accent-[#1E5E3A]">
+            <span>Ingat saya di perangkat ini</span>
+          </label>
+          <span id="target-dest-badge" class="text-[11px] font-bold px-2 py-0.5 rounded bg-[#EAF5ED] text-[#1E5E3A] border border-[#C2E4CD]">
+            ➔ teacher-dashboard.html
+          </span>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="btn-submit-login"
+          class="w-full py-3.5 px-6 rounded-xl tc-gradient hover:opacity-95 text-white font-extrabold text-sm sm:text-base shadow-md shadow-emerald-900/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer">
+          <span id="btn-login-label">Masuk ke Dashboard Guru</span>
+          <span>➔</span>
+        </button>
+      </form>
+
+      <!-- ============================================================== -->
+      <!-- QUICK DEMO ACCOUNTS FOR INSTANT TESTING -->
+      <!-- ============================================================== -->
+      <div class="border-t border-[#E8F1EC] pt-5 space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-extrabold uppercase tracking-wider text-[#355342]">
+            ⚡ Akun Demo Instan (Sekali Klik)
+          </span>
+          <span class="text-[10px] text-[#5A6E62] bg-[#F4F7F5] px-2 py-0.5 rounded-full font-medium">Uji Coba Cepat</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <!-- Demo 1: Guru Demo -->
+          <button type="button" onclick="loginDemoTeacher()"
+            class="p-3 rounded-xl border border-[#CDE3D5] hover:border-[#1E5E3A] bg-[#F9FCFA] hover:bg-[#EAF5ED] text-left transition-all cursor-pointer group shadow-2xs">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-base group-hover:scale-110 transition-transform">👨‍🏫</span>
+              <span class="text-xs font-extrabold text-[#0D2B1B]">Guru Demo</span>
+            </div>
+            <p class="text-[10px] text-[#4A725A] font-semibold">IPA & Umum</p>
+            <p class="text-[9px] text-[#7A8E82] font-mono mt-0.5 truncate">demo@lotuswall.com</p>
+          </button>
+
+          <!-- Demo 2: Murid SD (Kenjiro) -->
+          <button type="button" onclick="loginDemoStudent('Kenjiro Tan')"
+            class="p-3 rounded-xl border border-[#CDE3D5] hover:border-[#1E5E3A] bg-[#F9FCFA] hover:bg-[#EAF5ED] text-left transition-all cursor-pointer group shadow-2xs">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-base group-hover:scale-110 transition-transform">🎓</span>
+              <span class="text-xs font-extrabold text-[#0D2B1B]">Kenjiro Tan</span>
+            </div>
+            <p class="text-[10px] text-[#4A725A] font-semibold">Murid Kelas 4-B</p>
+            <p class="text-[9px] text-[#7A8E82] font-mono mt-0.5 truncate">NISN: 50239101</p>
+          </button>
+
+          <!-- Demo 3: Murid Mandarin (Mei Ling) -->
+          <button type="button" onclick="loginDemoStudent('Mei Ling Wijaya')"
+            class="p-3 rounded-xl border border-[#CDE3D5] hover:border-[#1E5E3A] bg-[#F9FCFA] hover:bg-[#EAF5ED] text-left transition-all cursor-pointer group shadow-2xs">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-base group-hover:scale-110 transition-transform">🌸</span>
+              <span class="text-xs font-extrabold text-[#0D2B1B]">Mei Ling W.</span>
+            </div>
+            <p class="text-[10px] text-[#4A725A] font-semibold">Murid Kelas 5-A</p>
+            <p class="text-[9px] text-[#7A8E82] font-mono mt-0.5 truncate">NISN: 50239102</p>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Student PIN Join Banner -->
+      <div class="rounded-2xl bg-[#0D2B1B] text-white p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md">
+        <div class="text-center sm:text-left">
+          <div class="text-xs font-extrabold text-[#BCE1C9] flex items-center justify-center sm:justify-start gap-1.5">
+            <span>🎮</span>
+            <span>Punya Game PIN dari Guru?</span>
+          </div>
+          <p class="text-[11px] text-[#97B8A3] mt-0.5">Murid dapat langsung bermain tanpa perlu login akun.</p>
+        </div>
+        <form onsubmit="handleQuickPin(event)" class="flex items-center gap-1.5 w-full sm:w-auto">
+          <input type="text" id="quick-pin-input" maxlength="6" placeholder="PIN 6-digit"
+            class="w-28 px-3 py-1.5 rounded-lg bg-[#1E3A2A] border border-[#2C5E43] text-center font-mono font-black text-sm text-white placeholder-[#68947A] focus:outline-none focus:border-[#4ADE80]">
+          <button type="submit" class="px-3 py-1.5 rounded-lg bg-[#2C6E49] hover:bg-[#1E5E3A] text-white font-bold text-xs cursor-pointer transition-colors shrink-0">
+            Mainkan ➔
+          </button>
+        </form>
+      </div>
+
+      <!-- Bottom Card: Link to Register -->
+      <div class="border-t border-[#E8F1EC] pt-4 text-center">
+        <p class="text-xs text-[#5A6E62]">
+          Belum memiliki akun resmi DaAi Hub?
+          <a href="register.html" class="font-extrabold text-[#1E5E3A] hover:underline hover:text-[#2C6E49] ml-1">
+            Daftar Akun Baru di Sini ➔
+          </a>
+        </p>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-[#D5E9DC] py-6 px-4 text-center">
+    <div class="max-w-4xl mx-auto space-y-2">
+      <p class="text-xs font-bold text-[#1E5E3A] tracking-wider uppercase">
+        大愛無國界 • 教育啟心田
+      </p>
+      <p class="text-[11px] text-[#637C6E]">
+        Sekolah Cinta Kasih Tzu Chi — Cengkareng, Jakarta Barat • LotusWall Educational Learning Hub
+      </p>
+    </div>
+  </footer>
+
+  <script src="games/common/db-local.js"></script>
+  <script>
+    let currentRole = 'guru';
+
+    function switchLoginRole(role) {
+      currentRole = role;
+      const tabGuru = document.getElementById('tab-login-guru');
+      const tabMurid = document.getElementById('tab-login-murid');
+      const lblIdentifier = document.getElementById('lbl-identifier');
+      const inputIdentifier = document.getElementById('login-identifier');
+      const btnLabel = document.getElementById('btn-login-label');
+      const targetBadge = document.getElementById('target-dest-badge');
+      clearAlert();
+
+      if (role === 'guru') {
+        tabGuru.className = 'flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition-all cursor-pointer bg-white text-[#1E5E3A] shadow-xs';
+        tabMurid.className = 'flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer text-[#4A725A] hover:text-[#0D2B1B]';
+        lblIdentifier.innerHTML = 'Email, Username, atau NIP Guru <span class="text-red-500">*</span>';
+        inputIdentifier.placeholder = 'Contoh: guru@cintakasih.sch.id atau demo';
+        btnLabel.textContent = 'Masuk ke Dashboard Guru';
+        targetBadge.textContent = '➔ teacher-dashboard.html';
+      } else {
+        tabMurid.className = 'flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition-all cursor-pointer bg-white text-[#1E5E3A] shadow-xs';
+        tabGuru.className = 'flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer text-[#4A725A] hover:text-[#0D2B1B]';
+        lblIdentifier.innerHTML = 'Nomor Induk / NISN atau Email Murid <span class="text-red-500">*</span>';
+        inputIdentifier.placeholder = 'Contoh: 50239101 atau kenjiro@cintakasih.sch.id';
+        btnLabel.textContent = 'Masuk ke Dashboard Murid';
+        targetBadge.textContent = '➔ student-dashboard.html';
+      }
+    }
+
+    function togglePasswordView() {
+      const input = document.getElementById('login-password');
+      const icon = document.getElementById('eye-icon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        icon.textContent = '👁️';
+      }
+    }
+
+    function showAlert(type, message) {
+      const box = document.getElementById('login-alert');
+      const icon = document.getElementById('login-alert-icon');
+      const text = document.getElementById('login-alert-text');
+      box.classList.remove('hidden');
+      text.textContent = message;
+
+      if (type === 'error') {
+        box.className = 'p-3.5 rounded-xl text-xs font-semibold flex items-start gap-2.5 bg-red-50 border border-red-200 text-red-800';
+        icon.textContent = '⚠️';
+      } else if (type === 'success') {
+        box.className = 'p-3.5 rounded-xl text-xs font-semibold flex items-start gap-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800';
+        icon.textContent = '✅';
+      } else {
+        box.className = 'p-3.5 rounded-xl text-xs font-semibold flex items-start gap-2.5 bg-blue-50 border border-blue-200 text-blue-800';
+        icon.textContent = 'ℹ️';
+      }
+    }
+
+    function clearAlert() {
+      const box = document.getElementById('login-alert');
+      if (box) box.classList.add('hidden');
+    }
+
+    async function handleLoginSubmit(e) {
+      e.preventDefault();
+      clearAlert();
+
+      const identifier = document.getElementById('login-identifier').value.trim();
+      const password = document.getElementById('login-password').value;
+      const remember = document.getElementById('login-remember').checked;
+      const submitBtn = document.getElementById('btn-submit-login');
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>Memverifikasi akun...</span>';
+
+      try {
+        if (currentRole === 'guru') {
+          // Authenticate Teacher
+          const res = await LotusDB.authenticateTeacherAsync(identifier, password, remember);
+          if (res.success) {
+            showAlert('success', 'Berhasil masuk! Mengarahkan ke Dashboard Guru...');
+            setTimeout(() => {
+              window.location.href = 'teacher-dashboard.html';
+            }, 600);
+          } else {
+            // Check if perhaps user is actually a student trying to login under teacher tab
+            const studentCheck = LotusDB.authenticateStudent(identifier, password, false);
+            if (studentCheck.success) {
+              showAlert('error', 'Akun ini terdaftar sebagai Murid. Silakan beralih ke tab "Masuk Sebagai Murid".');
+              switchLoginRole('murid');
+              document.getElementById('login-identifier').value = identifier;
+              document.getElementById('login-password').value = password;
+            } else {
+              showAlert('error', res.message || 'Email atau kata sandi guru salah. (Demo password: demo)');
+            }
+          }
+        } else {
+          // Authenticate Student
+          const res = await LotusDB.authenticateStudentAsync(identifier, password, remember);
+          if (res.success) {
+            showAlert('success', `Selamat datang, ${res.student.name}! Membuka Dashboard Murid...`);
+            setTimeout(() => {
+              window.location.href = 'student-dashboard.html';
+            }, 600);
+          } else {
+            // Check if perhaps user is a teacher
+            const teacherCheck = LotusDB.authenticateTeacher(identifier, password, false);
+            if (teacherCheck.success) {
+              showAlert('error', 'Akun ini terdaftar sebagai Guru. Silakan beralih ke tab "Masuk Sebagai Guru".');
+              switchLoginRole('guru');
+              document.getElementById('login-identifier').value = identifier;
+              document.getElementById('login-password').value = password;
+            } else {
+              showAlert('error', res.message || 'NISN atau kata sandi murid salah. (Demo password: demo)');
+            }
+          }
+        }
+      } catch (err) {
+        showAlert('error', 'Terjadi kesalahan sistem saat masuk: ' + (err.message || err));
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<span id="btn-login-label">${currentRole === 'guru' ? 'Masuk ke Dashboard Guru' : 'Masuk ke Dashboard Murid'}</span><span>➔</span>`;
+      }
+    }
+
+    // Quick Demo Actions
+    function loginDemoTeacher() {
+      switchLoginRole('guru');
+      const teachers = LotusDB.getTeachers();
+      const demoTeacher = teachers.find(t => t.id === 't-demo') || teachers[0];
+      LotusDB.setCurrentTeacher(demoTeacher, true);
+      document.getElementById('login-identifier').value = demoTeacher.email || 'demo@lotuswall.com';
+      document.getElementById('login-password').value = 'demo';
+      showAlert('success', `Berhasil! Masuk sebagai ${demoTeacher.name}. Mengarahkan ke teacher-dashboard.html...`);
+      setTimeout(() => {
+        window.location.href = 'teacher-dashboard.html';
+      }, 500);
+    }
+
+    function loginDemoStudent(studentName) {
+      switchLoginRole('murid');
+      const students = LotusDB.getStudents();
+      const demoStudent = students.find(s => s.name === studentName) || students[0];
+      LotusDB.setCurrentStudent(demoStudent, true);
+      document.getElementById('login-identifier').value = demoStudent.nisn || demoStudent.email;
+      document.getElementById('login-password').value = 'demo';
+      showAlert('success', `Berhasil! Masuk sebagai ${demoStudent.name} (Kelas ${demoStudent.class}). Mengarahkan ke student-dashboard.html...`);
+      setTimeout(() => {
+        window.location.href = 'student-dashboard.html';
+      }, 500);
+    }
+
+    function handleQuickPin(e) {
+      e.preventDefault();
+      const pin = document.getElementById('quick-pin-input').value.trim();
+      if (!pin) return;
+      const proj = LotusDB.findProjectByPin(pin);
+      if (proj) {
+        window.location.href = `community-play.html?id=${proj.id}`;
+      } else {
+        alert('PIN Game tidak ditemukan. Silakan periksa 6-digit PIN yang diberikan oleh guru.');
+      }
+    }
+
+    function openForgotPasswordDialog() {
+      alert('Untuk menyetel ulang kata sandi, hubungi admin kurikulum sekolah atau guru pembimbing Anda di Sekolah Cinta Kasih Tzu Chi.');
+    }
+
+    // On Load: Check URL parameters
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const registered = params.get('registered');
+      const roleParam = params.get('role');
+      const identifierParam = params.get('identifier');
+
+      if (roleParam === 'murid' || roleParam === 'student') {
+        switchLoginRole('murid');
+      } else {
+        switchLoginRole('guru');
+      }
+
+      if (identifierParam) {
+        document.getElementById('login-identifier').value = identifierParam;
+      }
+
+      if (registered === 'true') {
+        showAlert('success', 'Akun Anda baru saja berhasil didaftarkan! Silakan masukkan kata sandi untuk masuk.');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Murid — 大愛學海 DaAi Learning Hub | Sekolah Cinta Kasih Tzu Chi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="games/common/ui-spritesheet.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --tc-primary: #1E5E3A;
+      --tc-emerald: #2C6E49;
+      --tc-light: #EAF5ED;
+      --tc-dark: #0D2B1B;
+      --tc-gold: #D97706;
+      --tc-gold-light: #FEF3C7;
+    }
+    * {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    }
+    .font-chinese {
+      font-family: 'Ma Shan Zheng', 'KaiTi', 'SimSun', serif;
+    }
+    .tc-gradient {
+      background: linear-gradient(135deg, #1E5E3A 0%, #2C6E49 60%, #174d30 100%);
+    }
+    .tc-hero-pattern {
+      background-color: #1E5E3A;
+      background-image: radial-gradient(#2C6E49 1px, transparent 1px), radial-gradient(#2C6E49 1px, #1E5E3A 1px);
+      background-size: 40px 40px;
+      background-position: 0 0, 20px 20px;
+    }
+    .custom-card-shadow {
+      box-shadow: 0 4px 20px -2px rgba(30, 94, 58, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+    }
+    .tab-active {
+      background-color: #1E5E3A;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(30, 94, 58, 0.25);
+    }
+    .tab-inactive {
+      background-color: transparent;
+      color: #4A725A;
+    }
+    .tab-inactive:hover {
+      background-color: #EAF5ED;
+      color: #0D2B1B;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#F4F7F5] text-[#14261C] flex flex-col justify-between selection:bg-[#1E5E3A] selection:text-white">
+
+  <!-- Top Navigation Header -->
+  <header class="bg-white/95 backdrop-blur-md border-b border-[#D5E9DC] sticky top-0 z-40 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo -->
+      <a href="index.html" class="flex items-center gap-3 text-decoration-none group">
+        <div class="w-10 h-10 rounded-xl tc-gradient flex items-center justify-center text-white shadow-md shadow-emerald-900/20 group-hover:scale-105 transition-transform">
+          <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C10.5 4 8 7 8 10c0 2.2 1.8 4 4 4s4-1.8 4-4c0-3-2.5-6-4-8zm-5 9c-1.5 0-3 1.2-3 2.7 0 2.3 2.7 4.8 5 6.3-.5-1.5-.7-3.1-.7-4.7 0-1.8-.6-3.3-1.3-4.3zm10 0c-.7 1-1.3 2.5-1.3 4.3 0 1.6-.2 3.2-.7 4.7 2.3-1.5 5-4 5-6.3 0-1.5-1.5-2.7-3-2.7zM12 15c-1.8 0-3.4.8-4.5 2 1.3 1.5 2.9 2.7 4.5 3.5 1.6-.8 3.2-2 4.5-3.5-1.1-1.2-2.7-2-4.5-2z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-base sm:text-lg font-black tracking-tight text-[#0D2B1B]">大愛學海</span>
+            <span class="text-xs px-2 py-0.5 rounded-full font-bold bg-[#EAF5ED] text-[#1E5E3A] border border-[#C2E4CD]">Portal Murid</span>
+          </div>
+          <p class="text-[11px] font-semibold text-[#4A725A] tracking-wide">Sekolah Cinta Kasih Tzu Chi</p>
+        </div>
+      </a>
+
+      <!-- Student Profile & Actions -->
+      <div class="flex items-center gap-3">
+        <!-- Switch Account Dropdown / Info -->
+        <div class="flex items-center gap-3 bg-[#EAF5ED] border border-[#CDE3D5] rounded-xl px-3 py-1.5">
+          <div class="w-8 h-8 rounded-lg tc-gradient text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-2xs" id="nav-avatar-initials">
+            KT
+          </div>
+          <div class="hidden sm:block text-left">
+            <div class="text-xs font-bold text-[#0D2B1B] truncate max-w-[140px]" id="nav-student-name">Kenjiro Tan</div>
+            <div class="text-[10px] font-semibold text-[#356345]" id="nav-student-class">Kelas 4-B • SD</div>
+          </div>
+          <button type="button" onclick="logoutStudent()" title="Keluar / Ganti Akun"
+            class="p-1 rounded-lg hover:bg-white text-[#4A725A] hover:text-red-600 transition-colors cursor-pointer text-xs flex items-center gap-1 font-bold">
+            <span class="hidden md:inline">Keluar</span>
+            <span>🚪</span>
+          </button>
+        </div>
+
+        <!-- Back to Home -->
+        <a href="index.html" class="p-2 rounded-xl bg-white border border-[#D5E9DC] hover:bg-[#EAF5ED] text-[#1E5E3A] transition-colors" title="Ke Beranda Utama">
+          🏠
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+
+    <!-- ============================================================== -->
+    <!-- 1. STUDENT PROFILE HERO BANNER -->
+    <!-- ============================================================== -->
+    <div class="relative overflow-hidden rounded-3xl tc-gradient text-white p-6 sm:p-8 shadow-xl">
+      <!-- Decorative Chinese Character Backdrop -->
+      <div class="absolute -right-6 -bottom-8 select-none pointer-events-none opacity-10 font-chinese text-9xl text-white">
+        慈悲喜捨
+      </div>
+
+      <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        
+        <!-- Left: Student Info & Greeting -->
+        <div class="flex items-start sm:items-center gap-4 sm:gap-5">
+          <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white text-[#1E5E3A] border-4 border-white/20 font-black text-2xl sm:text-3xl flex items-center justify-center shadow-lg shrink-0" id="hero-avatar">
+            KT
+          </div>
+          <div class="space-y-1.5">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-white/20 border border-white/30 text-white backdrop-blur-xs">
+                🎓 Murid Aktif
+              </span>
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-400/20 border border-amber-300/40 text-amber-200" id="hero-badge-level">
+                Jenjang SD
+              </span>
+              <span class="text-xs text-emerald-100 font-mono" id="hero-badge-nisn">
+                NISN: 50239101
+              </span>
+            </div>
+            <h1 class="text-xl sm:text-3xl font-black text-white tracking-tight" id="hero-student-greeting">
+              Halo, Kenjiro Tan! 🌟
+            </h1>
+            <p class="text-xs sm:text-sm text-emerald-100 font-medium">
+              Selamat datang di DaAi Learning Hub. Semangat belajar dan raih prestasi terbaikmu hari ini!
+            </p>
+          </div>
+        </div>
+
+        <!-- Right: Summary Stats Pills -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 shrink-0">
+          <!-- Stat 1: Tugas Aktif -->
+          <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-3.5 text-center">
+            <div class="text-[10px] uppercase font-bold tracking-wider text-emerald-200">Tugas Aktif</div>
+            <div class="text-xl sm:text-2xl font-black text-white mt-0.5" id="stat-active-count">0</div>
+            <div class="text-[10px] text-emerald-200/80">Menunggu dikerjakan</div>
+          </div>
+
+          <!-- Stat 2: Selesai -->
+          <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-3.5 text-center">
+            <div class="text-[10px] uppercase font-bold tracking-wider text-emerald-200">Tugas Selesai</div>
+            <div class="text-xl sm:text-2xl font-black text-white mt-0.5" id="stat-completed-count">0</div>
+            <div class="text-[10px] text-emerald-200/80">Tercatat di sistem</div>
+          </div>
+
+          <!-- Stat 3: Rata-Rata Nilai -->
+          <div class="col-span-2 sm:col-span-1 bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-3.5 text-center">
+            <div class="text-[10px] uppercase font-bold tracking-wider text-emerald-200">Rata-Rata Nilai</div>
+            <div class="text-xl sm:text-2xl font-black text-amber-300 mt-0.5" id="stat-avg-score">0%</div>
+            <div class="text-[10px] text-emerald-200/80" id="stat-stars-label">⭐ Prestasi Gemilang</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- 2. QUICK JOIN BY 6-DIGIT GAME PIN BAR -->
+    <!-- ============================================================== -->
+    <div class="bg-white rounded-2xl border border-[#D5E9DC] p-5 sm:p-6 custom-card-shadow flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5 text-center sm:text-left">
+        <div class="w-12 h-12 rounded-2xl bg-[#EAF5ED] border border-[#BCE1C9] text-[#1E5E3A] flex items-center justify-center text-2xl shrink-0 shadow-2xs">
+          🔑
+        </div>
+        <div>
+          <h2 class="text-sm sm:text-base font-extrabold text-[#0D2B1B]">
+            Punya 6-Digit Game PIN dari Guru?
+          </h2>
+          <p class="text-xs text-[#5A6E62] mt-0.5">
+            Masukkan kode PIN untuk langsung masuk dan mengerjakan kuis atau game interaktif di kelas.
+          </p>
+        </div>
+      </div>
+
+      <!-- PIN Input Form -->
+      <form onsubmit="handlePinJoin(event)" class="w-full md:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+        <div class="relative">
+          <input type="text" id="input-game-pin" maxlength="6" pattern="[0-9]{6}" required placeholder="Contoh: 100101"
+            class="w-full sm:w-44 px-4 py-2.5 rounded-xl border-2 border-[#CDE3D5] focus:border-[#1E5E3A] focus:outline-none text-center font-mono font-extrabold text-base tracking-widest text-[#0D2B1B] bg-[#FBFDFB] transition-all">
+        </div>
+        <button type="submit" id="btn-pin-join"
+          class="px-5 py-2.5 rounded-xl tc-gradient hover:opacity-95 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-emerald-900/15 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0">
+          <span>Gabung Sekarang</span>
+          <span>➔</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- PIN Alert Box (Inline) -->
+    <div id="pin-alert" class="hidden p-3 rounded-xl text-xs font-semibold flex items-center gap-2"></div>
+
+    <!-- ============================================================== -->
+    <!-- 3. TABS NAVIGATION -->
+    <!-- ============================================================== -->
+    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#D5E9DC] pb-4">
+      
+      <!-- 3 Primary Navigation Buttons -->
+      <div class="flex items-center gap-2 p-1.5 rounded-2xl bg-white border border-[#D5E9DC] shadow-xs">
+        <!-- Tab 1: Tugas Aktif -->
+        <button type="button" id="tab-btn-active" onclick="switchDashboardTab('active')"
+          class="tab-active px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-all cursor-pointer">
+          <span>📝</span>
+          <span>Tugas Aktif</span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white" id="badge-tab-active-count">0</span>
+        </button>
+
+        <!-- Tab 2: Riwayat Tugas Selesai -->
+        <button type="button" id="tab-btn-history" onclick="switchDashboardTab('history')"
+          class="tab-inactive px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer">
+          <span>📊</span>
+          <span>Riwayat Selesai</span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EAF5ED] text-[#1E5E3A]" id="badge-tab-history-count">0</span>
+        </button>
+
+        <!-- Tab 3: Ruang Belajar Mandiri -->
+        <button type="button" id="tab-btn-media" onclick="switchDashboardTab('media')"
+          class="tab-inactive px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer">
+          <span>🌸</span>
+          <span>Ruang Belajar Mandiri</span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">4 Media</span>
+        </button>
+      </div>
+
+      <!-- Quick Action / Refresh -->
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="refreshStudentData()"
+          class="px-3 py-1.5 rounded-xl border border-[#D5E9DC] bg-white hover:bg-[#EAF5ED] text-xs font-bold text-[#1E5E3A] flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs">
+          <span>🔄</span>
+          <span class="hidden sm:inline">Perbarui Data</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 1: TUGAS AKTIF (ACTIVE HOMEWORK) -->
+    <!-- ============================================================== -->
+    <section id="view-tab-active" class="space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base sm:text-lg font-black text-[#0D2B1B]">Daftar Tugas Pembelajaran Menanti</h2>
+          <p class="text-xs text-[#5A6E62]">Kerjakan penugasan yang diberikan oleh bapak/ibu guru sebelum batas waktu berakhir.</p>
+        </div>
+        <!-- Filter Subject -->
+        <div class="flex items-center gap-2">
+          <label for="filter-subject" class="text-xs font-bold text-[#355342] shrink-0">Mata Pelajaran:</label>
+          <select id="filter-subject" onchange="filterActiveAssignments()"
+            class="px-3 py-1.5 rounded-xl border border-[#CDE3D5] bg-white text-xs font-medium text-[#0D2B1B] focus:outline-none focus:border-[#1E5E3A]">
+            <option value="all">Semua Pelajaran</option>
+            <option value="IPA / Sains">IPA / Sains</option>
+            <option value="Bahasa Mandarin">Bahasa Mandarin</option>
+            <option value="Matematika">Matematika</option>
+            <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Active Assignments Grid Container -->
+      <div id="active-assignments-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 2: RIWAYAT TUGAS SELESAI (SUBMISSION HISTORY & REVIEW) -->
+    <!-- ============================================================== -->
+    <section id="view-tab-history" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base sm:text-lg font-black text-[#0D2B1B]">Riwayat Tugas & Nilai Pengumpulan</h2>
+          <p class="text-xs text-[#5A6E62]">Periksa skor evaluasi, durasi pengerjaan, serta tinjau kunci jawaban dan pembahasan.</p>
+        </div>
+      </div>
+
+      <!-- History Table Container -->
+      <div class="bg-white rounded-2xl border border-[#D5E9DC] overflow-hidden custom-card-shadow">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-[#EAF5ED] text-[#1E5E3A] font-extrabold uppercase text-[11px] border-b border-[#D5E9DC]">
+              <tr>
+                <th class="py-3 px-4">Judul Penugasan</th>
+                <th class="py-3 px-4">Mata Pelajaran</th>
+                <th class="py-3 px-4 text-center">Nilai Skor</th>
+                <th class="py-3 px-4">Waktu Submit</th>
+                <th class="py-3 px-4 text-center">Durasi</th>
+                <th class="py-3 px-4 text-right">Aksi & Pembahasan</th>
+              </tr>
+            </thead>
+            <tbody id="history-submissions-tbody" class="divide-y divide-[#EBF2ED] text-[#14261C]">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 3: RUANG BELAJAR MANDIRI (INTERACTIVE LEARNING MEDIA) -->
+    <!-- ============================================================== -->
+    <section id="view-tab-media" class="hidden space-y-6">
+      
+      <!-- Section Introduction -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-[11px] font-bold text-amber-800">
+            <span>✨</span>
+            <span>Akses Eksplorasi Bebas</span>
+          </div>
+          <h2 class="text-base sm:text-lg font-black text-[#0D2B1B] mt-1">Ruang Belajar Mandiri & Media Interaktif</h2>
+          <p class="text-xs text-[#5A6E62]">Eksplorasi simulator sains 3D skeleton tubuh, papan kaligrafi Hanzi, dan latihan kosakata Meihua tanpa batas waktu.</p>
+        </div>
+      </div>
+
+      <!-- 4 Prominent Media Ajar Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+        <!-- Card 1: Media Ajar 3D Skeleton (AI Hand Slicer & Motion Anatomy) -->
+        <div class="bg-white rounded-3xl border-2 border-[#D5E9DC] hover:border-[#1E5E3A] p-6 custom-card-shadow transition-all group flex flex-col justify-between gap-4">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9]">
+                🧬 Sains & Biologi
+              </span>
+              <span class="text-[11px] font-bold text-sky-700 bg-sky-50 border border-sky-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <span>📹</span>
+                <span>AI Motion Skeleton</span>
+              </span>
+            </div>
+
+            <div class="flex items-start gap-4 pt-1">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-800 text-white flex items-center justify-center text-3xl shrink-0 shadow-md group-hover:scale-105 transition-transform">
+                🦴
+              </div>
+              <div>
+                <h3 class="text-base font-black text-[#0D2B1B] group-hover:text-[#1E5E3A] transition-colors">
+                  Media Ajar 3D Skeleton & Motion Tracker
+                </h3>
+                <p class="text-xs text-[#4A725A] mt-1 leading-relaxed">
+                  Deteksi kerangka tubuh atas (upper body joints) secara real-time dengan kamera AI. Cocok untuk pembelajaran anatomi rangka manusia, sendi, dan koordinasi gerak fisik.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-1.5 pt-2">
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">MediaPipe Pose</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">Kerangka 3D Sendi</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">IFP Touch Ready</span>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-[#E8F1EC] flex items-center gap-2">
+            <a href="tools/human-skeleton-3d/index.html" target="_blank"
+              class="flex-1 py-2.5 px-4 rounded-xl tc-gradient hover:opacity-95 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-1.5">
+              <span>Buka 3D Human Skeleton</span>
+              <span>➔</span>
+            </a>
+            <a href="games/ai-slicer.html" target="_blank" title="Mode Kamera AI Motion"
+              class="py-2.5 px-3 rounded-xl bg-[#EAF5ED] hover:bg-[#1E5E3A] text-[#1E5E3A] hover:text-white font-bold text-xs transition-colors shrink-0">
+              📹 AI Motion
+            </a>
+          </div>
+        </div>
+
+        <!-- Card 2: Mandarin Drawing Board (Papan Tulis Kaligrafi Hanzi) -->
+        <div class="bg-white rounded-3xl border-2 border-[#D5E9DC] hover:border-[#1E5E3A] p-6 custom-card-shadow transition-all group flex flex-col justify-between gap-4">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9]">
+                🖌️ Budaya Humanis
+              </span>
+              <span class="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <span>田</span>
+                <span>Tian Zi Ge Grid</span>
+              </span>
+            </div>
+
+            <div class="flex items-start gap-4 pt-1">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-700 to-amber-900 text-white flex items-center justify-center text-3xl shrink-0 shadow-md group-hover:scale-105 transition-transform">
+                ✍️
+              </div>
+              <div>
+                <h3 class="text-base font-black text-[#0D2B1B] group-hover:text-[#1E5E3A] transition-colors">
+                  Mandarin Drawing Board (Papan Kaligrafi)
+                </h3>
+                <p class="text-xs text-[#4A725A] mt-1 leading-relaxed">
+                  Papan tulis digital responsif untuk melatih kaligrafi goresan Hanzi dengan panduan kotak Tian Zi Ge (田字格), variasi ketebalan kuas, dan warna tinta tradisional.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-1.5 pt-2">
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">Kuas Tinta Halus</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">Kisi Tian Zi Ge</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">Simpan Tulisan</span>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-[#E8F1EC] flex items-center gap-2">
+            <a href="tools/mandarin/drawing.html" target="_blank"
+              class="flex-1 py-2.5 px-4 rounded-xl tc-gradient hover:opacity-95 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-1.5">
+              <span>Buka Papan Kaligrafi</span>
+              <span>➔</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Card 3: Hanzi Lab (Laboratorium Urutan Goresan Karakter) -->
+        <div class="bg-white rounded-3xl border-2 border-[#D5E9DC] hover:border-[#1E5E3A] p-6 custom-card-shadow transition-all group flex flex-col justify-between gap-4">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9]">
+                📚 Kamus Karakter
+              </span>
+              <span class="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <span>⚡</span>
+                <span>HanziWriter Engine</span>
+              </span>
+            </div>
+
+            <div class="flex items-start gap-4 pt-1">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-800 to-green-950 text-white flex items-center justify-center text-3xl shrink-0 shadow-md group-hover:scale-105 transition-transform">
+                字
+              </div>
+              <div>
+                <h3 class="text-base font-black text-[#0D2B1B] group-hover:text-[#1E5E3A] transition-colors">
+                  Hanzi Lab (Laboratorium Urutan Goresan)
+                </h3>
+                <p class="text-xs text-[#4A725A] mt-1 leading-relaxed">
+                  Pelajari urutan goresan stroke-order (Bishun) ribuan karakter Hanzi dengan visualisasi animasi otomatis, latihan menulis terpandu, serta pengucapan Pinyin yang tepat.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-1.5 pt-2">
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">Animasi Bishun</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">Audio Pinyin</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">Kuis Goresan Mandiri</span>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-[#E8F1EC] flex items-center gap-2">
+            <a href="tools/mandarin/strokes.html" target="_blank"
+              class="flex-1 py-2.5 px-4 rounded-xl tc-gradient hover:opacity-95 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-1.5">
+              <span>Buka Hanzi Lab</span>
+              <span>➔</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Card 4: Meihua Practice (Latihan Kosakata Buku Meihua & AI Battle) -->
+        <div class="bg-white rounded-3xl border-2 border-[#D5E9DC] hover:border-[#1E5E3A] p-6 custom-card-shadow transition-all group flex flex-col justify-between gap-4">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9]">
+                🌸 Kurikulum Meihua
+              </span>
+              <span class="text-[11px] font-bold text-rose-800 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <span>⚔️</span>
+                <span>AI 2P Battle Mode</span>
+              </span>
+            </div>
+
+            <div class="flex items-start gap-4 pt-1">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-600 to-pink-800 text-white flex items-center justify-center text-3xl shrink-0 shadow-md group-hover:scale-105 transition-transform">
+                梅
+              </div>
+              <div>
+                <h3 class="text-base font-black text-[#0D2B1B] group-hover:text-[#1E5E3A] transition-colors">
+                  Meihua Practice & AI Brush Battle
+                </h3>
+                <p class="text-xs text-[#4A725A] mt-1 leading-relaxed">
+                  Kompilasi kosakata resmi dari Buku Meihua SD Kelas 1 hingga 6. Dilengkapi mode tantangan menulis Hanzi di udara dengan gesture jari kamera untuk melatih kecepatan.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-1.5 pt-2">
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">Buku Meihua 1-6</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">Lomba 2 Pemain</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">Air-Calligraphy AI</span>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-[#E8F1EC] flex items-center gap-2">
+            <a href="games/hanzi-battle.html" target="_blank"
+              class="flex-1 py-2.5 px-4 rounded-xl tc-gradient hover:opacity-95 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-1.5">
+              <span>Buka Meihua Practice</span>
+              <span>➔</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick Interactive Tzu Chi Hanzi Character Explorer Widget -->
+      <div class="bg-gradient-to-r from-[#EAF5ED] to-[#F1F8F4] rounded-3xl border border-[#BCE1C9] p-6 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 class="text-sm sm:text-base font-black text-[#0D2B1B] flex items-center gap-2">
+              <span>🪷</span>
+              <span>Kamus Karakter Nilai Luhur Tzu Chi (靜思語)</span>
+            </h3>
+            <p class="text-xs text-[#4A725A]">Klik karakter di bawah ini untuk melihat pinyin, arti budaya humanis, dan pelafalan.</p>
+          </div>
+          <span class="text-xs font-bold text-[#1E5E3A] bg-white px-3 py-1 rounded-full border border-[#C2E4CD] shadow-2xs">
+            Edukasi Budi Pekerti
+          </span>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 pt-2">
+          <!-- Char 1 -->
+          <div onclick="showCharDetails('愛', 'ài', 'Cinta Kasih Murni / Great Love', 'Memberi kehangatan dan kepedulian tanpa pamrih.')"
+            class="p-3 bg-white rounded-2xl border border-[#CDE3D5] hover:border-[#1E5E3A] hover:shadow-md cursor-pointer text-center transition-all group">
+            <div class="font-chinese text-3xl text-[#1E5E3A] group-hover:scale-110 transition-transform">愛</div>
+            <div class="text-[11px] font-bold text-[#0D2B1B] mt-1 font-mono">ài</div>
+            <div class="text-[10px] text-[#5A6E62] truncate">Cinta Kasih</div>
+          </div>
+
+          <!-- Char 2 -->
+          <div onclick="showCharDetails('慈', 'cí', 'Welas Asih / Compassion', 'Kebahagiaan sejati saat melihat orang lain terbebas dari penderitaan.')"
+            class="p-3 bg-white rounded-2xl border border-[#CDE3D5] hover:border-[#1E5E3A] hover:shadow-md cursor-pointer text-center transition-all group">
+            <div class="font-chinese text-3xl text-[#1E5E3A] group-hover:scale-110 transition-transform">慈</div>
+            <div class="text-[11px] font-bold text-[#0D2B1B] mt-1 font-mono">cí</div>
+            <div class="text-[10px] text-[#5A6E62] truncate">Welas Asih</div>
+          </div>
+
+          <!-- Char 3 -->
+          <div onclick="showCharDetails('悲', 'bēi', 'Empati Membantu sesama', 'Merasakan penderitaan orang lain dan segera mengulurkan tangan.')"
+            class="p-3 bg-white rounded-2xl border border-[#CDE3D5] hover:border-[#1E5E3A] hover:shadow-md cursor-pointer text-center transition-all group">
+            <div class="font-chinese text-3xl text-[#1E5E3A] group-hover:scale-110 transition-transform">悲</div>
+            <div class="text-[11px] font-bold text-[#0D2B1B] mt-1 font-mono">bēi</div>
+            <div class="text-[10px] text-[#5A6E62] truncate">Empati</div>
+          </div>
+
+          <!-- Char 4 -->
+          <div onclick="showCharDetails('喜', 'xǐ', 'Sukacita / Joy in Doing Good', 'Hati yang riang dan gembira karena melakukan perbuatan bajik.')"
+            class="p-3 bg-white rounded-2xl border border-[#CDE3D5] hover:border-[#1E5E3A] hover:shadow-md cursor-pointer text-center transition-all group">
+            <div class="font-chinese text-3xl text-[#1E5E3A] group-hover:scale-110 transition-transform">喜</div>
+            <div class="text-[11px] font-bold text-[#0D2B1B] mt-1 font-mono">xǐ</div>
+            <div class="text-[10px] text-[#5A6E62] truncate">Sukacita</div>
+          </div>
+
+          <!-- Char 5 -->
+          <div onclick="showCharDetails('捨', 'shě', 'Rela Memberi / Equanimity', 'Ikhlas melepaskan dan memberi yang terbaik untuk sesama makhluk.')"
+            class="p-3 bg-white rounded-2xl border border-[#CDE3D5] hover:border-[#1E5E3A] hover:shadow-md cursor-pointer text-center transition-all group">
+            <div class="font-chinese text-3xl text-[#1E5E3A] group-hover:scale-110 transition-transform">捨</div>
+            <div class="text-[11px] font-bold text-[#0D2B1B] mt-1 font-mono">shě</div>
+            <div class="text-[10px] text-[#5A6E62] truncate">Rela Memberi</div>
+          </div>
+
+          <!-- Char 6 -->
+          <div onclick="showCharDetails('蓮', 'lián', 'Bunga Teratai / Lotus', 'Tumbuh indah bersih tak ternoda dari lumpur — simbol kemurnian hati.')"
+            class="p-3 bg-white rounded-2xl border border-[#CDE3D5] hover:border-[#1E5E3A] hover:shadow-md cursor-pointer text-center transition-all group">
+            <div class="font-chinese text-3xl text-[#1E5E3A] group-hover:scale-110 transition-transform">蓮</div>
+            <div class="text-[11px] font-bold text-[#0D2B1B] mt-1 font-mono">lián</div>
+            <div class="text-[10px] text-[#5A6E62] truncate">Teratai Lotus</div>
+          </div>
+        </div>
+
+        <!-- Detail Box of Selected Char -->
+        <div id="char-detail-box" class="p-4 rounded-2xl bg-white border border-[#CDE3D5] flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <span class="font-chinese text-4xl text-[#1E5E3A]" id="detail-char-hanzi">愛</span>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-extrabold text-[#0D2B1B]" id="detail-char-title">Cinta Kasih Murni / Great Love</span>
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-[#EAF5ED] text-[#1E5E3A] font-mono" id="detail-char-pinyin">ài</span>
+              </div>
+              <p class="text-xs text-[#5A6E62] mt-0.5" id="detail-char-desc">Memberi kehangatan dan kepedulian tanpa pamrih.</p>
+            </div>
+          </div>
+          <button type="button" onclick="openHanziInLab()" class="px-3 py-1.5 rounded-xl bg-[#EAF5ED] hover:bg-[#1E5E3A] text-[#1E5E3A] hover:text-white font-bold text-xs transition-colors shrink-0">
+            Latih di Hanzi Lab ➔
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: TINJAU JAWABAN (REVIEW COMPLETED TASK ANSWERS) -->
+  <!-- ============================================================== -->
+  <div id="modal-review-answers" class="fixed inset-0 z-50 bg-[#0D2B1B]/70 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl border border-[#D5E9DC] max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Modal Header -->
+      <div class="p-5 sm:p-6 border-b border-[#E8F1EC] flex items-center justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#EAF5ED] text-[#1E5E3A]">
+              Tinjauan Evaluasi Siswa
+            </span>
+            <span class="text-xs font-bold text-emerald-700" id="review-modal-score-badge">100% Sempurna</span>
+          </div>
+          <h3 class="text-base sm:text-lg font-black text-[#0D2B1B] mt-1" id="review-modal-title">Judul Tugas</h3>
+          <p class="text-xs text-[#5A6E62]" id="review-modal-meta">Siswa: Kenjiro Tan • Diserahkan: 19 Nov 2026</p>
+        </div>
+        <button type="button" onclick="closeReviewModal()" class="w-8 h-8 rounded-full bg-[#F4F7F5] hover:bg-[#EAF5ED] text-[#4A725A] flex items-center justify-center font-bold text-base cursor-pointer">
+          ✕
+        </button>
+      </div>
+
+      <!-- Modal Body: Questions and Answers List -->
+      <div class="p-5 sm:p-6 overflow-y-auto space-y-3 flex-1" id="review-modal-list">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 sm:p-5 border-t border-[#E8F1EC] bg-[#FBFDFB] rounded-b-3xl flex items-center justify-between">
+        <span class="text-xs text-[#5A6E62]">Sekolah Cinta Kasih Tzu Chi • LotusWall</span>
+        <button type="button" onclick="closeReviewModal()" class="px-4 py-2 rounded-xl tc-gradient text-white font-bold text-xs cursor-pointer shadow-xs">
+          Tutup Pembahasan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-[#D5E9DC] py-6 px-4 text-center mt-12">
+    <div class="max-w-4xl mx-auto space-y-2">
+      <p class="text-xs font-bold text-[#1E5E3A] tracking-wider uppercase">
+        大愛無國界 • 教育啟心田
+      </p>
+      <p class="text-[11px] text-[#637C6E]">
+        Sekolah Cinta Kasih Tzu Chi — Cengkareng, Jakarta Barat • LotusWall Educational Learning Hub
+      </p>
+    </div>
+  </footer>
+
+  <script src="games/common/db-local.js"></script>
+  <script>
+    let activeStudent = null;
+    let currentTab = 'active';
+    let selectedCharForLab = '愛';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 1. Load active student
+      initStudentProfile();
+
+      // 2. Load active assignments
+      renderActiveAssignments();
+
+      // 3. Load completed history
+      renderCompletedHistory();
+
+      // 4. Update overall stats
+      updateSummaryStats();
+    });
+
+    function initStudentProfile() {
+      activeStudent = LotusDB.getCurrentStudent();
+      if (!activeStudent) {
+        // Fallback to first demo student
+        const students = LotusDB.getStudents();
+        activeStudent = students[0];
+        LotusDB.setCurrentStudent(activeStudent, false);
+      }
+
+      // Populate navigation
+      const navName = document.getElementById('nav-student-name');
+      const navClass = document.getElementById('nav-student-class');
+      const navInitials = document.getElementById('nav-avatar-initials');
+      const heroGreeting = document.getElementById('hero-student-greeting');
+      const heroAvatar = document.getElementById('hero-avatar');
+      const heroLevel = document.getElementById('hero-badge-level');
+      const heroNisn = document.getElementById('hero-badge-nisn');
+
+      const initials = getInitials(activeStudent.name || 'Murid');
+      navInitials.textContent = initials;
+      heroAvatar.textContent = initials;
+
+      navName.textContent = activeStudent.name || 'Siswa Cinta Kasih';
+      navClass.textContent = `Kelas ${activeStudent.class || '4-B'} • ${activeStudent.level || 'SD'}`;
+      heroGreeting.textContent = `Halo, ${activeStudent.name || 'Siswa'}! 🌟`;
+      heroLevel.textContent = `Jenjang ${activeStudent.level || 'SD'}`;
+      heroNisn.textContent = `NISN: ${activeStudent.nisn || '-'}`;
+    }
+
+    function getInitials(name) {
+      const parts = name.trim().split(' ');
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+      }
+      return name.substring(0, 2).toUpperCase();
+    }
+
+    function logoutStudent() {
+      LotusDB.logoutStudent();
+      window.location.href = 'login.html?role=murid';
+    }
+
+    // Tab Switching
+    function switchDashboardTab(tab) {
+      currentTab = tab;
+      const btnActive = document.getElementById('tab-btn-active');
+      const btnHistory = document.getElementById('tab-btn-history');
+      const btnMedia = document.getElementById('tab-btn-media');
+
+      const viewActive = document.getElementById('view-tab-active');
+      const viewHistory = document.getElementById('view-tab-history');
+      const viewMedia = document.getElementById('view-tab-media');
+
+      // Reset classes
+      btnActive.className = 'tab-inactive px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer';
+      btnHistory.className = 'tab-inactive px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer';
+      btnMedia.className = 'tab-inactive px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer';
+
+      viewActive.classList.add('hidden');
+      viewHistory.classList.add('hidden');
+      viewMedia.classList.add('hidden');
+
+      if (tab === 'active') {
+        btnActive.className = 'tab-active px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-all cursor-pointer';
+        viewActive.classList.remove('hidden');
+      } else if (tab === 'history') {
+        btnHistory.className = 'tab-active px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-all cursor-pointer';
+        viewHistory.classList.remove('hidden');
+      } else if (tab === 'media') {
+        btnMedia.className = 'tab-active px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-all cursor-pointer';
+        viewMedia.classList.remove('hidden');
+      }
+    }
+
+    // Render Tab 1: Tugas Aktif
+    function renderActiveAssignments() {
+      const container = document.getElementById('active-assignments-grid');
+      const allAssignments = LotusDB.getAllAssignments();
+      const subjectFilter = document.getElementById('filter-subject')?.value || 'all';
+
+      // Filter active assignments
+      let activeList = allAssignments.filter(a => a.status === 'active');
+      if (subjectFilter !== 'all') {
+        activeList = activeList.filter(a => a.subject === subjectFilter);
+      }
+
+      document.getElementById('badge-tab-active-count').textContent = activeList.length;
+      document.getElementById('stat-active-count').textContent = activeList.length;
+
+      if (activeList.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full bg-white rounded-3xl border border-[#D5E9DC] p-10 text-center space-y-3 custom-card-shadow">
+            <div class="w-14 h-14 rounded-2xl bg-[#EAF5ED] text-[#1E5E3A] flex items-center justify-center text-3xl mx-auto">
+              🎉
+            </div>
+            <h3 class="text-base font-extrabold text-[#0D2B1B]">Semua Tugas Sudah Selesai Dikerjakan!</h3>
+            <p class="text-xs text-[#5A6E62] max-w-md mx-auto">
+              Tidak ada tugas aktif yang tertunda untuk kelas Anda saat ini. Anda dapat belajar mandiri di tab Ruang Belajar Mandiri.
+            </p>
+            <button type="button" onclick="switchDashboardTab('media')"
+              class="px-4 py-2 rounded-xl tc-gradient text-white font-bold text-xs shadow-xs cursor-pointer">
+              Buka Ruang Belajar Mandiri ➔
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = activeList.map(asg => {
+        const hasSubmitted = LotusDB.hasStudentSubmittedLocally(asg.id, activeStudent.name);
+        const deadlineDate = asg.deadline ? new Date(asg.deadline) : null;
+        const isUrgent = deadlineDate && (deadlineDate - Date.now() < 86400000 * 2);
+
+        let deadlineBadge = `<span class="text-[#5A6E62] bg-[#F4F7F5] px-2 py-0.5 rounded text-[11px] font-semibold">Tanpa Tenggat</span>`;
+        if (deadlineDate) {
+          const formatted = deadlineDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+          deadlineBadge = isUrgent
+            ? `<span class="text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded text-[11px] font-extrabold flex items-center gap-1">⏰ Tenggat: ${formatted}</span>`
+            : `<span class="text-[#1E5E3A] bg-[#EAF5ED] border border-[#BCE1C9] px-2.5 py-0.5 rounded text-[11px] font-bold">📅 ${formatted}</span>`;
+        }
+
+        const templateName = getTemplateLabel(asg.template_type);
+
+        return `
+          <div class="bg-white rounded-3xl border-2 border-[#D5E9DC] hover:border-[#1E5E3A] p-5 custom-card-shadow flex flex-col justify-between gap-4 transition-all group">
+            <div class="space-y-3">
+              <!-- Header Badges -->
+              <div class="flex items-center justify-between gap-2">
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9]">
+                  ${escapeHtml(asg.subject || 'Umum')}
+                </span>
+                ${deadlineBadge}
+              </div>
+
+              <!-- Title -->
+              <div>
+                <h3 class="text-base font-extrabold text-[#0D2B1B] group-hover:text-[#1E5E3A] transition-colors leading-snug">
+                  ${escapeHtml(asg.title)}
+                </h3>
+                <p class="text-xs text-[#5A6E62] mt-1 flex items-center gap-1.5">
+                  <span>👨‍🏫 Guru:</span>
+                  <span class="font-bold text-[#14261C]">${escapeHtml(asg.teacher_name || 'Guru Cinta Kasih')}</span>
+                </p>
+              </div>
+
+              <!-- Template & Rules Meta -->
+              <div class="flex flex-wrap items-center gap-2 pt-1 text-[11px]">
+                <span class="px-2.5 py-1 rounded-lg bg-[#F4F7F5] text-[#355342] font-semibold flex items-center gap-1.5 border border-[#E2ECE5]">
+                  <span>🎮</span>
+                  <span>${escapeHtml(templateName)}</span>
+                </span>
+                ${asg.allow_multiple ? '<span class="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold border border-emerald-200">Boleh Mengulang</span>' : '<span class="text-slate-600 bg-slate-100 px-2 py-0.5 rounded font-medium">1x Kesempatan</span>'}
+              </div>
+            </div>
+
+            <!-- Action Button -->
+            <div class="pt-3 border-t border-[#E8F1EC] flex items-center justify-between gap-2">
+              ${hasSubmitted && !asg.allow_multiple
+                ? `<span class="text-xs font-bold text-emerald-700 flex items-center gap-1">✅ Sudah Dikerjakan</span>
+                   <button type="button" onclick="reviewCompletedSubmissionByAssignment('${asg.id}')"
+                     class="py-2 px-3 rounded-xl bg-[#EAF5ED] text-[#1E5E3A] hover:bg-[#1E5E3A] hover:text-white font-bold text-xs transition-colors cursor-pointer">
+                     Tinjau Skor ➔
+                   </button>`
+                : `<a href="play.html?assign=${asg.id}&student=${encodeURIComponent(activeStudent.name)}&class=${encodeURIComponent(activeStudent.class || '-')}"
+                     class="w-full py-2.5 px-4 rounded-xl tc-gradient hover:opacity-95 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                     <span>${hasSubmitted ? 'Kerjakan Lagi (Remedial/Latihan)' : 'Mulai Kerjakan Tugas'}</span>
+                     <span>➔</span>
+                   </a>`
+              }
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterActiveAssignments() {
+      renderActiveAssignments();
+    }
+
+    // Render Tab 2: Riwayat Tugas Selesai
+    function renderCompletedHistory() {
+      const tbody = document.getElementById('history-submissions-tbody');
+      const allSubmissions = LotusDB.getAllSubmissions();
+      
+      // Match submissions belonging to this student name (or demo records)
+      const mySubmissions = allSubmissions.filter(s =>
+        !s.student_name ||
+        s.student_name.toLowerCase() === (activeStudent.name || '').toLowerCase() ||
+        s.student_name === 'Kenjiro Tan' // Fallback for immediate preview
+      );
+
+      document.getElementById('badge-tab-history-count').textContent = mySubmissions.length;
+      document.getElementById('stat-completed-count').textContent = mySubmissions.length;
+
+      if (mySubmissions.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="py-8 text-center text-xs text-[#5A6E62]">
+              Belum ada riwayat pengerjaan tugas. Selesaikan tugas di tab Tugas Aktif untuk melihat riwayat skor di sini.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = mySubmissions.map(sub => {
+        const asg = LotusDB.getAssignmentById(sub.assignment_id);
+        const title = sub.assignment_title || (asg ? asg.title : 'Penugasan Pembelajaran');
+        const subject = asg ? asg.subject : 'IPA / Sains';
+        const percent = sub.percentage || Math.round(((sub.score || 0) / (sub.max_score || 1)) * 100);
+        
+        let scoreClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        if (percent < 70) scoreClass = 'bg-red-50 text-red-700 border-red-200';
+        else if (percent < 85) scoreClass = 'bg-amber-50 text-amber-700 border-amber-200';
+
+        const createdDate = sub.created_at ? new Date(sub.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
+        const durSec = sub.time_taken_seconds || 60;
+        const durationText = durSec > 60 ? `${Math.floor(durSec / 60)}m ${durSec % 60}s` : `${durSec}s`;
+
+        return `
+          <tr class="hover:bg-[#F9FCFA] transition-colors">
+            <td class="py-3 px-4 font-bold text-[#0D2B1B]">
+              ${escapeHtml(title)}
+            </td>
+            <td class="py-3 px-4 font-semibold text-[#4A725A]">
+              ${escapeHtml(subject)}
+            </td>
+            <td class="py-3 px-4 text-center">
+              <span class="inline-block px-2.5 py-0.5 rounded-full font-black text-xs border ${scoreClass}">
+                ${percent}% (${sub.score}/${sub.max_score})
+              </span>
+            </td>
+            <td class="py-3 px-4 text-[#5A6E62] text-[11px] font-medium">
+              ${createdDate}
+            </td>
+            <td class="py-3 px-4 text-center text-[#5A6E62] font-mono text-[11px]">
+              ${durationText}
+            </td>
+            <td class="py-3 px-4 text-right">
+              <button type="button" onclick="openReviewModalById('${sub.id}')"
+                class="px-3 py-1.5 rounded-xl bg-[#EAF5ED] hover:bg-[#1E5E3A] text-[#1E5E3A] hover:text-white font-bold text-xs transition-colors cursor-pointer shadow-2xs">
+                🔍 Tinjau Jawaban
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Overall Summary Stats calculation
+    function updateSummaryStats() {
+      const allSubmissions = LotusDB.getAllSubmissions();
+      const mySubmissions = allSubmissions.filter(s =>
+        !s.student_name ||
+        s.student_name.toLowerCase() === (activeStudent.name || '').toLowerCase() ||
+        s.student_name === 'Kenjiro Tan'
+      );
+
+      if (mySubmissions.length > 0) {
+        const sum = mySubmissions.reduce((acc, curr) => acc + (curr.percentage || 0), 0);
+        const avg = Math.round(sum / mySubmissions.length);
+        document.getElementById('stat-avg-score').textContent = `${avg}%`;
+        if (avg >= 90) {
+          document.getElementById('stat-stars-label').textContent = '⭐⭐⭐ Sangat Unggul';
+        } else if (avg >= 75) {
+          document.getElementById('stat-stars-label').textContent = '⭐⭐ Terpuji';
+        } else {
+          document.getElementById('stat-stars-label').textContent = '⭐ Terus Bersemangat';
+        }
+      } else {
+        document.getElementById('stat-avg-score').textContent = '0%';
+        document.getElementById('stat-stars-label').textContent = 'Siap Memulai';
+      }
+    }
+
+    // Review Modal Functions
+    function openReviewModalById(subId) {
+      const allSubmissions = LotusDB.getAllSubmissions();
+      const sub = allSubmissions.find(s => s.id === subId);
+      if (!sub) return;
+
+      const asg = LotusDB.getAssignmentById(sub.assignment_id);
+      const title = sub.assignment_title || (asg ? asg.title : 'Penugasan Pembelajaran');
+      const percent = sub.percentage || 100;
+
+      document.getElementById('review-modal-title').textContent = title;
+      document.getElementById('review-modal-score-badge').textContent = `Nilai Akhir: ${percent}% (${sub.score}/${sub.max_score})`;
+      document.getElementById('review-modal-meta').textContent = `Siswa: ${sub.student_name || activeStudent.name} • Kelas ${sub.student_class || activeStudent.class || '-'}`;
+
+      const listContainer = document.getElementById('review-modal-list');
+      const answers = Array.isArray(sub.answers_summary) ? sub.answers_summary : [];
+
+      if (answers.length === 0) {
+        listContainer.innerHTML = `
+          <div class="p-4 rounded-xl bg-[#F4F7F5] text-xs text-center text-[#5A6E62]">
+            Catatan butir jawaban detail tidak tersimpan untuk latihan ini.
+          </div>
+        `;
+      } else {
+        listContainer.innerHTML = answers.map((ans, idx) => {
+          const isCorrect = ans.isCorrect === true || ans.isCorrect === 'true';
+          const badgeClass = isCorrect ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-red-50 text-red-800 border-red-200';
+          const badgeLabel = isCorrect ? '✅ Jawaban Benar' : '❌ Kurang Tepat';
+
+          return `
+            <div class="p-3.5 rounded-2xl border ${isCorrect ? 'border-[#CDE3D5] bg-[#FBFDFB]' : 'border-red-200 bg-red-50/30'} space-y-1.5">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-xs font-bold text-[#0D2B1B]">Soal #${idx + 1}</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-extrabold border ${badgeClass}">${badgeLabel}</span>
+              </div>
+              <p class="text-xs font-semibold text-[#14261C]">${escapeHtml(ans.question || 'Pertanyaan')}</p>
+              <div class="text-[11px] grid grid-cols-1 sm:grid-cols-2 gap-1 pt-1">
+                <div>
+                  <span class="text-[#5A6E62]">Jawabanmu:</span>
+                  <strong class="${isCorrect ? 'text-emerald-700' : 'text-red-700'} ml-1">${escapeHtml(ans.studentAnswer || '-')}</strong>
+                </div>
+                ${!isCorrect ? `
+                  <div>
+                    <span class="text-[#5A6E62]">Kunci Benar:</span>
+                    <strong class="text-emerald-800 ml-1">${escapeHtml(ans.correctAnswer || '-')}</strong>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      document.getElementById('modal-review-answers').classList.remove('hidden');
+    }
+
+    function reviewCompletedSubmissionByAssignment(asgId) {
+      const allSubmissions = LotusDB.getAllSubmissions();
+      const sub = allSubmissions.find(s => s.assignment_id === asgId);
+      if (sub) {
+        openReviewModalById(sub.id);
+      } else {
+        alert('Data evaluasi sedang dimuat.');
+      }
+    }
+
+    function closeReviewModal() {
+      document.getElementById('modal-review-answers').classList.add('hidden');
+    }
+
+    // 6-digit Game PIN Handler
+    async function handlePinJoin(e) {
+      e.preventDefault();
+      const pinInput = document.getElementById('input-game-pin');
+      const pinAlert = document.getElementById('pin-alert');
+      const pin = pinInput.value.trim();
+
+      if (!pin || pin.length !== 6) {
+        showPinAlert('error', 'Masukkan 6 digit angka Game PIN yang valid.');
+        return;
+      }
+
+      pinAlert.classList.add('hidden');
+      const btn = document.getElementById('btn-pin-join');
+      btn.disabled = true;
+      btn.innerHTML = '<span>Memeriksa PIN...</span>';
+
+      try {
+        let proj = LotusDB.findProjectByPin(pin);
+        if (!proj && LotusDB.hasSupabase()) {
+          try {
+            await LotusDB.syncProjectsFromCloud();
+            proj = LotusDB.findProjectByPin(pin);
+          } catch (_) {}
+        }
+
+        if (proj) {
+          showPinAlert('success', `PIN Ditemukan: ${proj.title}! Membuka game...`);
+          setTimeout(() => {
+            window.location.href = `community-play.html?id=${proj.id}&name=${encodeURIComponent(activeStudent.name || 'Siswa')}`;
+          }, 600);
+        } else {
+          showPinAlert('error', `Game PIN "${pin}" tidak ditemukan. Harap periksa kembali 6 angka PIN dari guru Anda.`);
+        }
+      } catch (err) {
+        showPinAlert('error', 'Terjadi kesalahan memeriksa PIN: ' + (err.message || err));
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Gabung Sekarang</span><span>➔</span>';
+      }
+    }
+
+    function showPinAlert(type, message) {
+      const alertBox = document.getElementById('pin-alert');
+      alertBox.classList.remove('hidden');
+      alertBox.textContent = message;
+      if (type === 'error') {
+        alertBox.className = 'p-3 rounded-xl text-xs font-semibold flex items-center gap-2 bg-red-50 border border-red-200 text-red-800';
+      } else {
+        alertBox.className = 'p-3 rounded-xl text-xs font-semibold flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-800';
+      }
+    }
+
+    // Tzu Chi Character Explorer
+    function showCharDetails(char, pinyin, title, desc) {
+      selectedCharForLab = char;
+      document.getElementById('detail-char-hanzi').textContent = char;
+      document.getElementById('detail-char-title').textContent = title;
+      document.getElementById('detail-char-pinyin').textContent = pinyin;
+      document.getElementById('detail-char-desc').textContent = desc;
+    }
+
+    function openHanziInLab() {
+      window.open('tools/mandarin/strokes.html', '_blank');
+    }
+
+    function refreshStudentData() {
+      initStudentProfile();
+      renderActiveAssignments();
+      renderCompletedHistory();
+      updateSummaryStats();
+      alert('Data dashboard berhasil diperbarui!');
+    }
+
+    function getTemplateLabel(tpl) {
+      const map = {
+        'quiz': 'Kuis Pilihan Ganda',
+        'fruitninja': 'Tebas Buah Edukasi',
+        'ai-slicer': 'AI Motion Hand Slicer',
+        'hanzi-battle': 'AI Hanzi Battle 2P',
+        'flashcards': 'Kartu Flashcard',
+        'openbox': 'Buka Kotak Misteri',
+        'matchup': 'Jodohkan Kata',
+        'whackamole': 'Pukul Tikus Kata'
+      };
+      return map[tpl] || 'Aktivitas Interaktif';
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>

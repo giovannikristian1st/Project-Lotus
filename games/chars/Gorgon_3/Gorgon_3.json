@@ -1,0 +1,162 @@
+{
+    "frames":  [
+                   {
+                       "filename":  "Attack_1.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  1,
+                                     "w":  2048,
+                                     "h":  128
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  2048,
+                                                "h":  128
+                                            },
+                       "sourceSize":  {
+                                          "w":  2048,
+                                          "h":  128
+                                      }
+                   },
+                   {
+                       "filename":  "Attack_2.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  131,
+                                     "w":  1280,
+                                     "h":  128
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  1280,
+                                                "h":  128
+                                            },
+                       "sourceSize":  {
+                                          "w":  1280,
+                                          "h":  128
+                                      }
+                   },
+                   {
+                       "filename":  "Attack_3.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  261,
+                                     "w":  896,
+                                     "h":  128
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  896,
+                                                "h":  128
+                                            },
+                       "sourceSize":  {
+                                          "w":  896,
+                                          "h":  128
+                                      }
+                   },
+                   {
+                       "filename":  "Dead.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  391,
+                                     "w":  384,
+                                     "h":  128
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  384,
+                                                "h":  128
+                                            },
+                       "sourceSize":  {
+                                          "w":  384,
+                                          "h":  128
+                                      }
+                   },
+                   {
+                       "filename":  "Hurt.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  521,
+                                     "w":  384,
+                                     "h":  128
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  384,
+                                                "h":  128
+                                            },
+                       "sourceSize":  {
+                                          "w":  384,
+                                          "h":  128
+                                      }
+                   },
+                   {
+                       "filename":  "Idle.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  651,
+                                     "w":  896,
+                                     "h":  128
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  896,
+                                                "h":  128
+                                            },
+                       "sourceSize":  {
+                                          "w":  896,
+                                          "h":  128
+                                      }
+                   },
+                   {
+                       "filename":  "Run.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  781,
+                                     "w":  896,
+                                     "h":  128
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  896,
+                                                "h":  128
+                                            },
+                       "sourceSize":  {
+                                          "w":  896,
+                                          "h":  128
+                                      }
+                   }
+               ],
+    "meta":  {
+                 "app":  "http://www.codeandweb.com/texturepacker",
+                 "version":  "1.0",
+                 "image":  "Gorgon_3.png",
+                 "format":  "RGBA8888",
+                 "size":  {
+                              "w":  2050,
+                              "h":  910
+                          },
+                 "scale":  "1"
+             }
+}

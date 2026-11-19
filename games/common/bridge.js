@@ -590,5 +590,7 @@ const _lotusGameBridgeInstance = new LotusGameBridge();
 
 // Pasang ke window dan global scope agar pemanggilan langsung GameBridge.onReady(...) tidak pernah gagal
 window.GameBridge = _lotusGameBridgeInstance;
+window.gameBridge = _lotusGameBridgeInstance;
 window.LotusGameBridge = LotusGameBridge;
 var GameBridge = _lotusGameBridgeInstance;
+var gameBridge = _lotusGameBridgeInstance;

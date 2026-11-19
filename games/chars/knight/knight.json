@@ -1,0 +1,78 @@
+{
+    "frames":  [
+                   {
+                       "filename":  "Knight-Attack-Sheet.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  1,
+                                     "w":  518,
+                                     "h":  74
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  518,
+                                                "h":  74
+                                            },
+                       "sourceSize":  {
+                                          "w":  518,
+                                          "h":  74
+                                      }
+                   },
+                   {
+                       "filename":  "Knight-Idle-Sheet.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  77,
+                                     "w":  256,
+                                     "h":  64
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  256,
+                                                "h":  64
+                                            },
+                       "sourceSize":  {
+                                          "w":  256,
+                                          "h":  64
+                                      }
+                   },
+                   {
+                       "filename":  "Knight-Walk-Sheet.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  143,
+                                     "w":  512,
+                                     "h":  64
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  512,
+                                                "h":  64
+                                            },
+                       "sourceSize":  {
+                                          "w":  512,
+                                          "h":  64
+                                      }
+                   }
+               ],
+    "meta":  {
+                 "app":  "http://www.codeandweb.com/texturepacker",
+                 "version":  "1.0",
+                 "image":  "knight.png",
+                 "format":  "RGBA8888",
+                 "size":  {
+                              "w":  520,
+                              "h":  208
+                          },
+                 "scale":  "1"
+             }
+}

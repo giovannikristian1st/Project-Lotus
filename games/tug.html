@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Vocab Tug of War — 汉字 Hero</title>
+  <script src="common/bridge.js"></script>
+  <script src="vocabdb.js"></script>
+  <script src="dict.js"></script>
+  <script src="meihuadb.js"></script>
+  <script src="audio.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=Inter:wght@400;500;600;700&family=Noto+Serif+SC:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold:       #2C6E49; /* Tzu Chi Forest Green */
+      --gold-light: #EAF5ED; /* Forest Green Light */
+      --jade:       #1E5E3A; /* Deep Emerald */
+      --jade-light: #EBF5EE; /* Emerald Light */
+      --navy:       #1B365D; /* Wisdom Navy */
+      --navy-mid:   #152E50; /* Deep Wisdom Navy */
+      --cream:      #F4F7F6; /* Purity Light Warm Mint */
+      --surface:    #FFFFFF; /* Purity White */
+      --border:     rgba(44, 110, 73, 0.15); /* Subtle Emerald Stroke */
+      --muted:      #6C7E90; /* Slate Grey */
+      --shadow-sm:  0 1px 4px rgba(30,94,58,0.04);
+      --shadow:     0 4px 24px rgba(30, 94, 58, 0.04), 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+      --shadow-lg:  0 20px 48px rgba(30, 94, 58, 0.12), 0 0 20px rgba(125, 206, 171, 0.2);
+      --r:          24px;
+      --r-sm:       16px;
+      --r-xs:       10px;
+      
+      /* legacy aliases kept so JS that reads them doesn't break */
+      --red:        #1B365D;
+      --red-light:  #F0F4F8;
+      --light-red:  #F0F4F8;
+      --light-gold: #EAF5ED;
+      --light-jade: #EBF5EE;
+      --radius:     24px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Inter', 'Outfit', 'Noto Sans SC', 'Segoe UI', Arial, sans-serif; background: var(--cream); -webkit-font-smoothing: antialiased; }
+
+    /* ── SCREEN SYSTEM ── */
+    .screen { position: absolute; inset: 0; display: none; flex-direction: column; animation: screenIn 0.25s cubic-bezier(0.22,1,0.36,1); }
+    .screen.active { display: flex; }
+    @keyframes screenIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── NAV BAR ── */
+    .nav-bar {
+      background: var(--navy); padding: 0 20px; height: 56px;
+      display: flex; align-items: center; gap: 12px;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.06), 0 2px 12px rgba(0,0,0,0.25);
+      flex-shrink: 0;
+    }
+    .back-btn {
+      background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.92); padding: 0 16px; height: 36px;
+      border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; transition: background 0.15s; white-space: nowrap; font-family: inherit;
+    }
+    .back-btn:hover  { background: rgba(255,255,255,0.18); }
+    .back-btn:active { background: rgba(255,255,255,0.08); }
+    .nav-bar h2 { color: white; font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 700; letter-spacing: 0.2px; }
+
+    /* ══════════════════════════════════════
+       TUG OF WAR GAME OVERLAY
+    ══════════════════════════════════════ */
+    #tugOverlay {
+      display: none; position: fixed; inset: 0; z-index: 7000;
+      touch-action: none;
+      background-color: var(--cream);
+    }
+    #tugOverlay::before {
+      content: '';
+      position: absolute; inset: 0;
+      opacity: 0.35;
+      pointer-events: none;
+    }
+    #tugOverlay.open { display: block; }
+
+    /* ── Level select screen (shown before game begins) ── */
+    #tugLevelSelect {
+      display: none; position: absolute; inset: 0;
+      background: rgba(244, 247, 246, 0.7);
+      backdrop-filter: blur(24px) saturate(120%);
+      -webkit-backdrop-filter: blur(24px) saturate(120%);
+      align-items: center; justify-content: center;
+      z-index: 20;
+    }
+    #tugLevelSelect.open {
+      display: flex;
+    }
+
+    /* ── Score bar (Symmetrical across top) ── */
+    #tugScoreBar {
+      position: absolute; top: 16px; left: 24px; right: 24px;
+      height: 64px; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(20px) saturate(120%);
+      -webkit-backdrop-filter: blur(20px) saturate(120%);
+      border: 1px solid rgba(44, 110, 73, 0.15);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(30, 94, 58, 0.08);
+    }
+    #tugScoreCenter {
+      font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--navy);
+      letter-spacing: 0.5px; text-align: center; white-space: nowrap;
+    }
+
+    /* Score pips (image-based) */
+    .tug-pips { display: flex; gap: 6px; align-items: center; }
+    #tugPipsRight { flex-direction: row-reverse; }
+    .tug-pip {
+      width: 28px; height: 28px;
+      display: block;
+      transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .tug-pip.lit { transform: scale(1.2) rotate(15deg); }
+
+    /* ── Rope scene ── */
+    #tugScene {
+      position: absolute; left: 0; right: 0; top: 64px; bottom: 50vh;
+      display: flex; justify-content: center; align-items: flex-end;
+      overflow: hidden; z-index: 1;
+      background: url('tug_sprites/background.png') no-repeat;
+      background-size: 100% 100%;
+    }
+
+    #tugStage {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 100%;
+      display: flex; justify-content: center; align-items: flex-end;
+      pointer-events: none;
+    }
+
+    /* ── Ground Track with Notch Markers (-3, -2, -1, 0, 1, 2, 3) ── */
+    #tugGroundTrack {
+      position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+      width: clamp(700px, 80vw, 1000px); height: 48px;
+      background: url('tug_sprites/ground_track.png') center bottom / contain no-repeat;
+      z-index: 3;
+    }
+
+    /* ── Composite Rig (Persona 3 Team, Center Rope, Persona 5 Team) ── */
+    #tugRigContainer {
+      position: absolute; bottom: 18px;
+      display: flex; align-items: flex-end; justify-content: center;
+      transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform: translateX(0px);
+      z-index: 6;
+      --sp-w: clamp(280px, 32vw, 420px);
+      --sp-h: clamp(152px, 17.3vw, 228px);
+    }
+    .team-sprite.shake {
+      animation: teamSpriteShake 0.35s ease;
+    }
+    @keyframes teamSpriteShake {
+      0%, 100% { transform: translateX(0); }
+      25%     { transform: translateX(-6px); }
+      50%     { transform: translateX(6px); }
+      75%     { transform: translateX(-3px); }
+    }
+
+    .team-sprite {
+      width: var(--sp-w);
+      height: var(--sp-h);
+      background-size: calc(var(--sp-w) * 4) calc(var(--sp-h) * 4);
+      background-repeat: no-repeat;
+      flex-shrink: 0;
+      transition: filter 0.3s ease;
+    }
+
+    /* Regular School Costumes */
+    #teamRedSprite {
+      background-image: url('tug_sprites/character_p3_school_sheet.png');
+    }
+    #teamBlueSprite {
+      background-image: url('tug_sprites/character_p5_school_sheet.png');
+    }
+
+    /* Final Round (2 vs 2) Dungeon Exploration Costumes */
+    .is-final-round #teamRedSprite {
+      background-image: url('tug_sprites/character_p3_battle_sheet.png') !important;
+      filter: drop-shadow(0 0 16px rgba(45, 125, 240, 0.45));
+    }
+    .is-final-round #teamBlueSprite {
+      background-image: url('tug_sprites/character_p5_battle_sheet.png') !important;
+      filter: drop-shadow(0 0 16px rgba(225, 25, 45, 0.45));
+    }
+
+    #ropeCenterSegment {
+      width: clamp(70px, 9vw, 110px);
+      height: clamp(34px, 4.2vw, 48px);
+      margin-bottom: calc(var(--sp-h) * (85 / 260) - 24px);
+      background: url('tug_sprites/rope_center.png') center center / contain no-repeat;
+      flex-shrink: 0;
+    }
+
+    /* ── CSS Sprite Animation Keyframes ── */
+    /* Row 0: Idle */
+    .anim-idle {
+      animation: playTugIdle 0.8s steps(4) infinite;
+    }
+    @keyframes playTugIdle {
+      from { background-position: 0px 0px; }
+      to { background-position: calc(var(--sp-w) * -4) 0px; }
+    }
+
+    /* Row 1: Pulling */
+    .anim-pull {
+      animation: playTugPull 0.6s steps(4) infinite;
+    }
+    @keyframes playTugPull {
+      from { background-position: 0px calc(var(--sp-h) * -1); }
+      to { background-position: calc(var(--sp-w) * -4) calc(var(--sp-h) * -1); }
+    }
+
+    /* Row 2: Stumbling */
+    .anim-stumble {
+      animation: playTugStumble 0.5s steps(4) infinite;
+    }
+    @keyframes playTugStumble {
+      from { background-position: 0px calc(var(--sp-h) * -2); }
+      to { background-position: calc(var(--sp-w) * -4) calc(var(--sp-h) * -2); }
+    }
+
+    /* Row 3: Victory */
+    .anim-victory {
+      animation: playTugVictory 0.7s steps(4) infinite;
+    }
+    @keyframes playTugVictory {
+      from { background-position: 0px calc(var(--sp-h) * -3); }
+      to { background-position: calc(var(--sp-w) * -4) calc(var(--sp-h) * -3); }
+    }
+
+    /* ── Persona Big Screen Final Round Announcement Overlay ── */
+    #tugFinalRoundOverlay {
+      display: none; position: fixed; inset: 0; z-index: 9500;
+      align-items: center; justify-content: center;
+      background: rgba(10, 14, 24, 0.92);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      overflow: hidden;
+    }
+    #tugFinalRoundOverlay.show {
+      display: flex;
+    }
+    .p3-slash-left {
+      position: absolute; top: -50%; left: -20%; width: 90%; height: 200%;
+      background: linear-gradient(135deg, rgba(35, 125, 225, 0.88) 0%, rgba(15, 60, 140, 0.98) 100%);
+      transform: rotate(-25deg);
+      border-right: 6px solid #FFD700;
+      box-shadow: 0 0 40px rgba(35, 125, 225, 0.6);
+      animation: slashLeftIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .p5-slash-right {
+      position: absolute; bottom: -50%; right: -20%; width: 90%; height: 200%;
+      background: linear-gradient(135deg, rgba(225, 25, 45, 0.92) 0%, rgba(150, 10, 25, 0.98) 100%);
+      transform: rotate(-25deg);
+      border-left: 6px solid #FFFFFF;
+      box-shadow: 0 0 40px rgba(225, 25, 45, 0.6);
+      animation: slashRightIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    @keyframes slashLeftIn {
+      from { transform: translateX(-100%) rotate(-25deg); }
+      to   { transform: translateX(0) rotate(-25deg); }
+    }
+    @keyframes slashRightIn {
+      from { transform: translateX(100%) rotate(-25deg); }
+      to   { transform: translateX(0) rotate(-25deg); }
+    }
+    .final-round-content {
+      position: relative; z-index: 10; text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      animation: finalPop 0.6s 0.15s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    @keyframes finalPop {
+      from { transform: scale(0.3) rotate(-8deg); opacity: 0; }
+      to   { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    .final-round-sub {
+      font-family: 'Outfit', sans-serif; font-size: clamp(1.1rem, 2.8vw, 1.8rem); font-weight: 900;
+      letter-spacing: 6px; color: #FFD700; text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+      background: rgba(0,0,0,0.65); padding: 6px 24px; border-radius: 24px; border: 2px solid #FFD700;
+    }
+    .final-round-title {
+      font-family: 'Outfit', 'Inter', sans-serif; font-size: clamp(3.5rem, 11vw, 7.5rem); font-weight: 900;
+      color: #FFFFFF; letter-spacing: 4px; text-transform: uppercase; line-height: 1;
+      text-shadow: 
+        0 0 30px rgba(255, 215, 0, 0.9),
+        0 6px 0 #000, 
+        0 12px 36px rgba(0,0,0,0.9);
+      transform: skew(-8deg);
+    }
+    .final-round-tag {
+      font-family: 'Outfit', sans-serif; font-size: clamp(0.95rem, 2.2vw, 1.4rem); font-weight: 800;
+      color: #FFFFFF; letter-spacing: 3px; background: rgba(0, 0, 0, 0.8);
+      padding: 8px 28px; border-radius: 30px; border: 2px solid #FFFFFF;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    }
+
+    /* ── Red danger lines removed ── */
+    .tug-danger-line {
+      display: none !important;
+    }
+    /* Shake animation for a character being dragged */
+    @keyframes tugCharShake {
+      0%,100% { transform: translateX(0); }
+      20%     { transform: translateX(-8px); }
+      50%     { transform: translateX(7px); }
+      75%     { transform: translateX(-4px); }
+    }
+
+    /* ── Question arenas — below ground line ── */
+    #tugArenas {
+      position: absolute; left: 0; right: 0;
+      top: 50vh; bottom: 0;
+      display: flex; overflow: hidden;
+    }
+    .tug-area {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 20px 24px; gap: 16px; position: relative;
+      background: var(--cream);
+    }
+    #tugAreaLeft  {
+      background: rgba(44, 110, 73, 0.05);
+    }
+    #tugAreaRight {
+      background: rgba(27, 54, 93, 0.05);
+      border-left: 1.5px dashed rgba(27, 54, 93, 0.15);
+    }
+
+    /* Center divider — hidden, arenas fill full width */
+    #tugDivider { display: none; }
+
+    /* Player label */
+    .tug-player-label {
+      font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 900; letter-spacing: 2px;
+      text-transform: uppercase; color: white;
+      padding: 6px 18px; border-radius: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    }
+    #tugAreaLeft  .tug-player-label { background: linear-gradient(135deg, #2C6E49 0%, #1E5E3A 100%); }
+    #tugAreaRight .tug-player-label { background: linear-gradient(135deg, #1B365D 0%, #152E50 100%); }
+
+    /* Question card — white for readability */
+    .tug-question-card {
+      background: white; border-radius: 20px;
+      padding: 12px 16px; text-align: center; width: 100%; max-width: 460px;
+      border: 3px solid rgba(44, 110, 73, 0.1);
+      margin-bottom: 16px;
+      box-shadow: 0 8px 24px rgba(30, 94, 58, 0.08);
+    }
+    .tug-q-type {
+      font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 800; letter-spacing: 2.5px;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
+    }
+    .tug-q-text {
+      font-family: 'Noto Serif SC', serif; font-size: clamp(2rem, 5vh, 3.5rem); font-weight: 900; color: var(--navy); line-height: 1.15;
+    }
+    .tug-q-text.small { font-family: 'Inter', sans-serif; font-size: 1.8rem; font-weight: 700; color: var(--navy); }
+    .tug-question-card.correct { background: #EAF5ED; border-color: #2C6E49; }
+    .tug-question-card.wrong   { background: #FDF0F0; border-color: #C0392B; }
+
+    /* Answer buttons */
+    .tug-choices-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 14px; width: 100%; max-width: 460px;
+    }
+    .tug-choice-btn {
+      padding: 10px 8px; border-radius: 16px;
+      border: 3px solid rgba(44, 110, 73, 0.15);
+      background: white; color: var(--navy);
+      font-family: 'Inter', sans-serif; font-size: clamp(0.9rem, 2.5vh, 1.25rem); font-weight: 700;
+      cursor: pointer; transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+      min-height: clamp(50px, 8vh, 76px); display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(30, 94, 58, 0.04);
+    }
+    .tug-choice-btn.small-text { font-size: 1.05rem; }
+    
+    .tug-choice-btn:hover {
+      transform: translateY(-2px);
+      border-color: var(--gold);
+      box-shadow: 0 8px 20px rgba(44, 110, 73, 0.1);
+    }
+    .tug-choice-btn:active {
+      transform: translateY(1px);
+    }
+    #tugAreaLeft .tug-choice-btn:hover { border-color: #2C6E49; color: #2C6E49; }
+    #tugAreaLeft .tug-choice-btn:active { background: rgba(44, 110, 73, 0.08); }
+    
+    #tugAreaRight .tug-choice-btn:hover { border-color: #1B365D; color: #1B365D; }
+    #tugAreaRight .tug-choice-btn:active { background: rgba(27, 54, 93, 0.08); }
+    
+    .tug-choice-btn.correct-flash { background: #2C6E49 !important; border-color: #2C6E49 !important; color: white !important; transform: scale(1.04); box-shadow: 0 8px 24px rgba(44,110,73,0.3) !important; }
+    .tug-choice-btn.wrong-flash   { background: #C0392B !important; border-color: #C0392B !important; color: white !important; box-shadow: 0 8px 24px rgba(192,57,43,0.3) !important; }
+
+    /* ── Round countdown overlay ── */
+    #tugCountdown {
+      display: none; position: absolute; inset: 0; z-index: 1000;
+      align-items: center; justify-content: center; flex-direction: column; gap: 16px;
+      background: rgba(27, 54, 93, 0.45);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    }
+    #tugCountdown.show { display: flex; }
+    #tugCountdownLabel {
+      font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;
+      color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+    #tugCountdownNum {
+      font-family: 'Outfit', sans-serif; font-size: min(22vw, 18vh); font-weight: 900; color: white; line-height: 1;
+      text-shadow: 0 0 40px rgba(255,255,255,0.4), 0 8px 32px rgba(0,0,0,0.6);
+      animation: countPop 0.45s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes countPop {
+      from { transform: scale(0.2) rotate(-12deg); opacity: 0; }
+      to   { transform: scale(1)   rotate(0);     opacity: 1; }
+    }
+
+    /* ── Win screen ── */
+    #tugWinScreen {
+      display: none; position: absolute; inset: 0; z-index: 8000;
+      flex-direction: column; align-items: center; justify-content: center;
+      backdrop-filter: blur(20px) saturate(120%); -webkit-backdrop-filter: blur(20px) saturate(120%);
+    }
+    #tugWinScreen.open { display: flex; }
+    #tugWinBg {
+      position: absolute; inset: 0; opacity: 0.94;
+      background: radial-gradient(circle at center, rgba(244, 247, 246, 0.9) 0%, rgba(255, 255, 255, 0.95) 100%);
+    }
+    #tugWinContent {
+      position: relative; z-index: 2; text-align: center;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(44, 110, 73, 0.15);
+      border-radius: 28px;
+      padding: 48px 64px;
+      box-shadow: 0 20px 48px rgba(30, 94, 58, 0.15);
+      display: flex; flex-direction: column; align-items: center;
+    }
+    #tugWinEmoji {
+      font-size: 6rem; line-height: 1; display: block; margin-bottom: 16px;
+      animation: winBounce 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes winBounce {
+      from { transform: scale(0) rotate(-20deg); opacity: 0; }
+      to   { transform: scale(1) rotate(0); opacity: 1; }
+    }
+    #tugWinTitle {
+      font-family: 'Outfit', sans-serif; font-size: 3rem; font-weight: 900; color: var(--navy); margin-bottom: 8px;
+      animation: winFadeUp 0.5s 0.2s ease both;
+    }
+    #tugWinSub {
+      font-family: 'Inter', sans-serif; font-size: 1.25rem; font-weight: 500; color: var(--muted); margin-bottom: 32px;
+      animation: winFadeUp 0.5s 0.35s ease both;
+    }
+    @keyframes winFadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .tug-win-btns { display: flex; gap: 16px; animation: winFadeUp 0.5s 0.5s ease both; }
+    .tug-win-btn {
+      padding: 16px 36px; border: none; border-radius: 18px;
+      font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 900; cursor: pointer; touch-action: manipulation;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-sm);
+    }
+    #tugBtnAgain {
+      background: var(--gold); color: white;
+      box-shadow: 0 8px 24px rgba(44, 110, 73, 0.25);
+    }
+    #tugBtnAgain:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(44, 110, 73, 0.35); }
+    #tugBtnExit  {
+      background: white; color: var(--navy); border: 2px solid rgba(27, 54, 93, 0.15);
+    }
+    #tugBtnExit:hover { transform: translateY(-2px); background: rgba(27, 54, 93, 0.04); }
+
+    /* Confetti */
+    .tug-confetti {
+      position: absolute; border-radius: 2px;
+      animation: confettiFall linear forwards;
+      pointer-events: none;
+    }
+    @keyframes confettiFall {
+      0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh)  rotate(720deg); opacity: 0; }
+    }
+
+    /* ── Floating Header Controls (Moved BELOW the symmetrical Score Bar) ── */
+    #tugHeaderControls {
+      position: absolute; top: 90px; right: 24px; z-index: 7100;
+      display: flex; gap: 10px; align-items: center;
+    }
+    .audio-mute-btn {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+      border: 1.5px solid rgba(255, 255, 255, 0.4);
+      color: white; font-size: 1.25rem; width: 44px; height: 44px; border-radius: 50%;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 4px 14px rgba(27, 54, 93, 0.35);
+    }
+    .audio-mute-btn:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(27, 54, 93, 0.5); }
+    .audio-mute-btn:active { transform: scale(0.95); }
+
+    /* Close button — recolored to distinct, eye-catching coral/crimson */
+    #tugClose {
+      background: linear-gradient(135deg, #E63946 0%, #C0392B 100%);
+      border: 1.5px solid rgba(255, 255, 255, 0.5);
+      color: white; font-size: 1.3rem; font-weight: 900; width: 44px; height: 44px; border-radius: 50%;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 4px 16px rgba(230, 57, 70, 0.45);
+    }
+    #tugClose:hover { background: linear-gradient(135deg, #F04856 0%, #D44233 100%); transform: scale(1.08); box-shadow: 0 6px 22px rgba(230, 57, 70, 0.6); }
+    #tugClose:active { transform: scale(0.95); }
+
+    /* ── Level select card & shared modal styles ── */
+    .ms-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(30px) saturate(130%);
+      -webkit-backdrop-filter: blur(30px) saturate(130%);
+      border: 1.5px solid rgba(255, 255, 255, 0.4);
+      border-radius: 32px;
+      padding: 24px 36px 24px;
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+      width: clamp(700px, 86vw, 1500px); height: 80vh; overflow: hidden;
+      box-shadow: 
+        0 24px 64px rgba(30, 94, 58, 0.12),
+        0 0 24px rgba(125, 206, 171, 0.05),
+        0 1px 0 rgba(255, 255, 255, 0.8) inset;
+      animation: modalSlideIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    @keyframes modalSlideIn {
+      from { opacity: 0; transform: scale(0.94) translateY(20px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .ms-title {
+      font-family: 'Noto Serif SC', serif; font-size: 2.6rem; font-weight: 900;
+      color: var(--navy); letter-spacing: 6px; text-align: center; flex-shrink: 0;
+      text-shadow: 0 4px 12px rgba(27, 54, 93, 0.06);
+    }
+    .ms-title small {
+      display: block; font-family: 'Outfit', sans-serif; font-size: 1.05rem; font-weight: 700;
+      color: var(--gold); letter-spacing: 6px; margin-top: 8px; text-transform: uppercase;
+    }
+    .ms-level-label {
+      font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 800;
+      letter-spacing: 3px; color: var(--navy); align-self: flex-start; flex-shrink: 0;
+      margin-bottom: 4px; border-left: 4px solid var(--gold); padding-left: 12px;
+    }
+    .ms-levels {
+      display: flex; gap: 12px; justify-content: center; width: 100%; flex-wrap: wrap; flex-shrink: 0;
+    }
+    .ms-level-btn {
+      padding: 12px 24px; border-radius: 16px;
+      background: rgba(255, 255, 255, 0.65);
+      border: 2px solid rgba(44, 110, 73, 0.15);
+      color: var(--navy); font-size: 1.15rem; font-weight: 800;
+      font-family: 'Outfit', sans-serif; cursor: pointer; letter-spacing: 0.5px;
+      transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+      box-shadow: var(--shadow-sm);
+      text-align: center;
+      line-height: 1.3;
+    }
+    .ms-level-btn small {
+      font-size: 0.8rem; font-weight: 500; color: var(--muted); display: block; margin-top: 2px;
+    }
+    .ms-level-btn.active {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--jade) 100%);
+      border-color: transparent; color: white;
+      box-shadow: 0 8px 24px rgba(44, 110, 73, 0.25);
+      transform: translateY(-3px);
+    }
+    .ms-level-btn.active small {
+      color: rgba(255, 255, 255, 0.85);
+    }
+    .ms-level-btn:hover:not(.active) {
+      border-color: var(--gold); color: var(--gold);
+      background: rgba(44, 110, 73, 0.05);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(44, 110, 73, 0.10);
+    }
+    .ms-level-btn:active {
+      transform: translateY(0);
+    }
+    .mh-grid {
+      display: flex; flex-direction: column; gap: 7px;
+      flex: 1; min-height: 0; overflow: hidden; width: 100%;
+    }
+    .mh-book-row {
+      display: flex; flex-direction: row; align-items: stretch;
+      gap: 7px; flex: 1; min-height: 0; overflow: visible;
+    }
+    .mh-book-label {
+      font-size: 1.2rem; font-weight: 900; color: var(--navy);
+      width: 60px; text-align: right; flex-shrink: 0; font-family: 'Noto Serif SC', serif; letter-spacing: 1px;
+      display: flex; align-items: center; justify-content: flex-end;
+    }
+    .mh-unit-btn {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      border-radius: 14px; background: rgba(255, 255, 255, 0.5);
+      border: 1.5px solid rgba(44, 110, 73, 0.12); color: var(--navy);
+      font-size: 1.05rem; font-weight: 800; font-family: 'Outfit', sans-serif; cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1); min-height: 0;
+      height: 100%;
+    }
+    .mh-unit-btn.active {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+      border-color: transparent;
+      color: white; box-shadow: 0 6px 16px rgba(27, 54, 93, 0.25);
+      transform: translateY(-2px);
+    }
+    .mh-unit-btn:hover:not(.active) {
+      border-color: var(--navy); color: var(--navy);
+      background: rgba(27, 54, 93, 0.05);
+      transform: translateY(-1px);
+    }
+    .mh-unit-btn:active {
+      transform: translateY(0);
+    }
+    .mh-sel-badge {
+      font-size: 1rem; color: var(--gold); font-family: 'Inter', sans-serif;
+      margin-left: 12px; font-weight: 600; letter-spacing: 0.5px;
+    }
+    .ms-confirm-btn {
+      padding: 16px 80px; border-radius: 20px;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--jade) 100%);
+      color: white;
+      border: none; font-size: 1.35rem; font-weight: 900;
+      letter-spacing: 4px; font-family: 'Outfit', sans-serif; cursor: pointer; flex-shrink: 0;
+      box-shadow: 0 8px 24px rgba(44, 110, 73, 0.3);
+      transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .ms-confirm-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 40px rgba(44, 110, 73, 0.4), 0 0 20px rgba(125, 206, 171, 0.3);
+    }
+    .ms-confirm-btn:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 4px 12px rgba(44, 110, 73, 0.2);
+    }
+
+  </style>
+</head>
+<body>
+
+<div id="tugOverlay">
+
+  <!-- Floating Controls below Score Bar -->
+  <div id="tugHeaderControls">
+    <button class="audio-mute-btn" onclick="GameAudio.toggleMute()">🔊</button>
+    <button id="tugClose" onclick="tugClose()">✕</button>
+  </div>
+
+  <!-- ── Level select (shown before the game starts) ── -->
+  <div id="tugLevelSelect">
+    <div class="ms-card">
+      <div class="ms-title">繩戰等級<small>CHOOSE LEVEL</small></div>
+      <div class="ms-level-label">TOCFL 等級 LEVEL</div>
+      <div class="ms-levels">
+        <button class="ms-level-btn tug-lvl-btn active" data-level="N1" onclick="_tugSetLevel('N1')">新手一<br><small>Novice 1</small></button>
+        <button class="ms-level-btn tug-lvl-btn"        data-level="N2" onclick="_tugSetLevel('N2')">新手二<br><small>Novice 2</small></button>
+        <button class="ms-level-btn tug-lvl-btn"        data-level="L1" onclick="_tugSetLevel('L1')">初級<br><small>Level 1</small></button>
+        <button class="ms-level-btn tug-lvl-btn"        data-level="L2" onclick="_tugSetLevel('L2')">基礎<br><small>Level 2</small></button>
+        <button class="ms-level-btn tug-lvl-btn"        data-level="L3" onclick="_tugSetLevel('L3')">進階<br><small>Level 3</small></button>
+        <button class="ms-level-btn tug-lvl-btn"        data-level="L4" onclick="_tugSetLevel('L4')">高級<br><small>Level 4</small></button>
+        <button class="ms-level-btn tug-lvl-btn"        data-level="L5" onclick="_tugSetLevel('L5')">流利<br><small>Level 5</small></button>
+      </div>
+      <div class="ms-level-label" style="flex-shrink:0">美華 MEIHUA <span class="mh-sel-badge" id="mhTugBadge"></span></div>
+      <div class="mh-grid" id="mhTugGrid">
+        <div class="mh-book-row"><span class="mh-book-label">一</span>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH1U1',this)">U1</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH1U2',this)">U2</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH1U3',this)">U3</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH1U4',this)">U4</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH1U5',this)">U5</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH1U6',this)">U6</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH1U7',this)">U7</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH1U8',this)">U8</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH1U9',this)">U9</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH1U10',this)">U10</button>
+        </div>
+        <div class="mh-book-row"><span class="mh-book-label">二</span>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH2U1',this)">U1</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH2U2',this)">U2</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH2U3',this)">U3</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH2U4',this)">U4</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH2U5',this)">U5</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH2U6',this)">U6</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH2U7',this)">U7</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH2U8',this)">U8</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH2U9',this)">U9</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH2U10',this)">U10</button>
+        </div>
+        <div class="mh-book-row"><span class="mh-book-label">三</span>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH3U1',this)">U1</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH3U2',this)">U2</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH3U3',this)">U3</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH3U4',this)">U4</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH3U5',this)">U5</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH3U6',this)">U6</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH3U7',this)">U7</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH3U8',this)">U8</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH3U9',this)">U9</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH3U10',this)">U10</button>
+        </div>
+        <div class="mh-book-row"><span class="mh-book-label">四</span>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH4U1',this)">U1</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH4U2',this)">U2</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH4U3',this)">U3</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH4U4',this)">U4</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH4U5',this)">U5</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH4U6',this)">U6</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH4U7',this)">U7</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH4U8',this)">U8</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH4U9',this)">U9</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH4U10',this)">U10</button>
+        </div>
+        <div class="mh-book-row"><span class="mh-book-label">五</span>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH5U1',this)">U1</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH5U2',this)">U2</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH5U3',this)">U3</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH5U4',this)">U4</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH5U5',this)">U5</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH5U6',this)">U6</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH5U7',this)">U7</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH5U8',this)">U8</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH5U9',this)">U9</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH5U10',this)">U10</button>
+        </div>
+        <div class="mh-book-row"><span class="mh-book-label">六</span>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH6U1',this)">U1</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH6U2',this)">U2</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH6U3',this)">U3</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH6U4',this)">U4</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH6U5',this)">U5</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH6U6',this)">U6</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH6U7',this)">U7</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH6U8',this)">U8</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH6U9',this)">U9</button>
+          <button class="mh-unit-btn" onclick="_mhTugToggle('MH6U10',this)">U10</button>
+        </div>
+      </div>
+      <button class="ms-confirm-btn" onclick="_tugConfirmLevel()">開始拔河 START ▶</button>
+    </div>
+  </div>
+
+  <!-- ── Score bar ── -->
+  <div id="tugScoreBar">
+    <div id="tugPipsLeft" class="tug-pips"></div>
+    <div id="tugScoreCenter">⭐ First to 5 wins!</div>
+    <div id="tugPipsRight" class="tug-pips"></div>
+  </div>
+
+  <!-- ── Rope scene: characters + rope ── -->
+  <div id="tugScene">
+
+    <!-- Persona 3 vs Persona 5 Anime Stage & Rig -->
+    <div id="tugStage">
+      <div id="tugGroundTrack"></div>
+      <div id="tugRigContainer">
+        <div id="teamRedSprite" class="team-sprite anim-idle"></div>
+        <div id="ropeCenterSegment"></div>
+        <div id="teamBlueSprite" class="team-sprite anim-idle"></div>
+      </div>
+    </div>
+
+  </div><!-- end #tugScene -->
+
+  <!-- ── Question arenas ── -->
+  <div id="tugArenas">
+
+    <div class="tug-area" id="tugAreaLeft">
+      <div class="tug-player-label">🔵 SEES (Persona 3)</div>
+      <div class="tug-question-card" id="tugCardLeft">
+        <div class="tug-q-type" id="tugQTypeLeft">TRANSLATE</div>
+        <div class="tug-q-text" id="tugQLeft">—</div>
+      </div>
+      <div class="tug-choices-grid" id="tugChoicesLeft"></div>
+    </div>
+
+    <div id="tugDivider"></div>
+
+    <div class="tug-area" id="tugAreaRight">
+      <div class="tug-player-label">🔴 Phantom (Persona 5)</div>
+      <div class="tug-question-card" id="tugCardRight">
+        <div class="tug-q-type" id="tugQTypeRight">TRANSLATE</div>
+        <div class="tug-q-text" id="tugQRight">—</div>
+      </div>
+      <div class="tug-choices-grid" id="tugChoicesRight"></div>
+    </div>
+
+  </div>
+
+  <!-- ── Persona Dramatic Final Round Announcement Overlay ── -->
+  <div id="tugFinalRoundOverlay">
+    <div class="p3-slash-left"></div>
+    <div class="p5-slash-right"></div>
+    <div class="final-round-content">
+      <div class="final-round-sub">★ 2 VS 2 MATCH POINT ★</div>
+      <div class="final-round-title">FINAL ROUND!</div>
+      <div class="final-round-tag">DUNGEON EXPLORATION GEAR ACTIVATED</div>
+    </div>
+  </div>
+
+  <!-- ── Round countdown overlay ── -->
+  <div id="tugCountdown">
+    <div id="tugCountdownLabel">ROUND POINT!</div>
+    <div id="tugCountdownNum">3</div>
+  </div>
+
+  <!-- ── Win screen ── -->
+  <div id="tugWinScreen">
+    <div id="tugWinBg"></div>
+    <div id="tugWinContent">
+      <span id="tugWinEmoji">🎉</span>
+      <div id="tugWinTitle">Player 1 Wins!</div>
+      <div id="tugWinSub">Answered 5 correctly!</div>
+      <div class="tug-win-btns">
+        <button class="tug-win-btn" id="tugBtnAgain" onclick="tugRestart()">▶ Play Again</button>
+        <button class="tug-win-btn" id="tugBtnExit" onclick="GameAudio.playClick(); location.href='../index.html'">← Back to Games</button>
+      </div>
+    </div>
+    <div id="tugConfettiContainer"></div>
+  </div>
+
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   TUG OF WAR GAME
+══════════════════════════════════════ */
+const TUG_LEAD       = 3;   // net-correct advantage to win a pull round → earn 1 point
+const TUG_WIN_POINTS = 3;   // game points to win the match (best of 3)
+const TUG_CHOICES    = 4;   // answer choices per question
+const TUG_COOLDOWN   = 900; // ms lock after answering
+
+let _tugLevel   = 'N1';   // selected level for vocab pool
+var _tugMHUnits = [];     // selected MH unit keys when in MH multi-select mode
+
+function _tugSetLevel(lv) {
+  GameAudio.playClick();
+  _tugLevel = lv;
+  /* Switching to TOCFL level — clear MH unit selection */
+  _tugMHUnits = [];
+  document.querySelectorAll('.mh-unit-btn').forEach(function(b) { b.classList.remove('active'); });
+  var badge = document.getElementById('mhTugBadge');
+  if (badge) badge.textContent = '';
+  document.querySelectorAll('.tug-lvl-btn:not(.mh-unit-btn)').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.level === lv);
+  });
+}
+
+function _mhTugToggle(unitKey, btn) {
+  GameAudio.playClick();
+  var idx = _tugMHUnits.indexOf(unitKey);
+  if (idx === -1) { _tugMHUnits.push(unitKey); btn.classList.add('active'); }
+  else            { _tugMHUnits.splice(idx, 1); btn.classList.remove('active'); }
+  var badge = document.getElementById('mhTugBadge');
+  if (badge) badge.textContent = _tugMHUnits.length ? '(' + _tugMHUnits.length + ' unit' + (_tugMHUnits.length > 1 ? 's' : '') + ' selected)' : '';
+  if (_tugMHUnits.length > 0) {
+    _tugLevel = 'MH_MULTI';
+    document.querySelectorAll('.tug-lvl-btn:not(.mh-unit-btn)').forEach(function(b) { b.classList.remove('active'); });
+  } else {
+    _tugLevel = 'N1';
+    document.querySelectorAll('.tug-lvl-btn[data-level="N1"]:not(.mh-unit-btn)').forEach(function(b) { b.classList.add('active'); });
+  }
+}
+
+function _tugConfirmLevel() {
+  GameAudio.playClick();
+  var sel = document.getElementById('tugLevelSelect');
+  if (sel) sel.classList.remove('open');
+  GameAudio.startBGM();
+  _tugInitGame();
+}
+
+function _tugInitGame() {
+  /* Reset game state and start the first round */
+  _tugPullScore   = [0, 0];
+  _tugStep        = 0;
+  _tugPoints      = [0, 0];
+  _tugLocked      = [false, false];
+  _tugAnswers     = [null, null];
+  _tugRoundActive = true;
+
+  var ws = document.getElementById('tugWinScreen');
+  if (ws) ws.classList.remove('open');
+  var cd = document.getElementById('tugCountdown');
+  if (cd) cd.classList.remove('show');
+  var fro = document.getElementById('tugFinalRoundOverlay');
+  if (fro) fro.classList.remove('show');
+
+  // Reset to School Uniforms
+  var overlay = document.getElementById('tugOverlay');
+  if (overlay) overlay.classList.remove('is-final-round');
+
+  var rig = document.getElementById('tugRigContainer');
+  if (rig) { rig.style.transition = 'none'; rig.style.transform = 'translateX(0px)'; }
+  setTimeout(function() {
+    if (rig) rig.style.transition = 'transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)';
+  }, 50);
+
+  _tugResetChars();
+  _tugInitPips();
+  _tugUpdatePips();
+  _tugUpdateScoreCenter();
+  _tugGenQuestion(0);
+  _tugGenQuestion(1);
+}
+
+const TUG_MAX_STEP = 3;        // Maximum 3 discrete steps toward either side to win round
+const TUG_STEP_PX  = 70;       // Pixel distance matching ground track notches
+let _tugStep       = 0;        // Discrete position offset: -3 (Red Win) to +3 (Blue Win), 0 = Center
+let _tugPullScore  = [0, 0];   // [left, right] total correct pulls
+let _tugPoints     = [0, 0];   // [left, right] game match points (best of 3)
+let _tugLocked     = [false, false]; // prevent spam tapping
+let _tugAnswers    = [null, null];  // correct answer for [left, right]
+let _tugRoundActive = true;        // false while countdown plays (block inputs)
+
+/* ── Helpers ── */
+function _tugGetVocabPool() {
+  /* Return words at the selected level that have an English meaning */
+  var pool = [];
+
+  /* ── Meihua multi-select: merge selected unit pools from VOCAB_DB ── */
+  if (_tugLevel === 'MH_MULTI') {
+    _tugMHUnits.forEach(function(unitKey) {
+      var unitPool = VOCAB_DB[unitKey] || [];
+      unitPool.forEach(function(entry) {
+        /* entry = [char, pinyin]; only include if a meaning is known */
+        if (entry[0] && window._meihuaMeanings && window._meihuaMeanings[entry[0]]) {
+          pool.push(entry[0]);
+        }
+      });
+    });
+    return pool;
+  }
+
+  /* ── TOCFL levels: pull from _vocabDB ── */
+  if (typeof _vocabDB === 'undefined') return pool;
+  var keys = Object.keys(_vocabDB);
+  for (var i = 0; i < keys.length; i++) {
+    var k = keys[i];
+    var v = _vocabDB[k];
+    /* Require correct level, a meaning (from vocabDB or _dictExtended), length 1-4 */
+    if (!v || k.length < 1 || k.length > 4) continue;
+    if (v.lv !== _tugLevel) continue;
+    var hasMeaning = !!(v.m ||
+      (typeof _dictExtended !== 'undefined' && _dictExtended[k] && _dictExtended[k].m));
+    if (hasMeaning) pool.push(k);
+  }
+  /* Fallback: if level yields too few entries, ignore level filter */
+  if (pool.length < 8) {
+    pool = [];
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      var v = _vocabDB[k];
+      if (!v || k.length < 1 || k.length > 4) continue;
+      var hasMeaning = !!(v.m ||
+        (typeof _dictExtended !== 'undefined' && _dictExtended[k] && _dictExtended[k].m));
+      if (hasMeaning) pool.push(k);
+    }
+  }
+  return pool;
+}
+
+function _tugRandItems(arr, n, exclude) {
+  /* Pick n random unique items from arr, excluding items in exclude */
+  var filtered = arr.filter(function(x) { return exclude.indexOf(x) === -1; });
+  var out = [];
+  while (out.length < n && filtered.length > 0) {
+    var idx = Math.floor(Math.random() * filtered.length);
+    out.push(filtered.splice(idx, 1)[0]);
+  }
+  return out;
+}
+
+function _tugShortDef(word) {
+  /* Get a short English definition */
+  var def = null;
+  if (_tugLevel === 'MH_MULTI') {
+    /* Meihua mode: use only the Meihua meaning */
+    if (typeof _meihuaMeanings !== 'undefined' && _meihuaMeanings[word]) {
+      def = String(_meihuaMeanings[word]);
+    }
+  } else {
+    /* TOCFL mode: check vocabDB then dictExtended */
+    if (typeof _vocabDB !== 'undefined') {
+      var v = _vocabDB[word];
+      if (v && v.m) def = String(v.m);
+    }
+    if (!def && typeof _dictExtended !== 'undefined') {
+      var e = _dictExtended[word];
+      if (e && e.m) def = String(e.m);
+    }
+    if (!def && typeof _meihuaMeanings !== 'undefined' && _meihuaMeanings[word]) {
+      def = String(_meihuaMeanings[word]);
+    }
+  }
+  if (!def) return word;
+  return def.split('/')[0].split(';')[0].trim().substring(0, 34);
+}
+
+/* ── 2D Pixel Art Sprite Animation System ── */
+function _tugSetTeamAnim(team, anim) {
+  var el = document.getElementById(team === 'red' ? 'teamRedSprite' : 'teamBlueSprite');
+  if (el) {
+    el.className = 'team-sprite anim-' + anim;
+  }
+}
+
+function _tugResetChars() {
+  _tugSetTeamAnim('red', 'idle');
+  _tugSetTeamAnim('blue', 'idle');
+}
+
+function _tugPullChar(side) {
+  GameAudio.playPull();
+  if (side === 0) {
+    _tugSetTeamAnim('red', 'pull');
+    _tugSetTeamAnim('blue', 'stumble');
+  } else {
+    _tugSetTeamAnim('blue', 'pull');
+    _tugSetTeamAnim('red', 'stumble');
+  }
+  setTimeout(function() { 
+    if (!_tugRoundActive) return; // If round ended, keep end state
+    _tugResetChars(); 
+  }, 650);
+}
+
+function _tugStumbleChar(side) {
+  GameAudio.playFailure();
+  var team = (side === 0) ? 'red' : 'blue';
+  _tugSetTeamAnim(team, 'stumble');
+  setTimeout(function() {
+    if (!_tugRoundActive) return;
+    _tugSetTeamAnim(team, 'idle');
+  }, 500);
+}
+
+function _tugUpdateCharPositions() {
+  // Translate rig based on discrete -3 to +3 step offset:
+  // -3 to -1: Red leads -> shift left (negative X)
+  // +1 to +3: Blue leads -> shift right (positive X)
+  var shiftX = _tugStep * TUG_STEP_PX;
+  
+  var rig = document.getElementById('tugRigContainer');
+  if (rig) rig.style.transform = 'translateX(' + shiftX + 'px)';
+
+  /* Danger lines glow when close to 3-step danger line */
+  var dl = document.getElementById('tugDangerLeft');
+  var dr = document.getElementById('tugDangerRight');
+  if (dl) dl.classList.toggle('warn', _tugStep <= -2);
+  if (dr) dr.classList.toggle('warn', _tugStep >= 2);
+}
+
+function _tugShakeChar(side) {
+  var el = document.getElementById(side === 0 ? 'teamRedSprite' : 'teamBlueSprite');
+  if (!el) return;
+  el.classList.add('shake');
+  setTimeout(function() { el.classList.remove('shake'); }, 350);
+}
+
+function _tugUpdateScoreCenter() {
+  var el = document.getElementById('tugScoreCenter');
+  if (!el) return;
+  if (_tugStep === 0) {
+    el.textContent = 'PULL — drag opponent 3 steps to the red line!';
+  } else if (_tugStep < 0) {
+    var lead = Math.abs(_tugStep);
+    el.textContent = '🟢 P1 leads ' + lead + '/3 — 🔵 P2 in Danger!';
+  } else {
+    el.textContent = '🔵 P2 leads ' + _tugStep + '/3 — 🟢 P1 in Danger!';
+  }
+}
+
+function _tugUpdatePips() {
+  /* Pips reflect GAME POINTS (best of 3), not pull score */
+  ['Left','Right'].forEach(function(side, si) {
+    var container = document.getElementById('tugPips' + side);
+    if (!container) return;
+    var imgs = container.querySelectorAll('.tug-pip');
+    var pts  = _tugPoints[si];
+    var filledSrc = si === 0 ? 'tug_sprites/pip_red.png' : 'tug_sprites/pip_blue.png';
+    imgs.forEach(function(img, di) {
+      var filled = di < pts;
+      img.src = filled ? filledSrc : 'tug_sprites/pip_empty.png';
+      if (filled) { img.classList.add('lit'); } else { img.classList.remove('lit'); }
+    });
+  });
+}
+
+var _customQuestions = null;
+
+/* ── Question generation ── */
+function _tugGenQuestion(side) {
+  /* side: 0=left, 1=right */
+  var suffix = side === 0 ? 'Left' : 'Right';
+  var qTextEl   = document.getElementById('tugQ' + suffix);
+  var qTypeEl   = document.getElementById('tugQType' + suffix);
+  var choicesEl = document.getElementById('tugChoices' + suffix);
+  var cardEl    = document.getElementById('tugCard' + suffix);
+
+  if (!qTextEl || !choicesEl) return;
+  if (cardEl) cardEl.classList.remove('correct', 'wrong');
+
+  /* If custom activity questions are loaded via LotusGameBridge */
+  if (_customQuestions && _customQuestions.length > 0) {
+    var qItem = _customQuestions[Math.floor(Math.random() * _customQuestions.length)];
+    var correct = qItem.correctAnswer || (qItem.options && qItem.options.find(function(o){ return o.isCorrect; })?.text) || qItem.text;
+    _tugAnswers[side] = correct;
+
+    var choices = [];
+    if (Array.isArray(qItem.options) && qItem.options.length >= 2) {
+      choices = qItem.options.map(function(o){ return typeof o === 'string' ? o : (o.text || ''); });
+    } else {
+      var poolDistractors = (qItem.wrongAnswers && qItem.wrongAnswers.length > 0)
+        ? qItem.wrongAnswers
+        : _customQuestions.filter(function(x){ return (x.correctAnswer || x.text) !== correct; }).map(function(x){ return x.correctAnswer || x.text; });
+      choices = [correct].concat(poolDistractors.slice(0, TUG_CHOICES - 1));
+    }
+    for (var i = choices.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = choices[i]; choices[i] = choices[j]; choices[j] = tmp;
+    }
+
+    qTextEl.textContent = qItem.text || qItem.question || correct;
+    qTextEl.className   = (qItem.text && qItem.text.length > 12) ? 'tug-q-text small' : 'tug-q-text';
+    if (qTypeEl) qTypeEl.textContent = qItem.pinyin ? qItem.pinyin : 'CHOOSE THE CORRECT ANSWER';
+
+    choicesEl.innerHTML = '';
+    choices.forEach(function(word) {
+      var btn = document.createElement('button');
+      btn.className = 'tug-choice-btn';
+      btn.dataset.word = word;
+      btn.textContent = word;
+      if (word.length > 12) btn.classList.add('small-text');
+
+      btn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        _tugAnswer(side, word, btn);
+      }, { passive: false });
+      btn.addEventListener('click', function() {
+        _tugAnswer(side, word, btn);
+      });
+      choicesEl.appendChild(btn);
+    });
+    return;
+  }
+
+  /* Default Vocab Pool (TOCFL / Meihua Fallback) */
+  var pool = _tugGetVocabPool();
+  if (pool.length < TUG_CHOICES + 1) return;
+
+  /* Pick question type: 0 = show hanzi→pick english, 1 = show english→pick hanzi */
+  var qtype = Math.random() < 0.5 ? 0 : 1;
+
+  /* Pick a correct word and 3 distractors */
+  var correct = pool[Math.floor(Math.random() * pool.length)];
+  var distractors = _tugRandItems(pool, TUG_CHOICES - 1, [correct]);
+  var choices = distractors.concat([correct]);
+  /* Shuffle choices */
+  for (var i = choices.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = choices[i]; choices[i] = choices[j]; choices[j] = tmp;
+  }
+
+  _tugAnswers[side] = correct;
+
+  var suffix = side === 0 ? 'Left' : 'Right';
+  var qTextEl   = document.getElementById('tugQ' + suffix);
+  var qTypeEl   = document.getElementById('tugQType' + suffix);
+  var choicesEl = document.getElementById('tugChoices' + suffix);
+  var cardEl    = document.getElementById('tugCard' + suffix);
+
+  if (!qTextEl || !choicesEl) return;
+
+  /* Reset card state */
+  cardEl.classList.remove('correct', 'wrong');
+
+  /* Set question text */
+  if (qtype === 0) {
+    /* Show hanzi character, answer is english */
+    qTextEl.textContent = correct;
+    qTextEl.className   = 'tug-q-text';
+    if (qTypeEl) qTypeEl.textContent = 'WHAT DOES IT MEAN?';
+  } else {
+    /* Show english, answer is hanzi */
+    qTextEl.textContent = _tugShortDef(correct);
+    qTextEl.className   = 'tug-q-text small';
+    if (qTypeEl) qTypeEl.textContent = 'WHICH CHARACTER?';
+  }
+
+  /* Build choice buttons */
+  choicesEl.innerHTML = '';
+  choices.forEach(function(word) {
+    var btn = document.createElement('button');
+    btn.className = 'tug-choice-btn';
+    btn.dataset.word = word; // store hanzi for comparison
+    /* Display: opposite of question type */
+    var label = (qtype === 0) ? _tugShortDef(word) : word;
+    btn.textContent = label;
+    if (label.length > 12) btn.classList.add('small-text');
+
+    /* Use touchstart so both styluses can register simultaneously */
+    btn.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      _tugAnswer(side, word, btn);
+    }, { passive: false });
+    /* Also click for desktop testing */
+    btn.addEventListener('click', function() {
+      _tugAnswer(side, word, btn);
+    });
+
+    choicesEl.appendChild(btn);
+  });
+}
+
+/* ── Answer handling ── */
+function _tugAnswer(side, chosen, tappedBtn) {
+  if (_tugLocked[side] || !_tugRoundActive) return;
+  _tugLocked[side] = true;
+
+  var correct   = _tugAnswers[side];
+  var isCorrect = (chosen === correct);
+  if (isCorrect) {
+    GameAudio.playSuccess();
+  } else {
+    GameAudio.playFailure();
+  }
+  var suffix    = side === 0 ? 'Left' : 'Right';
+  var cardEl    = document.getElementById('tugCard' + suffix);
+  var choicesEl = document.getElementById('tugChoices' + suffix);
+
+  /* Flash tapped button */
+  if (tappedBtn) tappedBtn.classList.add(isCorrect ? 'correct-flash' : 'wrong-flash');
+
+  /* On wrong: also reveal the correct button */
+  if (!isCorrect && choicesEl) {
+    var allBtns = choicesEl.querySelectorAll('.tug-choice-btn');
+    allBtns.forEach(function(b) {
+      if (b.dataset.word === correct) {
+        setTimeout(function() { b.classList.add('correct-flash'); }, 200);
+      }
+    });
+  }
+
+  if (cardEl) cardEl.classList.add(isCorrect ? 'correct' : 'wrong');
+
+  if (isCorrect) {
+    _tugPullScore[side]++;
+
+    /* Correct answer: shift step offset 1 notch toward answering side */
+    if (side === 0) {
+      _tugStep = Math.max(-TUG_MAX_STEP, _tugStep - 1);
+    } else {
+      _tugStep = Math.min(TUG_MAX_STEP, _tugStep + 1);
+    }
+
+    _tugPullChar(side);
+    _tugUpdateCharPositions();
+    _tugShakeChar(1 - side); // shake opponent dragged forward
+    _tugUpdateScoreCenter();
+
+    /* Win condition: 3-step delta reached */
+    if (_tugStep <= -TUG_MAX_STEP) {
+      _tugRoundActive = false;
+      _tugLocked = [true, true];
+      _tugSetTeamAnim('red', 'victory');
+      _tugSetTeamAnim('blue', 'stumble');
+      setTimeout(function() { _tugRoundWin(0); }, 700);
+      return;
+    } else if (_tugStep >= TUG_MAX_STEP) {
+      _tugRoundActive = false;
+      _tugLocked = [true, true];
+      _tugSetTeamAnim('blue', 'victory');
+      _tugSetTeamAnim('red', 'stumble');
+      setTimeout(function() { _tugRoundWin(1); }, 700);
+      return;
+    }
+  } else {
+    /* Wrong: character stumbles forward */
+    _tugStumbleChar(side);
+  }
+
+  /* After cooldown: clear lock and load next question */
+  setTimeout(function() {
+    _tugLocked[side] = false;
+    _tugGenQuestion(side);
+  }, isCorrect ? TUG_COOLDOWN : TUG_COOLDOWN + 400);
+}
+
+/* ── Round won: award point, countdown, new round or game win ── */
+function _tugRoundWin(side) {
+  _tugPoints[side]++;
+  _tugUpdatePips();
+
+  if (_tugPoints[side] >= TUG_WIN_POINTS) {
+    /* Game over */
+    setTimeout(function() { _tugShowWin(side); }, 300);
+    return;
+  }
+
+  /* Check for 2 vs 2 Final Round! */
+  if (_tugPoints[0] === 2 && _tugPoints[1] === 2) {
+    _tugTriggerFinalRound();
+    return;
+  }
+
+  /* Start next regular round after countdown */
+  var label = document.getElementById('tugCountdownLabel');
+  if (label) {
+    var sideName = side === 0 ? '🔵 SEES (Persona 3)' : '🔴 Phantom (Persona 5)';
+    label.textContent = sideName + ' scores a point!';
+  }
+
+  _tugCountdown(function() {
+    /* New round: reset step + character positions */
+    _tugPullScore   = [0, 0];
+    _tugStep        = 0;
+    _tugRoundActive = true;
+    _tugLocked      = [false, false];
+    var rig = document.getElementById('tugRigContainer');
+    if (rig) { rig.style.transition = 'none'; rig.style.transform = 'translateX(0px)'; }
+    setTimeout(function() {
+      if (rig) rig.style.transition = 'transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)';
+    }, 50);
+    _tugResetChars();
+    _tugUpdateCharPositions();
+    _tugUpdateScoreCenter();
+    _tugGenQuestion(0);
+    _tugGenQuestion(1);
+  });
+}
+
+function _tugTriggerFinalRound() {
+  GameAudio.playVictory();
+  var overlay = document.getElementById('tugFinalRoundOverlay');
+  if (overlay) overlay.classList.add('show');
+  
+  // Transform to Dungeon Exploration Battle Gear
+  var tugOverlay = document.getElementById('tugOverlay');
+  if (tugOverlay) tugOverlay.classList.add('is-final-round');
+
+  setTimeout(function() {
+    if (overlay) overlay.classList.remove('show');
+    
+    var label = document.getElementById('tugCountdownLabel');
+    if (label) label.textContent = '★ FINAL ROUND: SUDDEN DEATH! ★';
+
+    _tugCountdown(function() {
+      _tugPullScore   = [0, 0];
+      _tugStep        = 0;
+      _tugRoundActive = true;
+      _tugLocked      = [false, false];
+      var rig = document.getElementById('tugRigContainer');
+      if (rig) { rig.style.transition = 'none'; rig.style.transform = 'translateX(0px)'; }
+      setTimeout(function() {
+        if (rig) rig.style.transition = 'transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      }, 50);
+      _tugResetChars();
+      _tugUpdateCharPositions();
+      _tugUpdateScoreCenter();
+      _tugGenQuestion(0);
+      _tugGenQuestion(1);
+    });
+  }, 2300);
+}
+
+/* ── Round countdown: 3 → 2 → 1 → GO! ── */
+function _tugCountdown(cb) {
+  var overlay = document.getElementById('tugCountdown');
+  var numEl   = document.getElementById('tugCountdownNum');
+  if (!overlay || !numEl) { cb && cb(); return; }
+  overlay.classList.add('show');
+  var count = 3;
+  function tick() {
+    /* Restart CSS animation by removing/re-adding */
+    numEl.style.animation = 'none';
+    void numEl.offsetWidth;
+    numEl.style.animation = '';
+    numEl.textContent = count > 0 ? String(count) : 'GO!';
+    GameAudio.playClick();
+    if (count > 0) {
+      count--;
+      setTimeout(tick, 900);
+    } else {
+      setTimeout(function() {
+        overlay.classList.remove('show');
+        cb && cb();
+      }, 650);
+    }
+  }
+  tick();
+}
+
+/* ── Init pips (TUG_WIN_POINTS pips = game points, best of 3) ── */
+function _tugInitPips() {
+  ['Left','Right'].forEach(function(side, si) {
+    var container = document.getElementById('tugPips' + side);
+    if (!container) return;
+    container.innerHTML = '';
+    for (var i = 0; i < TUG_WIN_POINTS; i++) {
+      var img = document.createElement('img');
+      img.className = 'tug-pip';
+      img.src = 'tug_sprites/pip_empty.png';
+      img.width = 24; img.height = 24;
+      img.alt = '';
+      container.appendChild(img);
+    }
+  });
+}
+
+/* ── Win screen ── */
+function _tugShowWin(side) {
+  GameAudio.stopBGM();
+  GameAudio.playVictory();
+  var ws = document.getElementById('tugWinScreen');
+  if (!ws) return;
+
+  var emoji  = side === 0 ? '🟢' : '🔵';
+  var name   = side === 0 ? 'Player 1' : 'Player 2';
+  var color  = side === 0 ? '#2C6E49' : '#1B365D';
+
+  document.getElementById('tugWinEmoji').textContent = emoji + ' 🏆';
+  document.getElementById('tugWinTitle').textContent = name + ' Wins!';
+  document.getElementById('tugWinSub').textContent   = 'Won ' + TUG_WIN_POINTS + ' rounds — Best of ' + (TUG_WIN_POINTS * 2 - 1) + '!';
+
+  /* Report score to LotusGameBridge if available */
+  if (window.GameBridge && typeof window.GameBridge.finishGame === 'function') {
+    var p1Score = _tugPullScore[0] * 100;
+    var p2Score = _tugPullScore[1] * 100;
+    var winningScore = Math.max(p1Score, p2Score);
+    var maxScore = (_tugPullScore[0] + _tugPullScore[1] + 4) * 100;
+    window.GameBridge.finishGame(winningScore, maxScore, [
+      { side: 'P1', score: p1Score, pulls: _tugPullScore[0], points: _tugPoints[0] },
+      { side: 'P2', score: p2Score, pulls: _tugPullScore[1], points: _tugPoints[1] }
+    ], side === 0 ? 'Player 1' : 'Player 2');
+  }
+
+  /* Background tint for winner */
+  var bg = document.getElementById('tugWinBg');
+  if (bg) bg.style.background = side === 0
+    ? 'linear-gradient(135deg, #082d18 0%, #0a1c12 100%)'
+    : 'linear-gradient(135deg, #04192e 0%, #071828 100%)';
+
+  ws.classList.add('open');
+  _tugSpawnConfetti(color);
+}
+
+/* ── Confetti ── */
+function _tugSpawnConfetti(winColor) {
+  var container = document.getElementById('tugConfettiContainer');
+  if (!container) return;
+  container.innerHTML = '';
+  var colors = [winColor, '#FFD700', '#ffffff', '#ff69b4', '#00ff88', '#ffa500'];
+  for (var i = 0; i < 60; i++) {
+    (function(i) {
+      var el = document.createElement('div');
+      el.className = 'tug-confetti';
+      el.style.left     = Math.random() * 100 + 'vw';
+      el.style.top      = '-20px';
+      el.style.background = colors[Math.floor(Math.random() * colors.length)];
+      el.style.width    = (6 + Math.random() * 10) + 'px';
+      el.style.height   = (6 + Math.random() * 10) + 'px';
+      el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      el.style.animationDuration = (1.5 + Math.random() * 2.5) + 's';
+      el.style.animationDelay   = (Math.random() * 1.2) + 's';
+      container.appendChild(el);
+    })(i);
+  }
+}
+
+/* ── Center-divider sprite removed (canvas no longer in DOM) ── */
+function _tugSpriteStart() {}
+function _tugSpriteStop()  {}
+
+/* ── Public API ── */
+function tugStart() {
+  var overlay = document.getElementById('tugOverlay');
+  if (overlay) overlay.classList.add('open');
+
+  /* Show the level-select screen; game starts only after player confirms */
+  var sel = document.getElementById('tugLevelSelect');
+  if (sel) sel.classList.add('open');
+}
+
+function tugRestart() {
+  GameAudio.playClick();
+  GameAudio.stopBGM();
+  /* Go back to level select so player can pick a (possibly different) level */
+  var ws = document.getElementById('tugWinScreen');
+  if (ws) ws.classList.remove('open');
+  var sel = document.getElementById('tugLevelSelect');
+  if (sel) sel.classList.add('open');
+}
+
+function tugClose() {
+  GameAudio.stopBGM();
+  GameAudio.playClick();
+  _tugLocked      = [false, false];
+  _tugRoundActive = false;
+  location.href = '../index.html';
+}
+
+/* Auto-open tug overlay on page load */
+tugStart();
+
+/* LotusGameBridge Integration */
+if (window.GameBridge && typeof window.GameBridge.onReady === 'function') {
+  window.GameBridge.onReady(function(activity) {
+    if (activity && Array.isArray(activity.questions) && activity.questions.length > 0) {
+      _customQuestions = activity.questions;
+      var sel = document.getElementById('tugLevelSelect');
+      if (sel) sel.classList.remove('open');
+      GameAudio.startBGM();
+      _tugInitGame();
+    }
+  });
+}
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'INIT_ACTIVITY' && event.data.activity && Array.isArray(event.data.activity.questions)) {
+    _customQuestions = event.data.activity.questions;
+    var sel = document.getElementById('tugLevelSelect');
+    if (sel) sel.classList.remove('open');
+    _tugInitGame();
+  }
+});
+</script>
+</body>
+</html>

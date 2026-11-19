@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Tug of War Sprite & Step Controller Preview</title>
+  <style>
+    body {
+      background: #1B365D;
+      color: #fff;
+      font-family: sans-serif;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .preview-box {
+      position: relative;
+      width: 900px;
+      height: 260px;
+      background: #3c7d50;
+      border: 3px solid #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    #previewGround {
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      height: 48px;
+      background: url('ground_track.png') center bottom no-repeat;
+      background-size: contain;
+      pointer-events: none;
+      z-index: 2;
+    }
+    #previewRig {
+      position: absolute;
+      bottom: 24px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform: translateX(0px);
+      z-index: 10;
+    }
+    .team-sprite {
+      width: 280px;
+      height: 150px;
+      image-rendering: pixelated;
+      background-size: 1120px 600px;
+      background-repeat: no-repeat;
+    }
+    #spriteRed {
+      background-image: url('character_red_sheet.png');
+    }
+    #spriteBlue {
+      background-image: url('character_blue_sheet.png');
+    }
+    #spriteRopeCenter {
+      width: 140px;
+      height: 64px;
+      margin-bottom: 20px;
+      background: url('rope_center.png') center center no-repeat;
+      background-size: contain;
+      image-rendering: pixelated;
+    }
+
+    /* CSS Step animations */
+    /* Row 0: Idle (0px top) */
+    .anim-idle {
+      animation: playIdle 0.8s steps(4) infinite;
+    }
+    @keyframes playIdle {
+      from { background-position-x: 0px; background-position-y: 0px; }
+      to { background-position-x: -1120px; background-position-y: 0px; }
+    }
+
+    /* Row 1: Pull (150px top) */
+    .anim-pull {
+      animation: playPull 0.6s steps(4) infinite;
+    }
+    @keyframes playPull {
+      from { background-position-x: 0px; background-position-y: -150px; }
+      to { background-position-x: -1120px; background-position-y: -150px; }
+    }
+
+    /* Row 2: Stumble (300px top) */
+    .anim-stumble {
+      animation: playStumble 0.5s steps(4) infinite;
+    }
+    @keyframes playStumble {
+      from { background-position-x: 0px; background-position-y: -300px; }
+      to { background-position-x: -1120px; background-position-y: -300px; }
+    }
+
+    /* Row 3: Victory (450px top) */
+    .anim-victory {
+      animation: playVictory 0.7s steps(4) infinite;
+    }
+    @keyframes playVictory {
+      from { background-position-x: 0px; background-position-y: -450px; }
+      to { background-position-x: -1120px; background-position-y: -450px; }
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    button {
+      padding: 10px 18px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: #2C6E49;
+      color: #fff;
+    }
+    button:hover { background: #1E5E3A; }
+    .btn-red { background: #e42638; }
+    .btn-red:hover { background: #a81224; }
+    .btn-blue { background: #248cee; }
+    .btn-blue:hover { background: #124cac; }
+  </style>
+</head>
+<body>
+  <h2>Tug of War Sprite Sheet & Step Mechanics Preview</h2>
+  
+  <div class="preview-box">
+    <div id="previewGround"></div>
+    <div id="previewRig">
+      <div id="spriteRed" class="team-sprite anim-idle"></div>
+      <div id="spriteRopeCenter"></div>
+      <div id="spriteBlue" class="team-sprite anim-idle"></div>
+    </div>
+  </div>
+
+  <div id="stepLabel" style="font-size: 1.3rem; margin-bottom: 12px; font-weight: bold;">
+    Current Step: 0 (Neutral Center)
+  </div>
+
+  <div class="controls">
+    <button class="btn-red" onclick="stepRed()">⬅ Red Pull (+1 Step Left)</button>
+    <button onclick="setBoth('idle')">Reset Idle</button>
+    <button class="btn-blue" onclick="stepBlue()">Blue Pull (+1 Step Right) ➡</button>
+    <button onclick="resetGame()">Reset (Step 0)</button>
+  </div>
+
+  <div class="controls" style="margin-top: 15px;">
+    <span>Force Animation State:</span>
+    <button onclick="setBoth('idle')">Idle</button>
+    <button onclick="setBoth('pull')">Pulling</button>
+    <button onclick="setBoth('stumble')">Stumbling</button>
+    <button onclick="setBoth('victory')">Victory</button>
+  </div>
+
+  <script>
+    let currentStep = 0; // -3 to +3
+    const STEP_PX = 70; // Matches ground_track.png notch distance
+
+    function updateRig() {
+      const rig = document.getElementById('previewRig');
+      const shiftX = -currentStep * STEP_PX; // negative = left (Red), positive = right (Blue)
+      rig.style.transform = `translateX(${shiftX}px)`;
+      
+      let status = `Current Step: ${currentStep}`;
+      if (currentStep === -3) status += " 🏆 RED TEAM VICTORY!";
+      else if (currentStep === 3) status += " 🏆 BLUE TEAM VICTORY!";
+      else if (currentStep < 0) status += ` (Red Leads by ${Math.abs(currentStep)})`;
+      else if (currentStep > 0) status += ` (Blue Leads by ${currentStep})`;
+      else status += " (Neutral Center)";
+      document.getElementById('stepLabel').textContent = status;
+    }
+
+    function setRedAnim(anim) {
+      const el = document.getElementById('spriteRed');
+      el.className = `team-sprite anim-${anim}`;
+    }
+
+    function setBlueAnim(anim) {
+      const el = document.getElementById('spriteBlue');
+      el.className = `team-sprite anim-${anim}`;
+    }
+
+    function setBoth(anim) {
+      setRedAnim(anim);
+      setBlueAnim(anim);
+    }
+
+    function stepRed() {
+      if (currentStep > -3) {
+        currentStep--;
+        setRedAnim('pull');
+        setBlueAnim('stumble');
+        updateRig();
+        if (currentStep === -3) {
+          setTimeout(() => { setRedAnim('victory'); setBlueAnim('stumble'); }, 400);
+        } else {
+          setTimeout(() => { setRedAnim('idle'); setBlueAnim('idle'); }, 600);
+        }
+      }
+    }
+
+    function stepBlue() {
+      if (currentStep < 3) {
+        currentStep++;
+        setBlueAnim('pull');
+        setRedAnim('stumble');
+        updateRig();
+        if (currentStep === 3) {
+          setTimeout(() => { setBlueAnim('victory'); setRedAnim('stumble'); }, 400);
+        } else {
+          setTimeout(() => { setRedAnim('idle'); setBlueAnim('idle'); }, 600);
+        }
+      }
+    }
+
+    function resetGame() {
+      currentStep = 0;
+      updateRig();
+      setBoth('idle');
+    }
+  </script>
+</body>
+</html>

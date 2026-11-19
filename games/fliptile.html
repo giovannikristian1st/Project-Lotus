@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Flip Tile Match</title>
+  <script src="common/bridge.js"></script>
+  <script src="vocabdb.js"></script>
+  <script src="meihuadb.js"></script>
+  <script src="audio.js"></script>
+  <style>
+    :root {
+      --p1: #1565C0;
+      --p1-light: #BBDEFB;
+      --p1-mid:   #1976D2;
+      --p2: #C62828;
+      --p2-light: #FFCDD2;
+      --p2-mid:   #D32F2F;
+      --gold: #F9A825;
+      --tile-back: #2a4a7f;
+      --tile-back2: #1a3560;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: 'Noto Sans SC', 'Segoe UI', Arial, sans-serif;
+      background: #0f1e35;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    /* ══════════════════════════════════════
+       CONFETTI BACKGROUND
+    ══════════════════════════════════════ */
+    #confettiBg {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+    }
+    .conf {
+      position: absolute;
+      width: 12px; height: 12px;
+      border-radius: 2px;
+      opacity: 0.6;
+      animation: confFall linear infinite;
+    }
+    @keyframes confFall {
+      0%   { transform: translateY(-40px) rotate(0deg);   opacity: 0.7; }
+      100% { transform: translateY(110vh)  rotate(720deg); opacity: 0;   }
+    }
+
+    /* ══════════════════════════════════════
+       SETUP SCREEN
+    ══════════════════════════════════════ */
+    #ftSetup {
+      position: fixed; inset: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      background: radial-gradient(circle at center, rgba(13,32,64,0.94) 0%, rgba(4,12,28,0.98) 100%);
+      backdrop-filter: blur(14px);
+      padding: 16px;
+    }
+    .setup-card {
+      background: linear-gradient(165deg, rgba(18, 42, 82, 0.96), rgba(9, 23, 48, 0.98));
+      border: 1.5px solid rgba(100, 181, 246, 0.25);
+      border-radius: 24px;
+      padding: 24px 32px 24px;
+      width: min(94vw, 840px);
+      max-height: 94vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.7), 0 0 40px rgba(21,101,192,0.2), inset 0 1px 0 rgba(255,255,255,0.15);
+      display: flex; flex-direction: column; gap: 14px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100,181,246,0.3) transparent;
+    }
+    .setup-card::-webkit-scrollbar { width: 6px; }
+    .setup-card::-webkit-scrollbar-thumb { background: rgba(100,181,246,0.3); border-radius: 4px; }
+
+    .setup-header {
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;
+    }
+    .setup-title {
+      font-size: 1.65rem; font-weight: 900; color: #fff;
+      display: flex; flex-direction: column; gap: 2px;
+      letter-spacing: 0.5px;
+    }
+    .setup-title-main { display: flex; align-items: center; gap: 10px; }
+    .setup-title small {
+      display: block; font-size: 0.82rem; font-weight: 500;
+      color: rgba(255,255,255,0.5); letter-spacing: 0;
+    }
+
+    /* Segmented Tab Switcher */
+    .setup-tab-bar {
+      display: flex; background: rgba(0,0,0,0.35); padding: 4px;
+      border-radius: 14px; border: 1px solid rgba(255,255,255,0.1);
+      gap: 6px;
+    }
+    .setup-tab-btn {
+      flex: 1; padding: 10px 16px; border-radius: 10px; border: none;
+      background: transparent; color: rgba(255,255,255,0.65);
+      font-size: 0.92rem; font-weight: 800; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      font-family: inherit; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .setup-tab-btn:hover { color: #fff; background: rgba(255,255,255,0.06); }
+    .setup-tab-btn.active {
+      background: linear-gradient(135deg, #1E88E5, #1565C0);
+      color: #fff; box-shadow: 0 4px 14px rgba(21,101,192,0.45);
+    }
+    .setup-tab-badge {
+      background: #FF9800; color: #111; font-size: 0.72rem; font-weight: 900;
+      padding: 1px 7px; border-radius: 10px; margin-left: 4px;
+    }
+
+    /* Tab Panes */
+    .setup-tab-pane { display: none; flex-direction: column; gap: 12px; }
+    .setup-tab-pane.active { display: flex; animation: ftFadeIn 0.2s ease-out; }
+    @keyframes ftFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* TOCFL Grid */
+    .tocfl-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px;
+    }
+    .setup-lvl-btn {
+      padding: 12px 10px; border-radius: 12px;
+      border: 1.5px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.85); font-size: 0.95rem; font-weight: 800;
+      cursor: pointer; font-family: inherit; transition: all 0.18s;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    }
+    .setup-lvl-btn small {
+      font-size: 0.72rem; font-weight: 600; color: rgba(255,255,255,0.5);
+    }
+    .setup-lvl-btn:hover {
+      background: rgba(255,255,255,0.12); border-color: rgba(100,181,246,0.4);
+      transform: translateY(-2px);
+    }
+    .setup-lvl-btn.active {
+      background: linear-gradient(135deg, #1E88E5, #1565C0);
+      border-color: #64B5F6; color: #fff;
+      box-shadow: 0 0 18px rgba(30,136,229,0.55);
+    }
+    .setup-lvl-btn.active small { color: rgba(255,255,255,0.85); }
+
+    /* Meihua Section */
+    .mh-quick-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08); font-size: 0.82rem;
+    }
+    .mh-quick-actions { display: flex; gap: 8px; }
+    .mh-quick-btn {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.8); border-radius: 6px; padding: 4px 10px;
+      font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.12s;
+    }
+    .mh-quick-btn:hover { background: rgba(255,255,255,0.18); color: #fff; }
+
+    .mh-setup-grid { display: flex; flex-direction: column; gap: 6px; }
+    .mh-setup-row {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.03); padding: 4px 8px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .mh-setup-book-toggle {
+      font-size: 0.78rem; font-weight: 800; color: #90CAF9;
+      background: rgba(30,136,229,0.15); border: 1px solid rgba(100,181,246,0.25);
+      border-radius: 6px; padding: 5px 8px; cursor: pointer;
+      white-space: nowrap; flex-shrink: 0; width: 68px; text-align: center;
+      transition: all 0.15s;
+    }
+    .mh-setup-book-toggle:hover { background: rgba(30,136,229,0.3); color: #fff; }
+    .mh-setup-book-toggle.active {
+      background: #1976D2; color: #fff; border-color: #64B5F6;
+    }
+
+    .mh-units-wrapper { display: flex; flex: 1; gap: 4px; }
+    .mh-setup-unit-btn {
+      flex: 1; padding: 6px 0; border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.7); font-size: 0.76rem; font-weight: 700;
+      cursor: pointer; font-family: inherit; transition: all 0.12s; text-align: center;
+    }
+    .mh-setup-unit-btn:hover { background: rgba(255,255,255,0.14); color: #fff; transform: scale(1.05); }
+    .mh-setup-unit-btn.active {
+      background: #1565C0; border-color: #64B5F6; color: #fff;
+      box-shadow: 0 0 10px rgba(33,150,243,0.5); font-weight: 900;
+    }
+
+    /* Grid Size Selector in Setup */
+    .setup-grid-section {
+      display: flex; flex-direction: column; gap: 6px;
+      background: rgba(0,0,0,0.22); padding: 10px 14px; border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .setup-grid-btns {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+    }
+    .grid-opt-btn {
+      padding: 8px 6px; border-radius: 10px;
+      border: 1.5px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.85);
+      cursor: pointer; font-family: inherit;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 2px; transition: all 0.15s;
+    }
+    .grid-opt-btn:not(.disabled):hover {
+      background: rgba(255,255,255,0.1); border-color: rgba(100,181,246,0.35);
+      transform: translateY(-2px);
+    }
+    .grid-opt-btn.active {
+      background: linear-gradient(135deg, #1E88E5, #1565C0);
+      border-color: #64B5F6; color: #fff;
+      box-shadow: 0 0 14px rgba(30,136,229,0.5);
+    }
+    .grid-opt-btn.disabled {
+      opacity: 0.35; cursor: not-allowed; border-style: dashed;
+      background: rgba(0,0,0,0.25);
+    }
+    .grid-opt-title {
+      font-size: 1.05rem; font-weight: 900; letter-spacing: 0.5px;
+    }
+    .grid-opt-desc {
+      font-size: 0.68rem; font-weight: 600; color: rgba(255,255,255,0.55); text-align: center;
+    }
+    .grid-opt-btn.active .grid-opt-desc { color: rgba(255,255,255,0.88); }
+    .grid-opt-req {
+      font-size: 0.65rem; font-weight: 700; color: #FFB74D; margin-top: 1px;
+    }
+
+    /* Bottom Actions */
+    .setup-bottom-bar {
+      display: flex; flex-direction: column; gap: 8px; margin-top: 2px;
+    }
+    .setup-summary {
+      text-align: center; font-size: 0.88rem; font-weight: 700;
+      color: #90CAF9; letter-spacing: 0.5px;
+    }
+    .setup-actions-row {
+      display: flex; gap: 10px;
+    }
+    .setup-start-btn {
+      flex: 1;
+      background: linear-gradient(135deg, #1E88E5 0%, #0D47A1 100%);
+      color: #fff; border: 1.5px solid rgba(100,181,246,0.35); border-radius: 14px;
+      padding: 14px 0; font-size: 1.15rem; font-weight: 900;
+      cursor: pointer; letter-spacing: 1px; font-family: inherit;
+      box-shadow: 0 8px 24px rgba(21,101,192,0.45);
+      transition: transform 0.15s, box-shadow 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .setup-start-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(21,101,192,0.6); }
+    .setup-start-btn:active { transform: translateY(0); }
+    .setup-home-btn {
+      background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.7);
+      border: 1px solid rgba(255,255,255,0.15); border-radius: 14px;
+      padding: 0 20px; font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; font-family: inherit; transition: background 0.15s;
+    }
+    .setup-home-btn:hover { background: rgba(255,255,255,0.14); color: #fff; }
+
+    /* ══════════════════════════════════════
+       GAME SCREEN
+    ══════════════════════════════════════ */
+    #ftGame {
+      position: fixed; inset: 0; z-index: 10;
+      display: none;
+      flex-direction: row;
+    }
+    #ftGame.active { display: flex; }
+
+    /* Score panels */
+    .ft-score-panel {
+      width: clamp(120px, 9.5vw, 150px); flex-shrink: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 12px; padding: 14px 8px;
+      position: relative; z-index: 2;
+    }
+    .ft-score-panel.p1 {
+      background: linear-gradient(180deg, #0D47A1 0%, #1565C0 50%, #0D47A1 100%);
+      border-right: 3px solid rgba(255,255,255,0.15);
+    }
+    .ft-score-panel.p2 {
+      background: linear-gradient(180deg, #7F0000 0%, #C62828 50%, #7F0000 100%);
+      border-left: 3px solid rgba(255,255,255,0.15);
+    }
+    .ft-player-label {
+      font-size: clamp(1.05rem, 2.2vh, 1.35rem); font-weight: 900; color: rgba(255,255,255,0.85);
+      letter-spacing: 2px; text-transform: uppercase;
+    }
+    .ft-score-num {
+      font-size: clamp(3.6rem, 8.5vh, 5.5rem); font-weight: 900; color: #fff; line-height: 1;
+      text-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .ft-score-num.pop {
+      animation: scorePop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes scorePop {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.4); }
+      100% { transform: scale(1); }
+    }
+    .ft-score-pairs {
+      font-size: 0.82rem; color: rgba(255,255,255,0.55);
+      font-weight: 700; letter-spacing: 1px;
+    }
+    .ft-turn-arrow {
+      font-size: 2.2rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .ft-turn-arrow.visible { opacity: 1; }
+    .ft-score-panel.p1 .ft-turn-arrow { transform: rotate(0deg); }
+    .ft-score-panel.p2 .ft-turn-arrow { transform: rotate(180deg); }
+
+    /* Center game area */
+    #ftCenter {
+      flex: 1; min-width: 0; height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: space-between;
+      gap: 4px; padding: 4px 10px 8px;
+      position: relative; z-index: 2;
+      overflow: hidden;
+    }
+    #ftTopBar {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; height: 38px; flex-shrink: 0; padding: 0 4px;
+    }
+    #ftMatchMode {
+      font-size: 0.92rem; font-weight: 800; color: rgba(255,255,255,0.6);
+      letter-spacing: 1.5px; text-transform: uppercase;
+    }
+    #ftExitBtn {
+      background: rgba(255,255,255,0.10); color: rgba(255,255,255,0.7);
+      border: 1.5px solid rgba(255,255,255,0.2); border-radius: 10px;
+      padding: 6px 16px; font-size: 0.85rem; font-weight: 700;
+      cursor: pointer; font-family: inherit; transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    #ftExitBtn:hover { background: rgba(255,255,255,0.18); color: #fff; }
+
+    .audio-mute-btn {
+      background: rgba(255,255,255,0.10); color: rgba(255,255,255,0.7);
+      border: 1.5px solid rgba(255,255,255,0.2); border-radius: 10px;
+      padding: 6px 16px; font-size: 0.85rem; font-weight: 700;
+      cursor: pointer; font-family: inherit; transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .audio-mute-btn:hover { background: rgba(255,255,255,0.18); color: #fff; }
+
+    /* ── Adaptive Tile Grid — Fills entire available viewport ── */
+    #ftGrid {
+      display: grid;
+      width: 100%;
+      height: calc(100vh - 48px);
+      max-height: calc(100vh - 48px);
+      flex: 1;
+      min-height: 0; min-width: 0;
+      gap: 6px;
+    }
+    .ft-tile {
+      perspective: 900px;
+      cursor: pointer;
+      min-height: 0; min-width: 0;
+      width: 100%; height: 100%;
+    }
+    .ft-tile-inner {
+      width: 100%; height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.45s cubic-bezier(0.25,0.8,0.25,1);
+      border-radius: 14px;
+    }
+    .ft-tile.flipped .ft-tile-inner { transform: rotateY(180deg); }
+    .ft-tile.matched .ft-tile-inner { transform: rotateY(180deg); }
+
+    .ft-tile-front, .ft-tile-back {
+      position: absolute; inset: 0;
+      border-radius: 14px;
+      backface-visibility: hidden;
+      display: flex; align-items: center; justify-content: center;
+      padding: 4px 6px;
+    }
+    /* Face-down side */
+    .ft-tile-front {
+      background: linear-gradient(135deg, var(--tile-back), var(--tile-back2));
+      border: 2px solid rgba(255,255,255,0.12);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08);
+      flex-direction: column; gap: 2px;
+    }
+    .ft-tile-num {
+      font-size: clamp(1.8rem, 4.5vh, 3.4rem);
+      font-weight: 900;
+      color: rgba(255,255,255,0.55);
+      line-height: 1;
+    }
+    /* Face-up side */
+    .ft-tile-back {
+      transform: rotateY(180deg);
+      background: #fff;
+      border: 3px solid #dde8f4;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      flex-direction: column; justify-content: center; gap: 2px;
+      overflow: hidden;
+    }
+    .ft-tile.flipped .ft-tile-back {
+      border-color: rgba(21,101,192,0.4);
+      box-shadow: 0 0 0 3px rgba(21,101,192,0.3), 0 6px 20px rgba(0,0,0,0.35);
+    }
+    .ft-tile.matched-p1 .ft-tile-back {
+      background: var(--p1-light);
+      border-color: var(--p1);
+      box-shadow: 0 0 0 3px var(--p1), 0 6px 20px rgba(21,101,192,0.4);
+    }
+    .ft-tile.matched-p2 .ft-tile-back {
+      background: var(--p2-light);
+      border-color: var(--p2);
+      box-shadow: 0 0 0 3px var(--p2), 0 6px 20px rgba(198,40,40,0.4);
+    }
+    .ft-tile-hanzi {
+      font-size: clamp(2.2rem, 5.5vh, 4.5rem);
+      font-weight: 900;
+      color: #1a2a4a;
+      font-family: 'Noto Serif SC', 'Noto Sans SC', serif;
+      line-height: 1.05;
+      text-align: center;
+    }
+    .ft-tile-match {
+      font-size: clamp(1.1rem, 2.6vh, 2.1rem);
+      font-weight: 800;
+      color: #1a3560;
+      text-align: center;
+      line-height: 1.15;
+      word-break: break-word;
+      padding: 0 2px;
+    }
+    .ft-tile-sub {
+      font-size: clamp(0.75rem, 1.6vh, 1.25rem);
+      color: #666;
+      font-weight: 600;
+      text-align: center;
+      line-height: 1;
+    }
+
+    /* ── Grid Size Responsive Tweaks ── */
+    #ftGrid.grid-4x4 { gap: 10px; }
+    #ftGrid.grid-5x5 { gap: 8px; }
+    #ftGrid.grid-6x6 { gap: 6px; }
+    #ftGrid.grid-7x7 { gap: 5px; }
+
+    #ftGrid.grid-4x4 .ft-tile-inner, #ftGrid.grid-4x4 .ft-tile-front, #ftGrid.grid-4x4 .ft-tile-back { border-radius: 18px; }
+    #ftGrid.grid-4x4 .ft-tile-num { font-size: clamp(2.2rem, 5.5vh, 4.2rem); }
+    #ftGrid.grid-4x4 .ft-tile-hanzi { font-size: clamp(3.0rem, 7.5vh, 6.0rem); }
+    #ftGrid.grid-4x4 .ft-tile-match { font-size: clamp(1.4rem, 3.6vh, 2.7rem); }
+    #ftGrid.grid-4x4 .ft-tile-sub { font-size: clamp(1.0rem, 2.2vh, 1.6rem); }
+
+    #ftGrid.grid-5x5 .ft-tile-inner, #ftGrid.grid-5x5 .ft-tile-front, #ftGrid.grid-5x5 .ft-tile-back { border-radius: 14px; }
+    #ftGrid.grid-5x5 .ft-tile-num { font-size: clamp(1.7rem, 4.0vh, 3.2rem); }
+    #ftGrid.grid-5x5 .ft-tile-hanzi { font-size: clamp(2.3rem, 5.6vh, 4.5rem); }
+    #ftGrid.grid-5x5 .ft-tile-match { font-size: clamp(1.15rem, 2.7vh, 2.1rem); }
+    #ftGrid.grid-5x5 .ft-tile-sub { font-size: clamp(0.85rem, 1.8vh, 1.35rem); }
+
+    #ftGrid.grid-6x6 .ft-tile-inner, #ftGrid.grid-6x6 .ft-tile-front, #ftGrid.grid-6x6 .ft-tile-back { border-radius: 11px; }
+    #ftGrid.grid-6x6 .ft-tile-num { font-size: clamp(1.35rem, 3.2vh, 2.5rem); }
+    #ftGrid.grid-6x6 .ft-tile-hanzi { font-size: clamp(1.85rem, 4.4vh, 3.5rem); }
+    #ftGrid.grid-6x6 .ft-tile-match { font-size: clamp(1.0rem, 2.1vh, 1.7rem); }
+    #ftGrid.grid-6x6 .ft-tile-sub { font-size: clamp(0.76rem, 1.5vh, 1.15rem); }
+
+    #ftGrid.grid-7x7 .ft-tile-inner, #ftGrid.grid-7x7 .ft-tile-front, #ftGrid.grid-7x7 .ft-tile-back { border-radius: 9px; }
+    #ftGrid.grid-7x7 .ft-tile-num { font-size: clamp(1.15rem, 2.6vh, 2.1rem); }
+    #ftGrid.grid-7x7 .ft-tile-hanzi { font-size: clamp(1.55rem, 3.6vh, 2.9rem); }
+    #ftGrid.grid-7x7 .ft-tile-match { font-size: clamp(0.88rem, 1.8vh, 1.45rem); }
+    #ftGrid.grid-7x7 .ft-tile-sub { font-size: clamp(0.68rem, 1.3vh, 0.98rem); }
+
+    /* ⭐ Star Bonus Tile */
+    .ft-tile-star {
+      background: linear-gradient(135deg, #FFF9C4 0%, #FFE082 100%) !important;
+      border-color: #FFB300 !important;
+      color: #E65100 !important;
+      font-size: clamp(1.6rem, 3.6vh, 3.0rem);
+      font-weight: 900;
+      text-shadow: 0 2px 6px rgba(255,179,0,0.4);
+    }
+
+    .ft-tile:active:not(.matched):not(.flipped) .ft-tile-inner {
+      transform: rotateY(10deg) scale(0.96);
+    }
+
+    /* ══════════════════════════════════════
+       TURN OVERLAY
+    ══════════════════════════════════════ */
+    #ftTurnOverlay {
+      position: fixed; inset: 0; z-index: 200;
+      display: none;
+      align-items: center; justify-content: center;
+      background: rgba(5,15,35,0.75);
+      backdrop-filter: blur(6px);
+    }
+    #ftTurnOverlay.show { display: flex; }
+    .ft-turn-popup {
+      background: linear-gradient(135deg, #0d2040, #1a3060);
+      border: 2px solid rgba(255,255,255,0.15);
+      border-radius: 32px;
+      padding: 48px 80px;
+      text-align: center;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+      animation: turnPop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes turnPop {
+      from { transform: scale(0.5); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+    .ft-turn-emoji { font-size: 4rem; margin-bottom: 12px; }
+    .ft-turn-text {
+      font-size: 3rem; font-weight: 900; color: #fff;
+      letter-spacing: 1px; text-shadow: 0 0 30px currentColor;
+    }
+    .ft-turn-text.p1color { color: #64B5F6; }
+    .ft-turn-text.p2color { color: #EF9A9A; }
+
+    /* ══════════════════════════════════════
+       WIN SCREEN
+    ══════════════════════════════════════ */
+    #ftWin {
+      position: fixed; inset: 0; z-index: 300;
+      display: none;
+      align-items: center; justify-content: center;
+      background: rgba(5,15,35,0.88);
+      backdrop-filter: blur(10px);
+    }
+    #ftWin.show { display: flex; }
+    .ft-win-card {
+      background: linear-gradient(160deg, #0d2040, #1a3060);
+      border: 2px solid rgba(255,255,255,0.12);
+      border-radius: 36px;
+      padding: 56px 80px;
+      text-align: center;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+      animation: winBlast 0.6s cubic-bezier(0.22,1,0.36,1);
+      display: flex; flex-direction: column; gap: 20px;
+      min-width: 500px;
+    }
+    @keyframes winBlast {
+      from { transform: scale(0.4) rotate(-6deg); opacity: 0; filter: blur(16px); }
+      to   { transform: scale(1) rotate(0deg);   opacity: 1; filter: blur(0); }
+    }
+    .ft-win-trophy { font-size: 5rem; }
+    .ft-win-title {
+      font-size: 4rem; font-weight: 900;
+      letter-spacing: 2px;
+      animation: winBlast 0.6s cubic-bezier(0.22,1,0.36,1) 0.1s both;
+    }
+    .ft-win-title.p1 { color: #64B5F6; text-shadow: 0 0 40px rgba(100,181,246,0.8), 0 4px 0 rgba(0,30,80,0.8); }
+    .ft-win-title.p2 { color: #EF9A9A; text-shadow: 0 0 40px rgba(239,154,154,0.8), 0 4px 0 rgba(80,0,0,0.8); }
+    .ft-win-title.draw { color: #FFD54F; text-shadow: 0 0 40px rgba(255,213,79,0.8), 0 4px 0 rgba(80,50,0,0.8); }
+    .ft-win-scores {
+      font-size: 1.2rem; color: rgba(255,255,255,0.6);
+      font-weight: 700;
+      animation: winSubFade 0.4s ease 0.5s both;
+    }
+    @keyframes winSubFade {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .ft-win-btns {
+      display: flex; gap: 14px; justify-content: center;
+      animation: winSubFade 0.4s ease 0.7s both;
+    }
+    .ft-win-btn {
+      padding: 16px 40px; border-radius: 16px; border: none;
+      font-size: 1.1rem; font-weight: 800; cursor: pointer;
+      font-family: inherit; transition: transform 0.15s;
+    }
+    .ft-win-btn:hover { transform: translateY(-3px); }
+    .ft-win-btn.primary {
+      background: linear-gradient(135deg, #1565C0, #0D47A1); color: #fff;
+      box-shadow: 0 8px 24px rgba(21,101,192,0.5);
+    }
+    .ft-win-btn.secondary {
+      background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7);
+      border: 1.5px solid rgba(255,255,255,0.2);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Confetti background -->
+<div id="confettiBg"></div>
+
+<!-- ══════════════════════════════════════
+     SETUP SCREEN
+══════════════════════════════════════ -->
+<div id="ftSetup">
+  <div class="setup-card">
+    <div class="setup-header">
+      <div class="setup-title">
+        <div class="setup-title-main">
+          <span>🃏 Flip Tile Match</span>
+        </div>
+        <small>2-Player Memory Duel · Choose Curriculum & Level</small>
+      </div>
+      <button class="audio-mute-btn" onclick="GameAudio.toggleMute()" title="Mute/Unmute Audio" style="border-radius:10px; padding:6px 14px; font-size:1.05rem;">🔊</button>
+    </div>
+
+    <!-- Segmented Tab Bar -->
+    <div class="setup-tab-bar">
+      <button class="setup-tab-btn active" id="ftTabBtnTocfl" onclick="_ftSwitchTab('tocfl')">
+        <span>🇹🇼 TOCFL Standards</span>
+      </button>
+      <button class="setup-tab-btn" id="ftTabBtnMeihua" onclick="_ftSwitchTab('meihua')">
+        <span>🌸 Meihua Curriculum</span>
+        <span id="ftMhTabBadge" class="setup-tab-badge" style="display:none;">0</span>
+      </button>
+    </div>
+
+    <!-- Tab 1: TOCFL -->
+    <div class="setup-tab-pane active" id="ftPaneTocfl">
+      <div class="tocfl-grid" id="ftTocflBtns">
+        <button class="setup-lvl-btn active" data-level="N1" onclick="_ftSetLevel('N1',this)">
+          <span>準備一</span><small>Novice 1</small>
+        </button>
+        <button class="setup-lvl-btn" data-level="N2" onclick="_ftSetLevel('N2',this)">
+          <span>準備二</span><small>Novice 2</small>
+        </button>
+        <button class="setup-lvl-btn" data-level="L1" onclick="_ftSetLevel('L1',this)">
+          <span>入門</span><small>Level 1</small>
+        </button>
+        <button class="setup-lvl-btn" data-level="L2" onclick="_ftSetLevel('L2',this)">
+          <span>基礎</span><small>Level 2</small>
+        </button>
+        <button class="setup-lvl-btn" data-level="L3" onclick="_ftSetLevel('L3',this)">
+          <span>進階</span><small>Level 3</small>
+        </button>
+        <button class="setup-lvl-btn" data-level="L4" onclick="_ftSetLevel('L4',this)">
+          <span>高階</span><small>Level 4</small>
+        </button>
+        <button class="setup-lvl-btn" data-level="L5" onclick="_ftSetLevel('L5',this)">
+          <span>流利</span><small>Level 5</small>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab 2: Meihua -->
+    <div class="setup-tab-pane" id="ftPaneMeihua">
+      <div class="mh-quick-bar">
+        <span style="color:rgba(255,255,255,0.75); font-weight:700;">
+          Units: <span id="ftMhCountLabel" style="color:#64B5F6;">None selected</span>
+        </span>
+        <div class="mh-quick-actions">
+          <button class="mh-quick-btn" onclick="_ftSelectAllMH()">Select All (B1-B6)</button>
+          <button class="mh-quick-btn" onclick="_ftClearMH()">Clear</button>
+        </div>
+      </div>
+      <div class="mh-setup-grid" id="ftMhGrid">
+        <!-- Generated by JS -->
+      </div>
+    </div>
+
+    <!-- Grid Size Option Selector -->
+    <div class="setup-grid-section">
+      <div class="setup-section-label" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+        <span>Board Grid Size</span>
+        <span id="ftGridStatusTip" style="font-size:0.72rem; color:#90CAF9; text-transform:none; font-weight:600;"></span>
+      </div>
+      <div class="setup-grid-btns" id="ftGridSizeBtns">
+        <button class="grid-opt-btn active" id="btnGrid_4x4" data-grid="4x4" onclick="_ftSetGridSize('4x4',this)">
+          <span class="grid-opt-title">4 × 4</span>
+          <span class="grid-opt-desc">8 Pairs · 16 Tiles</span>
+          <span class="grid-opt-req" id="req_4x4">Min 8 words</span>
+        </button>
+        <button class="grid-opt-btn" id="btnGrid_5x5" data-grid="5x5" onclick="_ftSetGridSize('5x5',this)">
+          <span class="grid-opt-title">5 × 5</span>
+          <span class="grid-opt-desc">12 Pairs + ⭐ · 25 Tiles</span>
+          <span class="grid-opt-req" id="req_5x5">Min 12 words</span>
+        </button>
+        <button class="grid-opt-btn" id="btnGrid_6x6" data-grid="6x6" onclick="_ftSetGridSize('6x6',this)">
+          <span class="grid-opt-title">6 × 6</span>
+          <span class="grid-opt-desc">18 Pairs · 36 Tiles</span>
+          <span class="grid-opt-req" id="req_6x6">Min 18 words</span>
+        </button>
+        <button class="grid-opt-btn" id="btnGrid_7x7" data-grid="7x7" onclick="_ftSetGridSize('7x7',this)">
+          <span class="grid-opt-title">7 × 7</span>
+          <span class="grid-opt-desc">24 Pairs + ⭐ · 49 Tiles</span>
+          <span class="grid-opt-req" id="req_7x7">Min 24 words</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom Summary & Action Buttons -->
+    <div class="setup-bottom-bar">
+      <div class="setup-summary" id="ftSelectionSummary">Selected: 準備一 (Novice 1)</div>
+      <div class="setup-actions-row">
+        <button class="setup-home-btn" onclick="GameAudio.playClick(); location.href='../index.html'">← Home</button>
+        <button class="setup-start-btn" onclick="_ftStartGame()">▶ START GAME</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     GAME SCREEN
+══════════════════════════════════════ -->
+<div id="ftGame">
+
+  <!-- P1 Score Panel -->
+  <div class="ft-score-panel p1" id="ftPanel1">
+    <div class="ft-turn-arrow" id="ftArrow1">▶</div>
+    <div class="ft-player-label">Player 1</div>
+    <div class="ft-score-num" id="ftScore1">0</div>
+    <div class="ft-score-pairs">pairs</div>
+  </div>
+
+  <!-- Center -->
+  <div id="ftCenter">
+    <div id="ftTopBar">
+      <div id="ftMatchMode"></div>
+      <div style="display:flex; gap:10px;">
+        <button class="audio-mute-btn" onclick="GameAudio.toggleMute()">🔊</button>
+        <button id="ftExitBtn" onclick="GameAudio.stopBGM(); GameAudio.playClick(); location.href='../index.html'">← Exit</button>
+      </div>
+    </div>
+    <div id="ftGrid"></div>
+  </div>
+
+  <!-- P2 Score Panel -->
+  <div class="ft-score-panel p2" id="ftPanel2">
+    <div class="ft-turn-arrow" id="ftArrow2">◀</div>
+    <div class="ft-player-label">Player 2</div>
+    <div class="ft-score-num" id="ftScore2">0</div>
+    <div class="ft-score-pairs">pairs</div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════
+     TURN OVERLAY
+══════════════════════════════════════ -->
+<div id="ftTurnOverlay">
+  <div class="ft-turn-popup">
+    <div class="ft-turn-emoji" id="ftTurnEmoji">🔵</div>
+    <div class="ft-turn-text" id="ftTurnText">Player 1's Turn!</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     WIN SCREEN
+══════════════════════════════════════ -->
+<div id="ftWin">
+  <div class="ft-win-card">
+    <div class="ft-win-trophy" id="ftWinTrophy">🏆</div>
+    <div class="ft-win-title" id="ftWinTitle">PLAYER 1 WINS!</div>
+    <div class="ft-win-scores" id="ftWinScores"></div>
+    <div class="ft-win-btns">
+      <button class="ft-win-btn primary" onclick="_ftRestart()">🔄 Play Again</button>
+      <button class="ft-win-btn secondary" onclick="GameAudio.playClick(); location.href='../index.html'">← Home</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   CONFETTI GENERATOR
+══════════════════════════════════════ */
+(function() {
+  var colors = ['#FF5252','#FF4081','#E040FB','#7C4DFF','#448AFF','#00BCD4','#00E676','#FFEA00','#FF6D00','#F9A825'];
+  var shapes = ['square','circle','rect'];
+  var bg = document.getElementById('confettiBg');
+  for (var i = 0; i < 60; i++) {
+    var el = document.createElement('div');
+    el.className = 'conf';
+    var shape = shapes[i % 3];
+    el.style.cssText = [
+      'left:' + (Math.random() * 100) + '%',
+      'width:' + (8 + Math.random() * 14) + 'px',
+      'height:' + (8 + Math.random() * 14) + 'px',
+      'background:' + colors[i % colors.length],
+      'border-radius:' + (shape === 'circle' ? '50%' : shape === 'rect' ? '1px' : '3px'),
+      'animation-duration:' + (6 + Math.random() * 8) + 's',
+      'animation-delay:' + (-Math.random() * 10) + 's',
+    ].join(';');
+    bg.appendChild(el);
+  }
+})();
+
+/* ══════════════════════════════════════
+   SETUP — LEVEL & MEIHUA MANAGEMENT
+══════════════════════════════════════ */
+var _ftLevel       = 'N1';
+var _ftMHUnits     = [];
+var _ftActiveTab   = 'tocfl';
+var _ftGridSize    = '4x4'; // '4x4' | '5x5' | '6x6' | '7x7'
+
+var _gridConfigs   = {
+  '4x4': { rows: 4, cols: 4, pairs: 8,  hasStar: false, minWords: 8,  label: '4 × 4' },
+  '5x5': { rows: 5, cols: 5, pairs: 12, hasStar: true,  minWords: 12, label: '5 × 5' },
+  '6x6': { rows: 6, cols: 6, pairs: 18, hasStar: false, minWords: 18, label: '6 × 6' },
+  '7x7': { rows: 7, cols: 7, pairs: 24, hasStar: true,  minWords: 24, label: '7 × 7' }
+};
+
+var _tocflNames    = {
+  'N1': '準備一 (Novice 1)',
+  'N2': '準備二 (Novice 2)',
+  'L1': '入門 (Level 1)',
+  'L2': '基礎 (Level 2)',
+  'L3': '進階 (Level 3)',
+  'L4': '高階 (Level 4)',
+  'L5': '流利 (Level 5)'
+};
+
+function _ftSetGridSize(size, btn) {
+  if (btn && btn.classList.contains('disabled')) return;
+  GameAudio.playClick();
+  _ftGridSize = size;
+  document.querySelectorAll('.grid-opt-btn').forEach(function(b) {
+    b.classList.toggle('active', b.getAttribute('data-grid') === size);
+  });
+  _ftUpdateSummary();
+}
+
+function _ftSwitchTab(tab) {
+  GameAudio.playClick();
+  _ftActiveTab = tab;
+  document.getElementById('ftTabBtnTocfl').classList.toggle('active', tab === 'tocfl');
+  document.getElementById('ftTabBtnMeihua').classList.toggle('active', tab === 'meihua');
+  document.getElementById('ftPaneTocfl').classList.toggle('active', tab === 'tocfl');
+  document.getElementById('ftPaneMeihua').classList.toggle('active', tab === 'meihua');
+
+  if (tab === 'meihua' && _ftLevel !== 'MH_MULTI') {
+    if (_ftMHUnits.length === 0) {
+      /* Default to Book 1 Unit 1 if nothing selected yet */
+      _ftToggleMH('MH1U1');
+    } else {
+      _ftLevel = 'MH_MULTI';
+      _ftUpdateSummary();
+    }
+  } else if (tab === 'tocfl' && _ftLevel === 'MH_MULTI') {
+    _ftSetLevel('N1', document.querySelector('#ftTocflBtns .setup-lvl-btn[data-level="N1"]'));
+  }
+}
+
+(function buildMhGrid() {
+  var grid = document.getElementById('ftMhGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  for (var b = 1; b <= 6; b++) {
+    (function(book) {
+      var row = document.createElement('div');
+      row.className = 'mh-setup-row';
+
+      var bookBtn = document.createElement('button');
+      bookBtn.className = 'mh-setup-book-toggle';
+      bookBtn.id = 'mhBookBtn' + book;
+      bookBtn.textContent = 'Book ' + book;
+      bookBtn.title = 'Select / Deselect all units in Book ' + book;
+      bookBtn.onclick = function() { _ftToggleBook(book); };
+      row.appendChild(bookBtn);
+
+      var unitsWrap = document.createElement('div');
+      unitsWrap.className = 'mh-units-wrapper';
+
+      for (var u = 1; u <= 10; u++) {
+        (function(unit) {
+          var key = 'MH' + book + 'U' + unit;
+          var btn = document.createElement('button');
+          btn.className = 'mh-setup-unit-btn';
+          btn.id = 'mhBtn_' + key;
+          btn.textContent = 'U' + unit;
+          btn.title = 'Book ' + book + ' Unit ' + unit;
+          btn.onclick = function() { _ftToggleMH(key, btn); };
+          unitsWrap.appendChild(btn);
+        })(u);
+      }
+      row.appendChild(unitsWrap);
+      grid.appendChild(row);
+    })(b);
+  }
+})();
+
+function _ftSetLevel(lvl, btn) {
+  GameAudio.playClick();
+  _ftLevel   = lvl;
+  _ftMHUnits = [];
+  /* Clear TOCFL highlights */
+  document.querySelectorAll('#ftTocflBtns .setup-lvl-btn').forEach(function(b) {
+    b.classList.remove('active');
+  });
+  /* Clear MH highlights */
+  document.querySelectorAll('.mh-setup-unit-btn, .mh-setup-book-toggle').forEach(function(b) {
+    b.classList.remove('active');
+  });
+  if (btn) btn.classList.add('active');
+  _ftUpdateSummary();
+}
+
+function _ftToggleMH(key, btn) {
+  GameAudio.playClick();
+  /* Clear TOCFL selection */
+  document.querySelectorAll('#ftTocflBtns .setup-lvl-btn').forEach(function(b) {
+    b.classList.remove('active');
+  });
+  _ftLevel = 'MH_MULTI';
+  var idx = _ftMHUnits.indexOf(key);
+  var targetBtn = btn || document.getElementById('mhBtn_' + key);
+
+  if (idx >= 0) {
+    _ftMHUnits.splice(idx, 1);
+    if (targetBtn) targetBtn.classList.remove('active');
+  } else {
+    _ftMHUnits.push(key);
+    if (targetBtn) targetBtn.classList.add('active');
+  }
+
+  _ftRefreshBookToggles();
+  _ftUpdateSummary();
+}
+
+function _ftToggleBook(book) {
+  GameAudio.playClick();
+  document.querySelectorAll('#ftTocflBtns .setup-lvl-btn').forEach(function(b) {
+    b.classList.remove('active');
+  });
+  _ftLevel = 'MH_MULTI';
+
+  var bookUnits = [];
+  for (var u = 1; u <= 10; u++) bookUnits.push('MH' + book + 'U' + u);
+
+  /* Check if all 10 are already selected */
+  var allSelected = bookUnits.every(function(k) { return _ftMHUnits.indexOf(k) >= 0; });
+
+  bookUnits.forEach(function(key) {
+    var idx = _ftMHUnits.indexOf(key);
+    var btn = document.getElementById('mhBtn_' + key);
+    if (allSelected) {
+      if (idx >= 0) _ftMHUnits.splice(idx, 1);
+      if (btn) btn.classList.remove('active');
+    } else {
+      if (idx < 0) _ftMHUnits.push(key);
+      if (btn) btn.classList.add('active');
+    }
+  });
+
+  _ftRefreshBookToggles();
+  _ftUpdateSummary();
+}
+
+function _ftSelectAllMH() {
+  GameAudio.playClick();
+  document.querySelectorAll('#ftTocflBtns .setup-lvl-btn').forEach(function(b) {
+    b.classList.remove('active');
+  });
+  _ftLevel = 'MH_MULTI';
+  _ftMHUnits = [];
+
+  for (var b = 1; b <= 6; b++) {
+    for (var u = 1; u <= 10; u++) {
+      var key = 'MH' + b + 'U' + u;
+      _ftMHUnits.push(key);
+      var btn = document.getElementById('mhBtn_' + key);
+      if (btn) btn.classList.add('active');
+    }
+  }
+  _ftRefreshBookToggles();
+  _ftUpdateSummary();
+}
+
+function _ftClearMH() {
+  GameAudio.playClick();
+  _ftMHUnits = [];
+  document.querySelectorAll('.mh-setup-unit-btn, .mh-setup-book-toggle').forEach(function(b) {
+    b.classList.remove('active');
+  });
+  _ftUpdateSummary();
+}
+
+function _ftRefreshBookToggles() {
+  for (var b = 1; b <= 6; b++) {
+    var bookUnits = [];
+    for (var u = 1; u <= 10; u++) bookUnits.push('MH' + b + 'U' + u);
+    var allSelected = bookUnits.every(function(k) { return _ftMHUnits.indexOf(k) >= 0; });
+    var btn = document.getElementById('mhBookBtn' + b);
+    if (btn) btn.classList.toggle('active', allSelected);
+  }
+}
+
+function _ftUpdateSummary() {
+  var sumEl = document.getElementById('ftSelectionSummary');
+  var countEl = document.getElementById('ftMhCountLabel');
+  var badgeEl = document.getElementById('ftMhTabBadge');
+
+  var mhCount = _ftMHUnits.length;
+  if (countEl) countEl.textContent = mhCount > 0 ? `${mhCount} Units Selected` : 'None selected';
+  if (badgeEl) {
+    badgeEl.textContent = mhCount;
+    badgeEl.style.display = mhCount > 0 ? 'inline-block' : 'none';
+  }
+
+  var pool = _ftGetVocabPool();
+  var poolLen = pool.length;
+
+  /* Update Grid Size Option Availability */
+  var availableSizes = [];
+  ['4x4', '5x5', '6x6', '7x7'].forEach(function(size) {
+    var cfg = _gridConfigs[size];
+    var btn = document.getElementById('btnGrid_' + size);
+    var isAvail = poolLen >= cfg.minWords;
+    if (btn) {
+      btn.classList.toggle('disabled', !isAvail);
+      var reqEl = document.getElementById('req_' + size);
+      if (reqEl) {
+        reqEl.textContent = isAvail ? '✓ Ready' : `Needs ${cfg.minWords}+ words (${poolLen}/${cfg.minWords})`;
+        reqEl.style.color = isAvail ? '#81C784' : '#FFB74D';
+      }
+    }
+    if (isAvail) availableSizes.push(size);
+  });
+
+  /* If currently selected grid is not available, fallback to largest available */
+  if (availableSizes.indexOf(_ftGridSize) < 0) {
+    _ftGridSize = availableSizes.length > 0 ? availableSizes[availableSizes.length - 1] : '4x4';
+    document.querySelectorAll('.grid-opt-btn').forEach(function(b) {
+      b.classList.toggle('active', b.getAttribute('data-grid') === _ftGridSize);
+    });
+  }
+
+  var tipEl = document.getElementById('ftGridStatusTip');
+  if (tipEl) {
+    tipEl.textContent = `${poolLen} words available`;
+  }
+
+  if (!sumEl) return;
+  if (_ftLevel === 'MH_MULTI') {
+    if (mhCount === 0) {
+      sumEl.innerHTML = '<span style="color:#FFB74D;">⚠️ Please select at least 1 Meihua unit</span>';
+    } else {
+      sumEl.innerHTML = `Selected: 🌸 <strong>Meihua (${mhCount} Units · ${poolLen} Words)</strong> · Board: <strong>${_gridConfigs[_ftGridSize].label}</strong>`;
+    }
+  } else {
+    sumEl.innerHTML = `Selected: 🇹🇼 <strong>${_tocflNames[_ftLevel] || _ftLevel} (${poolLen} Words)</strong> · Board: <strong>${_gridConfigs[_ftGridSize].label}</strong>`;
+  }
+}
+
+/* ══════════════════════════════════════
+   VOCAB POOL
+══════════════════════════════════════ */
+var _customFlipQuestions = null;
+
+function _ftGetVocabPool() {
+  if (_customFlipQuestions && _customFlipQuestions.length > 0) {
+    return _customFlipQuestions;
+  }
+  var pool = [];
+
+  if (_ftLevel === 'MH_MULTI' && _ftMHUnits.length > 0) {
+    /* Meihua multi-unit */
+    var bookNames = ['meihua1','meihua2','meihua3','meihua4','meihua5','meihua6'];
+    _ftMHUnits.forEach(function(key) {
+      var m = key.match(/MH(\d)U(\d+)/);
+      if (!m) return;
+      var book = _meihuaDB && _meihuaDB[bookNames[parseInt(m[1])-1]];
+      var unit = book && book['unit' + m[2]];
+      if (!unit || !unit.vocab) return;
+      unit.vocab.forEach(function(v) {
+        if (!v.char || !v.pinyin) return;
+        pool.push({ hanzi: v.char, pinyin: v.pinyin, meaning: v.en || _ftMeaning(v.char) });
+      });
+    });
+  } else if (_ftLevel.match(/^MH\d$/)) {
+    /* Single Meihua book */
+    var bookNum = parseInt(_ftLevel.slice(2));
+    var bookKey = 'meihua' + bookNum;
+    var book = _meihuaDB && _meihuaDB[bookKey];
+    if (book) {
+      for (var u = 1; u <= 10; u++) {
+        var unit = book['unit' + u];
+        if (!unit || !unit.vocab) continue;
+        unit.vocab.forEach(function(v) {
+          if (!v.char || !v.pinyin) return;
+          pool.push({ hanzi: v.char, pinyin: v.pinyin, meaning: v.en || _ftMeaning(v.char) });
+        });
+      }
+    }
+  } else {
+    /* TOCFL level: N1, N2, L1, L2, L3, L4, L5 */
+    var targetLvl = _ftLevel;
+    if (typeof _vocabDB !== 'undefined') {
+      for (var ch in _vocabDB) {
+        var e = _vocabDB[ch];
+        if (!e || !e.p) continue;
+        var lvlStr = (e.lv || e.l || '').trim();
+        if (lvlStr === targetLvl || lvlStr.indexOf(targetLvl) >= 0) {
+          pool.push({ hanzi: ch, pinyin: e.p, meaning: e.m || e.e || '' });
+        }
+      }
+    }
+  }
+
+  /* Remove duplicates by hanzi */
+  var seen = {};
+  pool = pool.filter(function(v) {
+    if (seen[v.hanzi]) return false;
+    seen[v.hanzi] = true;
+    return true;
+  });
+
+  return pool;
+}
+
+function _ftMeaning(ch) {
+  if (typeof _vocabDB !== 'undefined' && _vocabDB[ch]) {
+    return _vocabDB[ch].m || _vocabDB[ch].e || '';
+  }
+  return '';
+}
+
+/* ══════════════════════════════════════
+   GAME STATE
+══════════════════════════════════════ */
+var _ftCurrentPlayer = 1;
+var _ftScores        = [0, 0];
+var _ftTiles         = [];  /* array of tile objects */
+var _ftFlipped       = [];  /* indices of currently face-up unmatched tiles */
+var _ftLocked        = false;
+var _ftMatchMode     = 'pinyin'; /* 'pinyin' | 'meaning' */
+var _ftPairs         = [];
+
+function _ftStartGame() {
+  GameAudio.playClick();
+  var pool = _ftGetVocabPool();
+  var cfg = _gridConfigs[_ftGridSize] || _gridConfigs['4x4'];
+
+  if (pool.length < cfg.minWords) {
+    alert(`Not enough vocabulary for ${_ftGridSize} grid. Need at least ${cfg.minWords} words, but only ${pool.length} available. Please select more units.`);
+    return;
+  }
+
+  /* Hide setup, show game */
+  document.getElementById('ftSetup').style.display = 'none';
+  document.getElementById('ftGame').classList.add('active');
+  GameAudio.startBGM();
+
+  _ftNewRound();
+}
+
+function _ftNewRound() {
+  var pool = _ftGetVocabPool();
+  var cfg = _gridConfigs[_ftGridSize] || _gridConfigs['4x4'];
+
+  /* Shuffle pool and pick required pairs */
+  _ftShuffle(pool);
+  _ftPairs = pool.slice(0, cfg.pairs);
+
+  /* Random match mode */
+  _ftMatchMode = Math.random() < 0.5 ? 'pinyin' : 'meaning';
+  var hasMeaning = _ftPairs.some(function(p) { return p.meaning && p.meaning.length > 0; });
+  if (_ftMatchMode === 'meaning' && !hasMeaning) _ftMatchMode = 'pinyin';
+
+  /* Update match mode label */
+  var modeEl = document.getElementById('ftMatchMode');
+  if (modeEl) {
+    modeEl.textContent = (_ftMatchMode === 'pinyin' ? '🔤 Match Hanzi ↔ Pinyin' : '💡 Match Hanzi ↔ Meaning') + ` (${cfg.label})`;
+  }
+
+  /* Build tiles: pairs * 2 (+ optional bonus star tile) */
+  _ftTiles = [];
+  _ftPairs.forEach(function(pair, pairIdx) {
+    var matchText = _ftMatchMode === 'meaning' && pair.meaning ? pair.meaning : pair.pinyin;
+    _ftTiles.push({ type: 'hanzi',  content: pair.hanzi,   pairId: pairIdx, matched: false, matchedBy: 0, sub: '' });
+    _ftTiles.push({ type: 'match',  content: matchText,    pairId: pairIdx, matched: false, matchedBy: 0, sub: _ftMatchMode === 'meaning' ? pair.pinyin : '' });
+  });
+
+  if (cfg.hasStar) {
+    _ftTiles.push({ type: 'star', content: '⭐', pairId: -1, matched: false, matchedBy: 0, sub: '+1 BONUS' });
+  }
+
+  _ftShuffle(_ftTiles);
+
+  _ftFlipped        = [];
+  _ftLocked         = false;
+  _ftCurrentPlayer  = 1;
+
+  _ftRenderGrid();
+  _ftUpdateScores();
+  _ftUpdateArrows();
+
+  /* Show P1's turn intro */
+  _ftShowTurnOverlay(1, true);
+}
+
+/* ══════════════════════════════════════
+   RENDER
+══════════════════════════════════════ */
+function _ftRenderGrid() {
+  var grid = document.getElementById('ftGrid');
+  if (!grid) return;
+  var cfg = _gridConfigs[_ftGridSize] || _gridConfigs['4x4'];
+
+  grid.className = 'grid-' + _ftGridSize;
+  grid.style.gridTemplateColumns = 'repeat(' + cfg.cols + ', 1fr)';
+  grid.style.gridTemplateRows = 'repeat(' + cfg.rows + ', 1fr)';
+  grid.innerHTML = '';
+
+  _ftTiles.forEach(function(tile, idx) {
+    var el = document.createElement('div');
+    el.className = 'ft-tile';
+    if (tile.matched) {
+      el.classList.add('matched', 'matched-p' + tile.matchedBy);
+    }
+
+    var inner = document.createElement('div');
+    inner.className = 'ft-tile-inner';
+
+    /* Front (face-down) */
+    var front = document.createElement('div');
+    front.className = 'ft-tile-front';
+    var numEl = document.createElement('div');
+    numEl.className = 'ft-tile-num';
+    numEl.textContent = idx + 1;
+    front.appendChild(numEl);
+
+    /* Back (face-up) */
+    var back = document.createElement('div');
+    back.className = 'ft-tile-back';
+
+    if (tile.type === 'star') {
+      back.classList.add('ft-tile-star');
+      var starIcon = document.createElement('div');
+      starIcon.textContent = '⭐';
+      var starSub = document.createElement('div');
+      starSub.style.fontSize = '0.72rem';
+      starSub.style.fontWeight = '900';
+      starSub.textContent = '+1 BONUS!';
+      back.appendChild(starIcon);
+      back.appendChild(starSub);
+    } else if (tile.type === 'hanzi') {
+      var hz = document.createElement('div');
+      hz.className = 'ft-tile-hanzi';
+      hz.textContent = tile.content;
+      back.appendChild(hz);
+    } else {
+      var mt = document.createElement('div');
+      mt.className = 'ft-tile-match';
+      mt.textContent = tile.content;
+      back.appendChild(mt);
+      if (tile.sub) {
+        var sub = document.createElement('div');
+        sub.className = 'ft-tile-sub';
+        sub.textContent = tile.sub;
+        back.appendChild(sub);
+      }
+    }
+
+    inner.appendChild(front);
+    inner.appendChild(back);
+    el.appendChild(inner);
+
+    if (!tile.matched) {
+      (function(i) {
+        el.addEventListener('pointerdown', function(e) {
+          e.preventDefault();
+          _ftTileTap(i);
+        });
+      })(idx);
+    }
+
+    grid.appendChild(el);
+  });
+}
+
+function _ftGetTileEl(idx) {
+  var grid = document.getElementById('ftGrid');
+  if (!grid) return null;
+  return grid.children[idx] || null;
+}
+
+function _ftFlipTileUp(idx) {
+  var el = _ftGetTileEl(idx);
+  if (el) el.classList.add('flipped');
+}
+
+function _ftFlipTileDown(idx) {
+  var el = _ftGetTileEl(idx);
+  if (el) el.classList.remove('flipped');
+}
+
+function _ftMarkMatched(idx, player) {
+  var el = _ftGetTileEl(idx);
+  if (el) {
+    el.classList.remove('flipped');
+    el.classList.add('matched', 'matched-p' + player);
+  }
+}
+
+function _ftUpdateScores() {
+  ['1','2'].forEach(function(p) {
+    var el = document.getElementById('ftScore' + p);
+    if (el) el.textContent = _ftScores[parseInt(p) - 1];
+  });
+}
+
+function _ftUpdateArrows() {
+  document.getElementById('ftArrow1').classList.toggle('visible', _ftCurrentPlayer === 1);
+  document.getElementById('ftArrow2').classList.toggle('visible', _ftCurrentPlayer === 2);
+}
+
+/* ══════════════════════════════════════
+   TAP LOGIC
+══════════════════════════════════════ */
+function _ftTileTap(idx) {
+  if (_ftLocked) return;
+  var tile = _ftTiles[idx];
+  if (!tile || tile.matched) return;
+  if (_ftFlipped.indexOf(idx) >= 0) return;  /* already flipped */
+  if (_ftFlipped.length >= 2) return;
+
+  GameAudio.playClick();
+  _ftFlipTileUp(idx);
+
+  /* Special ⭐ Star Bonus Tile Flip */
+  if (tile.type === 'star') {
+    GameAudio.playSuccess();
+    tile.matched = true;
+    tile.matchedBy = _ftCurrentPlayer;
+    _ftMarkMatched(idx, _ftCurrentPlayer);
+    _ftScores[_ftCurrentPlayer - 1]++;
+    _ftUpdateScores();
+
+    var scoreEl = document.getElementById('ftScore' + _ftCurrentPlayer);
+    if (scoreEl) {
+      scoreEl.classList.remove('pop');
+      void scoreEl.offsetWidth;
+      scoreEl.classList.add('pop');
+    }
+
+    /* Check if this was the last tile */
+    var allMatched = _ftTiles.every(function(t) { return t.matched; });
+    if (allMatched) {
+      setTimeout(_ftShowWin, 600);
+    } else {
+      var turnPopup = document.getElementById('ftTurnText');
+      if (turnPopup) turnPopup.textContent = `⭐ Player ${_ftCurrentPlayer} got +1 BONUS STAR!`;
+      var overlay = document.getElementById('ftTurnOverlay');
+      if (overlay) {
+        overlay.classList.add('show');
+        setTimeout(function() { overlay.classList.remove('show'); }, 1100);
+      }
+    }
+    return;
+  }
+
+  _ftFlipped.push(idx);
+
+  if (_ftFlipped.length === 2) {
+    _ftLocked = true;
+    setTimeout(_ftCheckMatch, 900);
+  }
+}
+
+function _ftCheckMatch() {
+  var i0 = _ftFlipped[0], i1 = _ftFlipped[1];
+  var t0 = _ftTiles[i0],  t1 = _ftTiles[i1];
+
+  var isMatch = (
+    t0.pairId === t1.pairId &&
+    t0.type !== t1.type    /* one hanzi + one match */
+  );
+
+  if (isMatch) {
+    GameAudio.playSuccess();
+    /* Mark matched */
+    t0.matched   = true; t0.matchedBy = _ftCurrentPlayer;
+    t1.matched   = true; t1.matchedBy = _ftCurrentPlayer;
+    _ftMarkMatched(i0, _ftCurrentPlayer);
+    _ftMarkMatched(i1, _ftCurrentPlayer);
+    _ftScores[_ftCurrentPlayer - 1]++;
+
+    /* Pop animation on score */
+    var scoreEl = document.getElementById('ftScore' + _ftCurrentPlayer);
+    if (scoreEl) {
+      scoreEl.textContent = _ftScores[_ftCurrentPlayer - 1];
+      scoreEl.classList.remove('pop');
+      void scoreEl.offsetWidth;
+      scoreEl.classList.add('pop');
+    }
+
+    _ftFlipped = [];
+
+    /* Check win */
+    var allMatched = _ftTiles.every(function(t) { return t.matched; });
+    if (allMatched) {
+      setTimeout(_ftShowWin, 600);
+      return;
+    }
+
+    /* Same player continues — unlock */
+    _ftLocked = false;
+  } else {
+    GameAudio.playFailure();
+    /* No match: flip back, switch turn */
+    _ftFlipTileDown(i0);
+    _ftFlipTileDown(i1);
+    _ftFlipped = [];
+
+    var nextPlayer = _ftCurrentPlayer === 1 ? 2 : 1;
+    setTimeout(function() {
+      _ftCurrentPlayer = nextPlayer;
+      _ftUpdateArrows();
+      _ftShowTurnOverlay(nextPlayer, false);
+    }, 300);
+  }
+}
+
+/* ══════════════════════════════════════
+   TURN OVERLAY
+══════════════════════════════════════ */
+function _ftShowTurnOverlay(player, isFirst) {
+  var overlay = document.getElementById('ftTurnOverlay');
+  var emoji   = document.getElementById('ftTurnEmoji');
+  var text    = document.getElementById('ftTurnText');
+  if (!overlay) return;
+
+  emoji.textContent = player === 1 ? '🔵' : '🔴';
+  text.textContent  = 'Player ' + player + '’s Turn!';
+  text.className    = 'ft-turn-text p' + player + 'color';
+
+  overlay.classList.add('show');
+
+  setTimeout(function() {
+    overlay.classList.remove('show');
+    _ftLocked = false;
+  }, 1500);
+}
+
+/* ══════════════════════════════════════
+   WIN SCREEN
+══════════════════════════════════════ */
+function _ftShowWin() {
+  GameAudio.stopBGM();
+  GameAudio.playVictory();
+  var s1 = _ftScores[0], s2 = _ftScores[1];
+  var winner = s1 > s2 ? 1 : s2 > s1 ? 2 : 0;
+
+  var trophy = document.getElementById('ftWinTrophy');
+  var title  = document.getElementById('ftWinTitle');
+  var scores = document.getElementById('ftWinScores');
+
+  trophy.textContent = winner === 0 ? '🤝' : '🏆';
+
+  title.className = 'ft-win-title ' + (winner === 0 ? 'draw' : 'p' + winner);
+  title.style.animation = 'none';
+  void title.offsetWidth;
+  title.style.animation = '';
+  title.textContent = winner === 0 ? 'IT\'S A DRAW!' : 'PLAYER ' + winner + ' WINS!';
+
+  scores.textContent = 'Player 1: ' + s1 + ' pts   |   Player 2: ' + s2 + ' pts';
+
+  if (window.GameBridge && typeof window.GameBridge.finishGame === 'function') {
+    var p1Score = s1 * 100, p2Score = s2 * 100;
+    var winningScore = Math.max(p1Score, p2Score);
+    var maxScore = (s1 + s2) * 100;
+    window.GameBridge.finishGame(winningScore, maxScore, [
+      { player: 1, pairs: s1, score: p1Score },
+      { player: 2, pairs: s2, score: p2Score }
+    ], winner === 0 ? 'Draw' : ('Player ' + winner));
+  }
+
+  document.getElementById('ftWin').classList.add('show');
+}
+
+/* ══════════════════════════════════════
+   RESTART
+══════════════════════════════════════ */
+function _ftRestart() {
+  GameAudio.playClick();
+  GameAudio.startBGM();
+  document.getElementById('ftWin').classList.remove('show');
+  _ftScores = [0, 0];
+  _ftUpdateScores();
+  _ftNewRound();
+}
+
+/* ══════════════════════════════════════
+   UTILS
+══════════════════════════════════════ */
+function _ftShuffle(arr) {
+  for (var i = arr.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+  }
+  return arr;
+}
+
+/* Initial summary & grid check on load */
+_ftUpdateSummary();
+
+/* LotusGameBridge Integration */
+if (window.GameBridge && typeof window.GameBridge.onReady === 'function') {
+  window.GameBridge.onReady(function(activity) {
+    if (activity && Array.isArray(activity.questions) && activity.questions.length > 0) {
+      _customFlipQuestions = activity.questions.map(function(q) {
+        return {
+          hanzi: q.text || q.question,
+          pinyin: q.pinyin || q.text,
+          meaning: q.meaning || q.correctAnswer || (q.options?.find(function(o){ return o.isCorrect; })?.text) || q.text
+        };
+      });
+      _ftStartGame();
+    }
+  });
+}
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'INIT_ACTIVITY' && event.data.activity && Array.isArray(event.data.activity.questions)) {
+    _customFlipQuestions = event.data.activity.questions.map(function(q) {
+      return {
+        hanzi: q.text || q.question,
+        pinyin: q.pinyin || q.text,
+        meaning: q.meaning || q.correctAnswer || (q.options?.find(function(o){ return o.isCorrect; })?.text) || q.text
+      };
+    });
+    _ftStartGame();
+  }
+});
+</script>
+</body>
+</html>

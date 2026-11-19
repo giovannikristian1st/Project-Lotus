@@ -1,0 +1,3190 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anatomi 206 Tulang Manusia 3D - Rangka Asli Manusia Interaktif</title>
+  <meta name="description" content="Aplikasi web visual 3D anatomi medis asli tulang manusia untuk mempelajari 206 nama tulang dengan fitur rotasi 360, zoom, highlight merah, dan audio suara pelafalan.">
+
+  <!-- Three.js, OrbitControls & GLTFLoader from Reliable CDNs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <!-- Model 3D Rangka Asli Manusia (Offline & Bypass CORS pada double-click file://) -->
+  <script src="models/skeleton_model.js"></script>
+
+  <style>
+    :root {
+      /* Mode Terang (Default) */
+      --bg-color: #f1f5f9;
+      --panel-bg: rgba(255, 255, 255, 0.9);
+      --panel-border: rgba(203, 213, 225, 0.85);
+      --panel-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      --primary: #1E5E3A;
+      --primary-hover: #16462B;
+      --accent-red: #dc2626;
+      --accent-red-glow: rgba(220, 38, 38, 0.25);
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --text-heading: #0f172a;
+      --card-bg: rgba(255, 255, 255, 0.96);
+      --item-bg: #f8fafc;
+      --item-border: #e2e8f0;
+      --item-hover: #eff6ff;
+      --item-active-bg: #fef2f2;
+      --item-active-border: #dc2626;
+      --input-bg: #ffffff;
+      --badge-bg: #e2e8f0;
+      --badge-text: #475569;
+      --hint-bg: rgba(255, 255, 255, 0.92);
+      --hint-kbd-bg: #f1f5f9;
+      --hint-kbd-border: #cbd5e1;
+      --hint-kbd-text: #0f172a;
+      --overlay-bg: radial-gradient(circle at center, #ffffff 0%, #e2e8f0 100%);
+      --win-header-bg: linear-gradient(180deg, rgba(254, 242, 242, 0.95) 0%, rgba(255, 255, 255, 0.7) 100%);
+      --desc-box-bg: #f8fafc;
+      --funfact-bg: #eff6ff;
+      --funfact-border: #1E5E3A;
+      --funfact-label: #1E5E3A;
+      --funfact-text: #1e3a8a;
+    }
+
+    body.dark-mode {
+      /* Mode Gelap */
+      --bg-color: #070b12;
+      --panel-bg: rgba(13, 20, 36, 0.88);
+      --panel-border: rgba(255, 255, 255, 0.1);
+      --panel-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      --primary: #2C6E49;
+      --primary-hover: #1E5E3A;
+      --accent-red: #ff2a2a;
+      --accent-red-glow: rgba(255, 42, 42, 0.45);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-heading: #ffffff;
+      --card-bg: rgba(20, 29, 48, 0.94);
+      --item-bg: rgba(255, 255, 255, 0.025);
+      --item-border: rgba(255, 255, 255, 0.08);
+      --item-hover: rgba(255, 255, 255, 0.07);
+      --item-active-bg: rgba(239, 68, 68, 0.18);
+      --item-active-border: rgba(239, 68, 68, 0.8);
+      --input-bg: rgba(0, 0, 0, 0.45);
+      --badge-bg: rgba(0, 0, 0, 0.4);
+      --badge-text: #94a3b8;
+      --hint-bg: rgba(13, 20, 36, 0.85);
+      --hint-kbd-bg: rgba(255, 255, 255, 0.12);
+      --hint-kbd-border: rgba(255, 255, 255, 0.2);
+      --hint-kbd-text: #f1f5f9;
+      --overlay-bg: radial-gradient(circle at center, #111a2e 0%, #070b12 100%);
+      --win-header-bg: linear-gradient(180deg, rgba(255, 42, 42, 0.18) 0%, transparent 100%);
+      --desc-box-bg: rgba(0, 0, 0, 0.28);
+      --funfact-bg: rgba(44, 110, 73, 0.15);
+      --funfact-border: #2C6E49;
+      --funfact-label: #34D399;
+      --funfact-text: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    #webgl-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: grab;
+    }
+    #webgl-canvas:active {
+      cursor: grabbing;
+    }
+
+    /* Mode Rotasi / Drag 3D: Sembunyikan kursor & nonaktifkan interaksi UI agar indeks tulang tidak terpencet */
+    html.is-rotating,
+    html.is-rotating *,
+    body.is-rotating,
+    body.is-rotating * {
+      cursor: none !important;
+    }
+
+    body.is-rotating .sidebar-left,
+    body.is-rotating .top-header,
+    body.is-rotating .window-right,
+    body.is-rotating .viewport-hint {
+      pointer-events: none !important;
+      user-select: none !important;
+    }
+
+    body.is-rotating #webgl-canvas {
+      pointer-events: auto !important;
+      cursor: none !important;
+    }
+
+    /* Loading Screen Overlay */
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--overlay-bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+
+    .loading-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .loading-spinner-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      text-align: center;
+    }
+
+    .bone-spin-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: rgba(37, 99, 235, 0.1);
+      border: 2px solid rgba(37, 99, 235, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      animation: pulseBone 1.8s infinite ease-in-out;
+      box-shadow: 0 0 24px rgba(37, 99, 235, 0.2);
+    }
+    body.dark-mode .bone-spin-icon {
+      background: rgba(59, 130, 246, 0.12);
+      border-color: rgba(59, 130, 246, 0.4);
+      color: #60a5fa;
+      box-shadow: 0 0 24px rgba(59, 130, 246, 0.3);
+    }
+
+    .loading-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--text-heading);
+    }
+
+    .loading-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      max-width: 320px;
+    }
+
+    .progress-bar-container {
+      width: 240px;
+      height: 6px;
+      background: var(--item-border);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #1E5E3A, #34D399);
+      transition: width 0.3s ease;
+    }
+
+    @keyframes pulseBone {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.15) rotate(8deg); }
+    }
+
+    /* Top Navigation Header */
+    .top-header {
+      position: absolute;
+      top: 14px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .top-header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      pointer-events: auto;
+    }
+
+    .back-hub-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #1E5E3A;
+      color: #ffffff !important;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 9px 16px;
+      border-radius: 16px;
+      box-shadow: 0 4px 14px rgba(30, 94, 58, 0.3);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .back-hub-btn:hover {
+      background: #16462B;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(30, 94, 58, 0.45);
+      color: #ffffff !important;
+    }
+    .back-hub-btn:active {
+      transform: translateY(0);
+    }
+    body.dark-mode .back-hub-btn {
+      background: #1E5E3A;
+      border-color: rgba(52, 211, 153, 0.4);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+    body.dark-mode .back-hub-btn:hover {
+      background: #2C6E49;
+    }
+
+    .brand-box {
+      pointer-events: auto;
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--panel-border);
+      border-radius: 18px;
+      padding: 8px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: var(--panel-shadow);
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(30, 94, 58, 0.12);
+      border: 1px solid rgba(30, 94, 58, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+    body.dark-mode .brand-logo {
+      background: rgba(44, 110, 73, 0.25);
+      border-color: rgba(52, 211, 153, 0.4);
+      color: #34D399;
+    }
+
+    .brand-text h1 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      color: var(--text-heading);
+    }
+
+    .brand-text p {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      pointer-events: auto;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .action-btn {
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--panel-border);
+      color: var(--text-heading);
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      box-shadow: var(--panel-shadow);
+    }
+
+    .action-btn:hover {
+      background: var(--item-hover);
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    .action-btn.active {
+      background: #059669;
+      border-color: #10b981;
+      color: #ffffff;
+    }
+
+    /* Language Switcher Pill Group */
+    .lang-pill-group {
+      display: flex;
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 3px;
+      gap: 2px;
+      box-shadow: var(--panel-shadow);
+      pointer-events: auto;
+    }
+
+    .lang-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 5px 9px;
+      border-radius: 8px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.3px;
+    }
+
+    .lang-btn:hover {
+      color: var(--text-heading);
+      background: var(--item-hover);
+    }
+
+    .lang-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+    }
+
+    /* Left Sidebar: 206 Bones Index */
+    .sidebar-left {
+      position: absolute;
+      top: 76px;
+      left: 16px;
+      bottom: 20px;
+      width: 340px;
+      background: var(--panel-bg);
+      backdrop-filter: blur(18px);
+      border-radius: 20px;
+      border: 1px solid var(--panel-border);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      z-index: 20;
+      box-shadow: var(--panel-shadow);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s, border-color 0.3s;
+    }
+
+    .sidebar-left.collapsed {
+      transform: translateX(-380px);
+    }
+
+    .sidebar-header {
+      flex-shrink: 0;
+      margin-bottom: 12px;
+    }
+
+    .sidebar-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .sidebar-title-row h2 {
+      font-size: 0.95rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+    }
+
+    .total-badge {
+      background: rgba(220, 38, 38, 0.08);
+      border: 1px solid rgba(220, 38, 38, 0.25);
+      color: var(--accent-red);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 8px;
+      letter-spacing: 0.3px;
+    }
+    body.dark-mode .total-badge {
+      background: rgba(255, 42, 42, 0.15);
+      border-color: rgba(255, 42, 42, 0.4);
+      color: #ff8080;
+    }
+
+    /* Search Box */
+    .search-box {
+      position: relative;
+      margin-bottom: 10px;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      padding: 8px 32px 8px 12px;
+      font-size: 0.82rem;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.3s;
+    }
+
+    .search-box input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+    }
+
+    .search-icon {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Filter Pills */
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .filter-tab {
+      flex: 1;
+      padding: 6px 4px;
+      border-radius: 8px;
+      border: 1px solid var(--panel-border);
+      background: var(--item-bg);
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .filter-tab:hover {
+      background: var(--item-hover);
+      color: var(--text-heading);
+    }
+
+    .filter-tab.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #ffffff;
+    }
+
+    /* Bones Accordion Tree */
+    .bones-tree-container {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .bones-tree-container::-webkit-scrollbar {
+      width: 5px;
+    }
+    .bones-tree-container::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.4);
+      border-radius: 4px;
+    }
+
+    .region-group {
+      flex-shrink: 0;
+      border: 1px solid var(--item-border);
+      border-radius: 12px;
+      background: var(--item-bg);
+      overflow: hidden;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+
+    .region-group.expanded {
+      border-color: var(--primary);
+      background: var(--panel-bg);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    }
+    body.dark-mode .region-group.expanded {
+      border-color: rgba(59, 130, 246, 0.35);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .region-header {
+      padding: 10px 12px;
+      min-height: 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .region-header:hover {
+      background: var(--item-hover);
+    }
+
+    .region-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .region-chevron {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      transition: transform 0.2s ease, color 0.2s ease;
+    }
+
+    .region-group.expanded .region-chevron {
+      transform: rotate(90deg);
+      color: var(--primary);
+    }
+
+    .region-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-heading);
+      letter-spacing: 0.2px;
+    }
+
+    .region-count {
+      font-size: 0.7rem;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-weight: 600;
+      background: var(--badge-bg);
+      color: var(--badge-text);
+      border: 1px solid var(--panel-border);
+      white-space: nowrap;
+    }
+
+    .region-items {
+      display: none;
+      flex-direction: column;
+      padding: 6px 6px 8px 6px;
+      gap: 4px;
+      border-top: 1px solid var(--item-border);
+      background: var(--item-bg);
+    }
+
+    .region-group.expanded .region-items {
+      display: flex;
+    }
+
+    .bone-list-item {
+      padding: 7px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--item-border);
+      background: var(--panel-bg);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.15s ease;
+      gap: 8px;
+    }
+
+    .bone-list-item:hover {
+      background: var(--item-hover);
+      border-color: var(--primary);
+      transform: translateX(2px);
+    }
+
+    .bone-list-item.active {
+      background: var(--item-active-bg);
+      border-color: var(--item-active-border);
+      box-shadow: 0 0 10px var(--accent-red-glow);
+    }
+
+    .bone-item-names {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      min-width: 0;
+    }
+
+    .bone-name-id {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-heading);
+      line-height: 1.3;
+    }
+
+    .bone-list-item.active .bone-name-id {
+      color: var(--accent-red);
+      font-weight: 700;
+    }
+
+    .bone-name-latin {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-style: italic;
+      line-height: 1.3;
+    }
+
+    .bone-item-badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: var(--badge-bg);
+      border: 1px solid var(--panel-border);
+      color: var(--badge-text);
+      white-space: nowrap;
+    }
+
+    .bone-list-item.active .bone-item-badge {
+      border-color: var(--accent-red);
+      color: var(--accent-red);
+      background: var(--item-active-bg);
+    }
+
+    /* Right Small Window: Bone Detail Card */
+    .window-right {
+      position: absolute;
+      top: 76px;
+      right: 16px;
+      width: 350px;
+      max-height: calc(100vh - 110px);
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      border: 2px solid var(--accent-red);
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12), 0 0 25px var(--accent-red-glow);
+      z-index: 25;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: opacity 0.2s ease, transform 0.2s ease, background 0.3s;
+    }
+
+    .window-right.hidden {
+      display: none;
+    }
+
+    .window-header {
+      padding: 16px 18px 12px 18px;
+      border-bottom: 1px solid var(--panel-border);
+      background: var(--win-header-bg);
+      position: relative;
+    }
+
+    .window-header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 6px;
+    }
+
+    .window-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text-heading);
+      line-height: 1.3;
+    }
+
+    .close-btn {
+      background: rgba(0, 0, 0, 0.06);
+      border: none;
+      color: var(--text-muted);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+    body.dark-mode .close-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+    }
+
+    .close-btn:hover {
+      background: rgba(220, 38, 38, 0.15);
+      color: var(--accent-red);
+    }
+
+    .window-latin {
+      font-size: 0.88rem;
+      color: var(--accent-red);
+      font-style: italic;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .audio-btn {
+      background: rgba(37, 99, 235, 0.08);
+      border: 1px solid rgba(37, 99, 235, 0.25);
+      color: var(--primary);
+      border-radius: 8px;
+      padding: 3px 8px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    body.dark-mode .audio-btn {
+      background: rgba(59, 130, 246, 0.2);
+      border-color: rgba(59, 130, 246, 0.4);
+      color: #60a5fa;
+    }
+
+    .audio-btn:hover {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .window-tags {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tag-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 8px;
+    }
+
+    .tag-group-axial {
+      background: #ecfeff;
+      color: #0891b2;
+      border: 1px solid #a5f3fc;
+    }
+    body.dark-mode .tag-group-axial {
+      background: rgba(6, 182, 212, 0.2);
+      color: #67e8f9;
+      border: 1px solid rgba(6, 182, 212, 0.4);
+    }
+
+    .tag-group-appendicular {
+      background: #f5f3ff;
+      color: #7c3aed;
+      border: 1px solid #ddd6fe;
+    }
+    body.dark-mode .tag-group-appendicular {
+      background: rgba(139, 92, 246, 0.2);
+      color: #c4b5fd;
+      border: 1px solid rgba(139, 92, 246, 0.4);
+    }
+
+    .tag-count {
+      background: var(--badge-bg);
+      color: var(--text-main);
+      border: 1px solid var(--panel-border);
+    }
+
+    .window-body {
+      padding: 16px 18px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .window-body::-webkit-scrollbar {
+      width: 4px;
+    }
+    .window-body::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.4);
+      border-radius: 4px;
+    }
+
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .desc-box {
+      color: var(--text-main);
+      background: var(--desc-box-bg);
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--panel-border);
+    }
+
+    .funfact-box {
+      background: var(--funfact-bg);
+      border-left: 3px solid var(--funfact-border);
+      padding: 10px 12px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .funfact-label {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: var(--funfact-label);
+      text-transform: uppercase;
+    }
+
+    .funfact-text {
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: var(--funfact-text);
+    }
+
+    .window-actions {
+      padding: 12px 18px;
+      border-top: 1px solid var(--panel-border);
+      background: rgba(0, 0, 0, 0.02);
+      display: flex;
+      gap: 8px;
+    }
+    body.dark-mode .window-actions {
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-focus {
+      flex: 1;
+      background: var(--accent-red);
+      border: 1px solid var(--accent-red);
+      color: #ffffff;
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.25s ease;
+    }
+
+    .btn-focus:hover {
+      opacity: 0.92;
+      box-shadow: 0 0 15px var(--accent-red-glow);
+    }
+
+    .btn-focus.active {
+      background: #059669;
+      border-color: #10b981;
+      color: #ffffff;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-focus.active:hover {
+      background: #047857;
+      border-color: #059669;
+    }
+
+    /* Floating Viewport Hint */
+    .viewport-hint {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--hint-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--panel-border);
+      padding: 7px 16px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: var(--panel-shadow);
+      z-index: 10;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .hint-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hint-item kbd {
+      background: var(--hint-kbd-bg);
+      border: 1px solid var(--hint-kbd-border);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 0.7rem;
+      font-family: inherit;
+      color: var(--hint-kbd-text);
+      font-weight: 600;
+    }
+
+    .hint-sep {
+      color: var(--panel-border);
+    }
+
+    /* Mobile Toggle Button */
+    .sidebar-toggle-btn {
+      display: none;
+      pointer-events: auto;
+    }
+
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .sidebar-toggle-btn { display: flex; }
+      .sidebar-left {
+        width: 290px;
+        transform: translateX(-330px);
+      }
+      .sidebar-left.open { transform: translateX(0); }
+      .window-right {
+        width: 300px;
+        right: 10px;
+      }
+    }
+
+    @media (max-width: 650px) {
+      .window-right {
+        top: auto;
+        bottom: 16px;
+        left: 16px;
+        right: 16px;
+        width: auto;
+        max-height: 48vh;
+      }
+      .viewport-hint { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading Screen Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner-box">
+      <div class="bone-spin-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="4" r="2.5"/>
+          <path d="M12 6.5v8M9 9h6M9 14.5l-2 6M15 14.5l2 6M9 12h6"/>
+        </svg>
+      </div>
+      <div class="loading-title">Memuat Rangka Asli Manusia 3D</div>
+      <div class="loading-subtitle" id="loadingStatusText">Mengunduh data anatomi 3D realistis (3.2 MB)...</div>
+      <div class="progress-bar-container">
+        <div class="progress-bar" id="loadProgressBar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WebGL Render Canvas -->
+  <canvas id="webgl-canvas"></canvas>
+
+  <!-- Top Navigation Header -->
+  <header class="top-header">
+    <div class="top-header-left">
+      <a href="../../index.html" class="back-hub-btn" title="Kembali ke DaAi Learning Hub">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span id="btnBackHubText">← Kembali ke DaAi Learning Hub</span>
+      </a>
+
+      <div class="brand-box">
+        <div class="brand-logo">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="4" r="2.5"/>
+            <path d="M12 6.5v8M9 9h6M9 14.5l-2 6M15 14.5l2 6M9 12h6"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1 id="appHeaderTitle">Anatomi 206 Tulang Manusia 3D</h1>
+          <p id="appHeaderSubtitle">Visual Rangka Tubuh Asli • Standar Medis</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <!-- Language Selector (ENG / CHINESE / IDN) -->
+      <div class="lang-pill-group" id="langSelector">
+        <button class="lang-btn active" id="langBtn-id" data-lang="id" onclick="setLanguage('id')" title="Bahasa Indonesia">IDN</button>
+        <button class="lang-btn" id="langBtn-en" data-lang="en" onclick="setLanguage('en')" title="English">ENG</button>
+        <button class="lang-btn" id="langBtn-zh" data-lang="zh" onclick="setLanguage('zh')" title="中文 (Chinese)">中文</button>
+      </div>
+
+      <button class="action-btn sidebar-toggle-btn" id="btnToggleSidebar" onclick="toggleSidebarMenu()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <span id="btnSidebarText">Indeks Tulang</span>
+      </button>
+      <button class="action-btn" id="btnThemeToggle" onclick="toggleTheme()" title="Ganti Mode Terang / Gelap">
+        <span id="themeIcon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </span>
+        <span id="themeLabel"><span id="themeModeWord">Mode</span>: <b id="themeStateWord">Terang</b></span>
+      </button>
+      <button class="action-btn" onclick="resetSkeletonView()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        <span id="btnResetText">Reset Kamera</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Left Sidebar (Index 206 Tulang) -->
+  <aside class="sidebar-left" id="sidebarLeft">
+    <div class="sidebar-header">
+      <div class="sidebar-title-row">
+        <h2 id="sidebarHeading">Indeks Tulang</h2>
+        <span class="total-badge" id="boneCountBadge">206 Tulang</span>
+      </div>
+
+      <!-- Live Search Bar -->
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Cari nama tulang atau istilah latin..." oninput="handleSearch(this.value)">
+        <span class="search-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="filter-tabs">
+        <button class="filter-tab active" id="tabFilterAll" data-filter="all" onclick="setFilter('all', this)">Semua (206)</button>
+        <button class="filter-tab" id="tabFilterAxial" data-filter="axial" onclick="setFilter('axial', this)">Aksial (80)</button>
+        <button class="filter-tab" id="tabFilterAppendicular" data-filter="appendicular" onclick="setFilter('appendicular', this)">Apendikular (126)</button>
+      </div>
+    </div>
+
+    <!-- Accordion Tree -->
+    <div class="bones-tree-container" id="bonesAccordionContainer">
+      <!-- Injected by JavaScript -->
+    </div>
+  </aside>
+
+  <!-- Right Small Window (Bone Details) -->
+  <div class="window-right hidden" id="boneDetailWindow">
+    <div class="window-header">
+      <div class="window-header-top">
+        <div class="window-title" id="winBoneName">Tulang Paha</div>
+        <button class="close-btn" onclick="closeDetailWindow()" title="Tutup">✕</button>
+      </div>
+      <div class="window-latin">
+        <span id="winBoneLatin">Femur</span>
+        <button class="audio-btn" onclick="speakBoneName()" title="Dengarkan Pelafalan Audio">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          <span id="btnAudioText">Lafalkan</span>
+        </button>
+      </div>
+      <div class="window-tags">
+        <span class="tag-badge" id="winGroupTag">Rangka Apendikular</span>
+        <span class="tag-badge tag-count" id="winCountTag">2 Tulang</span>
+        <span class="tag-badge" id="winRegionTag" style="background: rgba(255,255,255,0.08); color: #cbd5e1;">Tungkai Bawah</span>
+      </div>
+    </div>
+
+    <div class="window-body">
+      <div>
+        <div class="section-label" id="winDescLabel">Fungsi Utama</div>
+        <div class="desc-box" id="winBoneDesc">Deskripsi fungsi tulang bagi sistem biologis tubuh manusia.</div>
+      </div>
+
+      <div class="funfact-box" id="winFunFact">
+        <div class="funfact-label">CATATAN MEDIS & ANATOMI</div>
+        <div class="funfact-text" id="winFunFactText">Catatan edukasi unik tentang tulang ini.</div>
+      </div>
+    </div>
+
+    <div class="window-actions">
+      <button class="btn-focus" id="btnFocusToggle" onclick="toggleFocusBone()" title="Isolasi dan Zoom to Fit Tulang Ini">
+        <span id="btnFocusIcon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
+        </span>
+        <span id="btnFocusText">Fokuskan Pandangan</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Viewport Hint -->
+  <div class="viewport-hint">
+    <span class="hint-item"><kbd>Drag</kbd> <span id="hintDragText">Rotasi 360°</span></span>
+    <span class="hint-sep">|</span>
+    <span class="hint-item"><kbd>Scroll</kbd> <span id="hintZoomText">Zoom</span></span>
+    <span class="hint-sep">|</span>
+    <span class="hint-item"><kbd id="hintClickKbd">Klik Tulang</kbd> <span id="hintClickText">Sorot & Detail Medis</span></span>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       1. DATABASE LENGKAP 206 TULANG MANUSIA (DIPETAKAN KE NODE MODEL 3D ASLI)
+       ========================================================================== */
+    const skeletonData = [
+  {
+    "id": "frontale",
+    "nameId": "Tulang Dahi",
+    "nameEn": "Frontal Bone (Forehead)",
+    "nameZh": "额骨 (前额骨)",
+    "nameLatin": "Os Frontale",
+    "group": "axial",
+    "regionId": "cranium",
+    "count": 1,
+    "nodeKeys": [
+      "Frontal bone"
+    ],
+    "cameraDist": 1.5,
+    "descId": "Tulang pipih tebal yang membentuk dahi manusia dan atap dari rongga mata (orbita). Berfungsi melindungi lobus frontal otak yang mengatur daya pikir logis, konsentrasi, dan emosi.",
+    "descEn": "Thick flat bone forming the human forehead and the upper roof of the eye sockets (orbits). Protects the brain's frontal lobe which governs reasoning, focus, and voluntary movement.",
+    "descZh": "形成人类前额及眼眶顶壁的扁平厚骨。保护大脑额叶，额叶主要负责逻辑思维、注意力和自主运动控制。",
+    "funFactId": "Pada masa bayi, tulang dahi terbagi dua bagian yang dipisahkan garis sutura frontal, lalu menyatu sempurna saat anak berusia sekitar 2 tahun.",
+    "funFactEn": "In infancy, the frontal bone is split into two halves separated by the frontal suture, fusing completely around age two.",
+    "funFactZh": "婴儿时期，额骨由额缝分为左右两半，通常在两岁左右完全融合为一块完整的骨骼。"
+  },
+  {
+    "id": "parietale",
+    "nameId": "Tulang Ubun-ubun (Sepasang)",
+    "nameEn": "Parietal Bones (Pair)",
+    "nameZh": "顶骨 (成对)",
+    "nameLatin": "Os Parietale (Sinistra & Dextra)",
+    "group": "axial",
+    "regionId": "cranium",
+    "count": 2,
+    "nodeKeys": [
+      "Parietal bone left",
+      "Parietal bone right"
+    ],
+    "cameraDist": 1.6,
+    "descId": "Sepasang tulang lengkung lebar yang membentuk puncak dan dinding samping tempurung kepala. Melindungi lobus parietal otak yang mengolah indra sentuhan, rasa sakit, dan suhu.",
+    "descEn": "A pair of broad curved bones forming the cranial roof and lateral walls. Protects the parietal lobes responsible for processing sensory perception such as touch, pain, and temperature.",
+    "descZh": "构成颅腔顶壁与侧壁的一对弧形扁骨。保护大脑顶叶，顶叶主要负责处理触觉、痛觉和温度等感觉信息。",
+    "funFactId": "Titik temu kedua tulang ubun-ubun di bagian atas kepala membentuk ubun-ubun bayi (fontanel anterior) yang berdenyut lembut pada bayi baru lahir.",
+    "funFactEn": "The junction between both parietal bones forms the soft anterior fontanelle that gently pulses in newborn babies.",
+    "funFactZh": "两块顶骨在头顶正中的交接处构成了新生儿的前囟门，呈现轻微柔软的脉动。"
+  },
+  {
+    "id": "temporale",
+    "nameId": "Tulang Pelipis (Sepasang)",
+    "nameEn": "Temporal Bones (Pair)",
+    "nameZh": "颞骨 (成对)",
+    "nameLatin": "Os Temporale (Sinistra & Dextra)",
+    "group": "axial",
+    "regionId": "cranium",
+    "count": 2,
+    "nodeKeys": [
+      "Temporal bone.r",
+      "Temporal bone.r_MIRROR"
+    ],
+    "cameraDist": 1.5,
+    "descId": "Sepasang tulang di sisi kiri dan kanan bawah kepala di sekitar liang telinga. Menampung organ pendengaran dan keseimbangan tubuh, serta menjadi jangkar sendi rahang bawah.",
+    "descEn": "A pair of bones on the lower lateral sides of the skull near the ear canals. Houses the hearing and vestibular balance organs, and anchors the jaw joint.",
+    "descZh": "位于头颅两侧下方、耳道周围的一对不规则骨。容纳听觉与平衡感受器官，并形成下颌关节的窝臼。",
+    "funFactId": "Bagian petrosa dari tulang pelipis merupakan salah satu struktur tulang terpadat dan terkeras di seluruh tubuh manusia!",
+    "funFactEn": "The petrous part of the temporal bone is among the densest, hardest bony structures in the entire human body!",
+    "funFactZh": "颞骨的岩部是整个人体中骨质密度最高、最坚硬的骨骼结构之一！"
+  },
+  {
+    "id": "occipitale",
+    "nameId": "Tulang Belakang Kepala",
+    "nameEn": "Occipital Bone (Base of Skull)",
+    "nameZh": "枕骨 (后颅底骨)",
+    "nameLatin": "Os Occipitale",
+    "group": "axial",
+    "regionId": "cranium",
+    "count": 1,
+    "nodeKeys": [
+      "Occipital bone"
+    ],
+    "cameraDist": 1.5,
+    "descId": "Tulang trapesium melengkung di bagian belakang dan bawah tengkorak. Memiliki lubang besar (foramen magnum) tempat lewatnya batang otak menuju sumsum tulang belakang.",
+    "descEn": "Bowl-shaped bone at the base and back of the cranium. Features the foramen magnum through which the brainstem connects with the spinal cord.",
+    "descZh": "位于头颅后下部的弧形扁骨。中央有巨大的枕骨大孔，脑干经由此孔与脊髓相连。",
+    "funFactId": "Tulang ini memiliki dua tonjolan mulus (kondilus oksipital) yang bertengger di atas tulang leher pertama (Atlas), memungkinkan kita menganggukkan kepala.",
+    "funFactEn": "Possesses two condyles on its underside that articulate with the first cervical vertebra (Atlas), allowing head nodding gestures.",
+    "funFactZh": "底部的两个枕髁与第一颈椎（寰椎）形成关节，使我们能够自如地上下点头。"
+  },
+  {
+    "id": "sphenoidale",
+    "nameId": "Tulang Baji",
+    "nameEn": "Sphenoid Bone (Keystone of Cranium)",
+    "nameZh": "蝶骨 (颅底中央楔石骨)",
+    "nameLatin": "Os Sphenoidale",
+    "group": "axial",
+    "regionId": "cranium",
+    "count": 1,
+    "nodeKeys": [
+      "Sphenoid bone"
+    ],
+    "cameraDist": 1.4,
+    "descId": "Tulang berbentuk kupu-kupu yang terletak di dasar tengah tengkorak. Disebut 'keystone' karena bersentuhan dan mengunci hampir seluruh tulang penyusun tempurung kepala.",
+    "descEn": "A butterfly-shaped bone stretching across the middle cranial base. Acts as the central keystone articulating with nearly all cranial bones.",
+    "descZh": "形似展翅蝴蝶、横贯颅底中部的核心骨骼。作为中央楔石骨，与几乎所有颅骨相接并锁紧颅底。",
+    "funFactId": "Di tengah tulang baji terdapat cekungan kecil bernama sella turcica ('pelana Turki') yang aman menjadi sarang kelenjar pituitari pengendali hormon tubuh.",
+    "funFactEn": "Houses the 'Sella Turcica' (Turkish Saddle), a saddle-shaped depression cradling the pituitary gland, the master gland of human hormones.",
+    "funFactZh": "其中央有被称为“蝶鞍”的鞍状凹窝，安放并保护着掌控人体全部激素的主脑——垂体腺。"
+  },
+  {
+    "id": "ethmoidale",
+    "nameId": "Tulang Tapis",
+    "nameEn": "Ethmoid Bone (Nasal-Cranial Sieve)",
+    "nameZh": "筛骨 (鼻颅筛板骨)",
+    "nameLatin": "Os Ethmoidale",
+    "group": "axial",
+    "regionId": "cranium",
+    "count": 1,
+    "nodeKeys": [
+      "Ethmoid Bone"
+    ],
+    "cameraDist": 1.3,
+    "descId": "Tulang spons ringan berpori di antara kedua mata di atap rongga hidung. Memisahkan rongga hidung dari otak dan menampung serabut saraf pembau.",
+    "descEn": "A lightweight, sponge-like porous bone located between both eye sockets and the roof of the nasal cavity. Separates the nasal cavity from the cranial fossa.",
+    "descZh": "位于两眼眶之间、鼻腔顶部的海绵状轻质含气骨。将鼻腔与大脑前颅窝直接分隔开。",
+    "funFactId": "Plat berkribriform pada tulang tapis memiliki lubang-lubang mikroskopis halus seperti saringan yang dilewati saraf olfaktori untuk mencium aroma harum.",
+    "funFactEn": "Its cribriform plate contains dozens of tiny perforations through which olfactory nerve fibers travel directly into the brain for smell.",
+    "funFactZh": "筛板布满数十个微孔，嗅觉神经纤维正是穿过这些微孔由鼻腔直达大脑嗅球感知气味。"
+  },
+  {
+    "id": "maxilla",
+    "nameId": "Tulang Rahang Atas (Sepasang)",
+    "nameEn": "Maxillae / Upper Jaw (Pair)",
+    "nameZh": "上颌骨 (成对)",
+    "nameLatin": "Maxilla (Sinistra & Dextra)",
+    "group": "axial",
+    "regionId": "facial",
+    "count": 2,
+    "nodeKeys": [
+      "Maxilla bone.r",
+      "Maxilla bone.r_MIRROR"
+    ],
+    "cameraDist": 1.3,
+    "descId": "Sepasang tulang yang menyatu di tengah untuk membentuk langit-langit mulut depan, dasar rongga mata, dan menampung barisan gigi geligi atas manusia.",
+    "descEn": "A fused pair of facial bones forming the upper jaw, orbital floor, and nasal walls. Houses the upper dentition.",
+    "descZh": "在面部中央愈合的一对主要面骨，构成上颌、眼眶底和鼻腔外侧壁，容纳上部恒齿牙槽。",
+    "funFactId": "Di dalam maxilla terdapat sinus terbesar pada wajah manusia (sinus maksilaris) yang berfungsi meringankan bobot tengkorak dan menghangatkan udara napas.",
+    "funFactEn": "Contains the maxillary sinuses, the largest air cavities in the human skull that enrich vocal resonance when speaking.",
+    "funFactZh": "上颌骨体内含有上颌窦，是人体颅骨中最大的含气空腔，能为言语发音提供丰富的共鸣。"
+  },
+  {
+    "id": "zygomaticum",
+    "nameId": "Tulang Pipi (Sepasang)",
+    "nameEn": "Zygomatic Bones / Cheekbones (Pair)",
+    "nameZh": "颧骨 (成对)",
+    "nameLatin": "Os Zygomaticum (Sinistra & Dextra)",
+    "group": "axial",
+    "regionId": "facial",
+    "count": 2,
+    "nodeKeys": [
+      "Zygomatic bone.r",
+      "Zygomatic bone.r_MIRROR"
+    ],
+    "cameraDist": 1.3,
+    "descId": "Dua tulang berbentuk berlian yang memberi struktur kontur pipi menonjol dan membentuk batas lateral serta sudut bawah rongga mata.",
+    "descEn": "A pair of diamond-shaped bones prominent beneath the eyes, shaping cheek contours and the zygomatic arches on the lateral face.",
+    "descZh": "位于眼眶下方、呈菱形隆起的一对骨骼，决定面颊轮廓并形成面侧部的颧弓。",
+    "funFactId": "Tulang pipi menyambung ke tulang temporal membentuk lengkung zigomatikus tempat melekatnya otot kunyah paling kuat di tubuh manusia yaitu otot masseter.",
+    "funFactEn": "The zygomatic arch anchors the masseter muscle, pound-for-pound the strongest mastication muscle in the human body.",
+    "funFactZh": "颧弓是咀嚼肌——咬肌的重要附着点，按相对体积计算，咬肌是人体收缩力量最强的肌肉之一。"
+  },
+  {
+    "id": "nasale",
+    "nameId": "Tulang Hidung (Sepasang)",
+    "nameEn": "Nasal Bones (Bridge of Nose, Pair)",
+    "nameZh": "鼻骨 (鼻梁骨，成对)",
+    "nameLatin": "Os Nasale (Sinistra & Dextra)",
+    "group": "axial",
+    "regionId": "facial",
+    "count": 2,
+    "nodeKeys": [
+      "Nasal bone.r",
+      "Nasal bone.r_MIRROR"
+    ],
+    "cameraDist": 1.1,
+    "descId": "Sepasang tulang lonjong kecil memanjang yang terletak berdampingan di pangkal tengah wajah, membentuk jembatan keras hidung manusia.",
+    "descEn": "A pair of small, thin oblong bones meeting at the midline to form the bridge of the nose.",
+    "descZh": "位于面部中央上方的一对薄长方形小骨，在中线相接形成硬质鼻梁骨架。",
+    "funFactId": "Hanya jembatan atas hidung yang terbuat dari tulang keras sejati, sisanya hingga ujung cuping tersusun dari tulang rawan elastis fleksibel.",
+    "funFactEn": "The nasal bones only form the upper third of the nose; the flexible lower two-thirds are made purely of cartilage.",
+    "funFactZh": "鼻骨仅构成鼻梁的上三分之一，而下部富有弹性的鼻头与鼻翼则完全由软骨构成。"
+  },
+  {
+    "id": "mandibula",
+    "nameId": "Tulang Rahang Bawah",
+    "nameEn": "Mandible / Lower Jaw",
+    "nameZh": "下颌骨 (下巴骨)",
+    "nameLatin": "Mandibula",
+    "group": "axial",
+    "regionId": "facial",
+    "count": 1,
+    "nodeKeys": [
+      "Mandible bone"
+    ],
+    "cameraDist": 1.4,
+    "descId": "Tulang terbesar dan terkuat di wajah manusia, dan satu-satunya tulang tengkorak yang dapat bergerak bebas saat kita mengunyah makanan, berbicara, dan tersenyum.",
+    "descEn": "The largest and strongest bone of the human face. It is the only freely mobile skull bone, enabling chewing and speech.",
+    "descZh": "人体面部最大、最坚固的骨骼，也是整个颅骨中唯一能够自由活动的骨骼，负责咀嚼与言语运动。",
+    "funFactId": "Sendi rahang bawah (TMJ) bergerak lebih dari 2.000 hingga 3.000 kali setiap hari saat kita bicara, makan, dan menguap!",
+    "funFactEn": "The temporomandibular joint (TMJ) connecting the mandible to the skull moves thousands of times daily during swallowing, speaking, and eating.",
+    "funFactZh": "连接下颌骨与颅骨的颞下颌关节（TMJ）每天随着吞咽、说话和咀嚼活动运动数千次。"
+  },
+  {
+    "id": "lacrimale",
+    "nameId": "Tulang Air Mata (Sepasang)",
+    "nameEn": "Lacrimal Bones (Tear Bones, Pair)",
+    "nameZh": "泪骨 (成对)",
+    "nameLatin": "Os Lacrimale (Sinistra & Dextra)",
+    "group": "axial",
+    "regionId": "facial",
+    "count": 2,
+    "nodeKeys": [
+      "Lacrimal bone.r",
+      "Lacrimal bone.r_MIRROR"
+    ],
+    "cameraDist": 1.1,
+    "descId": "Tulang setipis kuku seukuran keping koin kecil di sudut dalam rongga mata. Menampung kantung air mata (fossa lacrimalis).",
+    "descEn": "The smallest and most fragile bones of the face, situated at the anterior medial wall of the eye orbits. Forms the nasolacrimal canal for tears.",
+    "descZh": "面部最小、最脆弱的一对小骨，位于眼眶内侧壁前部。参与构成泪道，引导眼泪流向鼻腔。",
+    "funFactId": "Saluran air mata mengalir langsung ke rongga hidung, itulah sebabnya hidung kita ikut berair saat sedang menangis!",
+    "funFactEn": "This explains why our noses run whenever we cry, as excess tears drain straight into the nasal cavity!",
+    "funFactZh": "这也是为什么当我们痛哭流涕时，大量泪液会顺着泪管流入鼻腔导致鼻涕增多！"
+  },
+  {
+    "id": "palatinum",
+    "nameId": "Tulang Langit-langit (Sepasang)",
+    "nameEn": "Palatine Bones (Hard Palate, Pair)",
+    "nameZh": "腭骨 (硬腭骨，成对)",
+    "nameLatin": "Os Palatinum (Sinistra & Dextra)",
+    "group": "axial",
+    "regionId": "facial",
+    "count": 2,
+    "nodeKeys": [
+      "Palatine bone.r",
+      "Palatine bone.r_MIRROR"
+    ],
+    "cameraDist": 1.1,
+    "descId": "Dua tulang berbentuk huruf L di bagian belakang rongga mulut, membentuk sepertiga bagian belakang dari langit-langit keras (palatum durum).",
+    "descEn": "A pair of L-shaped bones at the back of the oral and nasal cavities. Forms the posterior third of the hard palate and floor of the nasal cavity.",
+    "descZh": "位于口腔和鼻腔后部的一对呈“L”形的小骨。构成硬腭后三分之一及鼻腔底壁。",
+    "funFactId": "Tulang langit-langit memisahkan rongga mulut dari rongga hidung di atasnya, memungkinkan kita tetap bernapas saat sedang mengunyah.",
+    "funFactEn": "Separates the oral cavity from the nasal airways, allowing humans to breathe while chewing food.",
+    "funFactZh": "严密分隔口腔与鼻腔通道，使人类在咀嚼食物的同时能够保持呼吸顺畅。"
+  },
+  {
+    "id": "concha_nasalis_inferior",
+    "nameId": "Tulang Karang Hidung Bawah (Sepasang)",
+    "nameEn": "Inferior Nasal Conchae (Turbinates, Pair)",
+    "nameZh": "下鼻甲骨 (成对)",
+    "nameLatin": "Concha Nasalis Inferior (Sinistra & Dextra)",
+    "group": "axial",
+    "regionId": "facial",
+    "count": 2,
+    "nodeKeys": [
+      "Inferior nasal concha bone.r",
+      "Inferior nasal concha bone.r_MIRROR"
+    ],
+    "cameraDist": 1.1,
+    "descId": "Sepasang lempeng tulang melengkung seperti cangkang kerang di sepanjang dinding samping rongga hidung. Mengatur sirkulasi turbulensi aliran udara napas.",
+    "descEn": "A pair of scrolled, shell-shaped bony plates extending horizontally along the lateral nasal walls. Creates turbulent airflow.",
+    "descZh": "附着于鼻腔外侧壁的一对卷曲贝壳状薄骨。使吸入的气流形成涡流。",
+    "funFactId": "Struktur melingkar karang hidung membuat udara berputar sehingga debu terperangkap dan udara dilembapkan sebelum masuk ke paru-paru.",
+    "funFactEn": "Lined with rich vascular tissue that warms, humidifies, and filters incoming air before it reaches the lungs.",
+    "funFactZh": "表面覆有丰富的血管粘膜网络，能够在吸入的空气进入肺部前对其进行加温、加湿与高效过滤。"
+  },
+  {
+    "id": "vomer",
+    "nameId": "Tulang Pembatas Hidung",
+    "nameEn": "Vomer (Nasal Septum Bone)",
+    "nameZh": "犁骨 (鼻中隔骨)",
+    "nameLatin": "Vomer",
+    "group": "axial",
+    "regionId": "facial",
+    "count": 1,
+    "nodeKeys": [
+      "Vomer"
+    ],
+    "cameraDist": 1.1,
+    "descId": "Tulang pipih berbentuk seperti mata bajak sawah yang berdiri vertikal di tengah, membentuk sekat pemisah rongga hidung kanan dan kiri.",
+    "descEn": "A thin plowshare-shaped bone situated vertically along the nasal midsagittal plane. Forms the posteroinferior nasal septum.",
+    "descZh": "位于鼻腔正中垂直面、呈犁铧形的薄扁骨。构成鼻中隔的后下部骨性屏障。",
+    "funFactId": "Kata 'Vomer' berasal dari bahasa Latin yang berarti 'mata bajak', karena bentuk geometrisnya yang mirip mata pisau pembelah tanah.",
+    "funFactEn": "Its name derives from the Latin word 'Vomer' meaning a farmer's plowshare, describing its distinct geometric shape.",
+    "funFactZh": "其名称源于拉丁语“Vomer”，意为古代农耕犁铧，形象地描述了其特殊的扁平几何外形。"
+  },
+  {
+    "id": "ossicula_auditus",
+    "nameId": "Tulang Pendengaran: Martil, Landasan, Sanggurdi (6 Tulang)",
+    "nameEn": "Auditory Ossicles: Malleus, Incus, Stapes (6 Bones)",
+    "nameZh": "听小骨：锤骨、砧骨、镫骨 (6块)",
+    "nameLatin": "Malleus, Incus, & Stapes (3 Pasang)",
+    "group": "axial",
+    "regionId": "ossicles",
+    "count": 6,
+    "nodeKeys": [
+      "Temporal bone.r",
+      "Temporal bone.r_MIRROR"
+    ],
+    "cameraDist": 1.2,
+    "descId": "Tiga pasang tulang mini di dalam rongga telinga tengah (tulang martil, landasan, dan sanggurdi). Tulang sanggurdi (stapes) adalah tulang terkecil di seluruh tubuh manusia (panjang hanya 3 milimeter!).",
+    "descEn": "Three pairs of miniature bones in the middle ear: Malleus, Incus, and Stapes. Transmits and amplifies sound vibrations from eardrum to cochlea.",
+    "descZh": "位于中耳鼓室内的三对极微小骨骼：锤骨、砧骨和镫骨。将耳膜的声波机械震动高效放大并传导至内耳耳蜗。",
+    "funFactId": "Ketiga tulang osikula pendengaran manusia telah mencapai ukuran dewasa penuh saat bayi masih berada di dalam kandungan!",
+    "funFactEn": "The stapes is the smallest and lightest bone in the human body, measuring barely 3 mm and weighing just 3 milligrams!",
+    "funFactZh": "镫骨（Stapes）是整个人体中最微小、最轻盈的骨骼，长度仅约3毫米，重量只有3毫克左右！"
+  },
+  {
+    "id": "hyoideum",
+    "nameId": "Tulang Lidah / Hioid",
+    "nameEn": "Hyoid Bone (Tongue Bone)",
+    "nameZh": "舌骨",
+    "nameLatin": "Os Hyoideum",
+    "group": "axial",
+    "regionId": "hyoid",
+    "count": 1,
+    "nodeKeys": [
+      "Mandible bone"
+    ],
+    "cameraDist": 1.2,
+    "descId": "Tulang berbentuk tapal kuda unik yang melayang di leher anterior di bawah lidah. Menjadi jangkar penopang lidah dan kotak suara (laring).",
+    "descEn": "A U-shaped bone in the anterior neck below the mandible. Suspends the tongue base and larynx, vital for swallowing and speech.",
+    "descZh": "位于颈前部下颌下方、呈马蹄铁形的独立骨骼。悬吊并支撑舌根和喉头软骨，对于吞咽和发音至关重要。",
+    "funFactId": "Tulang hioid adalah satu-satunya tulang di seluruh tubuh manusia yang tidak bersendi atau bersentuhan langsung dengan tulang lain manapun!",
+    "funFactEn": "The hyoid is the only bone in the entire human skeleton that does not articulate directly with any other bone!",
+    "funFactZh": "舌骨是整个人体骨骼系统中唯一一块不与任何其他骨骼直接形成关节相连的骨头（仅由肌腱和韧带悬吊浮于颈中）！"
+  },
+  {
+    "id": "vertebrae_cervicales",
+    "nameId": "Ruas Tulang Leher (C1 - C7)",
+    "nameEn": "Cervical Vertebrae (C1 - C7, Neck)",
+    "nameZh": "颈椎 (C1 - C7，颈部椎骨)",
+    "nameLatin": "Vertebrae Cervicales (Atlas, Axis, C3-C7)",
+    "group": "axial",
+    "regionId": "spine",
+    "count": 7,
+    "nodeKeys": [
+      "Atlas (C1)",
+      "Axis (C2)",
+      "Cervical vertebrae (C3)",
+      "Cervical vertebrae (C4)",
+      "Cervical vertebrae (C5)",
+      "Cervical vertebrae (C6)",
+      "Cervical vertebrae (C7)"
+    ],
+    "cameraDist": 1.4,
+    "descId": "Tujuh ruas tulang leher yang menopang berat kepala. Ruas C1 (Atlas) menyangga tengkorak untuk mengangguk, dan ruas C2 (Axis) memiliki pasak poros untuk menggelengkan kepala.",
+    "descEn": "The seven vertebrae of the neck. C1 (Atlas) supports the globe of the head while C2 (Axis) enables rotational side-to-side movement.",
+    "descZh": "构成颈部的七块椎骨。第一颈椎（寰椎）承托头部，第二颈椎（枢椎）提供枢轴旋转，支持头部的屈伸与转动。",
+    "funFactId": "Manusia dan jerapah memiliki jumlah tulang leher yang persis sama, yaitu tepat 7 ruas tulang leher cervical!",
+    "funFactEn": "Almost all mammals on Earth, from humans to long-necked giraffes, share exactly 7 cervical vertebrae!",
+    "funFactZh": "地球上几乎所有哺乳动物，从人类到脖子长达两米的长颈鹿，都恰好拥有完全相同的7块颈椎！"
+  },
+  {
+    "id": "vertebrae_thoracicae",
+    "nameId": "Ruas Tulang Punggung (T1 - T12)",
+    "nameEn": "Thoracic Vertebrae (T1 - T12, Mid-Back)",
+    "nameZh": "胸椎 (T1 - T12，胸段椎骨)",
+    "nameLatin": "Vertebrae Thoracicae",
+    "group": "axial",
+    "regionId": "spine",
+    "count": 12,
+    "nodeKeys": [
+      "Thoracic vertebrae (T1)",
+      "Thoracic vertebrae (T2)",
+      "Thoracic vertebrae (T3)",
+      "Thoracic vertebrae (T4)",
+      "Thoracic vertebrae (T5)",
+      "Thoracic vertebrae (T6)",
+      "Thoracic vertebrae (T7)",
+      "Thoracic vertebrae (T8)",
+      "Thoracic vertebrae (T9)",
+      "Thoracic vertebrae (T10)",
+      "Thoracic vertebrae (T11)",
+      "Thoracic vertebrae (T12)"
+    ],
+    "cameraDist": 1.8,
+    "descId": "Dua belas ruas tulang di punggung tengah yang masing-masing bersendi dengan sepasang tulang rusuk, membentuk dinding belakang sangkar dada pelindung organ vital.",
+    "descEn": "Twelve mid-back vertebrae. Each features costal facets articulating with 12 pairs of ribs, anchoring the protective ribcage.",
+    "descZh": "构成背部中段的十二块椎骨。每块胸椎均具有特殊的肋凹关节面，与十二对肋骨相连构成坚固的胸廓后壁。",
+    "funFactId": "Gerakan lentur ruas toraks sengaja dibatasi oleh anatomi agar sangkar dada tetap stabil dan ruang paru-paru serta jantung tidak tergencet.",
+    "funFactEn": "Intervertebral discs compress under gravity during daytime, making you up to 1-2 cm shorter at night than in the morning!",
+    "funFactZh": "白天受重力影响，椎间盘的水分被轻微挤压压缩，导致晚上测得的身高通常比清晨矮1到2厘米！"
+  },
+  {
+    "id": "vertebrae_lumbales",
+    "nameId": "Ruas Tulang Pinggang (L1 - L5)",
+    "nameEn": "Lumbar Vertebrae (L1 - L5, Lower Back)",
+    "nameZh": "腰椎 (L1 - L5，腰段椎骨)",
+    "nameLatin": "Vertebrae Lumbales",
+    "group": "axial",
+    "regionId": "spine",
+    "count": 5,
+    "nodeKeys": [
+      "Lumbar vertebrae (L1)",
+      "Lumbar vertebrae (L2)",
+      "Lumbar vertebrae (L3)",
+      "Lumbar vertebrae (L4)",
+      "Lumbar vertebrae (L5)"
+    ],
+    "cameraDist": 1.4,
+    "descId": "Lima ruas tulang paling tebal, lebar, dan kokoh di antara seluruh tulang belakang. Berfungsi memikul beban terbesar dari tubuh bagian atas saat berdiri dan mengangkat beban.",
+    "descEn": "The five largest, thickest spinal vertebrae. Bears the entire weight of the upper torso and enables bending, twisting, and lifting.",
+    "descZh": "五块体型最大、骨质最厚重的脊椎骨。承担上半身的全部重力负载，并支持腰部的屈曲、伸展与旋转。",
+    "funFactId": "Cakram bantalan sendi di antara ruas lumbal dapat memampat sepanjang hari, membuat tinggi badan kita berkurang 1-2 cm di malam hari sebelum tidur!",
+    "funFactEn": "The L5 vertebra withstands the greatest mechanical stress in the spine and is the most common site of lumbar disc herniation.",
+    "funFactZh": "第五腰椎（L5）承受着全脊柱最大的机械杠杆压力，也是腰椎间盘突出症最常发病的节段。"
+  },
+  {
+    "id": "sacrum",
+    "nameId": "Tulang Kelangkang",
+    "nameEn": "Sacrum (Fused Sacral Vertebrae)",
+    "nameZh": "骶骨 (5块骶椎融合骨)",
+    "nameLatin": "Os Sacrum (5 Ruas Menyatu)",
+    "group": "axial",
+    "regionId": "spine",
+    "count": 1,
+    "nodeKeys": [
+      "Sacrum"
+    ],
+    "cameraDist": 1.3,
+    "descId": "Tulang segitiga melengkung yang terbentuk dari penyatuan lima ruas tulang belakang pada orang dewasa. Menghubungkan tulang belakang ke gelang panggul.",
+    "descEn": "A triangular bone at the spinal base formed by the fusion of 5 sacral vertebrae. Couples the spine to the pelvis via sacroiliac joints.",
+    "descZh": "位于脊柱底部的倒三角形坚实大骨，由5块骶椎融合而成。通过骶髂关节将脊柱坚固地锚定在骨盆上。",
+    "funFactId": "Nama Sacrum berasal dari bahasa Latin 'Os Sacrum' yang berarti 'tulang suci', karena dipercaya oleh bangsa Romawi kuno sebagai pelindung jiwa.",
+    "funFactEn": "Named from the Latin 'Os Sacrum' meaning 'Holy Bone', reflecting ancient beliefs that it harbored the immortal human soul.",
+    "funFactZh": "名称源于拉丁语“Os Sacrum”（神圣之骨），古罗马人认为这块坚固的骨骼承载着人灵魂不灭的核心。"
+  },
+  {
+    "id": "coccyx",
+    "nameId": "Tulang Ekor",
+    "nameEn": "Coccyx / Tailbone",
+    "nameZh": "尾骨 (尾椎融合骨)",
+    "nameLatin": "Os Coccygis (4 Ruas Menyatu)",
+    "group": "axial",
+    "regionId": "spine",
+    "count": 1,
+    "nodeKeys": [
+      "Coccyx"
+    ],
+    "cameraDist": 1.1,
+    "descId": "Tulang kecil runcing di ujung terbawah tulang belakang yang terbentuk dari peleburan empat ruas tulang ekor. Berfungsi sebagai titik jangkar otot dasar panggul.",
+    "descEn": "The terminal spinal tip formed by fusion of 3 to 5 rudimentary vertebrae. Anchors pelvic floor muscles supporting visceral organs.",
+    "descZh": "脊柱的最下端，由3至5块退化的尾椎愈合而成。为盆底肌群提供关键的锚定附着点，支撑盆腔内脏器。",
+    "funFactId": "Nama 'Coccyx' diambil dari bahasa Yunani yang berarti 'burung kukuk', karena bentuk lengkungnya yang menyerupai paruh burung kukuk.",
+    "funFactEn": "The coccyx acts as the third leg of a sitting tripod, absorbing and distributing weight when you lean back while seated.",
+    "funFactZh": "当我们后倾坐下时，尾骨与两侧坐骨结节共同构成三脚架支撑平衡，分担上半身重力。"
+  },
+  {
+    "id": "sternum",
+    "nameId": "Tulang Dada",
+    "nameEn": "Sternum / Breastbone",
+    "nameZh": "胸骨 (胸前正中扁骨)",
+    "nameLatin": "Sternum (Manubrium & Corpus)",
+    "group": "axial",
+    "regionId": "ribcage",
+    "count": 1,
+    "nodeKeys": [
+      "Manubrium of sternum",
+      "Body of sternum"
+    ],
+    "cameraDist": 1.4,
+    "descId": "Tulang pipih panjang berbentuk seperti dasi di tengah dada depan. Melindungi jantung dan pembuluh darah aorta, serta menjadi jangkar depan bagi tulang rusuk sejati.",
+    "descEn": "A flat elongated necktie-shaped bone centered on the anterior chest. Shields the heart and aorta directly beneath it.",
+    "descZh": "位于胸前部正中、形似领带的长条扁骨。为后方深处的跳动心脏及主动脉弓提供第一道坚固防线。",
+    "funFactId": "Sumsum tulang merah di dalam sternum orang dewasa sangat aktif memproduksi jutaan sel darah merah dan putih baru setiap detiknya!",
+    "funFactEn": "Composed of three fused sections: the manubrium, the body, and the pointed xiphoid process at the bottom.",
+    "funFactZh": "由上至下分为三部分：胸骨柄、胸骨体和最下端的剑突。"
+  },
+  {
+    "id": "costae_verae",
+    "nameId": "Tulang Rusuk Sejati (Pasang 1 - 7)",
+    "nameEn": "True Ribs (Pairs 1 - 7, 14 Bones)",
+    "nameZh": "真肋 (第1 - 7对，14根)",
+    "nameLatin": "Costae Verae I - VII (14 Tulang)",
+    "group": "axial",
+    "regionId": "ribcage",
+    "count": 14,
+    "nodeKeys": [
+      "Rib (1st).r",
+      "Rib (1st).r_MIRROR",
+      "Rib (2nd).r",
+      "Rib (2nd).r_MIRROR",
+      "Rib (3rd).r",
+      "Rib (3rd).r_MIRROR",
+      "Rib (4th).r",
+      "Rib (4th).r_MIRROR",
+      "Rib (5th).r",
+      "Rib (5th).r_MIRROR",
+      "Rib (6th).r",
+      "Rib (6th).r_MIRROR",
+      "Rib (7th).r",
+      "Rib (7th).r_MIRROR"
+    ],
+    "cameraDist": 1.7,
+    "descId": "Tujuh pasang tulang rusuk teratas yang menempel langsung dari tulang belakang ke tulang dada (sternum) melalui tulang rawan kosta masing-masing secara mandiri.",
+    "descEn": "The first 7 pairs of ribs (14 bones) attached directly to the sternum via their individual costal cartilages. Encages heart and lungs.",
+    "descZh": "人体最上部的7对肋骨（共14根），每根均通过自身独立的肋软骨直接与胸骨相连。保护心肺器官。",
+    "funFactId": "Lengkungan rusuk sejati mengembang ke atas dan ke luar seperti pegangan ember saat kita menarik napas dalam-dalam.",
+    "funFactEn": "The spring-like elasticity of costal cartilages allows the ribcage to expand outward by several centimeters during deep inhalation.",
+    "funFactZh": "肋软骨优异的生物弹性使胸廓在深吸气时能向外扩张数厘米，实现顺畅的胸式呼吸。"
+  },
+  {
+    "id": "costae_spuriae",
+    "nameId": "Tulang Rusuk Palsu (Pasang 8 - 10)",
+    "nameEn": "False Ribs (Pairs 8 - 10, 6 Bones)",
+    "nameZh": "假肋 (第8 - 10对，6根)",
+    "nameLatin": "Costae Spuriae VIII - X (6 Tulang)",
+    "group": "axial",
+    "regionId": "ribcage",
+    "count": 6,
+    "nodeKeys": [
+      "Rib (8th).r",
+      "Rib (8th).r_MIRROR",
+      "Rib (9th).r",
+      "Rib (9th).r_MIRROR",
+      "Rib (10th).r",
+      "Rib (10th).r_MIRROR"
+    ],
+    "cameraDist": 1.6,
+    "descId": "Tiga pasang tulang rusuk di bawah rusuk sejati yang tulang rawannya tidak menempel langsung ke sternum, melainkan menumpang menyatu pada tulang rawan rusuk ke-7 di atasnya.",
+    "descEn": "Three rib pairs (6 bones) that do not reach the sternum directly; their cartilages join that of the 7th rib above.",
+    "descZh": "第8至第10对肋骨（共6根），其前端软骨不直接连接胸骨，而是相互顺延连合于第7肋软骨上。",
+    "funFactId": "Penyatuan rawan rusuk palsu ke rusuk ke-7 membentuk lengkungan tepi bawah dada yang disebut 'arkus kosta'.",
+    "funFactEn": "Called 'false' not because they aren't genuine bones, but because their anterior attachment to the breastbone is indirect!",
+    "funFactZh": "称其为“假肋”并非非真骨，而是指其前端未直接固定于胸骨体上！"
+  },
+  {
+    "id": "costae_fluctuantes",
+    "nameId": "Tulang Rusuk Melayang (Pasang 11 - 12)",
+    "nameEn": "Floating Ribs (Pairs 11 - 12, 4 Bones)",
+    "nameZh": "浮肋 (第11 - 12对，4根)",
+    "nameLatin": "Costae Fluctuantes XI - XII (4 Tulang)",
+    "group": "axial",
+    "regionId": "ribcage",
+    "count": 4,
+    "nodeKeys": [
+      "Rib (11th).r",
+      "Rib (11th).r_MIRROR",
+      "Rib (12th).r",
+      "Rib (12th).r_MIRROR"
+    ],
+    "cameraDist": 1.5,
+    "descId": "Dua pasang tulang rusuk terbawah yang hanya menempel pada tulang belakang di bagian belakang, sementara ujung depannya melayang bebas tanpa menempel ke tulang dada.",
+    "descEn": "The bottom two rib pairs (4 bones) attached only to the spine, with anterior tips ending freely within the abdominal wall muscles.",
+    "descZh": "最下部的2对肋骨（共4根），仅后端固定于胸椎，前端完全游离于腹壁肌肉层中。",
+    "funFactId": "Meskipun tidak tersambung ke depan, rusuk melayang memiliki tugas khusus melindungi organ ginjal dan limpa dari benturan dari arah samping.",
+    "funFactEn": "Their unattached anterior tips grant abdominal flexibility while shielding both kidneys against posterior physical trauma.",
+    "funFactZh": "前端游离状态赋予腹部扭转极佳的柔韧度，同时为后腰深处的双肾提供护盾。"
+  },
+  {
+    "id": "clavicula",
+    "nameId": "Tulang Selangka (Sepasang)",
+    "nameEn": "Clavicles / Collarbones (Pair)",
+    "nameZh": "锁骨 (成对)",
+    "nameLatin": "Clavicula (Sinistra & Dextra)",
+    "group": "appendicular",
+    "regionId": "shoulder",
+    "count": 2,
+    "nodeKeys": [
+      "Clavicle.r",
+      "Clavicle.r_MIRROR"
+    ],
+    "cameraDist": 1.4,
+    "descId": "Dua tulang ramping berbentuk huruf 'S' yang melintang horizontal di pangkal leher, menyambungkan tulang dada dengan tulang belikat sebagai penahan rentang bahu.",
+    "descEn": "A pair of S-shaped horizontal strut bones across the upper chest. Holds the shoulder joints out laterally for free arm mobility.",
+    "descZh": "横贯于前胸上部的一对呈“S”形弯曲长骨。如同支撑架般将上肢与胸廓拉开距离，使手臂能大幅度自由摆动。",
+    "funFactId": "Tulang selangka adalah tulang yang paling awal mengalami osifikasi (pengerasan) pada janin, sekaligus tulang yang paling sering mengalami fraktur saat jatuh.",
+    "funFactEn": "The clavicle is the very first bone to begin ossifying in a fetus, and one of the most frequently fractured bones in sports.",
+    "funFactZh": "锁骨是胎儿发育过程中最早开始骨化坚硬的骨骼，也是运动损伤中发生骨折几率最高的人体骨骼之一。"
+  },
+  {
+    "id": "scapula",
+    "nameId": "Tulang Belikat (Sepasang)",
+    "nameEn": "Scapulae / Shoulder Blades (Pair)",
+    "nameZh": "肩胛骨 (成对)",
+    "nameLatin": "Scapula (Sinistra & Dextra)",
+    "group": "appendicular",
+    "regionId": "shoulder",
+    "count": 2,
+    "nodeKeys": [
+      "Scapula.r.",
+      "Scapula.r._MIRROR"
+    ],
+    "cameraDist": 1.5,
+    "descId": "Sepasang tulang pipih segitiga besar di punggung atas bagian belakang. Menjadi landasan sendi mangkuk bahu yang memungkinkan lengan berputar bebas 360 derajat.",
+    "descEn": "A pair of flat triangular blades on the upper posterior back. Forms the highly mobile glenohumeral ball-and-socket shoulder joint.",
+    "descZh": "贴附于背部上方两侧的一对宽扁倒三角形骨骼。其外侧的盂臼与肱骨头构成人体活动度最大的肩关节。",
+    "funFactId": "Ada 17 otot berbeda yang melekat pada tulang belikat, menjadikannya salah satu tulang dengan koordinasi gerak paling fleksibel di tubuh kita.",
+    "funFactEn": "The shoulder blade floats over muscles without a direct bony joint to the ribs, enabling expansive shoulder rotational reach!",
+    "funFactZh": "肩胛骨并不与胸廓形成骨性关节，而是悬浮滑行于背部肌肉床之上，赋予手臂极广阔的三维活动空间！"
+  },
+  {
+    "id": "humerus",
+    "nameId": "Tulang Lengan Atas (Sepasang)",
+    "nameEn": "Humerus / Upper Arm Bones (Pair)",
+    "nameZh": "肱骨 (上臂骨，成对)",
+    "nameLatin": "Humerus (Sinistra & Dextra)",
+    "group": "appendicular",
+    "regionId": "arms",
+    "count": 2,
+    "nodeKeys": [
+      "Humerus.r",
+      "Humerus.r_MIRROR"
+    ],
+    "cameraDist": 1.6,
+    "descId": "Tulang pipa terpanjang dan terbesar di anggota gerak atas. Kepala bundarnya bersendi dengan skapula di bahu, sedangkan ujung bawahnya membentuk engsel siku.",
+    "descEn": "The longest, largest bone of the upper limb. Connects the shoulder socket to the elbow hinge, powering lifting and throwing.",
+    "descZh": "上肢最长、最粗壮的管状长骨。连接肩关节与肘关节，为推举、投掷等上肢动作提供坚实杠杆支持。",
+    "funFactId": "Di belakang ujung siku humerus melintas saraf ulnaris yang jika terbentur menimbulkan sensasi kesemutan geli menyengat (sering disebut 'funny bone').",
+    "funFactEn": "The stinging sensation when hitting your 'funny bone' occurs where the ulnar nerve passes over the medial epicondyle of the humerus.",
+    "funFactZh": "手肘内侧不慎碰撞时产生的麻木触电感（俗称麻筋），是因尺神经从肱骨内上髁浅表沟槽穿过受到挤压所致。"
+  },
+  {
+    "id": "radius",
+    "nameId": "Tulang Pengumpil (Sepasang)",
+    "nameEn": "Radius / Forearm Lateral Bones (Pair)",
+    "nameZh": "桡骨 (前臂外侧骨，成对)",
+    "nameLatin": "Radius (Sinistra & Dextra)",
+    "group": "appendicular",
+    "regionId": "arms",
+    "count": 2,
+    "nodeKeys": [
+      "Radius.r",
+      "Radius.r_MIRROR"
+    ],
+    "cameraDist": 1.3,
+    "descId": "Tulang lengan bawah yang terletak sejajar searah dengan ibu jari (jempol). Mampu berputar menyilang di atas ulna saat kita membalikkan telapak tangan (supinasi & pronasi).",
+    "descEn": "The lateral forearm bone aligned with the thumb. Rotates around the ulna to allow hand pronation and supination.",
+    "descZh": "位于前臂外侧、与大拇指同侧的长骨。能够围绕内侧尺骨旋转交叉，使手掌能够自由翻转（旋前与旋后）。",
+    "funFactId": "Nama 'Radius' berarti jari-jari roda dalam bahasa Latin, menggambarkan gerakannya yang berputar mengelilingi poros tulang hasta.",
+    "funFactEn": "The radial pulse routinely checked by doctors to measure heart rate rests directly against the distal end of the radius.",
+    "funFactZh": "医生诊脉时常测的桡动脉搏动，正是紧贴桡骨下端浅表处跳动的。"
+  },
+  {
+    "id": "ulna",
+    "nameId": "Tulang Hasta (Sepasang)",
+    "nameEn": "Ulna / Forearm Medial Bones (Pair)",
+    "nameZh": "尺骨 (前臂内侧骨，成对)",
+    "nameLatin": "Ulna (Sinistra & Dextra)",
+    "group": "appendicular",
+    "regionId": "arms",
+    "count": 2,
+    "nodeKeys": [
+      "Ulna.r",
+      "Ulna.r_MIRROR"
+    ],
+    "cameraDist": 1.3,
+    "descId": "Tulang lengan bawah sisi dalam yang sejajar dengan jari kelingking. Ujung atasnya memiliki tonjolan olekranon yang membentuk tonjolan siku tangan kita.",
+    "descEn": "The medial forearm bone aligned with the pinky finger. Features the hook-like olecranon forming the bony elbow point.",
+    "descZh": "位于前臂内侧、与小指同侧的长骨。上端粗大的鹰嘴突构成手肘突出的骨性标志。",
+    "funFactId": "Saat menekuk siku, tonjolan tulang siku yang kamu raba dan tempelkan di meja adalah ujung olekranon dari tulang hasta.",
+    "funFactEn": "The olecranon locks into the humeral fossa upon full arm extension, structurally preventing the elbow from hyperextending backward.",
+    "funFactZh": "当手臂完全伸直时，尺骨鹰嘴恰好嵌入肱骨鹰嘴窝中，在结构上锁定防止手肘向后过度反折。"
+  },
+  {
+    "id": "ossa_carpi",
+    "nameId": "Tulang Karpal / Pangkal Tangan (16 Tulang)",
+    "nameEn": "Carpal Bones / Wrist (16 Bones)",
+    "nameZh": "腕骨 (手腕骨，16块)",
+    "nameLatin": "Ossa Carpi (Scaphoideum, Lunatum, Triquetrum, Pisiforme, Trapezium, Trapezoideum, Capitatum, Hamatum)",
+    "group": "appendicular",
+    "regionId": "hands",
+    "count": 16,
+    "nodeKeys": [
+      "Scaphoid.r",
+      "Scaphoid.r_MIRROR",
+      "Lunate bone.r",
+      "Lunate bone.r_MIRROR",
+      "Triquetrum.r",
+      "Triquetrum.r_MIRROR",
+      "Pisiform.r",
+      "Pisiform.r_MIRROR",
+      "Trapezium.r",
+      "Trapezium.r_MIRROR",
+      "Trapezoid.r",
+      "Trapezoid.r_MIRROR",
+      "Capitate.r",
+      "Capitate.r_MIRROR",
+      "Hamate.r",
+      "Hamate.r_MIRROR"
+    ],
+    "cameraDist": 1,
+    "descId": "Delapan pasang tulang kecil tak beraturan (8 pada tangan kiri & 8 pada tangan kanan) yang tersusun dalam dua baris, memberikan kelenturan luar biasa pada pergelangan tangan.",
+    "descEn": "Eight pebble-like bones in each wrist (16 total) arranged in two rows. Provides multidirectional wrist dexterity.",
+    "descZh": "分布于两手腕部的八对（共16块）卵石状短骨，排成近侧与远侧两列。赋予手腕复杂多轴的微屈伸旋转能力。",
+    "funFactId": "Tulang-tulang karpal membentuk lorong melengkung bernama 'carpal tunnel' tempat lewatnya urat tendon jari dan saraf medianus.",
+    "funFactEn": "These bones form the bony floor of the Carpal Tunnel; nerve compression within this tight space causes Carpal Tunnel Syndrome.",
+    "funFactZh": "腕骨沟与腕横韧带共同围成著名的“腕管”，正中神经若在此狭窄通道受压便会引发腕管综合征（鼠标手）。"
+  },
+  {
+    "id": "ossa_metacarpi",
+    "nameId": "Tulang Metakarpal / Telapak Tangan (10 Tulang)",
+    "nameEn": "Metacarpal Bones / Palm (10 Bones)",
+    "nameZh": "掌骨 (手掌骨，10块)",
+    "nameLatin": "Ossa Metacarpi I - V (5 Pasang)",
+    "group": "appendicular",
+    "regionId": "hands",
+    "count": 10,
+    "nodeKeys": [
+      "1st metacarpal bone.r",
+      "1st metacarpal bone.r_MIRROR",
+      "2nd metacarpal bone.r",
+      "2nd metacarpal bone.r_MIRROR",
+      "3rd metacarpal bone.r",
+      "3rd metacarpal bone.r_MIRROR",
+      "4th metacarpal bone.r",
+      "4th metacarpal bone.r_MIRROR",
+      "5th metacarpal bone.r",
+      "5th metacarpal bone.r_MIRROR"
+    ],
+    "cameraDist": 1.1,
+    "descId": "Sepuluh tulang pipa mini (5 per tangan) yang menjadi kerangka penopang telapak tangan, menghubungkan pergelangan tangan dengan pangkal ruas jari.",
+    "descEn": "Ten miniature long bones (5 per hand) forming the structural framework of the palm, bridging wrist to fingers.",
+    "descZh": "构成手掌内部骨架的十块（每侧5块）微型管状骨，连接腕骨与指骨。",
+    "funFactId": "Sendi metakarpal pertama pada ibu jari memiliki bentuk pelana unik yang membuat jempol manusia dapat berhadapan (oposisi) dengan jari lainnya.",
+    "funFactEn": "The distinct knuckles visible when clenching a fist are actually the distal heads of your metacarpal bones.",
+    "funFactZh": "握拳时手背凸起的指关节棱角（拳峰），实际上是掌骨远端的膨大骨头。"
+  },
+  {
+    "id": "phalanges_manus",
+    "nameId": "Tulang Falang / Ruas Jari Tangan (28 Tulang)",
+    "nameEn": "Phalanges of Hand / Finger Bones (28 Bones)",
+    "nameZh": "手指骨 / 手部指骨 (28块)",
+    "nameLatin": "Phalanges Manus (Proksimal, Media, Distal)",
+    "group": "appendicular",
+    "regionId": "hands",
+    "count": 28,
+    "nodeKeys": [
+      "Proximal phalanx of 1st finger.r",
+      "Proximal phalanx of 1st finger.r_MIRROR",
+      "Proximal phalanx of 2d finger.r",
+      "Proximal phalanx of 2d finger.r_MIRROR",
+      "Proximal phalanx of 3rd finger.r",
+      "Proximal phalanx of 3rd finger.r_MIRROR",
+      "Proximal phalanx of 4th finger.r",
+      "Proximal phalanx of 4th finger.r_MIRROR",
+      "Proximal phalanx of 5th finger.r",
+      "Proximal phalanx of 5th finger.r_MIRROR",
+      "Middle phalanx of 2d finger.r",
+      "Middle phalanx of 2d finger.r_MIRROR",
+      "Middle phalanx of 3rd finger.r",
+      "Middle phalanx of 3rd finger.r_MIRROR",
+      "Middle phalanx of 4th finger.r",
+      "Middle phalanx of 4th finger.r_MIRROR",
+      "Middle phalanx of 5th finger.r",
+      "Middle phalanx of 5th finger.r_MIRROR",
+      "Distal phalanx of 1st finger.r",
+      "Distal phalanx of 1st finger.r_MIRROR",
+      "Distal phalanx of 2d finger.r",
+      "Distal phalanx of 2d finger.r_MIRROR",
+      "Distal phalanx of 3d finger.r",
+      "Distal phalanx of 3d finger.r_MIRROR",
+      "Distal phalanx of 4th finger.r",
+      "Distal phalanx of 4th finger.r_MIRROR",
+      "Distal phalanx of 5th finger.r",
+      "Distal phalanx of 5th finger.r_MIRROR"
+    ],
+    "cameraDist": 1.1,
+    "descId": "Dua puluh delapan tulang ruas jari tangan (14 per tangan). Setiap jari memiliki 3 ruas tulang, kecuali ibu jari yang hanya memiliki 2 ruas tulang.",
+    "descEn": "Twenty-eight finger bones (14 per hand). Each finger contains 3 phalanges, whereas the opposable thumb contains only 2.",
+    "descZh": "构成双手十指的二十八块指骨（每手14块）。除大拇指仅有2节外，其余四指均由近节、中节和远节3块指骨组成。",
+    "funFactId": "Jari-jari tangan kita sebenarnya tidak memiliki otot daging; semua gerakan jari ditarik oleh tali tendon dari otot yang berada di lengan bawah!",
+    "funFactEn": "The two-phalanx opposable human thumb can touch every other fingertip, an evolutionary trait enabling precision tool handling!",
+    "funFactZh": "仅有两节指骨的人类拇指具有无与伦比的对掌运动能力，可对触其余四指指腹，是人类制造与使用工具的演化关键！"
+  },
+  {
+    "id": "os_coxae",
+    "nameId": "Tulang Panggul / Koksa (Sepasang)",
+    "nameEn": "Hip Bones / Pelvic Coxal Bones (Pair)",
+    "nameZh": "髋骨 (骨盆髋骨，成对)",
+    "nameLatin": "Os Coxae (Penyatuan Ilium, Ischium, & Pubis)",
+    "group": "appendicular",
+    "regionId": "pelvis",
+    "count": 2,
+    "nodeKeys": [
+      "Hip bone.r",
+      "Hip bone.r_MIRROR"
+    ],
+    "cameraDist": 1.6,
+    "descId": "Sepasang tulang kokoh menyerupai mangkuk besar yang menopang organ perut bawah, menahan berat badan saat duduk, dan memiliki mangkuk asetabulum tempat bertumpunya tulang paha.",
+    "descEn": "A pair of large hip bones formed by the fusion of Ilium, Ischium, and Pubis. Supports abdominal weight and connects legs to trunk.",
+    "descZh": "由髂骨、坐骨和耻骨在青春期后完全融合而成的一对大型不规则骨。承托腹盆腔脏器，并将下肢与躯干相连。",
+    "funFactId": "Tulang panggul perempuan memiliki rongga lingkaran tengah yang lebih lebar dan oval dibandingkan pria untuk mempermudah kelahiran bayi.",
+    "funFactEn": "The deep acetabular cup serves as the hip socket, locking the femur head with immense structural stability.",
+    "funFactZh": "髋骨外侧深陷的髋臼是人体最深、最稳固的杵臼关节窝，紧密扣合股骨头以承受全身重量。"
+  },
+  {
+    "id": "femur",
+    "nameId": "Tulang Paha (Sepasang)",
+    "nameEn": "Femur / Thigh Bones (Pair)",
+    "nameZh": "股骨 (大腿骨，成对)",
+    "nameLatin": "Femur (Sinistra & Dextra)",
+    "group": "appendicular",
+    "regionId": "legs",
+    "count": 2,
+    "nodeKeys": [
+      "Femur.r",
+      "Femur.r_MIRROR"
+    ],
+    "cameraDist": 1.7,
+    "descId": "Tulang terpanjang, terberat, dan terkuat di seluruh tubuh manusia. Mampu menahan beban tekan hingga 30 kali lipat berat badan saat mendarat dari lompatan tinggi.",
+    "descEn": "The longest, heaviest, and strongest bone in the human body. Capable of supporting tons of vertical compressive force during running.",
+    "descZh": "整个人体中最长、最粗壮、最结实的骨骼。在跑步或跳跃落地时能承受数千公斤的垂直压应力。",
+    "funFactId": "Tulang paha manusia begitu kokoh sehingga memiliki kekuatan menahan beban kompresi yang lebih tinggi daripada balok beton padat berbobot sama!",
+    "funFactEn": "An adult femur accounts for roughly one-quarter (26-27%) of a person's total standing height!",
+    "funFactZh": "成年人的股骨长度约占人体总身高的四分之一（26-27%），法医学中常用其推算死者身前身高！"
+  },
+  {
+    "id": "patella",
+    "nameId": "Tulang Tempurung Lutut (Sepasang)",
+    "nameEn": "Patellae / Kneecaps (Pair)",
+    "nameZh": "髌骨 (膝盖骨，成对)",
+    "nameLatin": "Patella (Sinistra & Dextra)",
+    "group": "appendicular",
+    "regionId": "legs",
+    "count": 2,
+    "nodeKeys": [
+      "Patella.r",
+      "Patella.r_MIRROR"
+    ],
+    "cameraDist": 1.1,
+    "descId": "Tulang sesamoid (tulang di dalam tendon) terbesar di tubuh manusia. Berbentuk segitiga tumpul yang melindungi sendi lutut dan meningkatkan daya ungkit otot paha depan.",
+    "descEn": "The largest sesamoid bone in the human body. Embedded in the quadriceps tendon, it dramatically boosts knee leverage.",
+    "descZh": "人体内最大的籽骨（包裹于肌腱内的骨骼）。位于膝关节前方股四头肌腱内，极大地增强了伸膝运动的力臂杠杆效应。",
+    "funFactId": "Bayi lahir tanpa tempurung lutut yang keras; tempurung lutut bayi masih berupa tulang rawan lunak dan baru mengeras menjadi tulang sejati pada usia 3-5 tahun.",
+    "funFactEn": "Newborn babies are born without solid bony kneecaps; their patellas start as soft cartilage and only fully ossify around age 3 to 5.",
+    "funFactZh": "新生儿出生时其实没有坚硬的骨性膝盖骨，其髌骨原本为软骨，在3至5岁时才逐步完全骨化成真骨。"
+  },
+  {
+    "id": "tibia",
+    "nameId": "Tulang Kering (Sepasang)",
+    "nameEn": "Tibia / Shin Bones (Pair)",
+    "nameZh": "胫骨 (小腿内侧主骨，成对)",
+    "nameLatin": "Tibia (Sinistra & Dextra)",
+    "group": "appendicular",
+    "regionId": "legs",
+    "count": 2,
+    "nodeKeys": [
+      "Tibia.r",
+      "Tibia.r_MIRROR"
+    ],
+    "cameraDist": 1.6,
+    "descId": "Tulang pipa kedua terbesar di tubuh yang menempati sisi dalam tungkai bawah. Menopang hampir 90% berat badan yang disalurkan dari lutut ke telapak kaki.",
+    "descEn": "The large, thick medial bone of the lower leg. Carries about 90% of the body's weight transmitted through the knee down to the ankle.",
+    "descZh": "位于小腿内侧粗大结实的长骨。承受膝关节向下传递至脚踝的绝大部分（约90%）身体体重。",
+    "funFactId": "Tulang kering berada persis di bawah lapisan kulit tipis di bagian depan betis tanpa bantalan otot tebal, sehingga sangat ngilu saat terbentur.",
+    "funFactEn": "The anterior crest of the tibia lies immediately beneath the skin without muscular padding, which is why shin kicks hurt intensely!",
+    "funFactZh": "胫骨前缘几乎仅由薄薄的皮肤覆盖而无肌肉缓冲垫层，因此小腿前侧受到轻微磕碰便会感到剧痛！"
+  },
+  {
+    "id": "fibula",
+    "nameId": "Tulang Betis (Sepasang)",
+    "nameEn": "Fibula / Calf Bones (Pair)",
+    "nameZh": "腓骨 (小腿外侧骨，成对)",
+    "nameLatin": "Fibula (Sinistra & Dextra)",
+    "group": "appendicular",
+    "regionId": "legs",
+    "count": 2,
+    "nodeKeys": [
+      "Fibula.r",
+      "Fibula.r_MIRROR"
+    ],
+    "cameraDist": 1.6,
+    "descId": "Tulang ramping di sisi luar tungkai bawah sejajar dengan tibia. Menjadi jangkar perlekatan banyak otot penggerak kaki dan membentuk tonjolan mata kaki luar.",
+    "descEn": "The slender lateral bone of the lower leg. Stabilizes the ankle joint and serves as an attachment site for leg muscles.",
+    "descZh": "位于小腿外侧并与胫骨平行的细长骨。主要负责稳定踝关节外侧，并为小腿外侧肌肉群提供锚固附着面。",
+    "funFactId": "Nama 'Fibula' berasal dari bahasa Latin kuno yang berarti 'peniti jubah', karena bentuk batangnya yang ramping menyerupai jarum peniti baju.",
+    "funFactEn": "The lower end of the fibula forms the prominent outer ankle bulge known medically as the lateral malleolus.",
+    "funFactZh": "腓骨的远端膨大部分形成了脚踝外侧清晰可触的骨性凸起，医学上称为外踝。"
+  },
+  {
+    "id": "ossa_tarsi",
+    "nameId": "Tulang Tarsal / Pangkal Kaki (14 Tulang)",
+    "nameEn": "Tarsal Bones / Ankle & Heel (14 Bones)",
+    "nameZh": "跗骨 (脚跟与踝部骨，14块)",
+    "nameLatin": "Ossa Tarsi (Talus, Calcaneus, Naviculare, Cuneiforme I-III, Cuboideum)",
+    "group": "appendicular",
+    "regionId": "feet",
+    "count": 14,
+    "nodeKeys": [
+      "Calcaneus.r",
+      "Calcaneus.r_MIRROR",
+      "Talus.r",
+      "Talus.r_MIRROR",
+      "Navicular bone.r",
+      "Navicular bone.r_MIRROR",
+      "Cuboid bone.r",
+      "Cuboid bone.r_MIRROR",
+      "Medial cuneiform bone.r",
+      "Medial cuneiform bone.r_MIRROR",
+      "Intermediate cuneiform bone.r",
+      "Intermediate cuneiform bone.r_MIRROR",
+      "Lateral cuneiform bone.r",
+      "Lateral cuneiform bone.r_MIRROR"
+    ],
+    "cameraDist": 1.1,
+    "descId": "Tujuh pasang tulang pendek kokoh (7 pada kaki kiri & 7 pada kaki kanan) yang menahan benturan saat berjalan. Termasuk tulang tumit (kalkaneus) yang merupakan tulang kaki terbesar.",
+    "descEn": "Seven robust bones in each ankle and midfoot (14 total), including the heel (calcaneus) and talus. Absorbs footfall shock.",
+    "descZh": "分布于两脚踝后部的十四块（每侧7块）强壮短骨，包括跟骨与距骨。负责吸收落地冲击力并协调踝部运动。",
+    "funFactId": "Tulang tumit (kalkaneus) bertindak seperti peredam kejut hidrolik yang meredam gaya hentakan keras setiap kali tumitmu menyentuh tanah saat berlari.",
+    "funFactEn": "The calcaneus (heel bone) is the single largest foot bone, capable of absorbing impact shocks many times body weight.",
+    "funFactZh": "跟骨（Calcaneus）是脚部最大的单块骨骼，能在跑步跳跃时吸收相当于体重数倍的垂直地面反作用力。"
+  },
+  {
+    "id": "ossa_metatarsi",
+    "nameId": "Tulang Metatarsal / Telapak Kaki (10 Tulang)",
+    "nameEn": "Metatarsal Bones / Midfoot Arch (10 Bones)",
+    "nameZh": "跖骨 (脚掌骨，10块)",
+    "nameLatin": "Ossa Metatarsi I - V (5 Pasang)",
+    "group": "appendicular",
+    "regionId": "feet",
+    "count": 10,
+    "nodeKeys": [
+      "First metatarsal bone.r",
+      "First metatarsal bone.r_MIRROR",
+      "Second metatarsal bone.r",
+      "Second metatarsal bone.r_MIRROR",
+      "Third metatarsal bone.r",
+      "Third metatarsal bone.r_MIRROR",
+      "Fourth metatarsal bone.r",
+      "Fourth metatarsal bone.r_MIRROR",
+      "Fifth metatarsal bone.r",
+      "Fifth metatarsal bone.r_MIRROR"
+    ],
+    "cameraDist": 1.1,
+    "descId": "Sepuluh tulang pipa mini (5 per kaki) yang membentuk lengkungan kubah telapak kaki, mendistribusikan beban tubuh secara elastis saat melangkah.",
+    "descEn": "Ten miniature long bones (5 per foot) forming the longitudinal arches of the foot, elastically distributing weight when walking.",
+    "descZh": "构成脚掌内部骨架的十块（每侧5块）微型长骨，形成足弓以弹性分散步态重力。",
+    "funFactId": "Lengkungan elastis yang dibentuk tulang metatarsal berfungsi seperti pegas mekanis alami yang menghemat energi tubuh hingga 17% saat kita berjalan.",
+    "funFactEn": "The elastic arches formed by metatarsals act like biological leaf springs, saving up to 17% of mechanical energy during walking.",
+    "funFactZh": "由跖骨构筑的足底弹性足弓如同生物减震弹簧，在长途行走时可为人体节省多达17%的机械能耗。"
+  },
+  {
+    "id": "phalanges_pedis",
+    "nameId": "Tulang Falang / Ruas Jari Kaki (28 Tulang)",
+    "nameEn": "Phalanges of Foot / Toe Bones (28 Bones)",
+    "nameZh": "趾骨 / 脚趾骨 (28块)",
+    "nameLatin": "Phalanges Pedis (Proksimal, Media, Distal)",
+    "group": "appendicular",
+    "regionId": "feet",
+    "count": 28,
+    "nodeKeys": [
+      "Proximal phalanx of first finger of foot.r",
+      "Proximal phalanx of first finger of foot.r_MIRROR",
+      "Proximal phalanx of second finger of foot.r",
+      "Proximal phalanx of second finger of foot.r_MIRROR",
+      "Proximal phalanx of third finger of foot.r",
+      "Proximal phalanx of third finger of foot.r_MIRROR",
+      "Proximal phalanx of fourth finger of foot.r",
+      "Proximal phalanx of fourth finger of foot.r_MIRROR",
+      "Proximal phalanx of fifth finger of foot.r",
+      "Proximal phalanx of fifth finger of foot.r_MIRROR",
+      "Middle phalanx of second finger of foot.r",
+      "Middle phalanx of second finger of foot.r_MIRROR",
+      "Middle phalanx of third finger of foot.r",
+      "Middle phalanx of third finger of foot.r_MIRROR",
+      "Middle phalanx of fourth finger of foot.r",
+      "Middle phalanx of fourth finger of foot.r_MIRROR",
+      "Middle phalanx of fifth finger of foot.r",
+      "Middle phalanx of fifth finger of foot.r_MIRROR",
+      "Distal phalanx of first finger of foot.r",
+      "Distal phalanx of first finger of foot.r_MIRROR",
+      "Distal phalanx of second finger of foot.r",
+      "Distal phalanx of second finger of foot.r_MIRROR",
+      "Distal phalanx of third finger of foot.r",
+      "Distal phalanx of third finger of foot.r_MIRROR",
+      "Distal phalanx of fourth finger of foot.r",
+      "Distal phalanx of fourth finger of foot.r_MIRROR",
+      "Distal phalanx of fifth finger of foot.r",
+      "Distal phalanx of fifth finger of foot.r_MIRROR"
+    ],
+    "cameraDist": 1,
+    "descId": "Dua puluh delapan tulang ruas jari kaki (14 per kaki). Menjaga keseimbangan tubuh saat berdiri tegak dan memberikan dorongan tolakan akhir saat melangkah maju.",
+    "descEn": "Twenty-eight toe bones (14 per foot). Maintains balance while standing upright and provides the final forward push-off when striding.",
+    "descZh": "构成双足脚趾的二十八块趾骨（每侧14块）。维持直立站立时的三点受力平衡，并在向前迈步蹬地时提供推进力。",
+    "funFactId": "Jempol kaki menahan beban hingga dua kali lipat berat badan saat kamu melangkah mendorong maju, dan hanya memiliki 2 ruas falang seperti ibu jari tangan.",
+    "funFactEn": "The big toe bears up to twice your body weight during push-off phase and contains only 2 phalanges, just like the thumb.",
+    "funFactZh": "大脚趾在迈步蹬地时需承受高达体重两倍的推力，且它与大拇指一样仅由2节粗壮的趾骨构成。"
+  }
+];
+
+    /* ==========================================================================
+       2. THREE.JS SCENE SETUP & AUTHENTIC REAL GLB MODEL LOADER
+       ========================================================================== */
+    let isDarkMode = false; // Default: Mode Terang (Light Mode)
+
+    const canvas = document.getElementById('webgl-canvas');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf1f5f9);
+    scene.fog = new THREE.FogExp2(0xf1f5f9, 0.025);
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 0.2, 5.2);
+
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.maxDistance = 14;
+    controls.minDistance = 0.5;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.8;
+    controls.target.set(0, 0, 0);
+
+    // Studio Lighting (Calibrated for bright clean clinical lab look)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
+    scene.add(ambientLight);
+
+    const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    mainLight.position.set(5, 12, 7);
+    scene.add(mainLight);
+
+    const backLight = new THREE.DirectionalLight(0xdbeafe, 0.6);
+    backLight.position.set(-5, 6, -6);
+    scene.add(backLight);
+
+    const rimLight = new THREE.DirectionalLight(0xf1f5f9, 0.4);
+    rimLight.position.set(0, -6, 5);
+    scene.add(rimLight);
+
+    // Grid Floor
+    let grid = new THREE.GridHelper(16, 24, 0xcbd5e1, 0xe2e8f0);
+    grid.position.y = -2.1;
+    scene.add(grid);
+
+    // Materials (Natural scientific bone tone in light mode)
+    const realBoneMaterial = new THREE.MeshStandardMaterial({
+      color: 0xded7cb,
+      roughness: 0.36,
+      metalness: 0.05,
+      side: THREE.DoubleSide
+    });
+
+    const dimmedBoneMaterial = new THREE.MeshStandardMaterial({
+      color: 0x94a3b8,
+      roughness: 0.7,
+      metalness: 0.0,
+      transparent: true,
+      opacity: 0.26,
+      side: THREE.DoubleSide
+    });
+
+    const highlightRedMaterial = new THREE.MeshStandardMaterial({
+      color: 0xdc2626,
+      emissive: 0xb91c1c,
+      emissiveIntensity: 0.65,
+      roughness: 0.25,
+      metalness: 0.15,
+      side: THREE.DoubleSide
+    });
+
+    // Master Groups
+    const skeletonMasterGroup = new THREE.Group();
+    scene.add(skeletonMasterGroup);
+
+    // Node to mesh mapping: nodeKey -> Array of Mesh objects
+    const nodeMeshesMap = {};
+    const meshToNodeKey = new WeakMap();
+
+    // Interaction & Camera Transition State (Hoisted early to prevent ReferenceError)
+    let activeBoneId = null;
+    let isTransitioning = false;
+    let isIsolatedFocus = false;
+    let targetCameraPos = new THREE.Vector3().copy(camera.position);
+    let targetControlsTarget = new THREE.Vector3().copy(controls.target);
+
+    // Theme Management (Light Mode Default <-> Dark Mode)
+    
+    /* ==========================================================================
+       MULTI-LANGUAGE LOCALIZATION (IDN, ENG, CHINESE)
+       ========================================================================== */
+    let currentLang = (function() {
+      try {
+        return localStorage.getItem('skeleton_lang_preference') || 'id';
+      } catch(e) {
+        return 'id';
+      }
+    })();
+
+    const i18n = {
+      id: {
+        btnBackHub: "← Kembali ke DaAi Learning Hub",
+        appTitle: "Anatomi 206 Tulang Manusia 3D",
+        appSubtitle: "Visual Rangka Tubuh Asli • Standar Medis",
+        btnSidebar: "Indeks Tulang",
+        themeMode: "Mode",
+        themeLight: "Terang",
+        themeDark: "Gelap",
+        autoRotate: "Rotasi",
+        btnReset: "Reset Kamera",
+        sidebarHeading: "Indeks Tulang",
+        searchPlaceholder: "Cari nama tulang (Indonesia / Latin / English / 中文)...",
+        filterAll: "Semua (206)",
+        filterAxial: "Aksial (80)",
+        filterAppendicular: "Apendikular (126)",
+        bonesSuffix: "Tulang",
+        btnAudio: "Lafalkan",
+        btnFocus: "Fokuskan Pandangan",
+        btnFocusActive: "Tampilkan Seluruh Tulang",
+        titleFocus: "Isolasi tulang ini dan sembunyikan tulang lain",
+        titleFocusActive: "Klik untuk membatalkan isolasi & tampilkan seluruh rangka tubuh",
+        winDescLabel: "Fungsi Utama",
+        winFunFactLabel: "CATATAN MEDIS & ANATOMI",
+        hintDrag: "Rotasi 360°",
+        hintZoom: "Zoom In / Out",
+        hintClickKbd: "Klik Tulang",
+        hintClickText: "Pilih & Sorot Spesimen",
+        loadingTitle: "Memuat Anatomi 3D Rangka Asli Manusia",
+        loadingDesc: "Menyiapkan 206 elemen tulang manusia berpresisi tinggi...",
+        speechLang: "id-ID",
+        speechFormat: (bone) => `${bone.nameId}. Dalam bahasa Latin, ${bone.nameLatin}.`
+      },
+      en: {
+        btnBackHub: "← Back to DaAi Learning Hub",
+        appTitle: "3D Human Skeleton Anatomy",
+        appSubtitle: "Real Skeletal Anatomy • Medical Standards",
+        btnSidebar: "Bone Index",
+        themeMode: "Mode",
+        themeLight: "Light",
+        themeDark: "Dark",
+        autoRotate: "Rotate",
+        btnReset: "Reset Camera",
+        sidebarHeading: "Bone Index",
+        searchPlaceholder: "Search bone (English / Latin / Indonesian / 中文)...",
+        filterAll: "All (206)",
+        filterAxial: "Axial (80)",
+        filterAppendicular: "Appendicular (126)",
+        bonesSuffix: "Bones",
+        btnAudio: "Pronounce",
+        btnFocus: "Focus View",
+        btnFocusActive: "Show Full Skeleton",
+        titleFocus: "Isolate this bone and hide all other bones",
+        titleFocusActive: "Click to exit isolation & show full skeleton",
+        winDescLabel: "Main Function",
+        winFunFactLabel: "CLINICAL & ANATOMICAL NOTES",
+        hintDrag: "360° Rotation",
+        hintZoom: "Zoom In / Out",
+        hintClickKbd: "Click Bone",
+        hintClickText: "Select & Highlight Specimen",
+        loadingTitle: "Loading 3D Real Human Skeleton",
+        loadingDesc: "Preparing 206 high-precision human bone elements...",
+        speechLang: "en-US",
+        speechFormat: (bone) => `${bone.nameEn || bone.nameId}. In Latin, ${bone.nameLatin}.`
+      },
+      zh: {
+        btnBackHub: "← 返回大爱学海",
+        appTitle: "3D 人体骨骼解剖学",
+        appSubtitle: "真实人体骨骼标本 • 国际医学标准",
+        btnSidebar: "骨骼索引",
+        themeMode: "模式",
+        themeLight: "浅色",
+        themeDark: "深色",
+        autoRotate: "自动旋转",
+        btnReset: "重置视角",
+        sidebarHeading: "骨骼索引",
+        searchPlaceholder: "搜索骨骼 (中文 / 拉丁文 / English / 印尼文)...",
+        filterAll: "全部 (206)",
+        filterAxial: "中轴骨 (80)",
+        filterAppendicular: "附肢骨 (126)",
+        bonesSuffix: "块骨",
+        btnAudio: "语音发音",
+        btnFocus: "聚焦并单独观察",
+        btnFocusActive: "显示全部骨骼",
+        titleFocus: "单独观察此骨骼并隐藏其他骨骼",
+        titleFocusActive: "点击取消隔离并恢复显示全部骨骼",
+        winDescLabel: "解剖功能与生理特征",
+        winFunFactLabel: "临床要点与医学特征",
+        hintDrag: "360° 旋转视角",
+        hintZoom: "缩放视图",
+        hintClickKbd: "点击骨骼",
+        hintClickText: "选中并高亮标本",
+        loadingTitle: "正在载入真实人体骨骼 3D 模型",
+        loadingDesc: "正在准备206块高精度人体骨骼解剖结构...",
+        speechLang: "zh-CN",
+        speechFormat: (bone) => `${bone.nameZh || bone.nameId}。拉丁学名：${bone.nameLatin}。`
+      }
+    };
+
+    function getBoneName(bone, lang = currentLang) {
+      if (!bone) return '';
+      if (lang === 'en') return bone.nameEn || bone.nameId || '';
+      if (lang === 'zh') return bone.nameZh || bone.nameId || '';
+      return bone.nameId || bone.nameEn || '';
+    }
+
+    function getBoneDesc(bone, lang = currentLang) {
+      if (!bone) return '';
+      if (lang === 'en') return bone.descEn || bone.descId || bone.desc || '';
+      if (lang === 'zh') return bone.descZh || bone.descId || bone.desc || '';
+      return bone.descId || bone.desc || bone.descEn || '';
+    }
+
+    function getBoneFunFact(bone, lang = currentLang) {
+      if (!bone) return '';
+      if (lang === 'en') return bone.funFactEn || bone.funFactId || bone.funFact || '';
+      if (lang === 'zh') return bone.funFactZh || bone.funFactId || bone.funFact || '';
+      return bone.funFactId || bone.funFact || bone.funFactEn || '';
+    }
+
+    function getRegionLabel(reg, lang = currentLang) {
+      if (lang === 'en') return reg.labelEn || reg.labelId || reg.label;
+      if (lang === 'zh') return reg.labelZh || reg.labelId || reg.label;
+      return reg.labelId || reg.label;
+    }
+
+    function getGroupLabel(group, lang = currentLang) {
+      if (group === 'axial') {
+        if (lang === 'en') return 'Axial Skeleton';
+        if (lang === 'zh') return '中轴骨骼';
+        return 'Rangka Aksial';
+      } else {
+        if (lang === 'en') return 'Appendicular Skeleton';
+        if (lang === 'zh') return '附肢骨骼';
+        return 'Rangka Apendikular';
+      }
+    }
+
+    function setLanguage(lang) {
+      if (!i18n[lang]) lang = 'id';
+      currentLang = lang;
+
+      try {
+        localStorage.setItem('skeleton_lang_preference', lang);
+      } catch(e) {}
+
+      // Update HTML lang attribute
+      document.documentElement.lang = lang === 'zh' ? 'zh-CN' : (lang === 'en' ? 'en' : 'id');
+
+      // Update active pill button
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+      });
+
+      const t = i18n[lang];
+
+      // Update Header UI
+      const btnBackHubText = document.getElementById('btnBackHubText');
+      if (btnBackHubText && t.btnBackHub) btnBackHubText.innerText = t.btnBackHub;
+
+      const appHeaderTitle = document.getElementById('appHeaderTitle');
+      if (appHeaderTitle) appHeaderTitle.innerText = t.appTitle;
+
+      const appHeaderSubtitle = document.getElementById('appHeaderSubtitle');
+      if (appHeaderSubtitle) appHeaderSubtitle.innerText = t.appSubtitle;
+
+      const btnSidebarText = document.getElementById('btnSidebarText');
+      if (btnSidebarText) btnSidebarText.innerText = t.btnSidebar;
+
+      const themeModeWord = document.getElementById('themeModeWord');
+      if (themeModeWord) themeModeWord.innerText = t.themeMode;
+
+      const themeStateWord = document.getElementById('themeStateWord');
+      if (themeStateWord) themeStateWord.innerText = isDarkMode ? t.themeDark : t.themeLight;
+
+      const autoRotateText = document.getElementById('autoRotateText');
+      if (autoRotateText) autoRotateText.innerText = t.autoRotate;
+
+      const btnResetText = document.getElementById('btnResetText');
+      if (btnResetText) btnResetText.innerText = t.btnReset;
+
+      // Update Sidebar UI
+      const sidebarHeading = document.getElementById('sidebarHeading');
+      if (sidebarHeading) sidebarHeading.innerText = t.sidebarHeading;
+
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) searchInput.placeholder = t.searchPlaceholder;
+
+      const tabFilterAll = document.getElementById('tabFilterAll');
+      if (tabFilterAll) tabFilterAll.innerText = t.filterAll;
+
+      const tabFilterAxial = document.getElementById('tabFilterAxial');
+      if (tabFilterAxial) tabFilterAxial.innerText = t.filterAxial;
+
+      const tabFilterAppendicular = document.getElementById('tabFilterAppendicular');
+      if (tabFilterAppendicular) tabFilterAppendicular.innerText = t.filterAppendicular;
+
+      // Update Window Details Labels
+      const winDescLabel = document.getElementById('winDescLabel');
+      if (winDescLabel) winDescLabel.innerText = t.winDescLabel;
+
+      const btnAudioText = document.getElementById('btnAudioText');
+      if (btnAudioText) btnAudioText.innerText = t.btnAudio;
+
+      // Update Hints
+      const hintDragText = document.getElementById('hintDragText');
+      if (hintDragText) hintDragText.innerText = t.hintDrag;
+
+      const hintZoomText = document.getElementById('hintZoomText');
+      if (hintZoomText) hintZoomText.innerText = t.hintZoom;
+
+      const hintClickKbd = document.getElementById('hintClickKbd');
+      if (hintClickKbd) hintClickKbd.innerText = t.hintClickKbd;
+
+      const hintClickText = document.getElementById('hintClickText');
+      if (hintClickText) hintClickText.innerText = t.hintClickText;
+
+      // Re-render sidebar and active detail window if bone selected
+      renderSidebar();
+
+      if (activeBoneId) {
+        selectBone(activeBoneId);
+      } else {
+        updateFocusToggleButton();
+      }
+    }
+
+    function toggleTheme() {
+      setTheme(isDarkMode ? 'light' : 'dark');
+    }
+
+    function setTheme(mode) {
+      isDarkMode = (mode === 'dark');
+      document.body.classList.toggle('dark-mode', isDarkMode);
+
+      if (scene) {
+        const bgColor = isDarkMode ? 0x070b12 : 0xf1f5f9;
+        if (scene.background) scene.background.setHex(bgColor);
+        if (scene.fog) scene.fog.color.setHex(bgColor);
+      }
+      if (ambientLight) ambientLight.intensity = isDarkMode ? 0.7 : 0.9;
+      if (mainLight) mainLight.intensity = isDarkMode ? 1.3 : 1.2;
+
+      if (grid) {
+        scene.remove(grid);
+        if (grid.geometry) grid.geometry.dispose();
+        if (grid.material) grid.material.dispose();
+        grid = new THREE.GridHelper(16, 24, isDarkMode ? 0x334155 : 0xcbd5e1, isDarkMode ? 0x1e293b : 0xe2e8f0);
+        grid.position.y = -2.1;
+        scene.add(grid);
+      }
+
+      if (realBoneMaterial) realBoneMaterial.color.setHex(isDarkMode ? 0xeee8df : 0xded7cb);
+      if (dimmedBoneMaterial) {
+        dimmedBoneMaterial.color.setHex(isDarkMode ? 0x334155 : 0x94a3b8);
+        dimmedBoneMaterial.opacity = isDarkMode ? 0.22 : 0.26;
+      }
+      if (highlightRedMaterial) {
+        highlightRedMaterial.color.setHex(isDarkMode ? 0xff2222 : 0xdc2626);
+        highlightRedMaterial.emissive.setHex(isDarkMode ? 0xcc0000 : 0xb91c1c);
+        highlightRedMaterial.emissiveIntensity = isDarkMode ? 0.9 : 0.65;
+      }
+
+      // Re-apply to bones safely
+      if (activeBoneId && typeof selectBone === 'function') {
+        selectBone(activeBoneId);
+      } else if (typeof nodeMeshesMap === 'object') {
+        Object.keys(nodeMeshesMap).forEach(key => {
+          if (Array.isArray(nodeMeshesMap[key])) {
+            nodeMeshesMap[key].forEach(m => {
+              m.material = realBoneMaterial;
+            });
+          }
+        });
+      }
+
+      // Update button text & icon
+      const themeLabel = document.getElementById('themeLabel');
+      const themeIcon = document.getElementById('themeIcon');
+      const t = (typeof i18n !== 'undefined' && i18n[currentLang]) ? i18n[currentLang] : null;
+      const modeWord = t ? t.themeMode : 'Mode';
+      const stateWord = isDarkMode ? (t ? t.themeDark : 'Gelap') : (t ? t.themeLight : 'Terang');
+      if (themeLabel) themeLabel.innerHTML = `<span id="themeModeWord">${modeWord}</span>: <b><span id="themeStateWord">${stateWord}</span></b>`;
+      if (themeIcon) {
+        themeIcon.innerHTML = isDarkMode
+          ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`
+          : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+      }
+
+      try {
+        localStorage.setItem('bone_theme_preference', isDarkMode ? 'dark' : 'light');
+      } catch (e) {}
+    }
+
+    // Model URL Configuration (Primary: Local inside repo; Fallback: CloudFront CDN)
+    const LOCAL_GLB_URL = './models/skeleton.glb';
+    const CDN_GLB_URL = 'https://files.manuscdn.com/user_upload_by_module/session_file/309927823320059311/epVUqpsgLWVopkIp.glb';
+
+    const MODEL_SCALE = 2.4;
+
+    function loadRealHumanSkeleton() {
+      const loader = new THREE.GLTFLoader();
+      const progressBar = document.getElementById('loadProgressBar');
+      const statusText = document.getElementById('loadingStatusText');
+
+      // Safety Auto-Dismiss: Pastikan overlay tidak pernah macet permanen
+      setTimeout(() => {
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay && !overlay.classList.contains('hidden')) {
+          overlay.classList.add('hidden');
+        }
+      }, 4000);
+
+      // TIER 1: Model 3D Embedded Base64 (100% Offline, Zero CORS, Double-Click file:// Langsung Jalan!)
+      if (window.SKELETON_GLB_BASE64 && window.SKELETON_GLB_BASE64.length > 1000) {
+        statusText.innerText = 'Menguraikan struktur 3D anatomi realistis...';
+        progressBar.style.width = '60%';
+        try {
+          const binaryString = window.atob(window.SKELETON_GLB_BASE64);
+          const len = binaryString.length;
+          const bytes = new Uint8Array(len);
+          for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          progressBar.style.width = '90%';
+
+          loader.parse(
+            bytes.buffer,
+            '',
+            (gltf) => {
+              console.log('Model 3D rangka asli manusia berhasil dimuat dari data lokal mandiri!');
+              progressBar.style.width = '100%';
+              processLoadedSkeleton(gltf.scene);
+              document.getElementById('loadingOverlay').classList.add('hidden');
+              resetSkeletonView();
+            },
+            (err) => {
+              console.warn('Gagal parse embedded base64:', err);
+              fallbackToFetch();
+            }
+          );
+          return;
+        } catch (e) {
+          console.warn('Error saat membaca data base64:', e);
+        }
+      }
+
+      fallbackToFetch();
+
+      // TIER 2 & 3: Fallback ke fetch lokal / CDN bila dibuka melalui web server HTTP/HTTPS
+      function fallbackToFetch() {
+        function attemptLoad(url, isFallback = false) {
+          loader.load(
+            url,
+            (gltf) => {
+              console.log('Model 3D rangka asli manusia berhasil dimuat dari:', url);
+              processLoadedSkeleton(gltf.scene);
+              document.getElementById('loadingOverlay').classList.add('hidden');
+              resetSkeletonView();
+            },
+            (xhr) => {
+              if (xhr.lengthComputable) {
+                const percent = Math.round((xhr.loaded / xhr.total) * 100);
+                progressBar.style.width = percent + '%';
+                statusText.innerText = `Mengunduh model rangka 3D asli... ${percent}%`;
+              }
+            },
+            (error) => {
+              console.warn(`Gagal memuat dari ${url}:`, error);
+              if (!isFallback) {
+                statusText.innerText = 'Mengalihkan ke sumber CDN medis...';
+                attemptLoad(CDN_GLB_URL, true);
+              } else {
+                statusText.innerText = 'Mengaktifkan tampilan 3D alternatif...';
+                setTimeout(() => {
+                  document.getElementById('loadingOverlay').classList.add('hidden');
+                }, 800);
+              }
+            }
+          );
+        }
+
+        attemptLoad(LOCAL_GLB_URL);
+      }
+    }
+
+    function cleanKey(k) {
+      return String(k || '').toLowerCase().replace(/[\s._()\-]/g, '');
+    }
+
+    function processLoadedSkeleton(sceneRoot) {
+      const rawMeshes = [];
+      sceneRoot.traverse((child) => {
+        if (child.isMesh) {
+          rawMeshes.push(child);
+        }
+      });
+
+      rawMeshes.forEach((child) => {
+        const originalName = child.name;
+        child.material = realBoneMaterial;
+
+        // 1. Right side or midline mesh
+        child.position.set(0, 0, 0);
+        child.scale.set(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE);
+
+        if (!nodeMeshesMap[originalName]) nodeMeshesMap[originalName] = [];
+        nodeMeshesMap[originalName].push(child);
+        meshToNodeKey.set(child, originalName);
+
+        // 2. Mirror if this is a right-side bone (ending with 'r' in Three.js sanitized name, except midline Vomer)
+        const isRightBone = originalName.toLowerCase().endsWith('r') && !originalName.toLowerCase().includes('vomer');
+        if (isRightBone) {
+          const mirrorName = originalName + '_MIRROR';
+          const mirrorMesh = child.clone();
+          mirrorMesh.material = realBoneMaterial;
+          mirrorMesh.position.set(0, 0, 0);
+          mirrorMesh.scale.set(-MODEL_SCALE, MODEL_SCALE, MODEL_SCALE);
+
+          if (!nodeMeshesMap[mirrorName]) nodeMeshesMap[mirrorName] = [];
+          nodeMeshesMap[mirrorName].push(mirrorMesh);
+          meshToNodeKey.set(mirrorMesh, mirrorName);
+
+          skeletonMasterGroup.add(mirrorMesh);
+        }
+
+        skeletonMasterGroup.add(child);
+      });
+
+      // Automatically center skeleton around Y = 0
+      const box = new THREE.Box3().setFromObject(skeletonMasterGroup);
+      const center = new THREE.Vector3();
+      box.getCenter(center);
+      skeletonMasterGroup.position.sub(center);
+      skeletonMasterGroup.position.y += 0.05;
+      console.log('Rangka 3D asli selesai diposisikan dan disinkronkan. Total mesh utuh:', skeletonMasterGroup.children.length);
+    }
+
+    loadRealHumanSkeleton();
+
+    /* ==========================================================================
+       3. CAMERA LERP & INTERACTION LOGIC (ROTATION DETECTION & CURSOR HIDING)
+       ========================================================================== */
+    let isUserRotating = false;
+    let didRotateDrag = false;
+    let isPointerDownOnCanvas = false;
+    let pointerStartX = 0;
+    let pointerStartY = 0;
+    const DRAG_THRESHOLD = 5; // pixels
+
+    // Detect rotate start on 3D canvas
+    canvas.addEventListener('pointerdown', (e) => {
+      // Allow primary mouse button or touch/pen
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      isPointerDownOnCanvas = true;
+      pointerStartX = e.clientX;
+      pointerStartY = e.clientY;
+      didRotateDrag = false;
+    });
+
+    window.addEventListener('pointermove', (e) => {
+      if (!isPointerDownOnCanvas) return;
+      // If primary mouse button or touch is dragging
+      if (e.buttons === 1 || e.pointerType === 'touch') {
+        const dist = Math.hypot(e.clientX - pointerStartX, e.clientY - pointerStartY);
+        if (dist > DRAG_THRESHOLD) {
+          if (!isUserRotating) {
+            isUserRotating = true;
+            didRotateDrag = true;
+            document.body.classList.add('is-rotating');
+            document.documentElement.classList.add('is-rotating');
+          }
+        }
+      }
+    });
+
+    function endRotation() {
+      isPointerDownOnCanvas = false;
+      if (isUserRotating) {
+        isUserRotating = false;
+        document.body.classList.remove('is-rotating');
+        document.documentElement.classList.remove('is-rotating');
+      }
+      if (didRotateDrag) {
+        // Keep didRotateDrag true briefly so the subsequent click event is safely intercepted and canceled
+        setTimeout(() => {
+          didRotateDrag = false;
+        }, 120);
+      }
+    }
+
+    window.addEventListener('pointerup', endRotation);
+    window.addEventListener('pointercancel', endRotation);
+    window.addEventListener('blur', endRotation);
+    document.addEventListener('mouseleave', (e) => {
+      if (!e.relatedTarget && isUserRotating) endRotation();
+    });
+
+    // OrbitControls event synchronization
+    controls.addEventListener('end', () => {
+      endRotation();
+    });
+
+    // Intercept clicks during capturing phase: if user dragged/rotated, block the click from triggering index or buttons
+    window.addEventListener('click', (e) => {
+      if (didRotateDrag || isUserRotating) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+      }
+    }, true);
+
+    // Raycaster for Direct 3D Clicking on Real Bones
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    function onPointerClick(event) {
+      // If user was rotating/dragging, completely ignore click
+      if (didRotateDrag || isUserRotating) return;
+
+      // Ignore clicks on UI sidebar and window
+      if (event.clientX < 340 && !document.getElementById('sidebarLeft').classList.contains('collapsed')) {
+        const rect = document.getElementById('sidebarLeft').getBoundingClientRect();
+        if (event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom) {
+          return;
+        }
+      }
+      const winRight = document.getElementById('boneDetailWindow');
+      if (!winRight.classList.contains('hidden')) {
+        const rRect = winRight.getBoundingClientRect();
+        if (event.clientX >= rRect.left && event.clientX <= rRect.right && event.clientY >= rRect.top && event.clientY <= rRect.bottom) {
+          return;
+        }
+      }
+
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(skeletonMasterGroup.children, true);
+
+      if (intersects.length > 0) {
+        const clickedMesh = intersects[0].object;
+        const nodeKey = meshToNodeKey.get(clickedMesh);
+        if (nodeKey) {
+          const ck = cleanKey(nodeKey);
+          const matchedBone = skeletonData.find(b => b.nodeKeys && b.nodeKeys.some(nk => cleanKey(nk) === ck));
+          if (matchedBone) {
+            selectBone(matchedBone.id);
+          }
+        }
+      }
+    }
+    window.addEventListener('click', onPointerClick);
+
+    // Update Button State for Toggle Focus / Isolation
+    function updateFocusToggleButton() {
+      const btn = document.getElementById('btnFocusToggle');
+      const icon = document.getElementById('btnFocusIcon');
+      const text = document.getElementById('btnFocusText');
+      if (!btn || !text) return;
+
+      const t = (typeof i18n !== 'undefined' && i18n[currentLang]) ? i18n[currentLang] : (i18n ? i18n.id : null);
+
+      if (isIsolatedFocus) {
+        btn.classList.add('active');
+        btn.setAttribute('title', t ? t.titleFocusActive : 'Klik untuk membatalkan isolasi & tampilkan seluruh rangka tubuh');
+        text.innerText = t ? t.btnFocusActive : 'Tampilkan Seluruh Tulang';
+        if (icon) {
+          icon.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+        }
+      } else {
+        btn.classList.remove('active');
+        btn.setAttribute('title', t ? t.titleFocus : 'Isolasi tulang ini dan sembunyikan tulang lain');
+        text.innerText = t ? t.btnFocus : 'Fokuskan Pandangan';
+        if (icon) {
+          icon.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>`;
+        }
+      }
+    }
+
+    // Toggle Solo / Isolation Mode
+    function toggleFocusBone() {
+      if (!activeBoneId) return;
+      isIsolatedFocus = !isIsolatedFocus;
+      applyFocusMode();
+    }
+
+    // Apply Focus / Isolation Mode (Hides all other bones, zooms to fit focused bone)
+    function applyFocusMode() {
+      if (!activeBoneId) return;
+      const bone = skeletonData.find(b => b.id === activeBoneId);
+      if (!bone) return;
+
+      const activeMeshes = [];
+      const targetCleanKeys = bone.nodeKeys.map(k => cleanKey(k));
+
+      // Show/hide meshes & apply appropriate material
+      Object.keys(nodeMeshesMap).forEach(key => {
+        const isTarget = targetCleanKeys.includes(cleanKey(key));
+        const meshes = nodeMeshesMap[key];
+        if (Array.isArray(meshes)) {
+          meshes.forEach(m => {
+            if (isTarget) {
+              activeMeshes.push(m);
+              m.visible = true;
+              m.material = isIsolatedFocus ? realBoneMaterial : highlightRedMaterial;
+            } else {
+              if (isIsolatedFocus) {
+                m.visible = false;
+              } else {
+                m.visible = true;
+                m.material = dimmedBoneMaterial;
+              }
+            }
+          });
+        }
+      });
+
+      if (activeMeshes.length > 0) {
+        const boneBox = new THREE.Box3();
+        activeMeshes.forEach(m => boneBox.expandByObject(m));
+        const boneCenter = new THREE.Vector3();
+        boneBox.getCenter(boneCenter);
+        const size = new THREE.Vector3();
+        boneBox.getSize(size);
+
+        if (isIsolatedFocus) {
+          // Compute Zoom to Fit so the bone comfortably fills the view
+          const maxDim = Math.max(size.x, size.y, size.z, 0.05);
+          const fov = camera.fov * (Math.PI / 180);
+          let fitDist = (maxDim / 2) / Math.tan(fov / 2);
+          // 1.55x padding factor so the bone is clearly visible with comfortable margins
+          fitDist = Math.max(fitDist * 1.55, 0.45);
+
+          const offset = new THREE.Vector3().subVectors(camera.position, controls.target);
+          if (offset.lengthSq() < 0.0001) offset.set(0, 0.1, 1);
+          offset.normalize().multiplyScalar(fitDist);
+
+          targetControlsTarget.copy(boneCenter);
+          targetCameraPos.copy(boneCenter).add(offset);
+          isTransitioning = true;
+        } else {
+          targetControlsTarget.copy(boneCenter);
+          const angle = controls.getAzimuthalAngle() + 0.25;
+          targetCameraPos.set(
+            boneCenter.x + Math.sin(angle) * bone.cameraDist,
+            boneCenter.y + 0.15,
+            boneCenter.z + Math.cos(angle) * bone.cameraDist
+          );
+          isTransitioning = true;
+        }
+      }
+
+      updateFocusToggleButton();
+    }
+
+    // Select Bone Handler
+    function selectBone(id) {
+      activeBoneId = id;
+      const bone = skeletonData.find(b => b.id === id);
+      if (!bone) return;
+
+      // Update Active State in Sidebar List
+      document.querySelectorAll('.bone-list-item').forEach(el => el.classList.remove('active'));
+      const activeEl = document.getElementById(`item-${bone.id}`);
+      if (activeEl) {
+        activeEl.classList.add('active');
+        const parentGroup = activeEl.closest('.region-group');
+        if (parentGroup && !parentGroup.classList.contains('expanded')) {
+          parentGroup.classList.add('expanded');
+        }
+        activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      // Apply 3D Real Meshes Highlight or Isolation
+      applyFocusMode();
+
+      // Update Right Detail Window
+      const t = (typeof i18n !== 'undefined' && i18n[currentLang]) ? i18n[currentLang] : (i18n ? i18n.id : null);
+      const regDef = regionDefinitions.find(r => r.id === bone.regionId);
+      const regLabel = regDef ? getRegionLabel(regDef, currentLang) : (bone.regionLabel || '');
+      const grpLabel = getGroupLabel(bone.group, currentLang);
+
+      document.getElementById('winBoneName').innerText = getBoneName(bone, currentLang);
+      document.getElementById('winBoneLatin').innerText = bone.nameLatin;
+      document.getElementById('winBoneDesc').innerText = getBoneDesc(bone, currentLang);
+      document.getElementById('winFunFact').innerHTML = `
+        <div class="funfact-label">${t ? t.winFunFactLabel : 'CATATAN MEDIS & ANATOMI'}</div>
+        <div class="funfact-text">${getBoneFunFact(bone, currentLang)}</div>
+      `;
+      document.getElementById('winCountTag').innerText = `${bone.count} ${t ? t.bonesSuffix : 'Tulang'}`;
+      document.getElementById('winRegionTag').innerText = regLabel;
+
+      const groupTag = document.getElementById('winGroupTag');
+      groupTag.innerText = grpLabel;
+      groupTag.className = 'tag-badge ' + (bone.group === 'axial' ? 'tag-group-axial' : 'tag-group-appendicular');
+
+      document.getElementById('boneDetailWindow').classList.remove('hidden');
+    }
+
+    function closeDetailWindow() {
+      if (isIsolatedFocus) {
+        isIsolatedFocus = false;
+        Object.keys(nodeMeshesMap).forEach(key => {
+          if (Array.isArray(nodeMeshesMap[key])) {
+            nodeMeshesMap[key].forEach(m => { m.visible = true; });
+          }
+        });
+        updateFocusToggleButton();
+      }
+      document.getElementById('boneDetailWindow').classList.add('hidden');
+    }
+
+    function resetSkeletonView() {
+      activeBoneId = null;
+      isIsolatedFocus = false;
+      document.querySelectorAll('.bone-list-item').forEach(el => el.classList.remove('active'));
+      closeDetailWindow();
+
+      // Restore all real bone materials & visibility
+      Object.keys(nodeMeshesMap).forEach(key => {
+        if (Array.isArray(nodeMeshesMap[key])) {
+          nodeMeshesMap[key].forEach(m => {
+            m.visible = true;
+            m.material = realBoneMaterial;
+          });
+        }
+      });
+
+      updateFocusToggleButton();
+
+      targetControlsTarget.set(0, 0, 0);
+      targetCameraPos.set(0, 0.2, 5.2);
+      isTransitioning = true;
+    }
+
+    function toggleSidebarMenu() {
+      const sidebar = document.getElementById('sidebarLeft');
+      sidebar.classList.toggle('open');
+      sidebar.classList.toggle('collapsed');
+    }
+
+    // Text-to-Speech Voice Pronunciation
+    function speakBoneName() {
+      if (!activeBoneId) return;
+      const bone = skeletonData.find(b => b.id === activeBoneId);
+      if (!bone) return;
+
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const t = (typeof i18n !== 'undefined' && i18n[currentLang]) ? i18n[currentLang] : (i18n ? i18n.id : null);
+        const textToSpeak = (t && typeof t.speechFormat === 'function')
+          ? t.speechFormat(bone)
+          : `${getBoneName(bone, currentLang)}. ${bone.nameLatin}.`;
+        const utterance = new SpeechSynthesisUtterance(textToSpeak);
+        utterance.lang = t ? t.speechLang : 'id-ID';
+        utterance.rate = 0.92;
+        window.speechSynthesis.speak(utterance);
+      } else {
+        alert("Browser Anda belum mendukung Web Speech API.");
+      }
+    }
+
+    /* ==========================================================================
+       4. SIDEBAR ACCORDION BUILDER & SEARCH / FILTER
+       ========================================================================== */
+    let currentFilter = 'all';
+    let currentSearchQuery = '';
+
+    const regionDefinitions = [
+      { id: "cranium", labelId: "Tengkorak (Kranium)", labelEn: "Cranium (Skull)", labelZh: "脑颅骨", group: "axial" },
+      { id: "facial", labelId: "Tulang Wajah", labelEn: "Facial Bones", labelZh: "面颅骨", group: "axial" },
+      { id: "ossicles", labelId: "Tulang Pendengaran", labelEn: "Auditory Ossicles", labelZh: "听小骨", group: "axial" },
+      { id: "hyoid", labelId: "Tulang Leher & Lidah", labelEn: "Hyoid Bone", labelZh: "舌骨", group: "axial" },
+      { id: "spine", labelId: "Tulang Belakang (Vertebrae)", labelEn: "Vertebral Column", labelZh: "脊柱 (椎骨)", group: "axial" },
+      { id: "ribcage", labelId: "Dada & Rusuk (Toraks)", labelEn: "Thoracic Cage & Ribs", labelZh: "胸廓与肋骨", group: "axial" },
+      { id: "shoulder", labelId: "Gelang Bahu (Pektoral)", labelEn: "Shoulder Girdle (Pectoral)", labelZh: "肩带骨 (上肢带骨)", group: "appendicular" },
+      { id: "arms", labelId: "Lengan Atas & Bawah", labelEn: "Upper & Lower Arms", labelZh: "上臂与前臂骨", group: "appendicular" },
+      { id: "hands", labelId: "Pergelangan & Jari Tangan", labelEn: "Wrists & Hands", labelZh: "手部骨 (腕掌指骨)", group: "appendicular" },
+      { id: "pelvis", labelId: "Gelang Panggul (Pelvis)", labelEn: "Pelvic Girdle (Pelvis)", labelZh: "骨盆 (下肢带骨)", group: "appendicular" },
+      { id: "legs", labelId: "Tungkai Bawah", labelEn: "Lower Limbs & Legs", labelZh: "下肢骨 (股骨胫骨腓骨)", group: "appendicular" },
+      { id: "feet", labelId: "Pergelangan & Jari Kaki", labelEn: "Ankles & Feet", labelZh: "足部骨 (跗跖趾骨)", group: "appendicular" }
+    ];
+
+    function renderSidebar() {
+      const container = document.getElementById('bonesAccordionContainer');
+      container.innerHTML = '';
+
+      let totalVisibleBones = 0;
+      const t = (typeof i18n !== 'undefined' && i18n[currentLang]) ? i18n[currentLang] : (i18n ? i18n.id : null);
+
+      regionDefinitions.forEach(reg => {
+        // Filter by category tab
+        if (currentFilter !== 'all' && reg.group !== currentFilter) {
+          return;
+        }
+
+        // Filter items by multi-lingual search query across ID, EN, ZH, and Latin
+        const itemsInRegion = skeletonData.filter(b => {
+          if (b.regionId !== reg.id) return false;
+          if (!currentSearchQuery) return true;
+          const q = currentSearchQuery.toLowerCase();
+          return (b.nameId && b.nameId.toLowerCase().includes(q)) ||
+                 (b.nameEn && b.nameEn.toLowerCase().includes(q)) ||
+                 (b.nameZh && b.nameZh.toLowerCase().includes(q)) ||
+                 (b.nameLatin && b.nameLatin.toLowerCase().includes(q));
+        });
+
+        if (itemsInRegion.length === 0) return;
+
+        const regionBoneCount = itemsInRegion.reduce((sum, item) => sum + item.count, 0);
+        totalVisibleBones += regionBoneCount;
+
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'region-group' + (currentSearchQuery ? ' expanded' : '');
+        groupDiv.id = `reg-${reg.id}`;
+
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'region-header';
+        headerDiv.onclick = () => groupDiv.classList.toggle('expanded');
+        const regLabel = getRegionLabel(reg, currentLang);
+        headerDiv.innerHTML = `
+          <div class="region-left">
+            <span class="region-chevron">▸</span>
+            <span class="region-title">${regLabel}</span>
+          </div>
+          <span class="region-count">${regionBoneCount}</span>
+        `;
+
+        const itemsContainer = document.createElement('div');
+        itemsContainer.className = 'region-items';
+
+        itemsInRegion.forEach(item => {
+          const btn = document.createElement('div');
+          btn.className = 'bone-list-item' + (activeBoneId === item.id ? ' active' : '');
+          btn.id = `item-${item.id}`;
+          btn.onclick = () => selectBone(item.id);
+          const displayedName = getBoneName(item, currentLang);
+          btn.innerHTML = `
+            <div class="bone-item-names">
+              <span class="bone-name-id">${displayedName}</span>
+              <span class="bone-name-latin">${item.nameLatin}</span>
+            </div>
+            <span class="bone-item-badge">${item.count}</span>
+          `;
+          itemsContainer.appendChild(btn);
+        });
+
+        groupDiv.appendChild(headerDiv);
+        groupDiv.appendChild(itemsContainer);
+        container.appendChild(groupDiv);
+      });
+
+      const badge = document.getElementById('boneCountBadge');
+      if (badge) badge.innerText = `${totalVisibleBones} ${t ? t.bonesSuffix : 'Tulang'}`;
+    }
+
+    function setFilter(filter, btn) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      renderSidebar();
+    }
+
+    function handleSearch(val) {
+      currentSearchQuery = val.trim();
+      renderSidebar();
+    }
+
+    renderSidebar();
+
+    /* ==========================================================================
+       5. MAIN ANIMATION LOOP & RESIZE HANDLER
+       ========================================================================== */
+    function animate() {
+      requestAnimationFrame(animate);
+
+      // Smooth Camera Lerp
+      if (isTransitioning) {
+        controls.autoRotate = false;
+        camera.position.lerp(targetCameraPos, 0.08);
+        controls.target.lerp(targetControlsTarget, 0.08);
+
+        if (camera.position.distanceTo(targetCameraPos) < 0.03 && controls.target.distanceTo(targetControlsTarget) < 0.03) {
+          isTransitioning = false;
+          controls.autoRotate = true;
+        }
+      } else {
+        controls.autoRotate = true;
+      }
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Initialize Language & Theme Preference (Default: IDN, Light Mode)
+    const savedLang = (function() {
+      try {
+        return localStorage.getItem('skeleton_lang_preference') || 'id';
+      } catch(e) {
+        return 'id';
+      }
+    })();
+    setLanguage(savedLang);
+
+    const savedTheme = (function() {
+      try {
+        return localStorage.getItem('bone_theme_preference') || 'light';
+      } catch(e) {
+        return 'light';
+      }
+    })();
+    setTheme(savedTheme);
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>

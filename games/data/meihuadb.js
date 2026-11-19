@@ -1484,3 +1484,7 @@ var _meihuaDB = {
     }
   });
 })();
+
+if (typeof window !== 'undefined') window._meihuaDB = _meihuaDB;
+if (typeof global !== 'undefined') global._meihuaDB = _meihuaDB;
+if (typeof module !== 'undefined' && module.exports) module.exports = _meihuaDB;

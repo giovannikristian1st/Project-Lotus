@@ -1,0 +1,120 @@
+{
+    "frames":  [
+                   {
+                       "filename":  "Attack.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  1,
+                                     "w":  1152,
+                                     "h":  128
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  1152,
+                                                "h":  128
+                                            },
+                       "sourceSize":  {
+                                          "w":  1152,
+                                          "h":  128
+                                      }
+                   },
+                   {
+                       "filename":  "Dead.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  131,
+                                     "w":  512,
+                                     "h":  128
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  512,
+                                                "h":  128
+                                            },
+                       "sourceSize":  {
+                                          "w":  512,
+                                          "h":  128
+                                      }
+                   },
+                   {
+                       "filename":  "Hurt.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  261,
+                                     "w":  512,
+                                     "h":  128
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  512,
+                                                "h":  128
+                                            },
+                       "sourceSize":  {
+                                          "w":  512,
+                                          "h":  128
+                                      }
+                   },
+                   {
+                       "filename":  "Idle.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  391,
+                                     "w":  768,
+                                     "h":  128
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  768,
+                                                "h":  128
+                                            },
+                       "sourceSize":  {
+                                          "w":  768,
+                                          "h":  128
+                                      }
+                   },
+                   {
+                       "filename":  "Walk.png",
+                       "frame":  {
+                                     "x":  1,
+                                     "y":  521,
+                                     "w":  1536,
+                                     "h":  128
+                                 },
+                       "rotated":  false,
+                       "trimmed":  false,
+                       "spriteSourceSize":  {
+                                                "x":  0,
+                                                "y":  0,
+                                                "w":  1536,
+                                                "h":  128
+                                            },
+                       "sourceSize":  {
+                                          "w":  1536,
+                                          "h":  128
+                                      }
+                   }
+               ],
+    "meta":  {
+                 "app":  "http://www.codeandweb.com/texturepacker",
+                 "version":  "1.0",
+                 "image":  "Satyr_3.png",
+                 "format":  "RGBA8888",
+                 "size":  {
+                              "w":  1538,
+                              "h":  650
+                          },
+                 "scale":  "1"
+             }
+}

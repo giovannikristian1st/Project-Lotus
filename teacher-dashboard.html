@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LotusWall — Teacher Dashboard</title>
+  <title>Dashboard Guru — 大愛學海 — DaAi Learning Hub | Sekolah Cinta Kasih Tzu Chi</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="games/common/ui-spritesheet.css">
@@ -17,9 +17,9 @@
           fontFamily: { sans: ['Plus Jakarta Sans', 'Poppins', 'sans-serif'] },
           colors: {
             brand: {
-              50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc',
-              400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca',
-              800: '#3730a3', 900: '#312e81'
+              50: '#EAF5ED', 100: '#d1ebd8', 200: '#a3d7b2', 300: '#75c38b',
+              400: '#47af65', 500: '#2C6E49', 600: '#1E5E3A', 700: '#17492d',
+              800: '#113520', 900: '#0a2014'
             }
           }
         }
@@ -65,30 +65,74 @@
 <body class="bg-[#f7f5f0] text-[#18181b] min-h-screen flex flex-col">
 
   <!-- =========================================================================
-       TOP HEADER: Brand + Community Link + Clickable Username Menu + Flag Toggle
+       TOP HEADER: Brand + Navbar Links + Clickable Username Menu + Flag Toggle
        ========================================================================= -->
   <header class="sticky top-0 z-40 bg-white border-b border-[#e5dfd3]">
     <div class="w-full max-w-[1840px] mx-auto px-3 sm:px-8 lg:px-10 h-16 flex items-center justify-between gap-2 sm:gap-3">
 
       <!-- Brand Logo -->
-      <a href="index.html#tab=home" class="flex items-center gap-2 sm:gap-2.5 shrink-0">
-        <span class="ui-sprite ui-lg ui-lotus"></span>
+      <a href="index.html" class="flex items-center gap-2.5 sm:gap-3 shrink-0 py-1">
+        <img src="public/assets/Main-Logo.png" alt="DaAi Learning Hub Logo" class="h-10 sm:h-11 w-auto object-contain">
         <div class="leading-tight">
-          <div class="font-extrabold text-base sm:text-xl tracking-tight text-[#18181b]">
-            LotusWall
+          <div class="font-extrabold text-sm sm:text-base tracking-tight text-[#1E5E3A] flex items-center gap-1.5">
+            <span>大愛學海</span>
+            <span class="text-xs font-semibold text-[#57534e]">— DaAi Learning Hub</span>
           </div>
-          <p class="hidden sm:block text-[11px] font-medium text-[#78716c]" data-i18n="brand.teacherHub">
-            Teacher Hub
+          <p class="hidden sm:block text-[11px] font-medium text-[#2C6E49]">
+            Sekolah Cinta Kasih Tzu Chi
           </p>
         </div>
       </a>
 
+      <!-- Center Nav Links -->
+      <nav aria-label="Main Navigation" class="hidden md:flex items-center gap-1 sm:gap-2">
+        <a href="index.html" class="px-3 py-1.5 rounded-lg text-xs font-bold text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] flex items-center gap-1.5 transition-colors">
+          <span class="ui-sprite ui-xs ui-home"></span>
+          <span>Home</span>
+        </a>
+        <a href="index.html#tab=community" class="px-3 py-1.5 rounded-lg text-xs font-bold text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] flex items-center gap-1.5 transition-colors">
+          <span class="ui-sprite ui-xs ui-community"></span>
+          <span>Komunitas</span>
+        </a>
+        <a href="tools/human-skeleton-3d/index.html" target="_blank" class="px-3 py-1.5 rounded-lg text-xs font-bold text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] flex items-center gap-1.5 transition-colors">
+          <span>🦴</span>
+          <span>Media Ajar 3D</span>
+        </a>
+
+        <!-- Mandarin Tools Dropdown -->
+        <div class="relative group">
+          <button type="button" class="px-3 py-1.5 rounded-lg text-xs font-bold text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] flex items-center gap-1 transition-colors cursor-pointer">
+            <span>🏮</span>
+            <span>Mandarin Tools</span>
+            <svg class="w-3 h-3 text-[#57534e] group-hover:text-[#1E5E3A] transition-transform group-hover:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+          <div class="absolute left-0 top-full pt-1 hidden group-hover:block z-50">
+            <div class="w-56 bg-white rounded-xl border border-[#d6cfc2] shadow-xl py-2 px-1 space-y-1">
+              <a href="tools/mandarin/drawing.html" target="_blank" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#EAF5ED] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
+                <span class="w-6 h-6 rounded bg-[#EAF5ED] text-[#1E5E3A] flex items-center justify-center font-bold text-xs">✍️</span>
+                <div>
+                  <div>Papan Tulis Hanzi</div>
+                  <div class="text-[10px] text-[#78716c] font-normal">Latihan Tulis Bebas & Grid</div>
+                </div>
+              </a>
+              <a href="tools/mandarin/strokes.html" target="_blank" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#EAF5ED] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
+                <span class="w-6 h-6 rounded bg-[#EAF5ED] text-[#1E5E3A] flex items-center justify-center font-bold text-xs">📖</span>
+                <div>
+                  <div>Lab Goresan & Radikal</div>
+                  <div class="text-[10px] text-[#78716c] font-normal">Urutan Goresan & Kamus</div>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </nav>
+
       <!-- Right Controls -->
       <div class="flex items-center gap-1.5 sm:gap-3 min-w-0">
         <a href="index.html#tab=community"
-          class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] text-[#18181b] text-xs font-semibold transition-colors shrink-0">
+          class="inline-flex md:hidden items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] text-[#18181b] text-xs font-semibold transition-colors shrink-0">
           <span class="ui-sprite ui-sm ui-community"></span>
-          <span data-i18n="nav.community">Community</span>
+          <span>Komunitas</span>
         </a>
 
         <!-- Clickable Teacher Username Dropdown Trigger -->
@@ -96,12 +140,12 @@
           <button type="button" id="dash-user-menu-btn" onclick="toggleDashUserMenu(event)"
             aria-haspopup="menu" aria-expanded="false" aria-controls="dash-user-dropdown"
             class="flex items-center gap-1.5 sm:gap-2 bg-[#fcfbf8] hover:bg-[#f4f1ea] border border-[#d6cfc2] px-2 sm:px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer min-w-0 max-w-full">
-            <div id="teacher-avatar" class="w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-[#1e242b] text-white font-bold flex items-center justify-center text-xs shrink-0">
+            <div id="teacher-avatar" class="w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-[#1E5E3A] text-white font-bold flex items-center justify-center text-xs shrink-0">
               T
             </div>
             <div class="text-left max-w-[78px] sm:max-w-[190px] min-w-0">
-              <div class="text-xs font-bold text-[#18181b] truncate" id="teacher-name">Teacher</div>
-              <div class="hidden sm:block text-[10px] text-[#78716c] truncate" id="teacher-sub">Subject • School</div>
+              <div class="text-xs font-bold text-[#18181b] truncate" id="teacher-name">Guru</div>
+              <div class="hidden sm:block text-[10px] text-[#78716c] truncate" id="teacher-sub">Sekolah Cinta Kasih Tzu Chi</div>
             </div>
             <svg id="dash-user-chevron" class="w-3.5 h-3.5 text-[#57534e] shrink-0 transition-transform duration-150" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="m6 9 6 6 6-6"/>
@@ -112,7 +156,7 @@
             class="hidden absolute right-0 mt-2 w-64 bg-white rounded-xl border border-[#d6cfc2] shadow-xl py-1.5 z-50">
             <div class="px-3.5 py-2.5 border-b border-[#eee9df]">
               <div id="dash-dropdown-name" class="text-xs font-bold text-[#18181b] truncate">Teacher</div>
-              <div id="dash-dropdown-sub" class="text-[11px] text-[#78716c] truncate">Subject • School</div>
+              <div id="dash-dropdown-sub" class="text-[11px] text-[#78716c] truncate">Sekolah Cinta Kasih Tzu Chi</div>
             </div>
 
             <a href="index.html#tab=community" role="menuitem" onclick="closeDashUserMenu()"
@@ -126,6 +170,12 @@
               <span class="ui-sprite ui-xs ui-users-switch"></span>
               <span data-i18n="login.switchAccount">Switch Teacher</span>
             </button>
+
+            <a href="student-dashboard.html" role="menuitem"
+              class="w-full px-3.5 py-2 text-left text-xs font-semibold text-[#1E5E3A] hover:bg-[#EAF5ED] flex items-center gap-2.5 transition-colors">
+              <span>🎓</span>
+              <span>Portal Murid (Student Hub)</span>
+            </a>
 
             <div class="my-1 border-t border-[#eee9df]"></div>
 
@@ -289,19 +339,19 @@
         </button>
       </div>
 
-      <!-- Metadata Form (Title, Subject, Level TK-SMK, Language, Visibility) -->
+      <!-- Metadata Form (Title, Subject, Level TK-SMK, Language, Format Soal, Visibility) -->
       <div class="bg-white p-5 sm:p-6 rounded-xl border border-[#e5dfd3] space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4">
-          <div class="lg:col-span-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5">
+          <div class="lg:col-span-4">
             <label for="project-title" class="block text-xs font-bold text-[#3f3f46] mb-1" data-i18n="studio.activityTitle">Activity Title</label>
             <input type="text" id="project-title" required placeholder="e.g. Solar System Quiz"
-              class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white font-medium text-sm focus:outline-none focus:border-[#1d4ed8]">
+              class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white font-medium text-sm focus:outline-none focus:border-[#1E5E3A]">
           </div>
 
-          <div class="lg:col-span-3">
+          <div class="lg:col-span-2">
             <label for="project-subject" class="block text-xs font-bold text-[#3f3f46] mb-1" data-i18n="studio.subject">Subject</label>
             <input type="text" id="project-subject" list="subject-datalist"
-              class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white font-medium text-sm focus:outline-none focus:border-[#1d4ed8]">
+              class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white font-medium text-sm focus:outline-none focus:border-[#1E5E3A]">
             <datalist id="subject-datalist">
               <option value="IPA / Sains"></option>
               <option value="Science"></option>
@@ -310,19 +360,19 @@
               <option value="Bahasa Indonesia"></option>
               <option value="Bahasa Inggris"></option>
               <option value="English"></option>
-              <option value="Mandarin"></option>
+              <option value="Bahasa Mandarin"></option>
               <option value="IPS / Geografi"></option>
               <option value="Fisika / Kimia"></option>
               <option value="Biologi"></option>
               <option value="Informatika / TIK"></option>
-              <option value="Pendidikan Agama"></option>
+              <option value="Pendidikan Agama & Budi Pekerti"></option>
               <option value="Seni & Budaya"></option>
             </datalist>
           </div>
 
           <div class="lg:col-span-2">
             <label for="project-level" class="block text-xs font-bold text-[#3f3f46] mb-1" data-i18n="studio.level">Education Level</label>
-            <select id="project-level" class="w-full px-3 py-2.5 rounded-lg border border-[#d6cfc2] font-semibold text-sm bg-white focus:outline-none focus:border-[#1d4ed8]">
+            <select id="project-level" class="w-full px-3 py-2.5 rounded-lg border border-[#d6cfc2] font-semibold text-sm bg-white focus:outline-none focus:border-[#1E5E3A]">
               <option value="TK" data-i18n="level.TK">Kindergarten (TK)</option>
               <option value="SD" data-i18n="level.SD">Elementary (SD)</option>
               <option value="SMP" data-i18n="level.SMP">Junior High (SMP)</option>
@@ -333,10 +383,23 @@
 
           <div class="lg:col-span-2">
             <label for="project-language" class="block text-xs font-bold text-[#3f3f46] mb-1" data-i18n="studio.lang">Content Language</label>
-            <select id="project-language" class="w-full px-3 py-2.5 rounded-lg border border-[#d6cfc2] font-semibold text-sm bg-white focus:outline-none focus:border-[#1d4ed8]">
-              <option value="en" data-i18n="langTag.en">English</option>
+            <select id="project-language" class="w-full px-3 py-2.5 rounded-lg border border-[#d6cfc2] font-semibold text-sm bg-white focus:outline-none focus:border-[#1E5E3A]">
               <option value="id" data-i18n="langTag.id">Indonesian</option>
               <option value="zh" data-i18n="langTag.zh">Mandarin</option>
+              <option value="en" data-i18n="langTag.en">English</option>
+            </select>
+          </div>
+
+          <div class="lg:col-span-2">
+            <label for="project-content-format" class="block text-xs font-bold text-[#3f3f46] mb-1">Format Soal</label>
+            <select id="project-content-format" class="w-full px-3 py-2.5 rounded-lg border border-[#d6cfc2] font-semibold text-sm bg-white focus:outline-none focus:border-[#1E5E3A]">
+              <option value="quiz">Pilihan Ganda (Quiz)</option>
+              <option value="matching">Pasangan Kata (Matching)</option>
+              <option value="truefalse">Benar / Salah (True/False)</option>
+              <option value="groupsort">Pengelompokan (Group Sort)</option>
+              <option value="strokes">Goresan Hanzi (Stroke Lab)</option>
+              <option value="sentence">Susun Kalimat (Sentence)</option>
+              <option value="jeopardy">Matriks Cerdas Cermat</option>
             </select>
           </div>
         </div>
@@ -344,16 +407,16 @@
         <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#eee9df]">
           <div class="flex items-center gap-2 text-xs font-bold text-[#3f3f46]">
             <span class="ui-sprite ui-sm ui-community"></span>
-            <span data-i18n="studio.visibility">Community Visibility</span>
+            <span>Visibilitas Komunitas</span>
           </div>
-          <div class="flex flex-wrap items-center gap-4 text-xs font-semibold text-[#18181b]">
-            <label class="inline-flex items-center gap-1.5 cursor-pointer">
-              <input type="radio" name="project-visibility" value="public" checked class="accent-[#1d4ed8] cursor-pointer">
-              <span data-i18n="studio.visPublic">Share in Community Hub</span>
+          <div class="flex flex-wrap items-center gap-3 text-xs font-bold">
+            <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#d6cfc2] bg-white cursor-pointer hover:bg-[#f4f1ea] transition-colors has-[:checked]:border-[#1E5E3A] has-[:checked]:bg-[#EAF5ED] has-[:checked]:text-[#1E5E3A]">
+              <input type="radio" name="project-visibility" value="public" checked class="accent-[#1E5E3A] cursor-pointer">
+              <span>🌐 Publik (Komunitas)</span>
             </label>
-            <label class="inline-flex items-center gap-1.5 cursor-pointer">
-              <input type="radio" name="project-visibility" value="private" class="accent-[#1d4ed8] cursor-pointer">
-              <span data-i18n="studio.visPrivate">Private (My Dashboard Only)</span>
+            <label class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#d6cfc2] bg-white cursor-pointer hover:bg-[#f4f1ea] transition-colors has-[:checked]:border-amber-600 has-[:checked]:bg-amber-50 has-[:checked]:text-amber-800">
+              <input type="radio" name="project-visibility" value="private" class="accent-amber-600 cursor-pointer">
+              <span>🔒 Privat (Hanya Saya)</span>
             </label>
           </div>
         </div>
@@ -1404,26 +1467,44 @@
        SCRIPTS
        ========================================================================= -->
   <script src="games/common/i18n.js"></script>
+  <script src="games/data/meihuadb.js"></script>
   <script src="games/common/db-local.js"></script>
   <script src="games/common/themes.js"></script>
   <script>
     const GAME_TEMPLATES_CONFIG = [
-      { id: 'quiz', category: 'standard', sprite: 'ui-game-quiz' },
-      { id: 'quiz-powerup', category: 'standard', sprite: 'ui-sparkles' },
-      { id: 'fruitninja', category: 'standard', sprite: 'ui-game-slicer' },
-      { id: 'flashcards', category: 'standard', sprite: 'ui-game-flashcards' },
-      { id: 'wheel', category: 'standard', sprite: 'ui-game-wheel' },
-      { id: 'matchup', category: 'standard', sprite: 'ui-game-match' },
-      { id: 'openbox', category: 'standard', sprite: 'ui-game-box' },
-      { id: 'wordsearch', category: 'standard', sprite: 'ui-game-word' },
-      { id: 'anagram', category: 'standard', sprite: 'ui-aa' },
-      { id: 'truefalse', category: 'standard', sprite: 'ui-game-tf' },
-      { id: 'whackamole', category: 'standard', sprite: 'ui-mole' },
-      { id: 'groupsort', category: 'standard', sprite: 'ui-folder' },
-      { id: 'ai-slicer', category: 'camera', sprite: 'ui-hand' },
-      { id: 'head-catcher', category: 'camera', sprite: 'ui-basket' },
-      { id: 'hanzi-battle', category: 'camera', sprite: 'ui-brush' }
+      // Standard Games
+      { id: 'quiz', category: 'standard', sprite: 'ui-game-quiz', supportedFormats: ['quiz', 'truefalse'] },
+      { id: 'quiz-powerup', category: 'standard', sprite: 'ui-sparkles', supportedFormats: ['quiz', 'truefalse'] },
+      { id: 'fruitninja', category: 'standard', sprite: 'ui-game-slicer', supportedFormats: ['quiz', 'matching', 'truefalse'] },
+      { id: 'flashcards', category: 'standard', sprite: 'ui-game-flashcards', supportedFormats: ['quiz', 'matching', 'strokes', 'sentence'] },
+      { id: 'wheel', category: 'standard', sprite: 'ui-game-wheel', supportedFormats: ['quiz', 'matching', 'truefalse', 'strokes'] },
+      { id: 'matchup', category: 'standard', sprite: 'ui-game-match', supportedFormats: ['matching', 'quiz', 'strokes'] },
+      { id: 'openbox', category: 'standard', sprite: 'ui-game-box', supportedFormats: ['quiz', 'matching', 'truefalse'] },
+      { id: 'wordsearch', category: 'standard', sprite: 'ui-game-word', supportedFormats: ['matching', 'quiz', 'strokes'] },
+      { id: 'anagram', category: 'standard', sprite: 'ui-aa', supportedFormats: ['matching', 'strokes', 'sentence'] },
+      { id: 'truefalse', category: 'standard', sprite: 'ui-game-tf', supportedFormats: ['truefalse', 'quiz'] },
+      { id: 'whackamole', category: 'standard', sprite: 'ui-mole', supportedFormats: ['quiz', 'matching', 'truefalse'] },
+      { id: 'groupsort', category: 'standard', sprite: 'ui-folder', supportedFormats: ['groupsort', 'matching'] },
+
+      // IFP Games / Layar Sentuh Kelas (camera games + migrated IFP games)
+      { id: 'ai-slicer', category: 'ifp', sprite: 'ui-hand', supportedFormats: ['quiz', 'matching', 'truefalse'] },
+      { id: 'head-catcher', category: 'ifp', sprite: 'ui-basket', supportedFormats: ['quiz', 'matching', 'truefalse'] },
+      { id: 'hanzi-battle', category: 'ifp', sprite: 'ui-brush', supportedFormats: ['strokes', 'matching', 'quiz'] },
+      { id: 'tug', category: 'ifp', sprite: 'ui-gamepad', supportedFormats: ['quiz', 'matching', 'truefalse'] },
+      { id: 'bossbattle', category: 'ifp', sprite: 'ui-gamepad', supportedFormats: ['quiz', 'matching', 'truefalse'] },
+      { id: 'bossraid', category: 'ifp', sprite: 'ui-gamepad', supportedFormats: ['quiz', 'matching', 'truefalse'] },
+      { id: 'bombsquad', category: 'ifp', sprite: 'ui-gamepad', supportedFormats: ['quiz', 'matching', 'truefalse', 'sentence'] },
+      { id: 'fliptile', category: 'ifp', sprite: 'ui-game-match', supportedFormats: ['matching', 'quiz', 'strokes'] },
+      { id: 'brushmaster', category: 'ifp', sprite: 'ui-brush', supportedFormats: ['strokes', 'matching'] },
+      { id: 'builderbattle', category: 'ifp', sprite: 'ui-gamepad', supportedFormats: ['quiz', 'matching', 'sentence'] },
+      { id: 'jeopardy', category: 'ifp', sprite: 'ui-game-quiz', supportedFormats: ['jeopardy', 'quiz', 'truefalse'] },
+      { id: 'wordmatch', category: 'ifp', sprite: 'ui-game-word', supportedFormats: ['matching', 'quiz', 'strokes'] }
     ];
+
+    function getCompatibleTemplates(format) {
+      const f = format || 'quiz';
+      return GAME_TEMPLATES_CONFIG.filter(t => !t.supportedFormats || t.supportedFormats.includes(f));
+    }
 
     let currentTeacher = null;
     let editingProject = null;
@@ -1902,7 +1983,9 @@
         subject: currentTeacher.subject || 'IPA / Sains',
         level: 'SD',
         language: LotusI18n.getLang() === 'id' ? 'id' : 'en',
+        content_format: 'quiz',
         is_public: true,
+        visibility: 'public',
         template_type: 'quiz',
         theme: 'white',
         rules: { hasLives: true, livesCount: 3, timeMode: 'timer', timerSeconds: 30, shuffleQuestions: true, shuffleAnswers: true },
@@ -1912,10 +1995,13 @@
       document.getElementById('project-title').value = editingProject.title || '';
       document.getElementById('project-subject').value = editingProject.subject || 'IPA / Sains';
       document.getElementById('project-level').value = editingProject.level || 'SD';
-      document.getElementById('project-language').value = editingProject.language || 'en';
+      document.getElementById('project-language').value = editingProject.language || 'id';
+      if (document.getElementById('project-content-format')) {
+        document.getElementById('project-content-format').value = editingProject.content_format || 'quiz';
+      }
 
       const visRadios = document.getElementsByName('project-visibility');
-      const isPub = editingProject.is_public !== false;
+      const isPub = editingProject.is_public !== false && editingProject.visibility !== 'private';
       visRadios.forEach(r => { r.checked = (r.value === (isPub ? 'public' : 'private')); });
 
       document.getElementById('studio-mode-title').textContent = existingProj
@@ -2571,7 +2657,8 @@
       const title = document.getElementById('project-title').value.trim();
       const subject = document.getElementById('project-subject').value.trim() || 'General';
       const level = document.getElementById('project-level').value || 'SD';
-      const language = document.getElementById('project-language').value || 'en';
+      const language = document.getElementById('project-language').value || 'id';
+      const contentFormat = document.getElementById('project-content-format')?.value || 'quiz';
       const visEl = document.querySelector('input[name="project-visibility"]:checked');
       const isPublic = visEl ? (visEl.value === 'public') : true;
 
@@ -2590,7 +2677,9 @@
       editingProject.subject = subject;
       editingProject.level = level;
       editingProject.language = language;
+      editingProject.content_format = contentFormat;
       editingProject.is_public = isPublic;
+      editingProject.visibility = isPublic ? 'public' : 'private';
       editingProject.questions = projectQuestions;
 
       openEditActivityView(null, editingProject);
@@ -2622,11 +2711,27 @@
     function renderGameTypesGrid() {
       const grid = document.getElementById('game-types-grid');
       if (!grid || !editingProject) return;
-      const activeType = editingProject.template_type || 'quiz';
 
-      const renderGroup = (titleKey, list) => `
+      const format = editingProject.content_format || 'quiz';
+      const compatibleList = getCompatibleTemplates(format);
+
+      // If current template_type is not supported by the format, auto-select first compatible template
+      if (!compatibleList.some(t => t.id === editingProject.template_type)) {
+        editingProject.template_type = compatibleList[0]?.id || 'quiz';
+      }
+
+      const activeType = editingProject.template_type;
+      const stdList = compatibleList.filter(g => g.category === 'standard');
+      const ifpList = compatibleList.filter(g => g.category === 'ifp' || g.category === 'camera');
+
+      const renderGroup = (title, list) => {
+        if (!list || list.length === 0) return '';
+        return `
         <div class="space-y-2.5">
-          <div class="text-xs font-bold uppercase tracking-wider text-[#78716c]">${escapeHtml(LotusI18n.t(titleKey))}</div>
+          <div class="text-xs font-bold uppercase tracking-wider text-[#1E5E3A] flex items-center justify-between">
+            <span>${escapeHtml(title)}</span>
+            <span class="text-[11px] font-normal text-[#78716c]">Kompatibel format: <strong class="text-[#1E5E3A]">${escapeHtml(format)}</strong></span>
+          </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
             ${list.map(gt => {
               const isSel = gt.id === activeType;
@@ -2634,9 +2739,9 @@
               const desc = LotusI18n.getTemplateDesc(gt.id);
               return `
                 <button type="button" onclick="selectGameType('${gt.id}')"
-                  class="p-3.5 rounded-lg border-2 text-left flex flex-col justify-between gap-2 transition-colors cursor-pointer ${isSel ? 'border-[#1d4ed8] bg-[#eff6ff]/70' : 'border-[#e5dfd3] bg-white hover:bg-[#fcfbf8] hover:border-[#c9c1b2]'}">
+                  class="p-3.5 rounded-lg border-2 text-left flex flex-col justify-between gap-2 transition-colors cursor-pointer ${isSel ? 'border-[#1E5E3A] bg-[#EAF5ED]/70 shadow-sm' : 'border-[#e5dfd3] bg-white hover:bg-[#fcfbf8] hover:border-[#c9c1b2]'}">
                   <div class="flex items-center gap-2">
-                    <span class="w-8 h-8 rounded-md ${isSel ? 'bg-[#dbeafe]' : 'bg-[#f4f1ea]'} flex items-center justify-center shrink-0">
+                    <span class="w-8 h-8 rounded-md ${isSel ? 'bg-[#EAF5ED] text-[#1E5E3A]' : 'bg-[#f4f1ea]'} flex items-center justify-center shrink-0">
                       <span class="ui-sprite ui-sm ${gt.sprite}"></span>
                     </span>
                     <span class="font-bold text-xs text-[#18181b]">${escapeHtml(name)}</span>
@@ -2648,10 +2753,11 @@
           </div>
         </div>
       `;
+      };
 
       grid.innerHTML =
-        renderGroup('cat.standard', GAME_TEMPLATES_CONFIG.filter(g => g.category === 'standard')) +
-        renderGroup('cat.camera', GAME_TEMPLATES_CONFIG.filter(g => g.category === 'camera'));
+        renderGroup(LotusI18n.t('cat.standard') || 'Game Standar', stdList) +
+        renderGroup('IFP Games / Layar Sentuh Kelas', ifpList);
     }
 
     function selectGameType(id) {
@@ -3348,23 +3454,26 @@
       const container = document.getElementById('player-sidebar-game-list');
       if (!container || !activePlayerProject) return;
       const currentTpl = activePlayerProject.template_type || 'quiz';
+      const format = activePlayerProject.content_format || 'quiz';
+      const compatibleConfig = getCompatibleTemplates(format);
+
       const maxQuick = 4;
-      const activeIdx = GAME_TEMPLATES_CONFIG.findIndex(t => t.id === currentTpl);
+      const activeIdx = compatibleConfig.findIndex(t => t.id === currentTpl);
       const quickList = (activeIdx >= maxQuick)
-        ? [GAME_TEMPLATES_CONFIG[activeIdx], ...GAME_TEMPLATES_CONFIG.filter((_, i) => i !== activeIdx).slice(0, maxQuick - 1)]
-        : GAME_TEMPLATES_CONFIG.slice(0, maxQuick);
+        ? [compatibleConfig[activeIdx], ...compatibleConfig.filter((_, i) => i !== activeIdx).slice(0, maxQuick - 1)]
+        : compatibleConfig.slice(0, maxQuick);
 
       container.innerHTML = quickList.map(tpl => {
         const isActive = tpl.id === currentTpl;
         const name = LotusI18n.getTemplateName(tpl.id);
         return `
           <button type="button" onclick="switchPlayerGameTemplate('${tpl.id}')"
-            class="w-full text-left p-2.5 rounded-lg border-2 transition-colors flex items-center justify-between gap-2 cursor-pointer ${isActive ? 'bg-[#eff6ff]/80 border-[#1d4ed8]' : 'bg-white border-[#e5dfd3] hover:bg-[#fcfbf8]'}">
+            class="w-full text-left p-2.5 rounded-lg border-2 transition-colors flex items-center justify-between gap-2 cursor-pointer ${isActive ? 'bg-[#EAF5ED]/80 border-[#1E5E3A]' : 'bg-white border-[#e5dfd3] hover:bg-[#fcfbf8]'}">
             <div class="flex items-center gap-2 min-w-0">
-              <span class="w-8 h-8 rounded-md ${isActive ? 'bg-[#dbeafe]' : 'bg-[#f4f1ea]'} flex items-center justify-center shrink-0">
+              <span class="w-8 h-8 rounded-md ${isActive ? 'bg-[#EAF5ED] text-[#1E5E3A]' : 'bg-[#f4f1ea]'} flex items-center justify-center shrink-0">
                 <span class="ui-sprite ui-sm ${tpl.sprite}"></span>
               </span>
-              <span class="text-xs font-bold truncate ${isActive ? 'text-[#1d4ed8]' : 'text-[#18181b]'}">${escapeHtml(name)}</span>
+              <span class="text-xs font-bold truncate ${isActive ? 'text-[#1E5E3A]' : 'text-[#18181b]'}">${escapeHtml(name)}</span>
             </div>
             ${isActive ? '<span class="ui-sprite ui-xs ui-check shrink-0"></span>' : ''}
           </button>
@@ -3386,18 +3495,25 @@
       const grid = document.getElementById('all-games-modal-grid');
       if (!grid || !activePlayerProject) return;
       const currentTpl = activePlayerProject.template_type || 'quiz';
+      const format = activePlayerProject.content_format || 'quiz';
+      const compatibleConfig = getCompatibleTemplates(format);
 
-      const buildSection = (titleKey, list) => `
+      const buildSection = (title, list) => {
+        if (!list || list.length === 0) return '';
+        return `
         <div class="space-y-2">
-          <div class="text-xs font-bold uppercase tracking-wider text-[#78716c]">${escapeHtml(LotusI18n.t(titleKey))}</div>
+          <div class="text-xs font-bold uppercase tracking-wider text-[#1E5E3A] flex items-center justify-between">
+            <span>${escapeHtml(title)}</span>
+            <span class="text-[10px] text-[#78716c] font-normal">Kompatibel format: <strong>${escapeHtml(format)}</strong></span>
+          </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
             ${list.map(tpl => {
               const isActive = tpl.id === currentTpl;
               return `
                 <button type="button" onclick="closeAllGamesModal(); switchPlayerGameTemplate('${tpl.id}')"
-                  class="text-left p-3.5 rounded-lg border-2 transition-colors flex flex-col justify-between gap-2 cursor-pointer ${isActive ? 'bg-[#eff6ff]/70 border-[#1d4ed8]' : 'bg-white border-[#e5dfd3] hover:border-[#1d4ed8] hover:bg-[#fcfbf8]'}">
+                  class="text-left p-3.5 rounded-lg border-2 transition-colors flex flex-col justify-between gap-2 cursor-pointer ${isActive ? 'bg-[#EAF5ED]/70 border-[#1E5E3A]' : 'bg-white border-[#e5dfd3] hover:border-[#1E5E3A] hover:bg-[#fcfbf8]'}">
                   <div class="flex items-center justify-between gap-2">
-                    <span class="w-9 h-9 rounded-md ${isActive ? 'bg-[#dbeafe]' : 'bg-[#f4f1ea]'} flex items-center justify-center">
+                    <span class="w-9 h-9 rounded-md ${isActive ? 'bg-[#EAF5ED] text-[#1E5E3A]' : 'bg-[#f4f1ea]'} flex items-center justify-center">
                       <span class="ui-sprite ui-sm ${tpl.sprite}"></span>
                     </span>
                     ${isActive ? '<span class="ui-sprite ui-sm ui-check"></span>' : '<span class="ui-sprite ui-xs ui-arrow-right"></span>'}
@@ -3412,10 +3528,11 @@
           </div>
         </div>
       `;
+      };
 
       grid.innerHTML =
-        buildSection('cat.standard', GAME_TEMPLATES_CONFIG.filter(g => g.category === 'standard')) +
-        buildSection('cat.camera', GAME_TEMPLATES_CONFIG.filter(g => g.category === 'camera'));
+        buildSection(LotusI18n.t('cat.standard') || 'Game Standar', compatibleConfig.filter(g => g.category === 'standard')) +
+        buildSection('IFP Games / Layar Sentuh Kelas', compatibleConfig.filter(g => g.category === 'ifp' || g.category === 'camera'));
     }
 
     function startActualGame() {
@@ -3724,14 +3841,15 @@
       ];
 
       const guideRows = [
-        ['Panduan Pengisian Template Soal LotusWall / Guide'],
+        ['Panduan Pengisian Template Soal — 大愛學海 (DaAi Learning Hub) / Guide'],
+        ['Sekolah Cinta Kasih Tzu Chi'],
         [''],
         ['1. Isi soal di sheet pertama ("Soal"). Jangan hapus baris judul (baris 1).'],
         ['2. Kolom "Pertanyaan" dan minimal "Opsi A" & "Opsi B" wajib diisi.'],
         ['3. Kolom "Opsi C" sampai "Opsi F" bersifat opsional — kosongkan jika tidak dipakai.'],
         ['4. Isi kolom "Jawaban Benar" dengan huruf opsi: contoh "A" atau "B".'],
         ['5. Untuk soal dengan lebih dari 1 jawaban benar, pisahkan dengan koma: contoh "A, C".'],
-        ['6. Setelah selesai, simpan file (.xlsx) lalu klik tombol "Import Excel" di dalam project LotusWall.']
+        ['6. Setelah selesai, simpan file (.xlsx) lalu klik tombol "Import Excel" di Studio Soal DaAi Learning Hub.']
       ];
       const wsGuide = XLSX.utils.aoa_to_sheet(guideRows);
       wsGuide['!cols'] = [{ wch: 85 }];
@@ -3739,11 +3857,11 @@
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, wsSoal, 'Soal');
       XLSX.utils.book_append_sheet(wb, wsGuide, 'Panduan');
-      XLSX.writeFile(wb, 'LotusWall-Template-Soal.xlsx');
+      XLSX.writeFile(wb, 'DaAi-Template-Soal.xlsx');
 
       showStudioExcelToast('success', isId
-        ? 'Template Excel (LotusWall-Template-Soal.xlsx) berhasil diunduh!'
-        : 'Excel template (LotusWall-Template-Soal.xlsx) downloaded!');
+        ? 'Template Excel (DaAi-Template-Soal.xlsx) berhasil diunduh!'
+        : 'Excel template (DaAi-Template-Soal.xlsx) downloaded!');
     }
 
     function exportProjectQuestionsExcel() {
@@ -3789,8 +3907,8 @@
         { wch: 18 }
       ];
 
-      const rawTitle = (document.getElementById('project-title')?.value || editingProject?.title || 'LotusWall-Project').trim();
-      const safeSlug = rawTitle.replace(/[^a-zA-Z0-9\u00C0-\u024F\s_-]/g, '').replace(/\s+/g, '-').slice(0, 60) || 'LotusWall-Project';
+      const rawTitle = (document.getElementById('project-title')?.value || editingProject?.title || 'DaAi-Project').trim();
+      const safeSlug = rawTitle.replace(/[^a-zA-Z0-9\u00C0-\u024F\s_-]/g, '').replace(/\s+/g, '-').slice(0, 60) || 'DaAi-Project';
       const filename = `${safeSlug}-soal.xlsx`;
 
       const wb = XLSX.utils.book_new();
@@ -4161,11 +4279,33 @@
       if (!proj) return;
       selectedProjectForAssignment = proj;
 
+      const format = proj.content_format || 'quiz';
+      const compatibleList = getCompatibleTemplates(format);
+
+      const selTpl = document.getElementById('asg-select-template');
+      if (selTpl) {
+        const stdList = compatibleList.filter(t => t.category === 'standard');
+        const ifpList = compatibleList.filter(t => t.category === 'ifp' || t.category === 'camera');
+
+        selTpl.innerHTML = `
+          <optgroup label="Game Standar">
+            ${stdList.map(t => `<option value="${t.id}">${escapeHtml(LotusI18n.getTemplateName(t.id))}</option>`).join('')}
+          </optgroup>
+          <optgroup label="IFP Games / Layar Sentuh Kelas">
+            ${ifpList.map(t => `<option value="${t.id}">${escapeHtml(LotusI18n.getTemplateName(t.id))}</option>`).join('')}
+          </optgroup>
+        `;
+        if (compatibleList.some(t => t.id === proj.template_type)) {
+          selTpl.value = proj.template_type;
+        } else if (compatibleList.length > 0) {
+          selTpl.value = compatibleList[0].id;
+        }
+      }
+
       document.getElementById('asg-confirm-proj-title').textContent = proj.title;
-      document.getElementById('asg-confirm-proj-meta').textContent = `${proj.questions?.length || 0} Soal • ${proj.subject || 'Umum'} • ${proj.level || 'SD'}`;
+      document.getElementById('asg-confirm-proj-meta').textContent = `${proj.questions?.length || 0} Soal • ${proj.subject || 'Umum'} • ${proj.level || 'SD'} • Format: ${format}`;
 
       document.getElementById('asg-input-title').value = `${proj.title} - Tugas`;
-      document.getElementById('asg-select-template').value = proj.template_type || 'quiz';
       document.getElementById('asg-select-timemode').value = proj.rules?.timeMode || 'timer';
       document.getElementById('asg-select-lives').value = proj.rules?.hasLives ? '3' : '0';
       document.getElementById('asg-select-speed').value = proj.rules?.speed || 'normal';
@@ -4636,7 +4776,7 @@
   </script>
 
   <!-- Floating Version / Cloud Mode Badge (Bottom-Left) -->
-  <div id="lotus-version-badge" class="fixed bottom-3 left-3 z-40 bg-white/95 backdrop-blur border border-[#d6cfc2] shadow-sm rounded-full px-3 py-1 flex items-center gap-2 text-[11px] font-semibold text-[#57534e] select-none hover:border-[#1d4ed8] transition-colors" title="LotusWall Build Version & Cloud Status">
+  <div id="lotus-version-badge" class="fixed bottom-3 left-3 z-40 bg-white/95 backdrop-blur border border-[#d6cfc2] shadow-sm rounded-full px-3 py-1 flex items-center gap-2 text-[11px] font-semibold text-[#57534e] select-none hover:border-[#1E5E3A] transition-colors" title="DaAi Learning Hub — Sekolah Cinta Kasih Tzu Chi">
     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
     <span id="version-badge-text">v2026.11.17 • Cloud</span>
     <span class="text-[#a1a1aa]">•</span>

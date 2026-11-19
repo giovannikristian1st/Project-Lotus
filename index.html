@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LotusWall — Interactive Educational Games (TK–SMK)</title>
+  <title>大愛學海 — DaAi Learning Hub | Sekolah Cinta Kasih Tzu Chi</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="games/common/ui-spritesheet.css">
@@ -16,9 +16,9 @@
           fontFamily: { sans: ['Plus Jakarta Sans', 'Poppins', 'sans-serif'] },
           colors: {
             brand: {
-              50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc',
-              400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca',
-              800: '#3730a3', 900: '#312e81'
+              50: '#EAF5ED', 100: '#d1ebd8', 200: '#a3d7b2', 300: '#75c38b',
+              400: '#47af65', 500: '#2C6E49', 600: '#1E5E3A', 700: '#17492d',
+              800: '#113520', 900: '#0a2014'
             }
           }
         }
@@ -114,51 +114,90 @@
 <body class="bg-[#f7f5f0] text-[#18181b] min-h-screen flex flex-col">
 
   <!-- =========================================================================
-       TOP NAVBAR: Brand + 3 Clean Tabs + Teacher User Menu + Icon-Only Lang Switch
+       TOP NAVBAR: Brand + Main Nav (Home, Komunitas, Media Ajar 3D, Mandarin Tools, Login, Daftar)
        ========================================================================= -->
   <header class="sticky top-0 z-40 bg-white border-b border-[#e5dfd3]">
-    <div class="w-full max-w-[1840px] mx-auto px-4 sm:px-8 lg:px-12 pt-2.5 md:py-0 flex flex-wrap md:flex-nowrap items-center justify-between gap-2 md:gap-4 md:h-16">
+    <div class="w-full max-w-[1840px] mx-auto px-4 sm:px-8 lg:px-12 py-2 md:py-0 flex flex-wrap md:flex-nowrap items-center justify-between gap-2 md:gap-4 md:h-16">
 
       <!-- Brand Logo -->
-      <a href="#tab=home" onclick="switchPortalTab('home'); return false;" class="flex items-center gap-2.5 shrink-0 pb-2 md:pb-0">
-        <span class="ui-sprite ui-lg ui-lotus"></span>
+      <a href="index.html" class="flex items-center gap-2.5 sm:gap-3 shrink-0 py-1">
+        <img src="public/assets/Main-Logo.png" alt="DaAi Learning Hub Logo" class="h-10 sm:h-11 w-auto object-contain">
         <div class="leading-tight">
-          <div class="font-extrabold text-lg sm:text-xl tracking-tight text-[#18181b]">
-            LotusWall
+          <div class="font-extrabold text-sm sm:text-base tracking-tight text-[#1E5E3A] flex items-center gap-1.5">
+            <span>大愛學海</span>
+            <span class="text-xs font-semibold text-[#57534e]">— DaAi Learning Hub</span>
           </div>
-          <p class="text-[11px] font-medium text-[#78716c] hidden sm:block" data-i18n="brand.sub">Interactive Learning Platform</p>
+          <p class="text-[11px] font-medium text-[#2C6E49] hidden sm:block">Sekolah Cinta Kasih Tzu Chi</p>
         </div>
       </a>
 
-      <!-- Top Navigation: Strictly 3 Underline Tabs (No Pill-Inside-Pill Bloat) -->
-      <nav aria-label="Main navigation" class="order-3 md:order-2 w-full md:w-auto flex items-stretch justify-center border-t border-[#eee9df] md:border-t-0 md:h-16 gap-1 sm:gap-2">
+      <!-- Main Navigation -->
+      <nav aria-label="Main navigation" class="order-3 md:order-2 w-full md:w-auto flex items-center justify-center border-t border-[#eee9df] md:border-t-0 md:h-16 gap-1 sm:gap-1.5 overflow-x-auto py-1 md:py-0">
         <button type="button" id="nav-tab-home" onclick="switchPortalTab('home')"
-          class="flex-1 md:flex-initial px-3 sm:px-4 py-2.5 md:py-0 border-b-2 border-[#1d4ed8] text-[#1d4ed8] bg-[#eff6ff]/60 md:bg-transparent text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+          class="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-[#1E5E3A] bg-[#EAF5ED]">
           <span class="ui-sprite ui-sm ui-home"></span>
           <span data-i18n="nav.home" class="truncate">Home</span>
         </button>
 
-        <button type="button" id="nav-tab-login" onclick="switchPortalTab('login')"
-          class="flex-1 md:flex-initial px-3 sm:px-4 py-2.5 md:py-0 border-b-2 border-transparent text-[#57534e] hover:text-[#18181b] hover:bg-[#f7f5f0]/70 text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
-          <span class="ui-sprite ui-sm ui-login"></span>
-          <span data-i18n="nav.login" class="truncate">Teacher Login</span>
+        <button type="button" id="nav-tab-community" onclick="switchPortalTab('community')"
+          class="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED]">
+          <span class="ui-sprite ui-sm ui-community"></span>
+          <span data-i18n="nav.community" class="truncate">Komunitas</span>
         </button>
 
-        <button type="button" id="nav-tab-community" onclick="switchPortalTab('community')"
-          class="flex-1 md:flex-initial px-3 sm:px-4 py-2.5 md:py-0 border-b-2 border-transparent text-[#57534e] hover:text-[#18181b] hover:bg-[#f7f5f0]/70 text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
-          <span class="ui-sprite ui-sm ui-community"></span>
-          <span data-i18n="nav.community" class="truncate">Community</span>
-        </button>
+        <a href="tools/human-skeleton-3d/index.html" target="_blank"
+          class="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-colors text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED]">
+          <span class="text-base">🦴</span>
+          <span class="truncate">Media Ajar 3D</span>
+        </a>
+
+        <!-- Mandarin Tools Dropdown -->
+        <div class="relative group flex items-center">
+          <button type="button" class="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] flex items-center gap-1 transition-colors cursor-pointer">
+            <span class="text-base">🏮</span>
+            <span>Mandarin Tools</span>
+            <svg class="w-3.5 h-3.5 text-[#57534e] group-hover:text-[#1E5E3A] transition-transform group-hover:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+          <div class="absolute left-0 top-full pt-1 hidden group-hover:block z-50">
+            <div class="w-56 bg-white rounded-xl border border-[#d6cfc2] shadow-xl py-2 px-1 space-y-1">
+              <a href="tools/mandarin/drawing.html" target="_blank" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#EAF5ED] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
+                <span class="w-6 h-6 rounded bg-[#EAF5ED] text-[#1E5E3A] flex items-center justify-center font-bold text-xs">✍️</span>
+                <div>
+                  <div>Papan Tulis Hanzi</div>
+                  <div class="text-[10px] text-[#78716c] font-normal">Latihan Tulis Bebas & Grid</div>
+                </div>
+              </a>
+              <a href="tools/mandarin/strokes.html" target="_blank" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#EAF5ED] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
+                <span class="w-6 h-6 rounded bg-[#EAF5ED] text-[#1E5E3A] flex items-center justify-center font-bold text-xs">📖</span>
+                <div>
+                  <div>Lab Goresan & Radikal</div>
+                  <div class="text-[10px] text-[#78716c] font-normal">Urutan Goresan & Kamus</div>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <a href="login.html" id="nav-btn-login"
+          class="px-3 sm:px-3.5 py-1.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] hover:bg-[#f4f1ea] text-xs sm:text-sm font-bold text-[#18181b] flex items-center gap-1.5 transition-colors">
+          <span class="ui-sprite ui-sm ui-login"></span>
+          <span>Login</span>
+        </a>
+
+        <a href="register.html" id="nav-btn-register"
+          class="px-3 sm:px-4 py-1.5 rounded-lg bg-[#1E5E3A] hover:bg-[#2C6E49] text-white text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-sm transition-colors">
+          <span>Daftar</span>
+        </a>
       </nav>
 
-      <!-- Top-Right Corner: Teacher Username Dropdown (when signed in) + Icon-Only EN / ID Flag Toggle -->
-      <div class="order-2 md:order-3 flex items-center gap-2 sm:gap-2.5 shrink-0 pb-2 md:pb-0">
+      <!-- Top-Right: Teacher User Menu (when signed in) + Icon-Only EN / ID Flag Toggle -->
+      <div class="order-2 md:order-3 flex items-center gap-2 sm:gap-2.5 shrink-0">
         <!-- Logged-In Teacher Menu (Hidden when signed out) -->
         <div id="portal-user-menu-wrapper" class="relative hidden">
           <button type="button" id="portal-user-menu-btn" onclick="togglePortalUserDropdown(event)"
             aria-expanded="false" aria-haspopup="true"
             class="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-1 rounded-lg bg-[#fcfbf8] hover:bg-[#f4f1ea] border border-[#d6cfc2] text-[#18181b] transition-colors cursor-pointer max-w-[146px] sm:max-w-[240px]">
-            <span id="portal-user-avatar" class="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-[#1e242b] text-white font-bold text-[10px] sm:text-[11px] flex items-center justify-center shrink-0">
+            <span id="portal-user-avatar" class="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-[#1E5E3A] text-white font-bold text-[10px] sm:text-[11px] flex items-center justify-center shrink-0">
               T
             </span>
             <span id="portal-user-name" class="text-xs font-bold text-[#18181b] truncate">Teacher</span>
@@ -171,13 +210,13 @@
             class="hidden absolute right-0 mt-2 w-64 bg-white rounded-xl border border-[#d6cfc2] shadow-[0_10px_28px_rgba(24,24,27,0.14)] py-1.5 z-50">
             <div class="px-3.5 py-2.5 border-b border-[#eee9df]">
               <div id="portal-dropdown-name" class="text-xs font-bold text-[#18181b] truncate">Teacher Name</div>
-              <div id="portal-dropdown-sub" class="text-[11px] text-[#78716c] truncate mt-0.5">Subject • School</div>
+              <div id="portal-dropdown-sub" class="text-[11px] text-[#78716c] truncate mt-0.5">Sekolah Cinta Kasih Tzu Chi</div>
             </div>
             <div class="p-1.5 space-y-1">
               <a href="teacher-dashboard.html"
-                class="w-full px-3 py-2 rounded-lg hover:bg-[#eff6ff] text-[#18181b] hover:text-[#1d4ed8] text-xs font-bold flex items-center gap-2 transition-colors">
+                class="w-full px-3 py-2 rounded-lg hover:bg-[#EAF5ED] text-[#18181b] hover:text-[#1E5E3A] text-xs font-bold flex items-center gap-2 transition-colors">
                 <span class="ui-sprite ui-sm ui-dashboard"></span>
-                <span data-i18n="login.myDashboard">My Dashboard</span>
+                <span>Dashboard Guru</span>
               </a>
               <button type="button" id="portal-logout-btn" onclick="logoutPortalTeacher(); closePortalUserDropdown();"
                 class="w-full px-3 py-2 rounded-lg hover:bg-red-50 text-[#18181b] hover:text-red-700 text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer text-left">
@@ -224,7 +263,7 @@
         </h1>
 
         <p class="text-sm sm:text-lg text-[#57534e] max-w-4xl mx-auto leading-relaxed font-medium" data-i18n="home.subtitle">
-          Write your questions or word list once in LotusWall, then launch it in 15 formats—from classic board quizzes to webcam motion games—for TK through SMK.
+          Tulis soal atau kosakata sekali di DaAi Learning Hub, lalu mainkan dalam aneka format interaktif—dari kuis kelas standar hingga game layar sentuh IFP—untuk jenjang TK hingga SMK Sekolah Cinta Kasih Tzu Chi.
         </p>
       </div>
 
@@ -290,6 +329,12 @@
               </button>
             </form>
             <div id="home-pin-error" class="hidden rounded-lg px-3 py-2 bg-red-950/60 border border-red-400/40 text-red-200 text-xs font-semibold"></div>
+            <div class="pt-2 text-center sm:text-left">
+              <a href="student-dashboard.html" class="inline-flex items-center gap-1.5 text-xs text-[#cbd5e1] hover:text-white font-semibold transition-colors">
+                <span>🎓 Masuk ke Portal Murid (Student Dashboard)</span>
+                <span>➔</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -336,7 +381,7 @@
             </div>
             <div>
               <h2 class="text-xl font-bold text-[#18181b]" data-i18n="login.heroTitle">Welcome Back, Teacher!</h2>
-              <p class="text-xs text-[#57534e] mt-0.5" data-i18n="login.heroDesc">Sign in to manage projects, customize game templates, inspect leaderboards, and publish to the LotusWall Community.</p>
+              <p class="text-xs text-[#57534e] mt-0.5" data-i18n="login.heroDesc">Masuk untuk mengelola aktivitas pembelajaran, mengatur penugasan siswa, dan mengakses media ajar Sekolah Cinta Kasih Tzu Chi.</p>
             </div>
           </div>
 
@@ -438,7 +483,7 @@
               </div>
               <div>
                 <label for="reg-school" class="block text-xs font-bold text-[#3f3f46] mb-1" data-i18n="login.regSchoolLabel">School Name</label>
-                <input type="text" id="reg-school" value="LotusWall School"
+                <input type="text" id="reg-school" value="Sekolah Cinta Kasih Tzu Chi"
                   class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
               </div>
             </div>
@@ -463,6 +508,17 @@
               <span data-i18n="login.regSubmit">Register &amp; Enter Dashboard</span>
             </button>
           </form>
+
+          <div class="mt-4 pt-4 border-t border-[#eee9df] text-center space-y-1.5 text-xs text-[#57534e]">
+            <div class="font-bold text-[#18181b]">Portal Terpadu DaAi Hub:</div>
+            <div class="flex flex-wrap items-center justify-center gap-2 font-bold text-[#1d4ed8]">
+              <a href="login.html" class="hover:underline">🔐 Halaman Masuk (login.html)</a>
+              <span>•</span>
+              <a href="register.html" class="hover:underline">📝 Daftar Guru / Murid (register.html)</a>
+              <span>•</span>
+              <a href="student-dashboard.html" class="hover:underline">🎓 Portal Murid (student-dashboard.html)</a>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -584,7 +640,7 @@
   <!-- Footer -->
   <footer id="footer" class="bg-[#18181b] text-[#a1a1aa] py-6 border-t border-[#27272a]">
     <div class="w-full max-w-[1840px] mx-auto px-4 sm:px-8 lg:px-12 text-center text-xs space-y-1">
-      <div class="font-semibold text-[#f4f4f5]" data-i18n="footer.tagline">LotusWall &copy; 2026 — Interactive Educational Game Studio (TK–SMK)</div>
+      <div class="font-semibold text-[#f4f4f5]">大愛學海 — DaAi Learning Hub &copy; 2026 — Sekolah Cinta Kasih Tzu Chi</div>
       <div class="text-[#71717a]" data-i18n="footer.tech">15 Standalone HTML5 &amp; AI Motion Games • Bilingual EN/ID • Local-First DB</div>
     </div>
   </footer>
@@ -642,7 +698,7 @@
           <span class="w-8 h-8 rounded-lg bg-[#fef3c7] border border-[#f59e0b]/40 flex items-center justify-center text-[#b45309]">
             <span class="ui-sprite ui-sm ui-lock"></span>
           </span>
-          <span data-i18n="admin.title">LotusWall Administrator Panel</span>
+          <span>Panel Administrator — 大愛學海 (DaAi Learning Hub)</span>
         </h3>
         <button type="button" onclick="closeAdminModal()" class="p-1.5 rounded-md bg-[#f4f1ea] hover:bg-[#e7e2d8] cursor-pointer" aria-label="Close">
           <span class="ui-sprite ui-sm ui-close"></span>
@@ -830,25 +886,43 @@
        ========================================================================= -->
   <script src="games/common/i18n.js"></script>
   <script src="games/common/themes.js"></script>
+  <script src="games/data/meihuadb.js"></script>
   <script src="games/common/db-local.js"></script>
   <script>
     const PORTAL_TEMPLATES = [
-      { id: 'quiz', category: 'standard', sprite: 'ui-game-quiz' },
-      { id: 'quiz-powerup', category: 'standard', sprite: 'ui-sparkles' },
-      { id: 'fruitninja', category: 'standard', sprite: 'ui-game-slicer' },
-      { id: 'flashcards', category: 'standard', sprite: 'ui-game-flashcards' },
-      { id: 'wheel', category: 'standard', sprite: 'ui-game-wheel' },
-      { id: 'matchup', category: 'standard', sprite: 'ui-game-match' },
-      { id: 'openbox', category: 'standard', sprite: 'ui-game-box' },
-      { id: 'wordsearch', category: 'standard', sprite: 'ui-game-word' },
-      { id: 'anagram', category: 'standard', sprite: 'ui-aa' },
-      { id: 'truefalse', category: 'standard', sprite: 'ui-game-tf' },
-      { id: 'whackamole', category: 'standard', sprite: 'ui-mole' },
-      { id: 'groupsort', category: 'standard', sprite: 'ui-folder' },
-      { id: 'ai-slicer', category: 'camera', sprite: 'ui-hand' },
-      { id: 'head-catcher', category: 'camera', sprite: 'ui-basket' },
-      { id: 'hanzi-battle', category: 'camera', sprite: 'ui-brush' }
+      // Standard Games
+      { id: 'quiz', category: 'standard', sprite: 'ui-game-quiz', supportedFormats: ['quiz', 'truefalse'] },
+      { id: 'quiz-powerup', category: 'standard', sprite: 'ui-sparkles', supportedFormats: ['quiz', 'truefalse'] },
+      { id: 'fruitninja', category: 'standard', sprite: 'ui-game-slicer', supportedFormats: ['quiz', 'matching', 'truefalse'] },
+      { id: 'flashcards', category: 'standard', sprite: 'ui-game-flashcards', supportedFormats: ['quiz', 'matching', 'strokes', 'sentence'] },
+      { id: 'wheel', category: 'standard', sprite: 'ui-game-wheel', supportedFormats: ['quiz', 'matching', 'truefalse', 'strokes'] },
+      { id: 'matchup', category: 'standard', sprite: 'ui-game-match', supportedFormats: ['matching', 'quiz', 'strokes'] },
+      { id: 'openbox', category: 'standard', sprite: 'ui-game-box', supportedFormats: ['quiz', 'matching', 'truefalse'] },
+      { id: 'wordsearch', category: 'standard', sprite: 'ui-game-word', supportedFormats: ['matching', 'quiz', 'strokes'] },
+      { id: 'anagram', category: 'standard', sprite: 'ui-aa', supportedFormats: ['matching', 'strokes', 'sentence'] },
+      { id: 'truefalse', category: 'standard', sprite: 'ui-game-tf', supportedFormats: ['truefalse', 'quiz'] },
+      { id: 'whackamole', category: 'standard', sprite: 'ui-mole', supportedFormats: ['quiz', 'matching', 'truefalse'] },
+      { id: 'groupsort', category: 'standard', sprite: 'ui-folder', supportedFormats: ['groupsort', 'matching'] },
+
+      // IFP Games / Layar Sentuh Kelas (camera games + migrated IFP games)
+      { id: 'ai-slicer', category: 'ifp', sprite: 'ui-hand', supportedFormats: ['quiz', 'matching', 'truefalse'] },
+      { id: 'head-catcher', category: 'ifp', sprite: 'ui-basket', supportedFormats: ['quiz', 'matching', 'truefalse'] },
+      { id: 'hanzi-battle', category: 'ifp', sprite: 'ui-brush', supportedFormats: ['strokes', 'matching', 'quiz'] },
+      { id: 'tug', category: 'ifp', sprite: 'ui-gamepad', supportedFormats: ['quiz', 'matching', 'truefalse'] },
+      { id: 'bossbattle', category: 'ifp', sprite: 'ui-gamepad', supportedFormats: ['quiz', 'matching', 'truefalse'] },
+      { id: 'bossraid', category: 'ifp', sprite: 'ui-gamepad', supportedFormats: ['quiz', 'matching', 'truefalse'] },
+      { id: 'bombsquad', category: 'ifp', sprite: 'ui-gamepad', supportedFormats: ['quiz', 'matching', 'truefalse', 'sentence'] },
+      { id: 'fliptile', category: 'ifp', sprite: 'ui-game-match', supportedFormats: ['matching', 'quiz', 'strokes'] },
+      { id: 'brushmaster', category: 'ifp', sprite: 'ui-brush', supportedFormats: ['strokes', 'matching'] },
+      { id: 'builderbattle', category: 'ifp', sprite: 'ui-gamepad', supportedFormats: ['quiz', 'matching', 'sentence'] },
+      { id: 'jeopardy', category: 'ifp', sprite: 'ui-game-quiz', supportedFormats: ['jeopardy', 'quiz', 'truefalse'] },
+      { id: 'wordmatch', category: 'ifp', sprite: 'ui-game-word', supportedFormats: ['matching', 'quiz', 'strokes'] }
     ];
+
+    function getCompatibleTemplates(format) {
+      const f = format || 'quiz';
+      return PORTAL_TEMPLATES.filter(t => !t.supportedFormats || t.supportedFormats.includes(f));
+    }
 
     let activePortalTab = 'home';
 
@@ -952,15 +1026,23 @@
       const teacher = LotusDB.getCurrentTeacherStrict();
       const loginTabBtn = document.getElementById('nav-tab-login');
       const homeCtaBtn = document.getElementById('home-cta-try-now');
+      const navLogin = document.getElementById('nav-btn-login');
+      const navRegister = document.getElementById('nav-btn-register');
+      const userMenuWrapper = document.getElementById('portal-user-menu-wrapper');
 
       if (teacher) {
+        if (navLogin) navLogin.classList.add('hidden');
+        if (navRegister) navRegister.classList.add('hidden');
+        if (userMenuWrapper) userMenuWrapper.classList.remove('hidden');
+        renderPortalUserMenu();
+
         if (loginTabBtn) {
           loginTabBtn.onclick = () => goToTeacherProjectsDashboard();
           loginTabBtn.innerHTML = `
             <span class="ui-sprite ui-sm ui-dashboard"></span>
-            <span class="truncate">Dashboard</span>
+            <span class="truncate">Dashboard Guru</span>
           `;
-          loginTabBtn.setAttribute('title', LotusI18n.getLang() === 'id' ? 'Buka Dashboard Proyek' : 'Open Projects Dashboard');
+          loginTabBtn.setAttribute('title', 'Buka Dashboard Proyek');
         }
 
         if (homeCtaBtn) {
@@ -971,6 +1053,10 @@
           }
         }
       } else {
+        if (navLogin) navLogin.classList.remove('hidden');
+        if (navRegister) navRegister.classList.remove('hidden');
+        if (userMenuWrapper) userMenuWrapper.classList.add('hidden');
+
         if (loginTabBtn) {
           loginTabBtn.onclick = () => switchPortalTab('login');
           loginTabBtn.innerHTML = `
@@ -1734,34 +1820,53 @@
 
               <!-- Creator Attribution -->
               <div class="flex items-center gap-2 text-xs text-[#57534e] pt-0.5">
-                <span class="w-6 h-6 rounded-md bg-[#f4f1ea] border border-[#e5dfd3] text-[#18181b] font-bold text-[10px] flex items-center justify-center shrink-0">
+                <span class="w-6 h-6 rounded-md bg-[#EAF5ED] text-[#1E5E3A] border border-[#d6cfc2] font-bold text-[10px] flex items-center justify-center shrink-0">
                   ${escapeHtml(getTeacherInitials(proj.teacher_name || 'T'))}
                 </span>
                 <div class="min-w-0 truncate">
-                  <span class="font-semibold text-[#18181b]">${escapeHtml(LotusI18n.t('comm.byTeacher', { name: proj.teacher_name || 'LotusWall Teacher' }))}</span>
-                  ${proj.teacher_school ? `<span class="text-[#78716c]"> · ${escapeHtml(proj.teacher_school)}</span>` : ''}
+                  <span class="font-semibold text-[#18181b]">${escapeHtml(proj.teacher_name || 'Guru Cinta Kasih')}</span>
+                  <span class="text-[#78716c]"> · ${escapeHtml(proj.teacher_school || 'Sekolah Cinta Kasih Tzu Chi')}</span>
                 </div>
               </div>
             </div>
 
             <!-- Action Footer -->
-            <div class="pt-3 border-t border-[#eee9df] flex items-center gap-2">
+            <div class="pt-3 border-t border-[#eee9df] flex flex-wrap items-center gap-2">
               <button type="button" onclick="openCommunityPlayer('${escapeHtml(proj.id)}')"
-                class="flex-1 py-2 px-3.5 rounded-lg bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-xs border-b-2 border-[#1e3a8a] flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+                class="flex-1 min-w-[95px] py-2 px-3 rounded-lg bg-[#1E5E3A] hover:bg-[#2C6E49] text-white font-bold text-xs border-b-2 border-[#144228] flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
                 <span class="ui-sprite ui-sm ui-play"></span>
                 <span>${escapeHtml(playLabel)}</span>
               </button>
 
+              <button type="button" onclick="assignDirectlyFromCommunity('${escapeHtml(proj.id)}')"
+                class="flex-1 min-w-[105px] py-2 px-3 rounded-lg bg-[#eff6ff] hover:bg-[#dbeafe] text-[#1d4ed8] border border-[#bfdbfe] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                title="Tugaskan ke Siswa">
+                <span class="text-xs">📋</span>
+                <span>Tugaskan</span>
+              </button>
+
               <button type="button" onclick="duplicateCommunityActivity('${escapeHtml(proj.id)}')"
-                class="py-2 px-3 rounded-lg bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] text-[#18181b] font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                class="py-2 px-2.5 rounded-lg bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] text-[#57534e] hover:text-[#18181b] font-semibold text-xs flex items-center justify-center transition-colors cursor-pointer"
                 title="${escapeHtml(dupLabel)}">
                 <span class="ui-sprite ui-sm ui-copy"></span>
-                <span>${escapeHtml(dupLabel)}</span>
               </button>
             </div>
           </article>
         `;
       }).join('');
+    }
+
+    function assignDirectlyFromCommunity(projId) {
+      const teacher = LotusDB.getCurrentTeacherStrict();
+      if (!teacher) {
+        showCommunityToast(
+          'warn',
+          'Silakan login sebagai Guru terlebih dahulu untuk menugaskan aktivitas ini kepada siswa.',
+          `<a href="login.html" class="px-3.5 py-1.5 rounded-md bg-[#1E5E3A] hover:bg-[#2C6E49] text-white font-bold text-xs inline-block">Login Guru</a>`
+        );
+        return;
+      }
+      openGenerateAssignmentModal(projId);
     }
 
     function duplicateCommunityActivity(projId) {
@@ -1860,10 +1965,321 @@
         vBadge.textContent = `v${v} • ${mode}`;
       }
     });
+
+    // -------------------------------------------------------------------------
+    // INSTANT ASSIGNMENT MODAL (DIRECT FROM COMMUNITY)
+    // -------------------------------------------------------------------------
+    let selectedProjectForAssignment = null;
+    let currentCreatedAssignment = null;
+
+    function openGenerateAssignmentModal(projectId) {
+      const proj = LotusDB.getProjectById(projectId);
+      if (!proj) return;
+      selectedProjectForAssignment = proj;
+
+      const format = proj.content_format || 'quiz';
+      const compatibleList = getCompatibleTemplates(format);
+
+      const selTpl = document.getElementById('asg-select-template');
+      if (selTpl) {
+        const stdList = compatibleList.filter(t => t.category === 'standard');
+        const ifpList = compatibleList.filter(t => t.category === 'ifp' || t.category === 'camera');
+
+        selTpl.innerHTML = `
+          <optgroup label="Game Standar">
+            ${stdList.map(t => `<option value="${t.id}">${escapeHtml(LotusI18n.getTemplateName(t.id))}</option>`).join('')}
+          </optgroup>
+          <optgroup label="IFP Games / Layar Sentuh Kelas">
+            ${ifpList.map(t => `<option value="${t.id}">${escapeHtml(LotusI18n.getTemplateName(t.id))}</option>`).join('')}
+          </optgroup>
+        `;
+        if (compatibleList.some(t => t.id === proj.template_type)) {
+          selTpl.value = proj.template_type;
+        } else if (compatibleList.length > 0) {
+          selTpl.value = compatibleList[0].id;
+        }
+      }
+
+      document.getElementById('asg-confirm-proj-title').textContent = proj.title;
+      document.getElementById('asg-confirm-proj-meta').textContent = `${proj.questions?.length || 0} Soal • ${proj.subject || 'Umum'} • ${proj.level || 'SD'} • Format: ${format}`;
+
+      document.getElementById('asg-input-title').value = `${proj.title} - Tugas`;
+      document.getElementById('asg-select-timemode').value = proj.rules?.timeMode || 'timer';
+      document.getElementById('asg-select-lives').value = proj.rules?.hasLives ? '3' : '0';
+      document.getElementById('asg-select-speed').value = proj.rules?.speed || 'normal';
+      document.getElementById('asg-check-shuffle-q').checked = proj.rules?.shuffleQuestions !== false;
+      document.getElementById('asg-check-shuffle-a').checked = proj.rules?.shuffleAnswers !== false;
+      document.getElementById('asg-check-multiple').checked = false;
+      document.getElementById('asg-check-show-answers').checked = true;
+
+      document.getElementById('asg-step-confirm').classList.remove('hidden');
+      document.getElementById('asg-step-settings').classList.add('hidden');
+      document.getElementById('asg-step-success').classList.add('hidden');
+      document.getElementById('asg-copy-feedback').classList.add('hidden');
+
+      document.getElementById('modal-generate-assignment').classList.remove('hidden');
+    }
+
+    function closeGenerateAssignmentModal() {
+      document.getElementById('modal-generate-assignment').classList.add('hidden');
+      selectedProjectForAssignment = null;
+    }
+
+    function goToAssignmentSettingsStep() {
+      document.getElementById('asg-step-confirm').classList.add('hidden');
+      document.getElementById('asg-step-settings').classList.remove('hidden');
+      document.getElementById('asg-step-success').classList.add('hidden');
+    }
+
+    function goToAssignmentConfirmStep() {
+      document.getElementById('asg-step-confirm').classList.remove('hidden');
+      document.getElementById('asg-step-settings').classList.add('hidden');
+      document.getElementById('asg-step-success').classList.add('hidden');
+    }
+
+    async function handleCreateAssignmentSubmit(e) {
+      e.preventDefault();
+      const teacher = LotusDB.getCurrentTeacherStrict();
+      if (!selectedProjectForAssignment || !teacher) return;
+
+      const title = document.getElementById('asg-input-title').value.trim();
+      const templateType = document.getElementById('asg-select-template').value;
+      const timeMode = document.getElementById('asg-select-timemode').value;
+      const livesVal = document.getElementById('asg-select-lives').value;
+      const speed = document.getElementById('asg-select-speed').value;
+      const shuffleQuestions = document.getElementById('asg-check-shuffle-q').checked;
+      const shuffleAnswers = document.getElementById('asg-check-shuffle-a').checked;
+      const allowMultiple = document.getElementById('asg-check-multiple').checked;
+      const showAnswers = document.getElementById('asg-check-show-answers').checked;
+
+      const btn = document.getElementById('btn-save-assignment');
+      if (btn) btn.disabled = true;
+
+      try {
+        const rules = {
+          timeMode,
+          timerSeconds: timeMode === 'timer' ? 30 : 0,
+          hasLives: livesVal === '3',
+          livesCount: livesVal === '3' ? 3 : 0,
+          speed,
+          shuffleQuestions,
+          shuffleAnswers
+        };
+
+        const newAsg = await LotusDB.createAssignment({
+          projectId: selectedProjectForAssignment.id,
+          teacherId: teacher.id,
+          title,
+          templateType,
+          rules,
+          allowMultiple,
+          showAnswers
+        });
+
+        currentCreatedAssignment = newAsg;
+        const playUrl = getAssignmentDirectPlayUrl(newAsg);
+        document.getElementById('asg-success-url').value = playUrl;
+
+        document.getElementById('asg-step-confirm').classList.add('hidden');
+        document.getElementById('asg-step-settings').classList.add('hidden');
+        document.getElementById('asg-step-success').classList.remove('hidden');
+      } catch (err) {
+        alert('Gagal membuat penugasan: ' + (err.message || err));
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function getAssignmentDirectPlayUrl(asg) {
+      const origin = window.location.origin;
+      const path = window.location.pathname.replace('index.html', 'play.html');
+      const pin = selectedProjectForAssignment?.pin || asg.project_id;
+      return `${origin}${path}?pin=${encodeURIComponent(pin)}&asg=${encodeURIComponent(asg.id)}`;
+    }
+
+    function copyCreatedAssignmentLink() {
+      const input = document.getElementById('asg-success-url');
+      if (!input) return;
+      input.select();
+      input.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(input.value).then(() => {
+        const fb = document.getElementById('asg-copy-feedback');
+        if (fb) {
+          fb.classList.remove('hidden');
+          setTimeout(() => fb.classList.add('hidden'), 3500);
+        }
+      }).catch(() => {
+        document.execCommand('copy');
+      });
+    }
+
+    function testCreatedAssignmentGame() {
+      const url = document.getElementById('asg-success-url')?.value;
+      if (url) window.open(url, '_blank');
+    }
+
+    function viewCreatedAssignmentInTab() {
+      window.location.href = 'teacher-dashboard.html#tab=assignments';
+    }
   </script>
 
+  <!-- Modal: Generate Assignment Link (Community Instant Assignment) -->
+  <div id="modal-generate-assignment" class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center p-4" onclick="closeGenerateAssignmentModal()">
+    <div class="bg-white rounded-2xl p-6 sm:p-7 max-w-xl w-full shadow-2xl border border-[#d6cfc2] space-y-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      
+      <!-- Step 1: Confirmation -->
+      <div id="asg-step-confirm" class="space-y-4 text-center">
+        <div class="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-[#1E5E3A] mx-auto">
+          <span class="ui-sprite ui-md ui-share"></span>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-[#18181b]" data-i18n="assign.modalConfirmTitle">Tugaskan Aktivitas Ini ke Siswa?</h3>
+          <p class="text-xs text-[#57534e] mt-1.5 leading-relaxed" data-i18n="assign.modalConfirmDesc">
+            Anda dapat langsung membuat link tugas online untuk murid tanpa perlu menduplikasi proyek ke akun Anda terlebih dahulu.
+          </p>
+        </div>
+        <div class="p-3 bg-[#fcfbf8] rounded-xl border border-[#e5dfd3] text-left text-xs space-y-1">
+          <div class="font-bold text-[#18181b]" id="asg-confirm-proj-title">Judul Proyek</div>
+          <div class="text-[#78716c]" id="asg-confirm-proj-meta">10 Soal • IPA / Sains</div>
+        </div>
+        <div class="flex gap-2.5 pt-2">
+          <button type="button" onclick="closeGenerateAssignmentModal()" class="flex-1 py-2.5 bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] font-semibold text-xs rounded-xl text-[#18181b] cursor-pointer">
+            Batal
+          </button>
+          <button type="button" onclick="goToAssignmentSettingsStep()" class="flex-1 py-2.5 bg-[#1E5E3A] hover:bg-[#2C6E49] text-white font-bold text-xs rounded-xl border-b-[2px] border-[#144228] cursor-pointer" data-i18n="assign.btnYesContinue">
+            Ya, Lanjut Atur Tugas
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Settings Form -->
+      <div id="asg-step-settings" class="hidden space-y-4">
+        <div class="flex items-center justify-between border-b border-[#eee9df] pb-3">
+          <h3 class="text-base font-bold text-[#18181b] flex items-center gap-2">
+            <span class="ui-sprite ui-sm ui-settings"></span>
+            <span data-i18n="assign.modalSettingsTitle">Pengaturan Penugasan Murid</span>
+          </h3>
+          <button type="button" onclick="closeGenerateAssignmentModal()" class="p-1.5 rounded-md bg-[#f4f1ea] hover:bg-[#e7e2d8] cursor-pointer">
+            <span class="ui-sprite ui-xs ui-close"></span>
+          </button>
+        </div>
+
+        <form onsubmit="handleCreateAssignmentSubmit(event)" class="space-y-3.5 text-xs">
+          <div>
+            <label for="asg-input-title" class="block font-bold text-[#3f3f46] mb-1" data-i18n="assign.titleLabel">Judul Penugasan</label>
+            <input type="text" id="asg-input-title" required class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-semibold focus:outline-none focus:border-[#1E5E3A]">
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label for="asg-select-template" class="block font-bold text-[#3f3f46] mb-1" data-i18n="assign.templateLabel">Jenis Aktivitas Game</label>
+              <select id="asg-select-template" class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] font-semibold text-xs focus:outline-none">
+                <!-- Dynamically populated based on project content_format -->
+              </select>
+            </div>
+
+            <div>
+              <label for="asg-select-timemode" class="block font-bold text-[#3f3f46] mb-1" data-i18n="assign.timeModeLabel">Mode Waktu</label>
+              <select id="asg-select-timemode" class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] font-semibold text-xs focus:outline-none">
+                <option value="timer">Timer Hitung Mundur per Soal (30d)</option>
+                <option value="stopwatch">Stopwatch (Uji Kecepatan)</option>
+                <option value="none">Tanpa Batas Waktu (Santai)</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="asg-select-lives" class="block font-bold text-[#3f3f46] mb-1" data-i18n="assign.livesLabel">Sistem Nyawa</label>
+              <select id="asg-select-lives" class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] font-semibold text-xs focus:outline-none">
+                <option value="3">3 Nyawa (Game Over jika salah 3x)</option>
+                <option value="0">Nyawa Tak Terbatas (Latihan Bebas)</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="asg-select-speed" class="block font-bold text-[#3f3f46] mb-1" data-i18n="assign.speedLabel">Kecepatan Game</label>
+              <select id="asg-select-speed" class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] font-semibold text-xs focus:outline-none">
+                <option value="normal">Kecepatan Normal</option>
+                <option value="fast">Cepat (Menantang)</option>
+                <option value="slow">Lambat / Santai</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="space-y-2 pt-1 border-t border-[#eee9df]">
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox" id="asg-check-shuffle-q" checked class="w-4 h-4 rounded border-[#d6cfc2] accent-[#1E5E3A]">
+              <span class="font-medium text-[#3f3f46]" data-i18n="assign.shuffleQ">Acak urutan pertanyaan</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox" id="asg-check-shuffle-a" checked class="w-4 h-4 rounded border-[#d6cfc2] accent-[#1E5E3A]">
+              <span class="font-medium text-[#3f3f46]" data-i18n="assign.shuffleA">Acak urutan pilihan jawaban</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox" id="asg-check-multiple" class="w-4 h-4 rounded border-[#d6cfc2] accent-[#1E5E3A]">
+              <div>
+                <span class="font-bold text-[#3f3f46]" data-i18n="assign.allowMultiple">Boleh dikerjakan berulang kali</span>
+                <span class="block text-[10px] text-[#78716c]" data-i18n="assign.allowMultipleDesc">Jika tidak dicentang, setiap murid hanya bisa mengumpulkan nilai 1 kali.</span>
+              </div>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox" id="asg-check-show-answers" checked class="w-4 h-4 rounded border-[#d6cfc2] accent-[#1E5E3A]">
+              <div>
+                <span class="font-bold text-[#3f3f46]" data-i18n="assign.showAnswers">Izinkan murid melihat pembahasan/kunci jawaban</span>
+                <span class="block text-[10px] text-[#78716c]" data-i18n="assign.showAnswersDesc">Murid dapat mempelajari kunci jawaban setelah mengumpulkan tugas.</span>
+              </div>
+            </label>
+          </div>
+
+          <div class="flex gap-2 pt-3">
+            <button type="button" onclick="goToAssignmentConfirmStep()" class="px-4 py-2.5 bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] font-semibold rounded-xl text-[#18181b] cursor-pointer">
+              Kembali
+            </button>
+            <button type="submit" id="btn-save-assignment" class="flex-1 py-2.5 bg-[#1E5E3A] hover:bg-[#2C6E49] text-white font-bold rounded-xl border-b-[2px] border-[#144228] flex items-center justify-center gap-2 cursor-pointer" data-i18n="assign.btnGenerate">
+              <span class="ui-sprite ui-xs ui-save"></span>
+              <span>Simpan & Buat Link Tugas</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Step 3: Success Screen -->
+      <div id="asg-step-success" class="hidden space-y-4 text-center">
+        <div class="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mx-auto">
+          <span class="ui-sprite ui-md ui-check"></span>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-[#18181b]" data-i18n="assign.modalSuccessTitle">Link Tugas Siap Dibagikan!</h3>
+          <p class="text-xs text-[#57534e] mt-1">Bagikan link ini ke murid melalui WhatsApp, Google Classroom, atau proyektor.</p>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex items-center gap-1.5 bg-[#fcfbf8] p-1.5 rounded-xl border border-[#d6cfc2]">
+            <input type="text" id="asg-success-url" readonly class="flex-1 bg-transparent px-2.5 text-xs font-mono font-semibold text-[#18181b] focus:outline-none">
+            <button type="button" onclick="copyCreatedAssignmentLink()" class="px-3.5 py-2 rounded-lg bg-[#1E5E3A] hover:bg-[#2C6E49] text-white font-bold text-xs flex items-center gap-1 cursor-pointer">
+              <span class="ui-sprite ui-xs ui-share"></span>
+              <span>Salin</span>
+            </button>
+          </div>
+          <div id="asg-copy-feedback" class="text-[11px] text-[#059669] font-bold hidden">Link berhasil disalin ke clipboard!</div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-2 pt-2">
+          <button type="button" onclick="testCreatedAssignmentGame()" class="flex-1 py-2.5 rounded-xl border border-[#d6cfc2] bg-[#f4f1ea] hover:bg-[#e7e2d8] text-xs font-bold text-[#18181b] flex items-center justify-center gap-1.5 cursor-pointer">
+            <span class="ui-sprite ui-xs ui-play"></span>
+            <span>Coba Mainkan sebagai Murid</span>
+          </button>
+          <button type="button" onclick="viewCreatedAssignmentInTab()" class="flex-1 py-2.5 rounded-xl bg-[#18181b] hover:bg-[#27272a] text-xs font-bold text-white flex items-center justify-center gap-1.5 cursor-pointer">
+            <span class="ui-sprite ui-xs ui-tasks"></span>
+            <span>Buka Dashboard Guru</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Floating Version / Cloud Mode Badge (Bottom-Left) -->
-  <div id="lotus-version-badge" class="fixed bottom-3 left-3 z-40 bg-white/95 backdrop-blur border border-[#d6cfc2] shadow-sm rounded-full px-3 py-1 flex items-center gap-2 text-[11px] font-semibold text-[#57534e] select-none hover:border-[#1d4ed8] transition-colors" title="LotusWall Build Version & Cloud Status">
+  <div id="lotus-version-badge" class="fixed bottom-3 left-3 z-40 bg-white/95 backdrop-blur border border-[#d6cfc2] shadow-sm rounded-full px-3 py-1 flex items-center gap-2 text-[11px] font-semibold text-[#57534e] select-none hover:border-[#1E5E3A] transition-colors" title="DaAi Learning Hub — Sekolah Cinta Kasih Tzu Chi">
     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
     <span id="version-badge-text">v2026.11.17 • Cloud</span>
     <span class="text-[#a1a1aa]">•</span>

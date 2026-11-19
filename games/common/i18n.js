@@ -28,9 +28,10 @@
       'langTag.zh': 'Mandarin',
       'subject.all': 'All Subjects',
 
-      // === TEMPLATES (12 Standard + 3 Camera) ===
+      // === TEMPLATES (12 Standard + IFP / Layar Sentuh Kelas) ===
       'cat.standard': 'Standard Games (12)',
-      'cat.camera': 'AI Motion Camera Games (3)',
+      'cat.camera': 'IFP Games / Layar Sentuh Kelas',
+      'cat.ifp': 'IFP Games / Layar Sentuh Kelas',
       'tpl.quiz': 'Interactive Quiz',
       'tpl.quiz-powerup': 'Power-Up Quiz',
       'tpl.fruitninja': 'Slice Quiz (Fruit Ninja)',
@@ -46,6 +47,15 @@
       'tpl.ai-slicer': 'AI Hand Fruit Slicer',
       'tpl.head-catcher': 'AI 2P Head Catcher',
       'tpl.hanzi-battle': 'AI 2P Hanzi Brush Battle',
+      'tpl.tug': 'Vocab Tug of War',
+      'tpl.bossbattle': 'Boss Battle 2P',
+      'tpl.bossraid': 'Meihua Boss Raid',
+      'tpl.bombsquad': 'Bomb Squad',
+      'tpl.fliptile': 'Flip Tile Match',
+      'tpl.brushmaster': 'Brush Master',
+      'tpl.builderbattle': 'Builder Battle',
+      'tpl.jeopardy': 'Cyber Jeopardy',
+      'tpl.wordmatch': 'Word Match Quest',
 
       'tplDesc.quiz': 'Multiple-choice quiz with timer & lives.',
       'tplDesc.quiz-powerup': 'Quiz with 50/50, Freeze & 2x boosts.',
@@ -62,6 +72,15 @@
       'tplDesc.ai-slicer': 'Slice floating answer fruits using webcam hand waves.',
       'tplDesc.head-catcher': 'Two-player head movement basket challenge.',
       'tplDesc.hanzi-battle': 'Write Hanzi strokes in the air with your finger.',
+      'tplDesc.tug': 'Two-player vocabulary tug of war battle.',
+      'tplDesc.bossbattle': 'Co-op 2-player boss battle answering questions.',
+      'tplDesc.bossraid': 'Classroom raid challenge against mythical bosses.',
+      'tplDesc.bombsquad': 'Defuse ticking bombs by answering vocabulary in time.',
+      'tplDesc.fliptile': 'Memory match game flipping cards to find pairs.',
+      'tplDesc.brushmaster': 'Interactive Hanzi calligraphy stroke practice.',
+      'tplDesc.builderbattle': 'Build towers faster than your rival by solving prompts.',
+      'tplDesc.jeopardy': 'Matrix grid quiz show for teams and classroom showdowns.',
+      'tplDesc.wordmatch': 'Fast matching game connecting terms and meanings.',
 
       // === HOME VIEW ===
       'home.badge': '15 Interactive Class Games • Standard & AI Camera',
@@ -782,9 +801,10 @@
       'langTag.zh': 'Bahasa Mandarin',
       'subject.all': 'Semua Mata Pelajaran',
 
-      // === TEMPLATES (12 Standard + 3 Camera) ===
+      // === TEMPLATES (12 Standard + IFP / Layar Sentuh Kelas) ===
       'cat.standard': 'Game Standar (12)',
-      'cat.camera': 'Game Kamera Gerak AI (3)',
+      'cat.camera': 'IFP Games / Layar Sentuh Kelas',
+      'cat.ifp': 'IFP Games / Layar Sentuh Kelas',
       'tpl.quiz': 'Kuis Pilihan Ganda',
       'tpl.quiz-powerup': 'Kuis Power-Up',
       'tpl.fruitninja': 'Tebas Buah Jawaban',
@@ -800,6 +820,15 @@
       'tpl.ai-slicer': 'AI Tebas Buah (Kamera Tangan)',
       'tpl.head-catcher': 'AI Tangkap Buah 2P (Kepala)',
       'tpl.hanzi-battle': 'AI Lomba Kaligrafi Hanzi 2P',
+      'tpl.tug': 'Tarik Tambang Kosakata (2P)',
+      'tpl.bossbattle': 'Pertarungan Boss 2 Pemain (2P)',
+      'tpl.bossraid': 'Serbuan Boss Meihua',
+      'tpl.bombsquad': 'Pasukan Penjinak Bom',
+      'tpl.fliptile': 'Mencocokkan Kartu Balik',
+      'tpl.brushmaster': 'Master Kuas Kaligrafi',
+      'tpl.builderbattle': 'Pertarungan Membangun (2P)',
+      'tpl.jeopardy': 'Cyber Jeopardy (Cerdas Cermat)',
+      'tpl.wordmatch': 'Petualangan Mencocokkan Kata',
 
       'tplDesc.quiz': 'Kuis interaktif dengan pengatur waktu & nyawa.',
       'tplDesc.quiz-powerup': 'Kuis seru dengan bantuan 50/50, Bekukan & 2x.',
@@ -816,6 +845,15 @@
       'tplDesc.ai-slicer': 'Tebas buah jatuh memakai ayunan tangan di webcam.',
       'tplDesc.head-catcher': 'Kompetisi 2 pemain menangkap buah pakai gerakan kepala.',
       'tplDesc.hanzi-battle': 'Lukis goresan karakter Hanzi di udara pakai jari.',
+      'tplDesc.tug': 'Pertarungan tarik tambang kosakata 2 pemain di layar sentuh IFP.',
+      'tplDesc.bossbattle': 'Pertarungan bos 2 pemain kooperatif dengan menjawab soal.',
+      'tplDesc.bossraid': 'Tantangan serbuan kelas melawan bos mitologi Meihua.',
+      'tplDesc.bombsquad': 'Jinakkan bom waktu dengan menjawab kosakata tepat waktu.',
+      'tplDesc.fliptile': 'Game memori membalik kartu untuk menemukan pasangan kata.',
+      'tplDesc.brushmaster': 'Latihan goresan kaligrafi Hanzi interaktif pada layar sentuh.',
+      'tplDesc.builderbattle': 'Bangun menara lebih cepat dari lawan dengan menjawab soal.',
+      'tplDesc.jeopardy': 'Kuis matriks cerdas cermat ala Jeopardy untuk adu cerdas tim.',
+      'tplDesc.wordmatch': 'Game cepat mencocokkan istilah dengan arti kata yang tepat.',
 
       // === HOME VIEW ===
       'home.badge': '15 Game Kelas Interaktif • Standar & Kamera AI',

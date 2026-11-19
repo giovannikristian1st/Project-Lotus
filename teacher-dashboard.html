@@ -4955,7 +4955,7 @@
                 </span>
               </div>
 
-              <h4 onclick="playProject('${escapeHtml(proj.id)}')" class="text-sm sm:text-base font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors leading-snug line-clamp-2 cursor-pointer">
+              <h4 onclick="openGamePlayer('${escapeHtml(proj.id)}')" title="Klik untuk mainkan game" class="text-sm sm:text-base font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors leading-snug line-clamp-2 cursor-pointer">
                 ${escapeHtml(proj.title)}
               </h4>
 
@@ -4977,7 +4977,7 @@
 
             <!-- Actions -->
             <div class="pt-3 border-t border-[#eee9df] flex flex-wrap items-center gap-2">
-              <button type="button" onclick="playProject('${escapeHtml(proj.id)}')"
+              <button type="button" onclick="openGamePlayer('${escapeHtml(proj.id)}')"
                 class="flex-1 min-w-[80px] py-2 px-2.5 rounded-lg bg-[#1E5E3A] hover:bg-[#2C6E49] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
                 <span class="ui-sprite ui-xs ui-play"></span>
                 <span>Mainkan</span>
@@ -4990,7 +4990,7 @@
                 <span>Tugaskan</span>
               </button>
 
-              <button type="button" onclick="duplicateProject('${escapeHtml(proj.id)}')"
+              <button type="button" onclick="duplicateProjectAction('${escapeHtml(proj.id)}')"
                 class="py-2 px-2.5 rounded-lg bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] text-[#57534e] hover:text-[#18181b] font-semibold text-xs flex items-center justify-center transition-colors cursor-pointer"
                 title="Duplikat ke Proyek Saya">
                 <span class="ui-sprite ui-xs ui-copy"></span>
@@ -5000,6 +5000,17 @@
         `;
       }).join('');
     }
+
+    
+    function playProject(projectId) {
+      openGamePlayer(projectId);
+    }
+    window.playProject = playProject;
+
+    function duplicateProject(projectId) {
+      duplicateProjectAction(projectId);
+    }
+    window.duplicateProject = duplicateProject;
 
     function toggleDashboardMandarinDropdown(e) {
       if (e) e.stopPropagation();

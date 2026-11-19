@@ -403,13 +403,27 @@
     .bm-win-btn:hover { transform:translateY(-2px); }
     .bm-win-btn:active { transform:scale(0.97); }
   </style>
+
+<script>
+function safeExitGame() {
+  if (window.parent && window.parent !== window) {
+    try {
+      window.parent.postMessage({ type: 'EXIT_GAME' }, '*');
+      return;
+    } catch (e) {}
+  }
+  window.safeExitGame();
+}
+window.safeExitGame = safeExitGame;
+</script>
+
 </head>
 <body>
 <canvas id="bg-canvas"></canvas>
 
 <!-- ======== SETUP SCREEN ======== -->
 <div id="screen-setup" class="screen">
-  <button class="bm-back-btn" onclick="GameAudio.playClick(); location.href='../index.html'">← Back</button>
+  <button class="bm-back-btn" onclick="GameAudio.playClick(); safeExitGame()">← Back</button>
   <button class="audio-mute-btn" onclick="GameAudio.toggleMute()" style="position:fixed; top:22px; right:26px; z-index:10; border-radius:10px; padding:10px 22px; font-size:1.1rem;">🔊</button>
   <div class="bm-title">BRUSH MASTER</div>
   <div class="bm-subtitle">毛筆大師</div>
@@ -501,7 +515,7 @@
     <div class="bm-win-score" id="bm-win-score">3 – 2</div>
     <div class="bm-win-btns">
       <button class="bm-win-btn again" onclick="bmRestart()">PLAY AGAIN</button>
-      <button class="bm-win-btn menu"  onclick="GameAudio.playClick(); location.href='../index.html'">MAIN MENU</button>
+      <button class="bm-win-btn menu"  onclick="GameAudio.playClick(); safeExitGame()">MAIN MENU</button>
     </div>
   </div>
 </div>

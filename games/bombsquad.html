@@ -288,6 +288,20 @@
       box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
     }
   </style>
+
+<script>
+function safeExitGame() {
+  if (window.parent && window.parent !== window) {
+    try {
+      window.parent.postMessage({ type: 'EXIT_GAME' }, '*');
+      return;
+    } catch (e) {}
+  }
+  window.safeExitGame();
+}
+window.safeExitGame = safeExitGame;
+</script>
+
 </head>
 <body>
 
@@ -579,7 +593,7 @@ function showScreen(screenId) {
 function handleNavBack() {
   const active = document.querySelector('.bs-screen.active');
   if (active && active.id === 'screenSetup') {
-    location.href = '../index.html';
+    safeExitGame();
   } else {
     clearInterval(_bombTimerInterval);
     showScreen('screenSetup');

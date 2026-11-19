@@ -585,6 +585,20 @@
       border: 1.5px solid rgba(255,255,255,0.2);
     }
   </style>
+
+<script>
+function safeExitGame() {
+  if (window.parent && window.parent !== window) {
+    try {
+      window.parent.postMessage({ type: 'EXIT_GAME' }, '*');
+      return;
+    } catch (e) {}
+  }
+  window.safeExitGame();
+}
+window.safeExitGame = safeExitGame;
+</script>
+
 </head>
 <body>
 
@@ -694,7 +708,7 @@
     <div class="setup-bottom-bar">
       <div class="setup-summary" id="ftSelectionSummary">Selected: 準備一 (Novice 1)</div>
       <div class="setup-actions-row">
-        <button class="setup-home-btn" onclick="GameAudio.playClick(); location.href='../index.html'">← Home</button>
+        <button class="setup-home-btn" onclick="GameAudio.playClick(); safeExitGame()">← Home</button>
         <button class="setup-start-btn" onclick="_ftStartGame()">▶ START GAME</button>
       </div>
     </div>
@@ -720,7 +734,7 @@
       <div id="ftMatchMode"></div>
       <div style="display:flex; gap:10px;">
         <button class="audio-mute-btn" onclick="GameAudio.toggleMute()">🔊</button>
-        <button id="ftExitBtn" onclick="GameAudio.stopBGM(); GameAudio.playClick(); location.href='../index.html'">← Exit</button>
+        <button id="ftExitBtn" onclick="GameAudio.stopBGM(); GameAudio.playClick(); safeExitGame()">← Exit</button>
       </div>
     </div>
     <div id="ftGrid"></div>
@@ -756,7 +770,7 @@
     <div class="ft-win-scores" id="ftWinScores"></div>
     <div class="ft-win-btns">
       <button class="ft-win-btn primary" onclick="_ftRestart()">🔄 Play Again</button>
-      <button class="ft-win-btn secondary" onclick="GameAudio.playClick(); location.href='../index.html'">← Home</button>
+      <button class="ft-win-btn secondary" onclick="GameAudio.playClick(); safeExitGame()">← Home</button>
     </div>
   </div>
 </div>

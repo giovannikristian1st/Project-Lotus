@@ -692,6 +692,20 @@
       opacity: 0.4; cursor: default;
     }
   </style>
+
+<script>
+function safeExitGame() {
+  if (window.parent && window.parent !== window) {
+    try {
+      window.parent.postMessage({ type: 'EXIT_GAME' }, '*');
+      return;
+    } catch (e) {}
+  }
+  window.safeExitGame();
+}
+window.safeExitGame = safeExitGame;
+</script>
+
 </head>
 <body>
 
@@ -715,7 +729,7 @@
     ⚔ START BATTLE
   </button>
 
-  <button class="exit-home-btn" onclick="GameAudio.playClick(); location.href='../index.html'">← Back to Home</button>
+  <button class="exit-home-btn" onclick="GameAudio.playClick(); safeExitGame()">← Back to Home</button>
 </div>
 
 <!-- ════════════════════════════════════
@@ -861,7 +875,7 @@
 
   <div class="result-btns">
     <button class="result-play-again-btn" onclick="GameAudio.playClick(); playAgain();">PLAY AGAIN</button>
-    <button class="result-home-btn" onclick="GameAudio.playClick(); location.href='../index.html'">MAIN MENU</button>
+    <button class="result-home-btn" onclick="GameAudio.playClick(); safeExitGame()">MAIN MENU</button>
   </div>
 </div>
 

@@ -402,6 +402,20 @@
       border-radius: 18px; padding: 20px 28px; text-align: center; flex: 1; max-width: 260px;
     }
   </style>
+
+<script>
+function safeExitGame() {
+  if (window.parent && window.parent !== window) {
+    try {
+      window.parent.postMessage({ type: 'EXIT_GAME' }, '*');
+      return;
+    } catch (e) {}
+  }
+  window.safeExitGame();
+}
+window.safeExitGame = safeExitGame;
+</script>
+
 </head>
 <body>
 
@@ -585,7 +599,7 @@
       <div style="display:flex; gap:16px; margin-top:10px;">
         <button class="btn-start-raid" onclick="startBossRaid()">🔄 MAIN LAGI</button>
         <button class="btn-quick" style="padding:14px 36px; font-size:1.1rem;" onclick="showScreen('screenSetup')">⚙️ SETTING BAB</button>
-        <button class="btn-quick" style="padding:14px 36px; font-size:1.1rem;" onclick="location.href='../index.html'">🏠 MENU HUB</button>
+        <button class="btn-quick" style="padding:14px 36px; font-size:1.1rem;" onclick="safeExitGame()">🏠 MENU HUB</button>
       </div>
     </div>
   </div>
@@ -954,7 +968,7 @@ function showScreen(screenId) {
 function handleNavBack() {
   const active = document.querySelector('.br-screen.active');
   if (active && active.id === 'screenSetup') {
-    location.href = '../index.html';
+    safeExitGame();
   } else {
     showScreen('screenSetup');
   }

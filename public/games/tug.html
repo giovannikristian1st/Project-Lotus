@@ -644,6 +644,20 @@
     }
 
   </style>
+
+<script>
+function safeExitGame() {
+  if (window.parent && window.parent !== window) {
+    try {
+      window.parent.postMessage({ type: 'EXIT_GAME' }, '*');
+      return;
+    } catch (e) {}
+  }
+  window.safeExitGame();
+}
+window.safeExitGame = safeExitGame;
+</script>
+
 </head>
 <body>
 
@@ -821,7 +835,7 @@
       <div id="tugWinSub">Answered 5 correctly!</div>
       <div class="tug-win-btns">
         <button class="tug-win-btn" id="tugBtnAgain" onclick="tugRestart()">▶ Play Again</button>
-        <button class="tug-win-btn" id="tugBtnExit" onclick="GameAudio.playClick(); location.href='../index.html'">← Back to Games</button>
+        <button class="tug-win-btn" id="tugBtnExit" onclick="GameAudio.playClick(); safeExitGame()">← Back to Games</button>
       </div>
     </div>
     <div id="tugConfettiContainer"></div>
@@ -1505,7 +1519,7 @@ function tugClose() {
   GameAudio.playClick();
   _tugLocked      = [false, false];
   _tugRoundActive = false;
-  location.href = '../index.html';
+  safeExitGame();
 }
 
 /* Auto-open tug overlay on page load */

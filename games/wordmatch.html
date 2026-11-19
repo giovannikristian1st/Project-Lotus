@@ -712,6 +712,20 @@
       100% { opacity: 0; transform: translateY(-80px) scale(0.9); }
     }
   </style>
+
+<script>
+function safeExitGame() {
+  if (window.parent && window.parent !== window) {
+    try {
+      window.parent.postMessage({ type: 'EXIT_GAME' }, '*');
+      return;
+    } catch (e) {}
+  }
+  window.safeExitGame();
+}
+window.safeExitGame = safeExitGame;
+</script>
+
 </head>
 <body>
 
@@ -1018,7 +1032,7 @@
       <div class="res-actions-row">
         <button class="res-btn primary" onclick="startQuizQuest()">🔄 REPLAY MISSION</button>
         <button class="res-btn secondary" onclick="showScreen('screenSetup')">⚙️ SETUP & LEVELS</button>
-        <button class="res-btn secondary" onclick="location.href='../index.html'">🏠 BACK TO HUB</button>
+        <button class="res-btn secondary" onclick="safeExitGame()">🏠 BACK TO HUB</button>
       </div>
     </div>
   </div>
@@ -2629,7 +2643,7 @@ function handleNavBack() {
 
   if (screenId === 'screenSetup') {
     // Already on Setup screen -> exit to main Hub (index.html)
-    location.href = '../index.html';
+    safeExitGame();
   } else {
     // In Quiz, Minigame, or Results -> Return to Game Setting!
     if (_qTimerInterval) clearInterval(_qTimerInterval);

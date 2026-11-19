@@ -4,7 +4,7 @@
  * (Standard & AI Camera templates, TK-SMK levels, multi-language), media blobs, & leaderboards.
  */
 
-const LOTUS_SEED_VERSION = '2026.11.19-daai-meihua-v4';
+const LOTUS_SEED_VERSION = '2026.11.19-daai-meihua-v5';
 
 const DEFAULT_TEACHERS = [
   {
@@ -660,7 +660,7 @@ class LocalDatabase {
       (copy.title && /[\u4e00-\u9fa5]|meihua/i.test(copy.title)) ||
       (copy.id && /meihua/i.test(copy.id));
 
-    if (isHanzi) {
+    if (isHanzi || copy.id === 'proj-1' || copy.id === 'proj-2' || copy.id === 'proj-3' || copy.id === 'proj-skeleton-3d') {
       copy.is_public = true;
       copy.visibility = 'public';
       copy.is_private = false;

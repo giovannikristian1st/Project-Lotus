@@ -1,0 +1,1944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Lab Goresan & Radikal Hanzi — DaAi Learning Hub</title>
+  <script src="vocabdb.js"></script>
+  <script src="dict.js"></script>
+  <script src="meihuadb.js"></script>
+  <script src="hanzi-writer.min.js"></script>
+  <script src="hanzicomponents.js"></script>
+  <!-- brushstrokedb.js provides BM_STROKE_DATA — used as local charDataLoader
+       so HanziWriter never needs an internet/CDN fetch (file:// CORS blocks it) -->
+  <script src="brushstrokedb.js"></script>
+  <style>
+    :root {
+      --red:        #1E5E3A;
+      --red-light:  #EAF5ED;
+      --gold:       #2C6E49;
+      --gold-light: #EAF5ED;
+      --jade:       #1E5E3A;
+      --jade-light: #EAF5ED;
+      --navy:       #1E5E3A;
+      --navy-mid:   #16462B;
+      --cream:      #F4F8FC;
+      --surface:    #FFFFFF;
+      --border:     #D0E2F0;
+      --muted:      #6B7C93;
+      --shadow-sm:  0 1px 4px rgba(30,94,58,0.08);
+      --shadow:     0 4px 16px rgba(30,94,58,0.12);
+      --shadow-lg:  0 8px 32px rgba(30,94,58,0.18);
+      --r:          16px;
+      --r-sm:       10px;
+      --r-xs:       6px;
+      /* legacy aliases kept so JS that reads them doesn't break */
+      --light-red:  #EAF5ED;
+      --light-gold: #EAF5ED;
+      --light-jade: #EAF5ED;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Noto Sans SC', 'Segoe UI', Arial, sans-serif; background: var(--cream); -webkit-font-smoothing: antialiased; }
+
+    /* ── SCREEN SYSTEM ── */
+    .screen { position: absolute; inset: 0; display: none; flex-direction: column; animation: screenIn 0.25s cubic-bezier(0.22,1,0.36,1); }
+    .screen.active { display: flex; }
+    @keyframes screenIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── NAV BAR ── */
+    .nav-bar {
+      background: #1E5E3A; padding: 0 20px; height: 56px;
+      display: flex; align-items: center; gap: 12px;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.06), 0 2px 12px rgba(30,94,58,0.25);
+      flex-shrink: 0;
+    }
+    .back-btn {
+      background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3);
+      color: #ffffff; padding: 0 16px; height: 38px;
+      border-radius: 20px; font-size: 0.85rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); white-space: nowrap; font-family: inherit;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .back-btn:hover  { background: rgba(255,255,255,0.3); transform: translateY(-1px); }
+    .back-btn:active { background: rgba(255,255,255,0.12); transform: translateY(0); }
+    .nav-bar h2 { color: white; font-size: 1.15rem; font-weight: 700; letter-spacing: 0.2px; }
+
+    /* ══════════════════════════════════════
+       STROKE ORDER
+    ══════════════════════════════════════ */
+    #strokes { background: var(--light-gold); }
+    .stroke-layout { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── Word Panel (left) ─────────────────────── */
+    .word-panel {
+      width: 250px; background: white; padding: 16px;
+      overflow-y: auto; box-shadow: 2px 0 10px rgba(0,0,0,0.06);
+      flex-shrink: 0; display: flex; flex-direction: column; gap: 10px;
+    }
+    .word-panel-header { display: flex; flex-direction: column; gap: 4px; }
+    .word-hold-hint {
+      font-size: 0.75rem; color: #bbb; text-align: center;
+      letter-spacing: 0.3px; padding: 2px 0 4px;
+    }
+    .add-word-row { display: flex; gap: 6px; }
+    .add-word-input {
+      flex: 1; padding: 8px; border-radius: 12px;
+      border: 2px solid #ddd; font-size: 2rem; text-align: center;
+      outline: none; font-family: inherit; min-width: 0;
+    }
+    .add-word-input:focus { border-color: var(--gold); }
+    .add-word-confirm {
+      padding: 8px 14px; border-radius: 12px;
+      background: var(--jade); color: white; border: none;
+      font-weight: 700; cursor: pointer; font-size: 1rem; flex-shrink: 0;
+    }
+    .word-list { display: flex; flex-direction: column; gap: 6px; margin-top: 2px; }
+    .word-list-btn {
+      width: 100%; padding: 12px 14px; border-radius: 12px;
+      border: 2px solid #eee; background: white;
+      cursor: pointer; text-align: left;
+      transition: transform 0.12s, background 0.12s, border-color 0.12s;
+      display: flex; align-items: center; gap: 12px;
+      user-select: none; box-sizing: border-box;
+      position: relative; overflow: hidden;
+    }
+    .word-list-btn:active { transform: scale(0.93); background: var(--light-gold) !important; border-color: var(--gold) !important; }
+    .word-list-btn:hover  { border-color: var(--gold); background: var(--light-gold); }
+    .word-list-btn.selected { border-color: var(--gold); background: var(--gold); color: var(--navy); }
+    .word-list-char  { font-size: 2.4rem; line-height: 1; flex-shrink: 0; }
+    .word-list-pinyin { font-size: 0.95rem; color: #666; font-weight: 500; line-height: 1.5; }
+    .word-list-empty { color: #ccc; text-align: center; font-size: 0.85rem; padding: 24px 10px; line-height: 1.6; }
+    /* ── Static right info panel ─────────────────────────── */
+    .stroke-info-panel {
+      width: 230px; background: white; padding: 18px 16px;
+      display: flex; flex-direction: column; gap: 0;
+      box-shadow: -2px 0 10px rgba(0,0,0,0.06); flex-shrink: 0; overflow-y: auto;
+    }
+    .stroke-info-title {
+      font-size: 0.72rem; color: #aaa; text-transform: uppercase;
+      letter-spacing: 1px; font-weight: 600; margin-bottom: 12px;
+    }
+    .ex-word-btn {
+      display: inline-block; background: white; border: 1.5px solid #ddd;
+      border-radius: 8px; padding: 4px 10px; font-size: 1.1rem;
+      cursor: pointer; margin: 3px 3px 0 0; font-family: inherit;
+      transition: border-color 0.12s, background 0.12s, transform 0.1s;
+      user-select: none;
+    }
+    .ex-word-btn:active { transform: scale(0.9); background: var(--light-gold); border-color: var(--gold); }
+
+    /* ── Stroke Main ─────────────────────────── */
+    .stroke-main {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 20px; gap: 16px;
+      overflow-y: auto;
+    }
+    .stroke-display-box {
+      background: white; border-radius: 24px;
+      width: 300px; height: 300px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--shadow); position: relative; flex-shrink: 0;
+    }
+    .stroke-counter { font-size: 1rem; color: #888; font-weight: 600; }
+    .stroke-controls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .stroke-ctrl-btn {
+      padding: 11px 20px; border-radius: 14px; border: none;
+      font-size: 0.95rem; font-weight: 700; cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .stroke-ctrl-btn:hover { transform: scale(1.05); }
+    .stroke-ctrl-btn.primary { background: var(--gold); color: var(--navy); box-shadow: 0 4px 12px rgba(255,183,3,0.35); }
+    .stroke-ctrl-btn.secondary { background: var(--navy); color: white; }
+    .stroke-ctrl-btn.danger { background: var(--red); color: white; box-shadow: 0 4px 12px rgba(230,57,70,0.3); }
+    .stroke-step-info { font-size: 0.85rem; color: #999; font-weight: 500; min-height: 18px; text-align: center; }
+
+    /* ── Stroke Diagram Row ──────────────────── */
+    .stroke-diagram-row {
+      display: flex; gap: 7px; flex-wrap: nowrap; overflow-x: auto;
+      padding: 4px 2px; max-width: 100%;
+    }
+    .mini-step-box {
+      flex-shrink: 0; width: 68px; border: 2px solid #eee; border-radius: 12px;
+      background: white; display: flex; flex-direction: column;
+      align-items: center; justify-content: flex-start;
+      cursor: pointer; transition: all 0.15s; padding: 4px 2px 2px;
+      overflow: hidden;
+    }
+    .mini-step-box:hover { border-color: var(--gold); }
+    .mini-step-box.active { border-color: var(--gold); background: var(--light-gold); }
+    .mini-step-label {
+      font-size: 0.62rem; font-weight: 700; color: #aaa;
+      letter-spacing: 0.5px; padding-bottom: 2px;
+    }
+    .mini-step-box.active .mini-step-label { color: var(--navy); }
+
+    .info-card { background: var(--light-gold); border-radius: 12px; padding: 11px 13px; margin-bottom: 8px; }
+    .info-label { font-size: 0.68rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+    .info-value { font-size: 1.15rem; font-weight: 700; color: var(--navy); }
+
+    /* ══════════════════════════════════════
+       STROKE MODE TOGGLE
+    ══════════════════════════════════════ */
+    .stroke-mode-toggle {
+      display: flex; gap: 4px;
+      background: rgba(0,0,0,0.18); border-radius: 14px; padding: 4px;
+      margin-left: auto;
+    }
+    .stroke-mode-btn {
+      padding: 8px 22px; border: none; border-radius: 10px;
+      font-size: 0.88rem; font-weight: 700; cursor: pointer;
+      background: transparent; color: rgba(255,255,255,0.65);
+      transition: all 0.2s; white-space: nowrap;
+    }
+    .stroke-mode-btn.active {
+      background: white; color: var(--navy);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.14);
+    }
+
+    /* ══════════════════════════════════════
+       INTEGRATED RADICAL EXPLORER PANEL
+    ══════════════════════════════════════ */
+    #strokeOrderContent { flex: 1; display: flex; overflow: hidden; }
+    #radicalIntegrated  { flex: 1; display: none; overflow: hidden; }
+    .rad-char-section {
+      width: 240px; flex-shrink: 0; background: white;
+      padding: 28px 20px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.06);
+    }
+    .rad-char-placeholder {
+      text-align: center; color: #ccc;
+    }
+    .rad-big-char {
+      font-size: 6.5rem; line-height: 1; color: var(--navy);
+      margin-bottom: 10px;
+    }
+    .rad-pinyin {
+      font-size: 1.5rem; font-weight: 700; color: var(--gold);
+      margin-bottom: 6px; text-align: center;
+    }
+    .rad-pos {
+      font-size: 0.8rem; color: #aaa; margin-bottom: 6px;
+    }
+    .rad-meaning {
+      font-size: 0.95rem; color: #555; text-align: center;
+      line-height: 1.5; margin-bottom: 14px;
+    }
+    .rad-level-badge {
+      background: var(--navy); color: white; border-radius: 8px;
+      padding: 4px 12px; font-size: 0.75rem; font-weight: 700;
+      display: inline-block;
+    }
+    .rad-family-section {
+      flex: 1; padding: 20px 22px; overflow-y: auto;
+      background: var(--light-jade);
+    }
+    .rad-family-title {
+      font-size: 0.78rem; font-weight: 700; color: var(--navy);
+      text-transform: uppercase; letter-spacing: 1px;
+      margin-bottom: 14px; padding-bottom: 8px;
+      border-bottom: 2px solid rgba(0,0,0,0.08);
+    }
+    .rad-family-grid {
+      display: flex; flex-wrap: wrap; gap: 10px;
+    }
+    .rad-family-btn {
+      background: white; border: 2px solid #ddd;
+      border-radius: 12px; padding: 10px 14px;
+      font-size: 1.35rem; cursor: pointer; font-family: inherit;
+      transition: all 0.15s; text-align: center; line-height: 1;
+      user-select: none;
+    }
+    .rad-family-btn:active {
+      transform: scale(0.88);
+      background: var(--light-jade); border-color: var(--jade);
+    }
+    /* ── Radical Component Cards ─────────────────────────── */
+    .rad-components {
+      margin-top: 14px; padding-top: 12px; width: 100%;
+      border-top: 1px solid #eee; display: none;
+    }
+    .rad-comp-label {
+      font-size: 0.65rem; color: #aaa; text-transform: uppercase;
+      letter-spacing: 1px; text-align: center; margin-bottom: 8px; font-weight: 600;
+    }
+    .rad-comp-row {
+      display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
+    }
+    .rad-comp-card {
+      background: var(--light-jade); border-radius: 10px; padding: 6px 10px;
+      text-align: center; min-width: 52px;
+      border-top: 3px solid var(--jade); cursor: default;
+    }
+    .rad-comp-char   { font-size: 1.7rem; color: var(--jade); line-height: 1; }
+    .rad-comp-name   { font-size: 0.65rem; color: #999; margin-top: 3px; }
+    .rad-comp-meaning{ font-size: 0.7rem; font-weight: 700; color: var(--navy); margin-top: 1px; }
+    .rad-meaning-src { font-size: 0.62rem; color: #bbb; margin-top: 2px; font-style: italic; }
+
+    /* ══════════════════════════════════════
+       RADICAL EXPLORER (legacy — kept for CSS reuse)
+    ══════════════════════════════════════ */
+    #radicals { background: var(--light-jade); }
+    .radical-layout {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; padding: 30px; gap: 24px; overflow-y: auto;
+    }
+    .radical-search { display: flex; gap: 12px; width: 100%; max-width: 580px; }
+    .radical-input {
+      flex: 1; font-size: 2rem; padding: 12px 20px;
+      border: 3px solid #ccc; border-radius: 16px;
+      text-align: center; outline: none; font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    .radical-input:focus { border-color: var(--jade); }
+    .radical-search-btn {
+      background: var(--jade); color: white; border: none;
+      padding: 14px 26px; border-radius: 16px;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .radical-search-btn:hover { background: #24823F; transform: scale(1.03); }
+
+    .radical-result {
+      display: flex; align-items: center; gap: 20px;
+      flex-wrap: wrap; justify-content: center; width: 100%; max-width: 900px;
+    }
+    .radical-main-card {
+      background: white; border-radius: 24px; padding: 28px 32px;
+      text-align: center; box-shadow: var(--shadow); min-width: 200px;
+    }
+    .radical-big-char { font-size: 7rem; color: var(--navy); line-height: 1; }
+    .radical-big-meaning { font-size: 1.3rem; font-weight: 700; color: var(--navy); margin-top: 8px; }
+    .radical-big-pinyin { font-size: 1rem; color: #999; margin-top: 2px; }
+
+    .plus-sign { font-size: 2.5rem; color: #ccc; font-weight: 300; }
+
+    .radical-parts-group { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+    .radical-part-card {
+      background: white; border-radius: 20px; padding: 20px 18px;
+      text-align: center; box-shadow: var(--shadow); min-width: 130px;
+      border-top: 5px solid var(--jade);
+    }
+    .radical-part-char { font-size: 3.5rem; color: var(--jade); line-height: 1; }
+    .radical-part-name { font-size: 0.8rem; color: #aaa; margin-top: 6px; }
+    .radical-part-meaning { font-size: 1rem; font-weight: 700; color: var(--navy); margin-top: 2px; }
+
+    .quick-chars-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .quick-char-btn {
+      width: 58px; height: 58px; border: 2px solid #ccc; background: white;
+      border-radius: 14px; font-size: 1.6rem; cursor: pointer;
+      transition: all 0.15s; display: flex; align-items: center; justify-content: center;
+    }
+    .quick-char-btn:hover { border-color: var(--jade); background: var(--light-jade); transform: scale(1.08); }
+
+
+    /* ══════════════════════════════════════
+       GAMES  — fixed 1920×1080 scene, auto-scaled
+    ══════════════════════════════════════ */
+    #games {
+      background: linear-gradient(145deg, #0F1E35, #1A2E4A, #1E3A5C);
+      align-items: center; justify-content: center; overflow: hidden;
+    }
+
+    /* Fixed-size scene: always designed at 1920×1080, JS scales it to fit */
+    .games-scene {
+      width: 1920px; height: 1080px;
+      display: flex; flex-direction: column;
+      transform-origin: center center;
+      flex-shrink: 0;
+    }
+
+    #games .nav-bar {
+      background: rgba(255,255,255,0.08); backdrop-filter: blur(10px);
+      height: 80px; padding: 0 48px; font-size: 1.3rem;
+    }
+    #games .nav-bar h2 { font-size: 1.7rem; }
+    #games .back-btn { height: 48px; padding: 0 28px; font-size: 1.1rem; border-radius: 28px; }
+
+    .games-layout {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 48px 80px; gap: 40px;
+    }
+    .games-title {
+      color: white; font-size: 2.8rem; font-weight: 900;
+      letter-spacing: 1px; text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+    /* 3 columns × 2 rows fills a 1920×1080 scene nicely */
+    .games-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 32px; width: 100%;
+    }
+    .game-card {
+      background: white; border-radius: 28px; padding: 48px 36px 40px;
+      text-align: center; cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: var(--shadow); position: relative; overflow: hidden;
+    }
+    .game-card::after {
+      content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 8px;
+    }
+    .game-card.g1::after { background: var(--red); }
+    .game-card.g2::after { background: var(--gold); }
+    .game-card.g3::after { background: var(--jade); }
+    .game-card.g4::after { background: #7B2FBE; }
+    .game-card.g5::after { background: #2e9e80; }
+    .game-card.g6::after { background: #c0392b; }
+
+
+  </style>
+</head>
+<body>
+
+<div class="screen active" id="strokes">
+  <div class="nav-bar">
+    <button class="back-btn" onclick="location.href='../../index.html'">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      <span>Kembali ke DaAi Learning Hub</span>
+    </button>
+    <h2 style="font-size:1.1rem;margin-right:auto">🖊️ Lab Goresan & Radikal Hanzi</h2>
+    <div class="stroke-mode-toggle">
+      <button class="stroke-mode-btn active" id="modeStrokeBtn" onclick="setStrokeMode('stroke')">✏️ Stroke Order</button>
+      <button class="stroke-mode-btn" id="modeRadicalBtn" onclick="setStrokeMode('radical')">🧩 Radical Explorer</button>
+    </div>
+  </div>
+  <div class="stroke-layout">
+    <!-- Word panel (left) — shared between both modes -->
+    <div class="word-panel" id="wordPanel">
+      <div class="word-panel-header">
+        <div class="add-word-row" id="addWordRow">
+          <input type="text" id="addWordInput" class="add-word-input" inputmode="text"
+            placeholder="字…" maxlength="4" autocomplete="off"
+            oninput="window._addWordPending=this.value"
+            oncompositionend="window._addWordPending=this.value"
+            onchange="window._addWordPending=this.value"
+            onkeydown="if(event.key==='Enter'){confirmAddWord();}">
+          <!--
+            ontouchstart — capture value the moment finger lands (before IME dismisses)
+            ontouchend   — fire confirmAddWord (avoids Android's 300ms click delay)
+            onclick      — fallback for non-touch (desktop testing)
+          -->
+          <button class="add-word-confirm"
+            ontouchstart="window._addWordPending=document.getElementById('addWordInput').value||window._addWordPending"
+            ontouchend="event.preventDefault();confirmAddWord()"
+            onclick="confirmAddWord()">✓</button>
+        </div>
+        <div class="word-hold-hint">Hold 1 sec to remove</div>
+      </div>
+      <div class="word-list" id="wordList">
+        <div class="word-list-empty">Type a character above to begin</div>
+      </div>
+    </div>
+    <!-- ── Stroke Order content (shown in stroke mode) ── -->
+    <div id="strokeOrderContent">
+      <!-- Main display -->
+      <div class="stroke-main">
+        <div class="stroke-display-box" id="hanziWriterTarget"></div>
+        <div class="stroke-counter" id="strokeCounter">Select a character</div>
+        <div class="stroke-diagram-row" id="strokeDiagramRow"></div>
+        <div class="stroke-controls">
+          <button class="stroke-ctrl-btn secondary" onclick="strokePrev()">◀ Prev</button>
+          <button class="stroke-ctrl-btn primary"   onclick="strokeAnimateAll()">▶ Animate</button>
+          <button class="stroke-ctrl-btn secondary" onclick="strokeNext()">Next ▶</button>
+          <button class="stroke-ctrl-btn secondary" onclick="strokeReset()">⏮ Reset</button>
+        </div>
+        <div class="stroke-step-info" id="strokeStepInfo">Type a character on the left to begin</div>
+      </div>
+      <!-- Right info panel (static) -->
+      <div class="stroke-info-panel">
+        <div class="stroke-info-title">Character Info</div>
+        <div class="info-card">
+          <div class="info-label">Pinyin</div>
+          <div class="info-value" id="infoPinyin">—</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">Meaning</div>
+          <div class="info-value" id="infoMeaning" style="font-size:1rem;line-height:1.45">—</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">Strokes</div>
+          <div class="info-value" id="infoStrokes">—</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">Level</div>
+          <div class="info-value" id="infoHsk">—</div>
+        </div>
+        <div class="info-card" style="background:var(--light-red)">
+          <div class="info-label">Example Words <span style="font-size:0.68rem;color:#bbb">(tap to preview)</span></div>
+          <div id="infoExample" style="margin-top:4px">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Radical Explorer content (shown in radical mode) ── -->
+    <div id="radicalIntegrated">
+      <!-- Character info section -->
+      <div class="rad-char-section">
+        <div class="rad-char-placeholder" id="radCharPlaceholder">
+          <div style="font-size:4rem;opacity:0.25">🧩</div>
+          <div style="color:#bbb;font-size:0.88rem;margin-top:10px;line-height:1.6;text-align:center">Select a character<br>from the left list</div>
+        </div>
+        <div id="radCharInfo" style="display:none;text-align:center;width:100%">
+          <div class="rad-big-char" id="radBigChar">—</div>
+          <div class="rad-pinyin" id="radPinyin">—</div>
+          <div id="radLevel" style="margin-bottom:6px"></div>
+          <div class="rad-pos" id="radPos"></div>
+          <div class="rad-meaning" id="radMeaning">—</div>
+          <div class="rad-meaning-src" id="radMeaningSource"></div>
+          <!-- Component decomposition -->
+          <div class="rad-components" id="radComponents">
+            <div class="rad-comp-label">Components</div>
+            <div class="rad-comp-row" id="radCompRow"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Word family section -->
+      <div class="rad-family-section">
+        <div class="rad-family-title">
+          Word Family
+          <span style="font-size:0.72rem;color:#aaa;font-weight:normal;text-transform:none;letter-spacing:0"> — tap a word to preview</span>
+        </div>
+        <div class="rad-family-grid" id="radFamilyGrid">
+          <div style="color:#bbb;font-size:0.88rem">Select a character to see related words</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- EXAMPLE WORD POPUP -->
+<div id="exWordOverlay" onclick="closeExamplePopup()"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:400;
+            align-items:center;justify-content:center"></div>
+<div id="exWordPopup"
+     style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.85);
+            background:white;border-radius:28px;padding:36px 44px;z-index:401;
+            box-shadow:0 20px 60px rgba(0,0,0,0.25);text-align:center;min-width:240px;
+            transition:transform 0.2s cubic-bezier(.34,1.56,.64,1),opacity 0.18s;opacity:0">
+  <div id="exWordChar"   style="font-size:5rem;line-height:1;color:var(--navy);margin-bottom:8px">—</div>
+  <div id="exWordPinyin" style="font-size:1.3rem;color:var(--gold);font-weight:700;margin-bottom:6px">—</div>
+  <div id="exWordType"   style="font-size:0.85rem;color:#aaa;margin-bottom:4px"></div>
+  <div id="exWordMeaning"style="font-size:1rem;color:#555;line-height:1.5">—</div>
+  <div id="exWordLevel"  style="margin-top:10px;font-size:0.78rem;color:#bbb"></div>
+</div>
+
+
+<script>
+/* Stroke order is always active on this page */
+function showScreen(id) {
+  location.href = '../../index.html';
+}
+
+/* HanziWriter is loaded from hanzi-writer.min.js */
+let _hwLibLoading = false;
+let _hwLibLoaded  = true;  /* already included as <script> tag */
+function _loadHanziWriterLib(callback) { callback(); }
+
+/* ══════════════════════════════════════
+   STROKE ORDER: Character Picker
+══════════════════════════════════════ */
+const charData = {
+  '一':{p:'yī',   m:'One',       s:1,  ex:'一个 (yī gè)'},
+  '二':{p:'èr',   m:'Two',       s:2,  ex:'二月 (èr yuè)'},
+  '三':{p:'sān',  m:'Three',     s:3,  ex:'三月 (sān yuè)'},
+  '四':{p:'sì',   m:'Four',      s:5,  ex:'四月 (sì yuè)'},
+  '五':{p:'wǔ',   m:'Five',      s:4,  ex:'五月 (wǔ yuè)'},
+  '六':{p:'liù',  m:'Six',       s:4,  ex:'六月 (liù yuè)'},
+  '七':{p:'qī',   m:'Seven',     s:2,  ex:'七月 (qī yuè)'},
+  '八':{p:'bā',   m:'Eight',     s:2,  ex:'八月 (bā yuè)'},
+  '九':{p:'jiǔ',  m:'Nine',      s:2,  ex:'九月 (jiǔ yuè)'},
+  '十':{p:'shí',  m:'Ten',       s:2,  ex:'十月 (shí yuè)'},
+  '你':{p:'nǐ',   m:'You',       s:7,  ex:'你好 (nǐhǎo)'},
+  '好':{p:'hǎo',  p2:'hào',  m:'Good / To like', s:6,  ex:'很好 (hěn hǎo)'},
+  '我':{p:'wǒ',   m:'I / Me',    s:7,  ex:'我是 (wǒ shì)'},
+  '他':{p:'tā',   m:'He / Him',  s:5,  ex:'他好 (tā hǎo)'},
+  '她':{p:'tā',   m:'She / Her', s:6,  ex:'她是 (tā shì)'},
+  '是':{p:'shì',  m:'Is / Am',   s:9,  ex:'我是 (wǒ shì)'},
+  '不':{p:'bù',   m:'Not / No',  s:4,  ex:'不好 (bù hǎo)'},
+  '人':{p:'rén',  m:'Person',    s:2,  ex:'中国人 (Zhōngguó rén)'},
+  '大':{p:'dà',   p2:'dài',  m:'Big',       s:3,  ex:'大学 (dàxué)'},
+  '小':{p:'xiǎo', m:'Small',     s:3,  ex:'小学 (xiǎoxué)'},
+  '中':{p:'zhōng', p2:'zhòng', m:'Middle / To hit', s:4, ex:'中国 (Zhōngguó)'},
+  '国':{p:'guó',  m:'Country',   s:8,  ex:'中国 (Zhōngguó)'},
+  '学':{p:'xué',  m:'Study',     s:8,  ex:'学习 (xuéxí)'},
+  '文':{p:'wén',  m:'Language',  s:4,  ex:'中文 (Zhōngwén)'},
+  '字':{p:'zì',   m:'Character', s:6,  ex:'汉字 (Hànzì)'},
+  '爱':{p:'ài',   m:'Love',      s:10, ex:'爱你 (ài nǐ)'},
+  '月':{p:'yuè',  m:'Moon/Month',s:4,  ex:'月亮 (yuèliàng)'},
+  '日':{p:'rì',   m:'Sun/Day',   s:4,  ex:'今日 (jīn rì)'},
+  '水':{p:'shuǐ', m:'Water',     s:4,  ex:'水果 (shuǐguǒ)'},
+  '火':{p:'huǒ',  m:'Fire',      s:4,  ex:'火山 (huǒshān)'},
+  '木':{p:'mù',   m:'Wood/Tree', s:4,  ex:'木头 (mùtou)'},
+  '山':{p:'shān', m:'Mountain',  s:3,  ex:'山水 (shānshuǐ)'},
+  '口':{p:'kǒu',  m:'Mouth',         s:3,  ex:'口语 (kǒuyǔ)'},
+  /* ── Verbs & actions ── */
+  '行':{p:'xíng', p2:'háng', m:'Walk / Row / Profession', s:6,  ex:'行走 (xíngzǒu)'},
+  '着':{p:'zhe',  p2:'zháo', p3:'zhāo', m:'(particle) / To touch / Chess move', s:11, ex:'看着 (kànzhe)'},
+  '看':{p:'kàn',  p2:'kān',  m:'To look / To watch / To read', s:9,  ex:'看书 (kànshū)'},
+  '说':{p:'shuō', m:'To speak',      s:9,  ex:'说话 (shuōhuà)'},
+  '来':{p:'lái',  m:'To come',       s:7,  ex:'过来 (guòlái)'},
+  '去':{p:'qù',   m:'To go',         s:5,  ex:'去学校 (qù xuéxiào)'},
+  '吃':{p:'chī',  m:'To eat',        s:6,  ex:'吃饭 (chīfàn)'},
+  '喝':{p:'hē',   m:'To drink',      s:12, ex:'喝水 (hēshuǐ)'},
+  '睡':{p:'shuì', m:'To sleep',      s:13, ex:'睡觉 (shuìjiào)'},
+  '走':{p:'zǒu',  m:'To walk',       s:7,  ex:'走路 (zǒulù)'},
+  '做':{p:'zuò',  m:'To do / To make', s:11, ex:'做作业 (zuò zuòyè)'},
+  '买':{p:'mǎi',  m:'To buy',        s:6,  ex:'买东西 (mǎi dōngxi)'},
+  '卖':{p:'mài',  m:'To sell',       s:8,  ex:'卖票 (mài piào)'},
+  '开':{p:'kāi',  m:'To open / To start / To drive', s:4, ex:'开门 (kāimén)'},
+  '关':{p:'guān', m:'To close / To turn off', s:6, ex:'关门 (guānmén)'},
+  '用':{p:'yòng', m:'To use',        s:5,  ex:'用中文 (yòng Zhōngwén)'},
+  '想':{p:'xiǎng',m:'To think / To want', s:13, ex:'我想 (wǒ xiǎng)'},
+  '知':{p:'zhī',  m:'To know',       s:8,  ex:'知道 (zhīdào)'},
+  '道':{p:'dào',  m:'Road / Way / To say', s:12, ex:'知道 (zhīdào)'},
+  '听':{p:'tīng', m:'To listen',     s:7,  ex:'听音乐 (tīng yīnyuè)'},
+  '写':{p:'xiě',  m:'To write',      s:5,  ex:'写字 (xiě zì)'},
+  '读':{p:'dú',   m:'To read aloud / To study', s:10, ex:'读书 (dúshū)'},
+  '问':{p:'wèn',  m:'To ask',        s:6,  ex:'问题 (wèntí)'},
+  '答':{p:'dá',   p2:'dā', m:'To answer / To reply', s:12, ex:'回答 (huídá)'},
+  '回':{p:'huí',  m:'To return / To reply', s:6, ex:'回家 (huíjiā)'},
+  '叫':{p:'jiào', m:'To call / To be named', s:5, ex:'你叫什么 (nǐ jiào shénme)'},
+  '给':{p:'gěi',  p2:'jǐ', m:'To give / For', s:9, ex:'给你 (gěi nǐ)'},
+  '找':{p:'zhǎo', m:'To look for',   s:7,  ex:'找人 (zhǎo rén)'},
+  '拿':{p:'ná',   m:'To hold / To take', s:10, ex:'拿来 (ná lái)'},
+  '有':{p:'yǒu',  m:'To have / There is', s:6, ex:'我有 (wǒ yǒu)'},
+  '在':{p:'zài',  m:'To be at / Located at', s:6, ex:'在家 (zài jiā)'},
+  '能':{p:'néng', m:'Can / To be able', s:10, ex:'能说 (néng shuō)'},
+  '会':{p:'huì',  p2:'kuài', m:'Can / Will / Meeting', s:6, ex:'我会 (wǒ huì)'},
+  '要':{p:'yào',  m:'To want / Must / Important', s:9, ex:'我要 (wǒ yào)'},
+  '让':{p:'ràng', m:'To let / To allow', s:5, ex:'让我 (ràng wǒ)'},
+  '把':{p:'bǎ',   p2:'bà', m:'(object marker) / Handle', s:7, ex:'把书 (bǎ shū)'},
+  '对':{p:'duì',  m:'Correct / Towards / Pair', s:5, ex:'对了 (duì le)'},
+  '到':{p:'dào',  m:'To arrive / To',  s:8, ex:'到家 (dào jiā)'},
+  '进':{p:'jìn',  m:'To enter / To advance', s:7, ex:'进来 (jìnlai)'},
+  '出':{p:'chū',  m:'To exit / To go out', s:5, ex:'出来 (chūlai)'},
+  '上':{p:'shàng',p2:'shǎng', m:'Up / On / To go up', s:3, ex:'上面 (shàngmiàn)'},
+  '下':{p:'xià',  m:'Down / Under / To go down', s:3, ex:'下面 (xiàmiàn)'},
+  '过':{p:'guò',  m:'To pass / To spend (time)', s:6, ex:'过来 (guòlái)'},
+  '起':{p:'qǐ',   m:'To rise / To start', s:10, ex:'起来 (qǐlai)'},
+  '坐':{p:'zuò',  m:'To sit / To travel by', s:7, ex:'坐下 (zuò xia)'},
+  '站':{p:'zhàn', m:'To stand / Station', s:10, ex:'站起来 (zhàn qǐlai)'},
+  '跑':{p:'pǎo',  m:'To run',        s:12, ex:'跑步 (pǎobù)'},
+  '飞':{p:'fēi',  m:'To fly',        s:3,  ex:'飞机 (fēijī)'},
+  '工':{p:'gōng', m:'Work / Labor',   s:3,  ex:'工作 (gōngzuò)'},
+  '作':{p:'zuò',  m:'Work / To make', s:7,  ex:'工作 (gōngzuò)'},
+  /* ── People & pronouns ── */
+  '们':{p:'men',  m:'(plural suffix)', s:5, ex:'我们 (wǒmen)'},
+  '自':{p:'zì',   m:'Self / Since',   s:6,  ex:'自己 (zìjǐ)'},
+  '己':{p:'jǐ',   m:'Oneself',        s:3,  ex:'自己 (zìjǐ)'},
+  '朋':{p:'péng', m:'Friend',         s:8,  ex:'朋友 (péngyou)'},
+  '友':{p:'yǒu',  m:'Friend',         s:4,  ex:'朋友 (péngyou)'},
+  '家':{p:'jiā',  m:'Home / Family',  s:10, ex:'我家 (wǒ jiā)'},
+  '父':{p:'fù',   m:'Father',         s:4,  ex:'父母 (fùmǔ)'},
+  '母':{p:'mǔ',   m:'Mother',         s:5,  ex:'父母 (fùmǔ)'},
+  '子':{p:'zǐ',   p2:'zi', m:'Son / Child / (suffix)', s:3, ex:'孩子 (háizi)'},
+  '女':{p:'nǚ',   m:'Woman / Female', s:3,  ex:'女人 (nǚrén)'},
+  '男':{p:'nán',  m:'Man / Male',     s:7,  ex:'男人 (nánrén)'},
+  '儿':{p:'ér',   m:'Child / Son',    s:2,  ex:'儿子 (érzi)'},
+  '孩':{p:'hái',  m:'Child',          s:9,  ex:'孩子 (háizi)'},
+  '老':{p:'lǎo',  m:'Old / Elder',    s:6,  ex:'老师 (lǎoshī)'},
+  '师':{p:'shī',  m:'Teacher / Master', s:6, ex:'老师 (lǎoshī)'},
+  '生':{p:'shēng',m:'Born / Student / Life', s:5, ex:'学生 (xuésheng)'},
+  /* ── Time & numbers ── */
+  '年':{p:'nián', m:'Year',           s:6,  ex:'今年 (jīnnián)'},
+  '月':{p:'yuè',  m:'Moon / Month',   s:4,  ex:'月亮 (yuèliàng)'},
+  '日':{p:'rì',   m:'Sun / Day',      s:4,  ex:'今日 (jīn rì)'},
+  '天':{p:'tiān', m:'Sky / Day',      s:4,  ex:'今天 (jīntiān)'},
+  '时':{p:'shí',  m:'Time / Hour',    s:7,  ex:'时间 (shíjiān)'},
+  '间':{p:'jiān', p2:'jiàn', m:'Between / Space / Room', s:7, ex:'时间 (shíjiān)'},
+  '分':{p:'fēn',  p2:'fèn', m:'Minute / Point / Part', s:4, ex:'几分 (jǐ fēn)'},
+  '钟':{p:'zhōng',m:'Clock / Bell',   s:9,  ex:'几点钟 (jǐ diǎn zhōng)'},
+  '点':{p:'diǎn', m:'Point / O\'clock / A little', s:9, ex:'几点 (jǐ diǎn)'},
+  '早':{p:'zǎo',  m:'Early / Morning', s:6, ex:'早上 (zǎoshang)'},
+  '晚':{p:'wǎn',  m:'Late / Evening', s:11, ex:'晚上 (wǎnshang)'},
+  '今':{p:'jīn',  m:'Today / Present', s:4, ex:'今天 (jīntiān)'},
+  '昨':{p:'zuó',  m:'Yesterday',      s:9,  ex:'昨天 (zuótiān)'},
+  '明':{p:'míng', m:'Bright / Tomorrow / Clear', s:8, ex:'明天 (míngtiān)'},
+  '前':{p:'qián', m:'Front / Before', s:9,  ex:'以前 (yǐqián)'},
+  '后':{p:'hòu',  m:'Behind / After', s:6,  ex:'以后 (yǐhòu)'},
+  '以':{p:'yǐ',   m:'By means of / According to', s:4, ex:'以后 (yǐhòu)'},
+  '再':{p:'zài',  m:'Again / Then',   s:6,  ex:'再见 (zàijiàn)'},
+  '已':{p:'yǐ',   m:'Already / Stop', s:3,  ex:'已经 (yǐjīng)'},
+  '经':{p:'jīng', m:'Pass through / Classic', s:8, ex:'已经 (yǐjīng)'},
+  '还':{p:'hái',  p2:'huán', m:'Still / Also / To return', s:7, ex:'还是 (háishì)'},
+  '就':{p:'jiù',  m:'Then / At once / Just', s:12, ex:'就是 (jiùshì)'},
+  '都':{p:'dōu',  p2:'dū', m:'All / Both / Capital city', s:10, ex:'都是 (dōu shì)'},
+  '最':{p:'zuì',  m:'Most / -est',    s:12, ex:'最好 (zuì hǎo)'},
+  '很':{p:'hěn',  m:'Very',           s:9,  ex:'很好 (hěn hǎo)'},
+  '太':{p:'tài',  m:'Too / Very / Grand', s:4, ex:'太好了 (tài hǎo le)'},
+  '更':{p:'gèng', p2:'gēng', m:'Even more / To change', s:7, ex:'更好 (gèng hǎo)'},
+  '非':{p:'fēi',  m:'Not / Wrong / Africa', s:8, ex:'非常 (fēicháng)'},
+  '常':{p:'cháng',m:'Often / Common', s:11, ex:'非常 (fēicháng)'},
+  /* ── Places & directions ── */
+  '里':{p:'lǐ',   p2:'lī', m:'Inside / Li (unit)', s:7, ex:'里面 (lǐmiàn)'},
+  '面':{p:'miàn', m:'Face / Side / Noodles', s:9, ex:'里面 (lǐmiàn)'},
+  '边':{p:'biān', m:'Side / Edge',    s:5,  ex:'旁边 (pángbiān)'},
+  '旁':{p:'páng', m:'Side / Beside',  s:10, ex:'旁边 (pángbiān)'},
+  '东':{p:'dōng', m:'East',           s:5,  ex:'东方 (dōngfāng)'},
+  '西':{p:'xī',   m:'West',           s:6,  ex:'东西 (dōngxi)'},
+  '南':{p:'nán',  m:'South',          s:9,  ex:'南方 (nánfāng)'},
+  '北':{p:'běi',  m:'North',          s:5,  ex:'北京 (Běijīng)'},
+  '方':{p:'fāng', m:'Square / Direction / Method', s:4, ex:'地方 (dìfāng)'},
+  '城':{p:'chéng',m:'City / Wall',    s:9,  ex:'城市 (chéngshì)'},
+  '市':{p:'shì',  m:'Market / City',  s:5,  ex:'城市 (chéngshì)'},
+  '路':{p:'lù',   m:'Road / Path',    s:13, ex:'路上 (lùshang)'},
+  '街':{p:'jiē',  m:'Street',         s:12, ex:'街上 (jiēshang)'},
+  '店':{p:'diàn', m:'Shop / Store',   s:8,  ex:'商店 (shāngdiàn)'},
+  '校':{p:'xiào', m:'School',         s:10, ex:'学校 (xuéxiào)'},
+  '室':{p:'shì',  m:'Room',           s:9,  ex:'教室 (jiàoshì)'},
+  '楼':{p:'lóu',  m:'Building / Floor', s:13, ex:'楼上 (lóushang)'},
+  '门':{p:'mén',  m:'Door / Gate',    s:3,  ex:'门口 (ménkǒu)'},
+  '窗':{p:'chuāng',m:'Window',        s:12, ex:'窗户 (chuānghu)'},
+  /* ── Common nouns ── */
+  '事':{p:'shì',  m:'Matter / Affair / Thing', s:8, ex:'没事 (méi shì)'},
+  '情':{p:'qíng', m:'Feeling / Situation', s:11, ex:'事情 (shìqíng)'},
+  '话':{p:'huà',  m:'Words / Speech', s:8,  ex:'说话 (shuōhuà)'},
+  '语':{p:'yǔ',   m:'Language',       s:9,  ex:'中文 (Zhōngwén)'},
+  '音':{p:'yīn',  m:'Sound / Music',  s:9,  ex:'音乐 (yīnyuè)'},
+  '乐':{p:'lè',   p2:'yuè', m:'Happy / Music', s:5, ex:'音乐 (yīnyuè)'},
+  '书':{p:'shū',  m:'Book',           s:4,  ex:'看书 (kànshū)'},
+  '报':{p:'bào',  m:'Newspaper / Report', s:7, ex:'看报 (kàn bào)'},
+  '纸':{p:'zhǐ',  m:'Paper',          s:7,  ex:'纸张 (zhǐzhāng)'},
+  '笔':{p:'bǐ',   m:'Pen / Pencil',   s:10, ex:'铅笔 (qiānbǐ)'},
+  '钱':{p:'qián', m:'Money',          s:10, ex:'没钱 (méi qián)'},
+  '饭':{p:'fàn',  m:'Cooked rice / Meal', s:7, ex:'吃饭 (chīfàn)'},
+  '菜':{p:'cài',  m:'Vegetable / Dish', s:11, ex:'点菜 (diǎncài)'},
+  '肉':{p:'ròu',  m:'Meat / Flesh',   s:6,  ex:'猪肉 (zhūròu)'},
+  '鱼':{p:'yú',   m:'Fish',           s:8,  ex:'鱼肉 (yúròu)'},
+  '鸡':{p:'jī',   m:'Chicken',        s:7,  ex:'鸡肉 (jī ròu)'},
+  '猪':{p:'zhū',  m:'Pig',            s:11, ex:'猪肉 (zhūròu)'},
+  '牛':{p:'niú',  m:'Cow / Ox',       s:4,  ex:'牛肉 (niúròu)'},
+  '羊':{p:'yáng', m:'Sheep / Goat',   s:6,  ex:'羊肉 (yángròu)'},
+  '衣':{p:'yī',   m:'Clothes',        s:6,  ex:'衣服 (yīfu)'},
+  '服':{p:'fú',   m:'Clothes / To serve', s:8, ex:'衣服 (yīfu)'},
+  '裤':{p:'kù',   m:'Trousers',       s:12, ex:'裤子 (kùzi)'},
+  '鞋':{p:'xié',  m:'Shoes',          s:15, ex:'鞋子 (xiézi)'},
+  '帽':{p:'mào',  m:'Hat',            s:12, ex:'帽子 (màozi)'},
+  '车':{p:'chē',  m:'Vehicle / Car',  s:4,  ex:'汽车 (qìchē)'},
+  '船':{p:'chuán',m:'Boat / Ship',    s:11, ex:'坐船 (zuò chuán)'},
+  '机':{p:'jī',   m:'Machine / Opportunity', s:6, ex:'飞机 (fēijī)'},
+  '电':{p:'diàn', m:'Electricity',    s:5,  ex:'电话 (diànhuà)'},
+  '话':{p:'huà',  m:'Words / Speech', s:8,  ex:'电话 (diànhuà)'},
+  '脑':{p:'nǎo',  m:'Brain',          s:10, ex:'电脑 (diànnǎo)'},
+  '手':{p:'shǒu', m:'Hand',           s:4,  ex:'手机 (shǒujī)'},
+  '头':{p:'tóu',  p2:'tou', m:'Head / (suffix)', s:5, ex:'头发 (tóufa)'},
+  '眼':{p:'yǎn',  m:'Eye',            s:11, ex:'眼睛 (yǎnjīng)'},
+  '耳':{p:'ěr',   m:'Ear',            s:6,  ex:'耳朵 (ěrduo)'},
+  '鼻':{p:'bí',   m:'Nose',           s:14, ex:'鼻子 (bízi)'},
+  '嘴':{p:'zuǐ',  m:'Mouth / Beak',   s:16, ex:'嘴巴 (zuǐba)'},
+  '心':{p:'xīn',  m:'Heart / Mind',   s:4,  ex:'心里 (xīnlǐ)'},
+  '脚':{p:'jiǎo', m:'Foot / Leg',     s:11, ex:'脚下 (jiǎo xia)'},
+  /* ── Nature ── */
+  '水':{p:'shuǐ', m:'Water',          s:4,  ex:'水果 (shuǐguǒ)'},
+  '火':{p:'huǒ',  m:'Fire',           s:4,  ex:'火山 (huǒshān)'},
+  '木':{p:'mù',   m:'Wood / Tree',    s:4,  ex:'木头 (mùtou)'},
+  '山':{p:'shān', m:'Mountain',       s:3,  ex:'山水 (shānshuǐ)'},
+  '土':{p:'tǔ',   m:'Soil / Earth',   s:3,  ex:'土地 (tǔdì)'},
+  '金':{p:'jīn',  m:'Gold / Metal',   s:8,  ex:'黄金 (huángjīn)'},
+  '石':{p:'shí',  m:'Stone / Rock',   s:5,  ex:'石头 (shítou)'},
+  '风':{p:'fēng', m:'Wind',           s:4,  ex:'风景 (fēngjǐng)'},
+  '雨':{p:'yǔ',   m:'Rain',           s:8,  ex:'下雨 (xià yǔ)'},
+  '雪':{p:'xuě',  m:'Snow',           s:11, ex:'下雪 (xià xuě)'},
+  '云':{p:'yún',  m:'Cloud',          s:4,  ex:'云彩 (yúncai)'},
+  '树':{p:'shù',  m:'Tree',           s:9,  ex:'大树 (dà shù)'},
+  '花':{p:'huā',  m:'Flower',         s:7,  ex:'花园 (huāyuán)'},
+  '草':{p:'cǎo',  m:'Grass',          s:9,  ex:'草地 (cǎodì)'},
+  '鸟':{p:'niǎo', m:'Bird',           s:5,  ex:'小鸟 (xiǎoniǎo)'},
+  '马':{p:'mǎ',   m:'Horse',          s:3,  ex:'马上 (mǎshàng)'},
+  '狗':{p:'gǒu',  m:'Dog',            s:8,  ex:'小狗 (xiǎogǒu)'},
+  '猫':{p:'māo',  m:'Cat',            s:11, ex:'小猫 (xiǎomāo)'},
+  /* ── Adjectives ── */
+  '长':{p:'cháng',p2:'zhǎng', m:'Long / To grow', s:4, ex:'长城 (Chángchéng)'},
+  '短':{p:'duǎn', m:'Short',          s:12, ex:'短裤 (duǎnkù)'},
+  '高':{p:'gāo',  m:'Tall / High',    s:10, ex:'高兴 (gāoxìng)'},
+  '矮':{p:'ǎi',   m:'Short (height)', s:13, ex:'他很矮 (tā hěn ǎi)'},
+  '胖':{p:'pàng', m:'Fat / Chubby',   s:9,  ex:'有点胖 (yǒudiǎn pàng)'},
+  '瘦':{p:'shòu', m:'Thin / Slim',    s:14, ex:'很瘦 (hěn shòu)'},
+  '新':{p:'xīn',  m:'New',            s:13, ex:'新年 (xīnnián)'},
+  '旧':{p:'jiù',  m:'Old (things)',   s:5,  ex:'旧书 (jiù shū)'},
+  '快':{p:'kuài', m:'Fast / Quick',   s:7,  ex:'快来 (kuài lái)'},
+  '慢':{p:'màn',  m:'Slow',           s:14, ex:'慢慢 (mànmàn)'},
+  '热':{p:'rè',   m:'Hot',            s:10, ex:'天气热 (tiānqì rè)'},
+  '冷':{p:'lěng', m:'Cold',           s:7,  ex:'很冷 (hěn lěng)'},
+  '贵':{p:'guì',  m:'Expensive / Noble', s:12, ex:'太贵了 (tài guì le)'},
+  '便':{p:'biàn', p2:'pián', m:'Convenient / Cheap', s:9, ex:'便宜 (piányí)'},
+  '宜':{p:'yí',   m:'Suitable',       s:8,  ex:'便宜 (piányí)'},
+  '干':{p:'gān',  p2:'gàn', m:'Dry / To do', s:3, ex:'干净 (gānjìng)'},
+  '净':{p:'jìng', m:'Clean / Pure',   s:8,  ex:'干净 (gānjìng)'},
+  '忙':{p:'máng', m:'Busy',           s:6,  ex:'很忙 (hěn máng)'},
+  '累':{p:'lèi',  p2:'léi', m:'Tired / To pile up', s:11, ex:'很累 (hěn lèi)'},
+  '难':{p:'nán',  p2:'nàn', m:'Difficult / Disaster', s:10, ex:'很难 (hěn nán)'},
+  '容':{p:'róng', m:'Contain / Appearance / Easy', s:10, ex:'容易 (róngyì)'},
+  '易':{p:'yì',   m:'Easy / Change',  s:8,  ex:'容易 (róngyì)'},
+  /* ── Particles & grammar ── */
+  '的':{p:'de',   p2:'dí', p3:'dì', m:'(possessive/adj particle) / Target', s:8, ex:'我的 (wǒ de)'},
+  '地':{p:'dì',   p2:'de', m:'Earth / (adv particle)', s:6, ex:'慢慢地 (mànmànde)'},
+  '得':{p:'dé',   p2:'děi', p3:'de', m:'To get / Must / (result particle)', s:11, ex:'得到 (dédào)'},
+  '了':{p:'le',   p2:'liǎo', m:'(completion particle) / To finish', s:2, ex:'好了 (hǎo le)'},
+  '吗':{p:'ma',   m:'(question particle)', s:6, ex:'好吗 (hǎo ma)'},
+  '呢':{p:'ne',   m:'(question/continuation particle)', s:8, ex:'你呢 (nǐ ne)'},
+  '吧':{p:'ba',   m:'(suggestion/assumption particle)', s:7, ex:'好吧 (hǎo ba)'},
+  '啊':{p:'a',    p2:'á', p3:'ǎ', m:'(exclamation particle)', s:10, ex:'好啊 (hǎo a)'},
+  '么':{p:'me',   m:'(suffix for pronouns/questions)', s:3, ex:'什么 (shénme)'},
+  '什':{p:'shén', p2:'shí', m:'What / Ten (formal)', s:4, ex:'什么 (shénme)'},
+  '哪':{p:'nǎ',   p2:'nà', m:'Which / Where', s:9, ex:'哪里 (nǎlǐ)'},
+  '谁':{p:'shuí', p2:'shéi', m:'Who',  s:10, ex:'谁来了 (shuí lái le)'},
+  '怎':{p:'zěn',  m:'How',            s:9,  ex:'怎么 (zěnme)'},
+  '为':{p:'wéi',  p2:'wèi', m:'For / Because / To be', s:4, ex:'为什么 (wèishéme)'},
+  '因':{p:'yīn',  m:'Cause / Because', s:6, ex:'因为 (yīnwèi)'},
+  '所':{p:'suǒ',  m:'Place / That which', s:8, ex:'所以 (suǒyǐ)'},
+  '如':{p:'rú',   m:'If / Like / As', s:6, ex:'如果 (rúguǒ)'},
+  '果':{p:'guǒ',  m:'Fruit / Result', s:8, ex:'如果 (rúguǒ)'},
+  '但':{p:'dàn',  m:'But / However',  s:7,  ex:'但是 (dànshì)'},
+  '虽':{p:'suī',  m:'Although',       s:9,  ex:'虽然 (suīrán)'},
+  '然':{p:'rán',  m:'So / Like that', s:12, ex:'虽然 (suīrán)'},
+  '和':{p:'hé',   p2:'hè', p3:'huó', m:'And / With / Harmony', s:8, ex:'你和我 (nǐ hé wǒ)'},
+  '与':{p:'yǔ',   p2:'yù', m:'And / With',  s:3, ex:'与其 (yǔqí)'},
+  '或':{p:'huò',  m:'Or / Perhaps',   s:8,  ex:'或者 (huòzhě)'},
+  '者':{p:'zhě',  m:'(person suffix) / One who', s:8, ex:'作者 (zuòzhě)'},
+  '比':{p:'bǐ',   m:'To compare / Than', s:4, ex:'比较 (bǐjiào)'},
+  '没':{p:'méi',  p2:'mò', m:'Not have / Sink', s:7, ex:'没有 (méiyǒu)'},
+  '不':{p:'bù',   p2:'bú', m:'Not / No',  s:4, ex:'不好 (bù hǎo)'},
+  '很':{p:'hěn',  m:'Very',           s:9,  ex:'很好 (hěn hǎo)'},
+  /* ── HSK vocab ── */
+  '汉':{p:'hàn',  m:'Han (Chinese)',  s:5,  ex:'汉字 (Hànzì)'},
+  '语':{p:'yǔ',   m:'Language',       s:9,  ex:'汉语 (Hànyǔ)'},
+  '英':{p:'yīng', m:'Hero / England / Flower', s:8, ex:'英语 (Yīngyǔ)'},
+  '法':{p:'fǎ',   m:'Law / Method / France', s:8, ex:'法语 (Fǎyǔ)'},
+  '日':{p:'rì',   m:'Sun / Japan / Day', s:4, ex:'日本 (Rìběn)'},
+  '本':{p:'běn',  m:'Root / Book / Japan (origin)', s:5, ex:'日本 (Rìběn)'},
+  '韩':{p:'hán',  m:'Korea',          s:12, ex:'韩国 (Hánguó)'},
+  '美':{p:'měi',  m:'Beautiful / America', s:9, ex:'美国 (Měiguó)'},
+  '语':{p:'yǔ',   m:'Language',       s:9,  ex:'中文 (Zhōngwén)'},
+};
+
+/* buildPracticeSelect() lives in drawing.html — not needed here */
+
+/* ══════════════════════════════════════
+   STROKE ORDER — Word List
+══════════════════════════════════════ */
+let _wordList     = [];   // characters the user has added
+let _selectedWord = null;
+
+function renderWordList() {
+  var container = document.getElementById('wordList');
+  if (!container) return;
+  container.innerHTML = '';
+
+  if (_wordList.length === 0) {
+    container.innerHTML = '<div class="word-list-empty">Type a character above to begin</div>';
+    return;
+  }
+
+  for (var i = 0; i < _wordList.length; i++) {
+    (function(ch) {
+      // Lookup: charData (has meanings) first, then vocabDB (pinyin + level)
+      var d  = charData[ch] || {};
+      var vd = (typeof _vocabDB !== 'undefined' && _vocabDB[ch]) || {};
+      var sel = (ch === _selectedWord) ? ' selected' : '';
+      // Build pinyin from charData or vocabDB
+      var readings = [];
+      var p = d.p || vd.p || '';
+      if (p)   readings.push(p);
+      if (d.p2) readings.push(d.p2);
+      if (d.p3) readings.push(d.p3);
+      var pin = readings.join(' / ');
+
+      var btn = document.createElement('button');
+      btn.className = 'word-list-btn' + sel;
+      btn.style.marginBottom = '6px';
+      var pinyinHTML = pin ? '<div class="word-list-pinyin">' + pin + '</div>' : '';
+      btn.innerHTML = '<span class="word-list-char">' + ch + '</span>' + pinyinHTML;
+
+      // Progress bar for hold-to-delete (always available)
+      var bar = document.createElement('div');
+      bar.style.cssText = 'position:absolute;bottom:0;left:0;height:4px;width:0;background:#E63946;transition:none;border-radius:2px;pointer-events:none';
+      btn.appendChild(bar);
+
+      var holdTimer = null;
+      var held = false;
+      btn.addEventListener('pointerdown', function(e) {
+        e.preventDefault();
+        held = false;
+        bar.style.transition = 'none';
+        bar.style.width = '0';
+        bar.getBoundingClientRect(); // force reflow
+        bar.style.transition = 'width 1s linear';
+        bar.style.width = '100%';
+        holdTimer = setTimeout(function() { held = true; deleteWord(ch); }, 1000);
+      });
+      btn.addEventListener('pointerup', function() {
+        clearTimeout(holdTimer);
+        bar.style.transition = 'none';
+        bar.style.width = '0';
+        if (!held) selectWordChar(ch);
+      });
+      btn.addEventListener('pointerleave', function() {
+        clearTimeout(holdTimer);
+        bar.style.transition = 'none';
+        bar.style.width = '0';
+      });
+      btn.addEventListener('pointercancel', function() {
+        clearTimeout(holdTimer);
+        bar.style.transition = 'none';
+        bar.style.width = '0';
+      });
+      container.appendChild(btn);
+    })(_wordList[i]);
+  }
+}
+
+function confirmAddWord() {
+  var input = document.getElementById('addWordInput');
+  // Read input.value first (most direct), fall back to value captured at touchstart
+  var val = (input.value || window._addWordPending || '').trim();
+  window._addWordPending = '';
+  input.value = '';
+  input.blur(); // dismiss keyboard after adding
+  if (!val) return;
+
+  var firstNew  = null;   // a brand-new character
+  var firstChar = null;   // first character typed (new or existing)
+  var chars = Array.from(val);
+  for (var i = 0; i < chars.length; i++) {
+    var ch = chars[i].trim();
+    if (!ch) continue;
+    if (!firstChar) firstChar = ch;
+    if (_wordList.indexOf(ch) === -1) {
+      _wordList.push(ch);
+      if (!firstNew) firstNew = ch;
+    }
+  }
+  renderWordList();
+  /* Select the typed character whether new or already in the list */
+  var toSelect = firstNew || firstChar;
+  if (toSelect) selectWordChar(toSelect);
+}
+
+/* ── Example word popup ──────────────────── */
+function openExamplePopup(word) {
+  var d  = charData[word] || {};
+  var vd = (typeof _vocabDB !== 'undefined' && _vocabDB[word]) || {};
+  var localPinyin  = [d.p || vd.p, d.p2, d.p3].filter(Boolean).join(' / ');
+  var localMeaning = d.m || vd.m || '';
+  var level = vd.lv || d.hsk || '';
+  var pos   = vd.t  || '';
+  var levelLabel = {N1:'TOCFL Novice 1',N2:'TOCFL Novice 2',L1:'TOCFL Level 1',L2:'TOCFL Level 2',L3:'TOCFL Level 3',L4:'TOCFL Level 4',L5:'TOCFL Level 5'};
+
+  document.getElementById('exWordChar').textContent   = word;
+  document.getElementById('exWordPinyin').textContent  = localPinyin || '…';
+  document.getElementById('exWordType').textContent    = pos;
+  document.getElementById('exWordLevel').textContent   = levelLabel[level] || level || '';
+  document.getElementById('exWordMeaning').textContent = localMeaning || '…';
+
+  // Fetch any missing data online (pinyin and/or meaning)
+  if (!localPinyin || !localMeaning) {
+    _fetchOnlineData(word, function(r) {
+      if (!r) return;
+      if (!localPinyin && r.p) {
+        var pe = document.getElementById('exWordPinyin');
+        if (pe) pe.textContent = r.p;
+      }
+      if (!localMeaning && r.m) {
+        var me = document.getElementById('exWordMeaning');
+        if (me) me.textContent = r.m;
+      }
+    });
+  }
+
+  var overlay = document.getElementById('exWordOverlay');
+  var popup   = document.getElementById('exWordPopup');
+  overlay.style.display = 'flex';
+  popup.style.display = 'block';
+  popup.getBoundingClientRect();
+  popup.style.opacity = '1';
+  popup.style.transform = 'translate(-50%,-50%) scale(1)';
+}
+
+function closeExamplePopup() {
+  var overlay = document.getElementById('exWordOverlay');
+  var popup   = document.getElementById('exWordPopup');
+  if (!overlay || !popup) return;
+  popup.style.opacity = '0';
+  popup.style.transform = 'translate(-50%,-50%) scale(0.85)';
+  setTimeout(function() {
+    overlay.style.display = 'none';
+    popup.style.display = 'none';
+  }, 200);
+}
+
+/* ── Update example display in right panel ── */
+function updateExampleDisplay(exWords) {
+  var el = document.getElementById('infoExample');
+  if (!el) return;
+  el.innerHTML = '';
+  var words = [];
+  if (Array.isArray(exWords)) {
+    words = exWords;
+  } else if (typeof exWords === 'string' && exWords && exWords !== '—') {
+    // Parse "好了 (hǎo le) / 很好 (hěn hǎo)" — extract hanzi before each '('
+    exWords.split('/').forEach(function(part) {
+      var hanzi = part.trim().replace(/\s*\(.*?\)\s*/g, '').trim();
+      if (hanzi) words.push(hanzi);
+    });
+  }
+  if (!words.length) { el.textContent = '—'; return; }
+  words.forEach(function(w) {
+    if (!w) return;
+    var btn = document.createElement('button');
+    btn.className = 'ex-word-btn';
+    btn.textContent = w;
+    btn.onclick = function() { openExamplePopup(w); };
+    el.appendChild(btn);
+  });
+}
+
+function deleteWord(ch) {
+  _wordList = _wordList.filter(w => w !== ch);
+  if (_selectedWord === ch) {
+    _selectedWord = null;
+    document.getElementById('hanziWriterTarget').innerHTML = '';
+    document.getElementById('strokeCounter').textContent   = 'Select a character';
+    document.getElementById('strokeDiagramRow').innerHTML  = '';
+    document.getElementById('strokeStepInfo').textContent  = 'Add a word from the left panel to begin';
+    clearStrokeInfoPanel();
+  }
+  renderWordList();
+}
+
+function clearStrokeInfoPanel() {
+  ['infoPinyin','infoMeaning','infoStrokes','infoHsk'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = '—';
+  });
+  var exEl = document.getElementById('infoExample');
+  if (exEl) exEl.textContent = '—';
+}
+
+function selectWordChar(ch) {
+  _selectedWord = ch;
+  renderWordList();
+  var d  = charData[ch] || {};
+  var vd = (typeof _vocabDB !== 'undefined' && _vocabDB[ch]) || {};
+
+  var localPinyin  = [d.p || vd.p, d.p2, d.p3].filter(Boolean).join(' / ');
+  var localMeaning = d.m || vd.m || '';
+  var level        = vd.lv || d.hsk || '';
+  var levelMap = {N1:'Novice 1',N2:'Novice 2',L1:'Level 1',L2:'Level 2',L3:'Level 3',L4:'Level 4',L5:'Level 5'};
+
+  // Build level text — TOCFL level + Meihua book/unit if applicable
+  var levelText = levelMap[level] || level || '';
+  var mhInfo    = _findMeihuaUnit(ch);
+  var mhText    = mhInfo ? 'Meihua Book ' + mhInfo.bookNum + ' · Unit ' + mhInfo.unit + (mhInfo.word ? ' (' + mhInfo.word + ')' : '') : '';
+  var levelHtml = [levelText, mhText].filter(Boolean)
+                    .map(function(s, i) { return i === 1 ? '<span style="font-size:0.82rem;color:#E63946">' + s + '</span>' : s; })
+                    .join('<br>') || '—';
+
+  // Set what we already have from local DB
+  document.getElementById('infoPinyin').textContent  = localPinyin || '…';
+  document.getElementById('infoMeaning').textContent = localMeaning || '…';
+  document.getElementById('infoHsk').innerHTML       = levelHtml;
+  updateExampleDisplay(d.ex || _findExamples(ch));
+
+  // Fetch online for any missing fields (pinyin, meaning)
+  if (!localPinyin || !localMeaning) {
+    _fetchOnlineData(ch, function(r) {
+      if (!r) return;
+      if (!localPinyin && r.p) {
+        document.getElementById('infoPinyin').textContent = r.p;
+      }
+      if (!localMeaning && r.m) {
+        document.getElementById('infoMeaning').textContent = r.m;
+      }
+    });
+  }
+
+  // Also update radical explorer panel if in radical mode
+  if (_strokeMode === 'radical') {
+    exploreCharRadical(ch);
+  }
+
+  initHanziWriter(ch);
+}
+
+/* Find which Meihua book + unit a character belongs to */
+function _findMeihuaUnit(ch) {
+  if (typeof _meihuaDB === 'undefined') return null;
+  var bookNames = ['meihua1','meihua2','meihua3','meihua4','meihua5','meihua6'];
+  for (var b = 0; b < bookNames.length; b++) {
+    var book = _meihuaDB[bookNames[b]];
+    if (!book) continue;
+    for (var u = 1; u <= 10; u++) {
+      var unit = book['unit' + u];
+      if (!unit || !unit.vocab) continue;
+      for (var i = 0; i < unit.vocab.length; i++) {
+        var word = unit.vocab[i].char || '';
+        if (word === ch || word.indexOf(ch) !== -1) {
+          return { bookNum: b + 1, unit: u, word: word.length > 1 ? word : null };
+        }
+      }
+    }
+  }
+  return null;
+}
+
+/* Find 1-2 example words from _vocabDB that contain this character */
+function _findExamples(ch) {
+  if (typeof _vocabDB === 'undefined') return [];
+  var results = [];
+  var keys = Object.keys(_vocabDB);
+  for (var i = 0; i < keys.length && results.length < 2; i++) {
+    var w = keys[i];
+    if (w.length >= 2 && w.indexOf(ch) !== -1) {
+      results.push(w);
+    }
+  }
+  return results;
+}
+
+/* ══════════════════════════════════════
+   STROKE ORDER — Hanzi Writer
+══════════════════════════════════════ */
+let _hw             = null;   // main HanziWriter instance
+let _hwChar         = null;
+let _hwStep         = 0;      // how many strokes shown (0 = none)
+let _hwTotalStrokes = 0;
+let _hwAnimating    = false;
+let _hwGeneration   = 0;   /* incremented on every new animation; stale callbacks bail early */
+
+function initHanziWriter(ch) {
+  _hwChar = ch;
+  _hwStep = 0;
+  _hwAnimating = false;
+  const d = charData[ch];
+  _hwTotalStrokes = d ? d.s : 0;
+
+  const target = document.getElementById('hanziWriterTarget');
+  target.innerHTML = '<div style="color:#aaa;font-size:0.85rem;padding:20px;text-align:center">Loading…</div>';
+  document.getElementById('strokeStepInfo').textContent = 'Loading stroke data…';
+
+  _loadHanziWriterLib(() => _initHWAfterLoad(ch));
+}
+
+function _initHWAfterLoad(ch) {
+  if (ch !== _hwChar) return; // user changed character while loading
+  const target = document.getElementById('hanziWriterTarget');
+  target.innerHTML = '';
+
+  _hw = HanziWriter.create('hanziWriterTarget', ch, {
+    width: 280, height: 280, padding: 20,
+    showOutline: true, showCharacter: false,
+    strokeColor: '#1B2B4B', outlineColor: '#E0D5C5',
+    radicalColor: '#E63946',
+    strokeAnimationSpeed: 1, delayBetweenStrokes: 400,
+    /* Use local BM_STROKE_DATA — file:// origin blocks CDN fetch in Android WebView */
+    charDataLoader: function(c, onLoad) {
+      onLoad((typeof BM_STROKE_DATA !== 'undefined' && BM_STROKE_DATA[c]) || null);
+    },
+    onLoadCharDataSuccess: data => {
+      if (ch !== _hwChar) return;
+      _hwTotalStrokes = data.strokes.length;
+      document.getElementById('strokeCounter').textContent =
+        _hwTotalStrokes + ' stroke' + (_hwTotalStrokes !== 1 ? 's' : '');
+      document.getElementById('infoStrokes').textContent = _hwTotalStrokes;
+      buildStrokeDiagram(_hwTotalStrokes);
+      updateStepInfo();
+      // Auto-play animation as soon as data is ready
+      strokeAnimateAll();
+    },
+    onLoadCharDataError: () => {
+      document.getElementById('strokeStepInfo').textContent = '⚠ No stroke data for this character';
+    }
+  });
+
+  buildStrokeDiagram(_hwTotalStrokes);
+  updateStepInfo();
+}
+
+function buildStrokeDiagram(numStrokes) {
+  const row = document.getElementById('strokeDiagramRow');
+  row.innerHTML = '';
+  if (!numStrokes || !_hwChar) return;
+
+  for (let i = 1; i <= numStrokes; i++) {
+    const box = document.createElement('div');
+    box.className  = 'mini-step-box';
+    box.dataset.step = i;
+    box.onclick    = () => jumpToStep(i);
+
+    const lbl = document.createElement('div');
+    lbl.className   = 'mini-step-label';
+    lbl.textContent = i;
+
+    const wrDiv = document.createElement('div');
+    wrDiv.id = `miniHW_${i}`;
+    wrDiv.style.pointerEvents = 'none'; /* SVG inside must not swallow box clicks */
+
+    box.appendChild(lbl);
+    box.appendChild(wrDiv);
+    row.appendChild(box);
+
+    // Build a mini writer showing strokes 1..i instantly
+    if (typeof HanziWriter !== 'undefined') {
+      const mw = HanziWriter.create(`miniHW_${i}`, _hwChar, {
+        width: 54, height: 54, padding: 4,
+        showOutline: true, showCharacter: false,
+        strokeColor: '#1B2B4B', outlineColor: '#ddd',
+        radicalColor: '#E63946',
+        strokeAnimationSpeed: 9999, delayBetweenStrokes: 0,
+        charDataLoader: function(c, onLoad) {
+          onLoad((typeof BM_STROKE_DATA !== 'undefined' && BM_STROKE_DATA[c]) || null);
+        }
+      });
+      // Chain animate strokes 0..i-1 as fast as possible
+      const animN = (j, limit) => {
+        if (j >= limit) return;
+        mw.animateStroke(j, { onComplete: () => animN(j + 1, limit) });
+      };
+      setTimeout(() => animN(0, i), 80 + i * 60);
+    }
+  }
+}
+
+function updateStepInfo() {
+  const info = document.getElementById('strokeStepInfo');
+  if (!_hwChar) { info.textContent = 'Add a word from the left panel to begin'; return; }
+  if (_hwStep === 0) {
+    info.textContent = 'Tap a stroke number or press ▶ Animate';
+  } else if (_hwStep >= _hwTotalStrokes) {
+    info.textContent = `✓ All ${_hwTotalStrokes} strokes shown`;
+  } else {
+    info.textContent = `Stroke ${_hwStep} of ${_hwTotalStrokes}`;
+  }
+  document.querySelectorAll('.mini-step-box').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.step) === _hwStep);
+  });
+}
+
+function _showNStrokes(n, gen, callback) {
+  if (!_hw) return;
+  _hw.hideCharacter();
+  _hwAnimating = true;
+  const go = i => {
+    if (_hwGeneration !== gen) return; /* stale — a newer action took over */
+    if (i >= n) { _hwAnimating = false; if (callback) callback(); return; }
+    _hw.animateStroke(i, { onComplete: () => go(i + 1) });
+  };
+  go(0);
+}
+
+function jumpToStep(n) {
+  if (!_hw) return;
+  /* Invalidate any running animation (strokeAnimateAll / strokePrev / prior jumpToStep) */
+  _hwGeneration++;
+  const myGen = _hwGeneration;
+  _hwAnimating = false;
+  try { if (_hw.cancelAnimation) _hw.cancelAnimation(); } catch(e) {}
+  _hwStep = n;
+  _showNStrokes(n, myGen, () => { if (_hwGeneration === myGen) updateStepInfo(); });
+  updateStepInfo();
+}
+
+function strokePrev() {
+  if (!_hw || _hwAnimating || _hwStep <= 0) return;
+  _hwGeneration++;
+  const myGen = _hwGeneration;
+  _hwStep--;
+  _hw.hideCharacter();
+  if (_hwStep === 0) { updateStepInfo(); return; }
+  _hwAnimating = true;
+  const go = i => {
+    if (_hwGeneration !== myGen) return;
+    if (i >= _hwStep) { _hwAnimating = false; updateStepInfo(); return; }
+    _hw.animateStroke(i, { strokeAnimationSpeed: 999, onComplete: () => go(i + 1) });
+  };
+  go(0);
+}
+
+function strokeNext() {
+  if (!_hw || _hwAnimating || _hwStep >= _hwTotalStrokes) return;
+  // Just animate the ONE new stroke — don't hide/replay previous ones
+  _hwAnimating = true;
+  _hw.animateStroke(_hwStep, {
+    onComplete: () => { _hwAnimating = false; _hwStep++; updateStepInfo(); }
+  });
+}
+
+function strokeAnimateAll() {
+  if (!_hw) return;
+  _hwGeneration++;
+  const myGen = _hwGeneration;
+  _hwAnimating = true;
+  _hw.hideCharacter();
+  _hw.animateCharacter({
+    onComplete: () => {
+      if (_hwGeneration !== myGen) return; /* user clicked a stroke box mid-animation */
+      _hwAnimating = false;
+      _hwStep = _hwTotalStrokes;
+      updateStepInfo();
+    }
+  });
+}
+
+function strokeReset() {
+  if (!_hw) return;
+  _hwAnimating = false;
+  _hw.hideCharacter();
+  _hwStep = 0;
+  updateStepInfo();
+}
+
+function strokeQuiz() {
+  if (!_selectedWord) return;
+  practiceFromStrokes();
+}
+
+/* openStrokeInfo / closeStrokeInfo removed — panel is now static */
+
+/* ══════════════════════════════════════
+   RADICAL EXPLORER
+══════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════
+   CHARACTER DECOMPOSITION DATABASE
+   Format: ch → [{c:component, n:pinyin, m:meaning}]
+   Basic radicals (single-entry) = no further decomposition
+══════════════════════════════════════════════════════ */
+var _decomp = {
+// ─── Basic radicals ───────────────────────────────────
+'一':[{c:'一',n:'yī',m:'One (basic)'}],'二':[{c:'二',n:'èr',m:'Two (basic)'}],
+'三':[{c:'三',n:'sān',m:'Three (basic)'}],'八':[{c:'八',n:'bā',m:'Eight (basic)'}],
+'人':[{c:'人',n:'rén',m:'Person (basic)'}],'大':[{c:'大',n:'dà',m:'Big (basic)'}],
+'小':[{c:'小',n:'xiǎo',m:'Small (basic)'}],'口':[{c:'口',n:'kǒu',m:'Mouth (basic)'}],
+'日':[{c:'日',n:'rì',m:'Sun (basic)'}],'月':[{c:'月',n:'yuè',m:'Moon (basic)'}],
+'木':[{c:'木',n:'mù',m:'Tree (basic)'}],'水':[{c:'水',n:'shuǐ',m:'Water (basic)'}],
+'火':[{c:'火',n:'huǒ',m:'Fire (basic)'}],'土':[{c:'土',n:'tǔ',m:'Earth (basic)'}],
+'山':[{c:'山',n:'shān',m:'Mountain (basic)'}],'手':[{c:'手',n:'shǒu',m:'Hand (basic)'}],
+'目':[{c:'目',n:'mù',m:'Eye (basic)'}],'心':[{c:'心',n:'xīn',m:'Heart (basic)'}],
+'女':[{c:'女',n:'nǚ',m:'Woman (basic)'}],'子':[{c:'子',n:'zǐ',m:'Child (basic)'}],
+'田':[{c:'田',n:'tián',m:'Field (basic)'}],'力':[{c:'力',n:'lì',m:'Strength (basic)'}],
+'言':[{c:'言',n:'yán',m:'Speech (basic)'}],'金':[{c:'金',n:'jīn',m:'Gold (basic)'}],
+'王':[{c:'王',n:'wáng',m:'King (basic)'}],'门':[{c:'门',n:'mén',m:'Door (basic)'}],
+'车':[{c:'车',n:'chē',m:'Vehicle (basic)'}],'马':[{c:'马',n:'mǎ',m:'Horse (basic)'}],
+'鸟':[{c:'鸟',n:'niǎo',m:'Bird (basic)'}],'鱼':[{c:'鱼',n:'yú',m:'Fish (basic)'}],
+'走':[{c:'走',n:'zǒu',m:'Walk (basic)'}],'足':[{c:'足',n:'zú',m:'Foot (basic)'}],
+'竹':[{c:'竹',n:'zhú',m:'Bamboo (basic)'}],'米':[{c:'米',n:'mǐ',m:'Rice (basic)'}],
+'白':[{c:'白',n:'bái',m:'White (basic)'}],'生':[{c:'生',n:'shēng',m:'Life (basic)'}],
+'石':[{c:'石',n:'shí',m:'Stone (basic)'}],'气':[{c:'气',n:'qì',m:'Air (basic)'}],
+'刀':[{c:'刀',n:'dāo',m:'Knife (basic)'}],'雨':[{c:'雨',n:'yǔ',m:'Rain (basic)'}],
+'羊':[{c:'羊',n:'yáng',m:'Sheep (basic)'}],'牛':[{c:'牛',n:'niú',m:'Cow (basic)'}],
+'皮':[{c:'皮',n:'pí',m:'Skin (basic)'}],'工':[{c:'工',n:'gōng',m:'Work (basic)'}],
+// ─── Sun / Day components ─────────────────────────────
+'明':[{c:'日',n:'rì',m:'Sun'},{c:'月',n:'yuè',m:'Moon'}],
+'早':[{c:'日',n:'rì',m:'Sun'},{c:'十',n:'shí',m:'Cross'}],
+'星':[{c:'日',n:'rì',m:'Sun'},{c:'生',n:'shēng',m:'Life'}],
+'是':[{c:'日',n:'rì',m:'Sun'},{c:'正',n:'zhèng',m:'Correct'}],
+'时':[{c:'日',n:'rì',m:'Sun'},{c:'寸',n:'cùn',m:'Inch'}],
+'晚':[{c:'日',n:'rì',m:'Sun'},{c:'免',n:'miǎn',m:'Avoid'}],
+'晴':[{c:'日',n:'rì',m:'Sun'},{c:'青',n:'qīng',m:'Blue-green'}],
+'暗':[{c:'日',n:'rì',m:'Sun'},{c:'音',n:'yīn',m:'Sound'}],
+'昨':[{c:'日',n:'rì',m:'Sun'},{c:'乍',n:'zhà',m:'Suddenly'}],
+'量':[{c:'日',n:'rì',m:'Sun'},{c:'里',n:'lǐ',m:'Inside'}],
+'音':[{c:'日',n:'rì',m:'Sun'},{c:'立',n:'lì',m:'Stand'}],
+'东':[{c:'木',n:'mù',m:'Tree'},{c:'日',n:'rì',m:'Sun'}],
+// ─── Moon / Flesh components ──────────────────────────
+'朋':[{c:'月',n:'yuè',m:'Moon'},{c:'月',n:'yuè',m:'Moon'}],
+'阴':[{c:'阝',n:'fù',m:'Hill'},{c:'月',n:'yuè',m:'Moon'}],
+'脚':[{c:'月',n:'yuè',m:'Flesh'},{c:'却',n:'què',m:'But'}],
+'脸':[{c:'月',n:'yuè',m:'Flesh'},{c:'佥',n:'qiān',m:'All'}],
+'胖':[{c:'月',n:'yuè',m:'Flesh'},{c:'半',n:'bàn',m:'Half'}],
+'腿':[{c:'月',n:'yuè',m:'Flesh'},{c:'退',n:'tuì',m:'Retreat'}],
+'背':[{c:'北',n:'běi',m:'North'},{c:'月',n:'yuè',m:'Flesh'}],
+'脖':[{c:'月',n:'yuè',m:'Flesh'},{c:'孛',n:'bèi',m:''}],
+'然':[{c:'月',n:'yuè',m:'Flesh'},{c:'犬',n:'quǎn',m:'Dog'},{c:'灬',n:'huǒ',m:'Fire'}],
+// ─── Tree / Wood components ───────────────────────────
+'休':[{c:'人',n:'rén',m:'Person'},{c:'木',n:'mù',m:'Tree'}],
+'林':[{c:'木',n:'mù',m:'Tree'},{c:'木',n:'mù',m:'Tree'}],
+'森':[{c:'木',n:'mù',m:'Tree'},{c:'木',n:'mù',m:'Tree'},{c:'木',n:'mù',m:'Tree'}],
+'校':[{c:'木',n:'mù',m:'Tree'},{c:'交',n:'jiāo',m:'Intersect'}],
+'树':[{c:'木',n:'mù',m:'Tree'},{c:'寸',n:'cùn',m:'Inch'}],
+'桌':[{c:'木',n:'mù',m:'Tree'},{c:'卓',n:'zhuó',m:'Outstanding'}],
+'椅':[{c:'木',n:'mù',m:'Tree'},{c:'奇',n:'qí',m:'Strange'}],
+'楼':[{c:'木',n:'mù',m:'Tree'},{c:'娄',n:'lóu',m:''}],
+'板':[{c:'木',n:'mù',m:'Tree'},{c:'反',n:'fǎn',m:'Reverse'}],
+'样':[{c:'木',n:'mù',m:'Tree'},{c:'羊',n:'yáng',m:'Sheep'}],
+'村':[{c:'木',n:'mù',m:'Tree'},{c:'寸',n:'cùn',m:'Inch'}],
+'床':[{c:'广',n:'guǎng',m:'Shelter'},{c:'木',n:'mù',m:'Tree'}],
+'桥':[{c:'木',n:'mù',m:'Tree'},{c:'乔',n:'qiáo',m:'Tall'}],
+'来':[{c:'木',n:'mù',m:'Tree'},{c:'人',n:'rén',m:'Person'}],
+// ─── Water / Liquid components ────────────────────────
+'江':[{c:'氵',n:'shuǐ',m:'Water'},{c:'工',n:'gōng',m:'Work'}],
+'河':[{c:'氵',n:'shuǐ',m:'Water'},{c:'可',n:'kě',m:'Can'}],
+'海':[{c:'氵',n:'shuǐ',m:'Water'},{c:'每',n:'měi',m:'Every'}],
+'湖':[{c:'氵',n:'shuǐ',m:'Water'},{c:'胡',n:'hú',m:'Barbarian'}],
+'汽':[{c:'氵',n:'shuǐ',m:'Water'},{c:'气',n:'qì',m:'Gas'}],
+'洗':[{c:'氵',n:'shuǐ',m:'Water'},{c:'先',n:'xiān',m:'First'}],
+'游':[{c:'氵',n:'shuǐ',m:'Water'},{c:'斿',n:'yóu',m:''}],
+'汉':[{c:'氵',n:'shuǐ',m:'Water'},{c:'又',n:'yòu',m:'Again'}],
+'法':[{c:'氵',n:'shuǐ',m:'Water'},{c:'去',n:'qù',m:'Go'}],
+'活':[{c:'氵',n:'shuǐ',m:'Water'},{c:'舌',n:'shé',m:'Tongue'}],
+'酒':[{c:'氵',n:'shuǐ',m:'Water'},{c:'酉',n:'yǒu',m:'Bottle'}],
+'汤':[{c:'氵',n:'shuǐ',m:'Water'},{c:'易',n:'yì',m:'Easy'}],
+'泳':[{c:'氵',n:'shuǐ',m:'Water'},{c:'永',n:'yǒng',m:'Eternal'}],
+'波':[{c:'氵',n:'shuǐ',m:'Water'},{c:'皮',n:'pí',m:'Skin'}],
+// ─── Fire / Heat components ───────────────────────────
+'炎':[{c:'火',n:'huǒ',m:'Fire'},{c:'火',n:'huǒ',m:'Fire'}],
+'热':[{c:'执',n:'zhí',m:'Hold'},{c:'灬',n:'huǒ',m:'Fire'}],
+'照':[{c:'昭',n:'zhāo',m:'Bright'},{c:'灬',n:'huǒ',m:'Fire'}],
+'黑':[{c:'里',n:'lǐ',m:'Inside'},{c:'灬',n:'huǒ',m:'Fire'}],
+'点':[{c:'占',n:'zhàn',m:'Occupy'},{c:'灬',n:'huǒ',m:'Fire'}],
+'煮':[{c:'者',n:'zhě',m:'Person'},{c:'灬',n:'huǒ',m:'Fire'}],
+'秋':[{c:'禾',n:'hé',m:'Grain'},{c:'火',n:'huǒ',m:'Fire'}],
+// ─── Woman / Family ───────────────────────────────────
+'好':[{c:'女',n:'nǚ',m:'Woman'},{c:'子',n:'zǐ',m:'Child'}],
+'妈':[{c:'女',n:'nǚ',m:'Woman'},{c:'马',n:'mǎ',m:'Horse'}],
+'姐':[{c:'女',n:'nǚ',m:'Woman'},{c:'且',n:'qiě',m:'Also'}],
+'妹':[{c:'女',n:'nǚ',m:'Woman'},{c:'未',n:'wèi',m:'Not yet'}],
+'她':[{c:'女',n:'nǚ',m:'Woman'},{c:'也',n:'yě',m:'Also'}],
+'姑':[{c:'女',n:'nǚ',m:'Woman'},{c:'古',n:'gǔ',m:'Ancient'}],
+'嫁':[{c:'女',n:'nǚ',m:'Woman'},{c:'家',n:'jiā',m:'Family'}],
+'婆':[{c:'波',n:'bō',m:'Wave'},{c:'女',n:'nǚ',m:'Woman'}],
+'爸':[{c:'父',n:'fù',m:'Father'},{c:'巴',n:'bā',m:'Expect'}],
+'哥':[{c:'可',n:'kě',m:'Can'},{c:'可',n:'kě',m:'Can'}],
+'弟':[{c:'弓',n:'gōng',m:'Bow'},{c:'丨',n:'gǔn',m:'Line'}],
+'兄':[{c:'口',n:'kǒu',m:'Mouth'},{c:'儿',n:'ér',m:'Child'}],
+'孩':[{c:'子',n:'zǐ',m:'Child'},{c:'亥',n:'hài',m:'Boar'}],
+// ─── Speech / Language ────────────────────────────────
+'语':[{c:'讠',n:'yán',m:'Speech'},{c:'吾',n:'wú',m:'I/My'}],
+'话':[{c:'讠',n:'yán',m:'Speech'},{c:'舌',n:'shé',m:'Tongue'}],
+'说':[{c:'讠',n:'yán',m:'Speech'},{c:'兑',n:'duì',m:'Exchange'}],
+'请':[{c:'讠',n:'yán',m:'Speech'},{c:'青',n:'qīng',m:'Blue-green'}],
+'谢':[{c:'讠',n:'yán',m:'Speech'},{c:'射',n:'shè',m:'Shoot'}],
+'读':[{c:'讠',n:'yán',m:'Speech'},{c:'卖',n:'mài',m:'Sell'}],
+'认':[{c:'讠',n:'yán',m:'Speech'},{c:'忍',n:'rěn',m:'Endure'}],
+'课':[{c:'讠',n:'yán',m:'Speech'},{c:'果',n:'guǒ',m:'Fruit'}],
+'词':[{c:'讠',n:'yán',m:'Speech'},{c:'司',n:'sī',m:'Manage'}],
+'讲':[{c:'讠',n:'yán',m:'Speech'},{c:'井',n:'jǐng',m:'Well'}],
+'记':[{c:'讠',n:'yán',m:'Speech'},{c:'己',n:'jǐ',m:'Oneself'}],
+'试':[{c:'讠',n:'yán',m:'Speech'},{c:'式',n:'shì',m:'Style'}],
+'诉':[{c:'讠',n:'yán',m:'Speech'},{c:'斥',n:'chì',m:'Scold'}],
+'信':[{c:'人',n:'rén',m:'Person'},{c:'言',n:'yán',m:'Speech'}],
+// ─── Mouth / Voice ────────────────────────────────────
+'吃':[{c:'口',n:'kǒu',m:'Mouth'},{c:'乞',n:'qǐ',m:'Beg'}],
+'喝':[{c:'口',n:'kǒu',m:'Mouth'},{c:'曷',n:'hé',m:'Why'}],
+'叫':[{c:'口',n:'kǒu',m:'Mouth'},{c:'丩',n:'jiū',m:'Entwine'}],
+'唱':[{c:'口',n:'kǒu',m:'Mouth'},{c:'昌',n:'chāng',m:'Prosper'}],
+'吗':[{c:'口',n:'kǒu',m:'Mouth'},{c:'马',n:'mǎ',m:'Horse'}],
+'呢':[{c:'口',n:'kǒu',m:'Mouth'},{c:'尼',n:'ní',m:'Nun'}],
+'啊':[{c:'口',n:'kǒu',m:'Mouth'},{c:'阿',n:'ā',m:'Prefix'}],
+'哈':[{c:'口',n:'kǒu',m:'Mouth'},{c:'合',n:'hé',m:'Join'}],
+'告':[{c:'牛',n:'niú',m:'Cow'},{c:'口',n:'kǒu',m:'Mouth'}],
+'和':[{c:'禾',n:'hé',m:'Grain'},{c:'口',n:'kǒu',m:'Mouth'}],
+'知':[{c:'矢',n:'shǐ',m:'Arrow'},{c:'口',n:'kǒu',m:'Mouth'}],
+'加':[{c:'力',n:'lì',m:'Strength'},{c:'口',n:'kǒu',m:'Mouth'}],
+'问':[{c:'门',n:'mén',m:'Door'},{c:'口',n:'kǒu',m:'Mouth'}],
+// ─── Heart / Emotion ──────────────────────────────────
+'想':[{c:'相',n:'xiāng',m:'Each other'},{c:'心',n:'xīn',m:'Heart'}],
+'思':[{c:'田',n:'tián',m:'Field'},{c:'心',n:'xīn',m:'Heart'}],
+'意':[{c:'音',n:'yīn',m:'Sound'},{c:'心',n:'xīn',m:'Heart'}],
+'感':[{c:'咸',n:'xián',m:'All'},{c:'心',n:'xīn',m:'Heart'}],
+'忘':[{c:'亡',n:'wáng',m:'Die'},{c:'心',n:'xīn',m:'Heart'}],
+'爱':[{c:'爫',n:'zhǎo',m:'Claw'},{c:'心',n:'xīn',m:'Heart'},{c:'友',n:'yǒu',m:'Friend'}],
+'怕':[{c:'忄',n:'xīn',m:'Heart'},{c:'白',n:'bái',m:'White'}],
+'情':[{c:'忄',n:'xīn',m:'Heart'},{c:'青',n:'qīng',m:'Blue-green'}],
+'性':[{c:'忄',n:'xīn',m:'Heart'},{c:'生',n:'shēng',m:'Life'}],
+'忙':[{c:'忄',n:'xīn',m:'Heart'},{c:'亡',n:'wáng',m:'Die'}],
+'慢':[{c:'忄',n:'xīn',m:'Heart'},{c:'曼',n:'màn',m:'Graceful'}],
+'快':[{c:'忄',n:'xīn',m:'Heart'},{c:'夬',n:'guài',m:''}],
+'急':[{c:'刍',n:'chú',m:'Hay'},{c:'心',n:'xīn',m:'Heart'}],
+// ─── Hand / Action ────────────────────────────────────
+'看':[{c:'手',n:'shǒu',m:'Hand'},{c:'目',n:'mù',m:'Eye'}],
+'我':[{c:'手',n:'shǒu',m:'Hand'},{c:'戈',n:'gē',m:'Halberd'}],
+'打':[{c:'扌',n:'shǒu',m:'Hand'},{c:'丁',n:'dīng',m:'4th heavenly stem'}],
+'拉':[{c:'扌',n:'shǒu',m:'Hand'},{c:'立',n:'lì',m:'Stand'}],
+'推':[{c:'扌',n:'shǒu',m:'Hand'},{c:'隹',n:'zhuī',m:'Bird'}],
+'接':[{c:'扌',n:'shǒu',m:'Hand'},{c:'妾',n:'qiè',m:'Concubine'}],
+'提':[{c:'扌',n:'shǒu',m:'Hand'},{c:'是',n:'shì',m:'Is'}],
+'找':[{c:'扌',n:'shǒu',m:'Hand'},{c:'弋',n:'yì',m:'Arrow'}],
+'把':[{c:'扌',n:'shǒu',m:'Hand'},{c:'巴',n:'bā',m:'Expect'}],
+'搬':[{c:'扌',n:'shǒu',m:'Hand'},{c:'般',n:'bān',m:'Sort'}],
+'拿':[{c:'合',n:'hé',m:'Join'},{c:'手',n:'shǒu',m:'Hand'}],
+// ─── Movement / Path ──────────────────────────────────
+'送':[{c:'辶',n:'chuò',m:'Walk'},{c:'关',n:'guān',m:'Pass'}],
+'过':[{c:'辶',n:'chuò',m:'Walk'},{c:'寸',n:'cùn',m:'Inch'}],
+'远':[{c:'辶',n:'chuò',m:'Walk'},{c:'元',n:'yuán',m:'Origin'}],
+'近':[{c:'辶',n:'chuò',m:'Walk'},{c:'斤',n:'jīn',m:'Axe'}],
+'道':[{c:'辶',n:'chuò',m:'Walk'},{c:'首',n:'shǒu',m:'Head'}],
+'进':[{c:'辶',n:'chuò',m:'Walk'},{c:'井',n:'jǐng',m:'Well'}],
+'还':[{c:'辶',n:'chuò',m:'Walk'},{c:'不',n:'bù',m:'Not'}],
+'这':[{c:'辶',n:'chuò',m:'Walk'},{c:'文',n:'wén',m:'Writing'}],
+'通':[{c:'辶',n:'chuò',m:'Walk'},{c:'甬',n:'yǒng',m:'Path'}],
+'运':[{c:'辶',n:'chuò',m:'Walk'},{c:'云',n:'yún',m:'Cloud'}],
+'边':[{c:'辶',n:'chuò',m:'Walk'},{c:'力',n:'lì',m:'Strength'}],
+'遇':[{c:'辶',n:'chuò',m:'Walk'},{c:'禺',n:'yú',m:''}],
+'跑':[{c:'足',n:'zú',m:'Foot'},{c:'包',n:'bāo',m:'Wrap'}],
+'跳':[{c:'足',n:'zú',m:'Foot'},{c:'兆',n:'zhào',m:'Omen'}],
+'路':[{c:'足',n:'zú',m:'Foot'},{c:'各',n:'gè',m:'Each'}],
+'跟':[{c:'足',n:'zú',m:'Foot'},{c:'艮',n:'gěn',m:''}],
+// ─── Enclosure / Building ─────────────────────────────
+'国':[{c:'囗',n:'wéi',m:'Enclosure'},{c:'玉',n:'yù',m:'Jade'}],
+'园':[{c:'囗',n:'wéi',m:'Enclosure'},{c:'元',n:'yuán',m:'Origin'}],
+'因':[{c:'囗',n:'wéi',m:'Enclosure'},{c:'大',n:'dà',m:'Big'}],
+'回':[{c:'囗',n:'wéi',m:'Outer'},{c:'囗',n:'wéi',m:'Inner'}],
+'字':[{c:'宀',n:'mián',m:'Roof'},{c:'子',n:'zǐ',m:'Child'}],
+'安':[{c:'宀',n:'mián',m:'Roof'},{c:'女',n:'nǚ',m:'Woman'}],
+'家':[{c:'宀',n:'mián',m:'Roof'},{c:'豕',n:'shǐ',m:'Pig'}],
+'学':[{c:'冖',n:'mì',m:'Cover'},{c:'子',n:'zǐ',m:'Child'}],
+'间':[{c:'门',n:'mén',m:'Door'},{c:'日',n:'rì',m:'Sun'}],
+'闻':[{c:'门',n:'mén',m:'Door'},{c:'耳',n:'ěr',m:'Ear'}],
+'闹':[{c:'门',n:'mén',m:'Door'},{c:'市',n:'shì',m:'Market'}],
+'闲':[{c:'门',n:'mén',m:'Door'},{c:'木',n:'mù',m:'Tree'}],
+'空':[{c:'穴',n:'xué',m:'Cave'},{c:'工',n:'gōng',m:'Work'}],
+'窗':[{c:'穴',n:'xué',m:'Cave'},{c:'囱',n:'cōng',m:'Chimney'}],
+'室':[{c:'宀',n:'mián',m:'Roof'},{c:'至',n:'zhì',m:'Arrive'}],
+'宿':[{c:'宀',n:'mián',m:'Roof'},{c:'人',n:'rén',m:'Person'}],
+'房':[{c:'户',n:'hù',m:'Door'},{c:'方',n:'fāng',m:'Square'}],
+'城':[{c:'土',n:'tǔ',m:'Earth'},{c:'成',n:'chéng',m:'Become'}],
+// ─── Person / People ──────────────────────────────────
+'他':[{c:'人',n:'rén',m:'Person'},{c:'也',n:'yě',m:'Also'}],
+'你':[{c:'人',n:'rén',m:'Person'},{c:'尔',n:'ěr',m:'You'}],
+'位':[{c:'人',n:'rén',m:'Person'},{c:'立',n:'lì',m:'Stand'}],
+'做':[{c:'人',n:'rén',m:'Person'},{c:'故',n:'gù',m:'Old'}],
+'体':[{c:'人',n:'rén',m:'Person'},{c:'本',n:'běn',m:'Root'}],
+'像':[{c:'人',n:'rén',m:'Person'},{c:'象',n:'xiàng',m:'Elephant'}],
+'保':[{c:'人',n:'rén',m:'Person'},{c:'呆',n:'dāi',m:'Dull'}],
+'健':[{c:'人',n:'rén',m:'Person'},{c:'建',n:'jiàn',m:'Build'}],
+'但':[{c:'人',n:'rén',m:'Person'},{c:'旦',n:'dàn',m:'Dawn'}],
+'使':[{c:'人',n:'rén',m:'Person'},{c:'史',n:'shǐ',m:'History'}],
+'住':[{c:'人',n:'rén',m:'Person'},{c:'主',n:'zhǔ',m:'Master'}],
+'什':[{c:'人',n:'rén',m:'Person'},{c:'十',n:'shí',m:'Ten'}],
+'候':[{c:'人',n:'rén',m:'Person'},{c:'矢',n:'shǐ',m:'Arrow'}],
+'假':[{c:'人',n:'rén',m:'Person'},{c:'叚',n:'jiǎ',m:'False'}],
+// ─── Hill / City (阝) ─────────────────────────────────
+'都':[{c:'者',n:'zhě',m:'Person'},{c:'阝',n:'yì',m:'City'}],
+'部':[{c:'咅',n:'pǒu',m:'Spit'},{c:'阝',n:'yì',m:'City'}],
+'阳':[{c:'阝',n:'fù',m:'Hill'},{c:'易',n:'yì',m:'Change'}],
+'院':[{c:'阝',n:'fù',m:'Hill'},{c:'完',n:'wán',m:'Complete'}],
+'降':[{c:'阝',n:'fù',m:'Hill'},{c:'夅',n:'jiàng',m:'Drop'}],
+'除':[{c:'阝',n:'fù',m:'Hill'},{c:'余',n:'yú',m:'Surplus'}],
+'际':[{c:'阝',n:'fù',m:'Hill'},{c:'示',n:'shì',m:'Show'}],
+'限':[{c:'阝',n:'fù',m:'Hill'},{c:'艮',n:'gěn',m:''}],
+// ─── Grass / Plants ───────────────────────────────────
+'花':[{c:'艹',n:'cǎo',m:'Grass'},{c:'化',n:'huà',m:'Change'}],
+'草':[{c:'艹',n:'cǎo',m:'Grass'},{c:'早',n:'zǎo',m:'Early'}],
+'茶':[{c:'艹',n:'cǎo',m:'Grass'},{c:'余',n:'yú',m:'Surplus'}],
+'药':[{c:'艹',n:'cǎo',m:'Grass'},{c:'约',n:'yuē',m:'Appoint'}],
+'菜':[{c:'艹',n:'cǎo',m:'Grass'},{c:'采',n:'cǎi',m:'Pick'}],
+'苦':[{c:'艹',n:'cǎo',m:'Grass'},{c:'古',n:'gǔ',m:'Ancient'}],
+'蓝':[{c:'艹',n:'cǎo',m:'Grass'},{c:'监',n:'jiān',m:'Monitor'}],
+// ─── Grain / Harvest ──────────────────────────────────
+'科':[{c:'禾',n:'hé',m:'Grain'},{c:'斗',n:'dǒu',m:'Dipper'}],
+'种':[{c:'禾',n:'hé',m:'Grain'},{c:'中',n:'zhōng',m:'Middle'}],
+'年':[{c:'禾',n:'hé',m:'Grain'},{c:'千',n:'qiān',m:'Thousand'}],
+'利':[{c:'禾',n:'hé',m:'Grain'},{c:'刀',n:'dāo',m:'Knife'}],
+// ─── Earth / Ground ───────────────────────────────────
+'地':[{c:'土',n:'tǔ',m:'Earth'},{c:'也',n:'yě',m:'Also'}],
+'坐':[{c:'土',n:'tǔ',m:'Earth'},{c:'人',n:'rén',m:'Person (×2)'}],
+// ─── Field / Inside ───────────────────────────────────
+'里':[{c:'田',n:'tián',m:'Field'},{c:'土',n:'tǔ',m:'Earth'}],
+'重':[{c:'千',n:'qiān',m:'Thousand'},{c:'里',n:'lǐ',m:'Inside'}],
+'野':[{c:'里',n:'lǐ',m:'Inside'},{c:'予',n:'yǔ',m:'Give'}],
+// ─── Knife / Cut ──────────────────────────────────────
+'到':[{c:'至',n:'zhì',m:'Arrive'},{c:'刀',n:'dāo',m:'Knife'}],
+'分':[{c:'八',n:'bā',m:'Eight'},{c:'刀',n:'dāo',m:'Knife'}],
+'别':[{c:'另',n:'lìng',m:'Other'},{c:'刀',n:'dāo',m:'Knife'}],
+'前':[{c:'止',n:'zhǐ',m:'Stop'},{c:'刀',n:'dāo',m:'Knife'}],
+// ─── Strength / Force ─────────────────────────────────
+'功':[{c:'工',n:'gōng',m:'Work'},{c:'力',n:'lì',m:'Strength'}],
+'动':[{c:'云',n:'yún',m:'Cloud'},{c:'力',n:'lì',m:'Strength'}],
+'努':[{c:'奴',n:'nú',m:'Slave'},{c:'力',n:'lì',m:'Strength'}],
+'助':[{c:'且',n:'qiě',m:'Also'},{c:'力',n:'lì',m:'Strength'}],
+// ─── Silk / Thread ────────────────────────────────────
+'红':[{c:'糹',n:'sī',m:'Silk'},{c:'工',n:'gōng',m:'Work'}],
+'线':[{c:'糹',n:'sī',m:'Silk'},{c:'戋',n:'jiān',m:'Small'}],
+'绿':[{c:'糹',n:'sī',m:'Silk'},{c:'彔',n:'lù',m:''}],
+'给':[{c:'糹',n:'sī',m:'Silk'},{c:'合',n:'hé',m:'Join'}],
+'经':[{c:'糹',n:'sī',m:'Silk'},{c:'巠',n:'jīng',m:''}],
+'级':[{c:'糹',n:'sī',m:'Silk'},{c:'及',n:'jí',m:'Reach'}],
+'纸':[{c:'糹',n:'sī',m:'Silk'},{c:'氏',n:'shì',m:'Clan'}],
+// ─── Metal ────────────────────────────────────────────
+'钱':[{c:'钅',n:'jīn',m:'Metal'},{c:'戋',n:'jiān',m:'Small'}],
+'银':[{c:'钅',n:'jīn',m:'Metal'},{c:'艮',n:'gěn',m:''}],
+'铁':[{c:'钅',n:'jīn',m:'Metal'},{c:'失',n:'shī',m:'Lose'}],
+'错':[{c:'钅',n:'jīn',m:'Metal'},{c:'昔',n:'xī',m:'Past'}],
+// ─── Food ─────────────────────────────────────────────
+'饭':[{c:'饣',n:'shí',m:'Food'},{c:'反',n:'fǎn',m:'Opposite'}],
+'饮':[{c:'饣',n:'shí',m:'Food'},{c:'欠',n:'qiàn',m:'Owe'}],
+'饿':[{c:'饣',n:'shí',m:'Food'},{c:'我',n:'wǒ',m:'I'}],
+'馆':[{c:'饣',n:'shí',m:'Food'},{c:'官',n:'guān',m:'Official'}],
+'饺':[{c:'饣',n:'shí',m:'Food'},{c:'交',n:'jiāo',m:'Intersect'}],
+// ─── Weather / Nature ─────────────────────────────────
+'电':[{c:'雨',n:'yǔ',m:'Rain'},{c:'申',n:'shēn',m:'Extend'}],
+'雪':[{c:'雨',n:'yǔ',m:'Rain'},{c:'彐',n:'jì',m:'Snout'}],
+'云':[{c:'二',n:'èr',m:'Two'},{c:'厶',n:'sī',m:'Private'}],
+'风':[{c:'几',n:'jǐ',m:'Table'},{c:'虫',n:'chóng',m:'Insect'}],
+'春':[{c:'三',n:'sān',m:'Three'},{c:'日',n:'rì',m:'Sun'}],
+'冬':[{c:'夂',n:'zhǐ',m:'Walk'},{c:'冫',n:'bīng',m:'Ice'}],
+'冷':[{c:'冫',n:'bīng',m:'Ice'},{c:'令',n:'lìng',m:'Order'}],
+// ─── Eye ──────────────────────────────────────────────
+'眼':[{c:'目',n:'mù',m:'Eye'},{c:'艮',n:'gěn',m:''}],
+'眉':[{c:'目',n:'mù',m:'Eye'},{c:'毛',n:'máo',m:'Hair'}],
+'睡':[{c:'目',n:'mù',m:'Eye'},{c:'垂',n:'chuí',m:'Hang'}],
+// ─── Misc common ──────────────────────────────────────
+'美':[{c:'羊',n:'yáng',m:'Sheep'},{c:'大',n:'dà',m:'Big'}],
+'天':[{c:'一',n:'yī',m:'One'},{c:'大',n:'dà',m:'Big'}],
+'百':[{c:'一',n:'yī',m:'One'},{c:'白',n:'bái',m:'White'}],
+'的':[{c:'白',n:'bái',m:'White'},{c:'勺',n:'sháo',m:'Spoon'}],
+'先':[{c:'生',n:'shēng',m:'Life'},{c:'儿',n:'ér',m:'Child'}],
+'站':[{c:'立',n:'lì',m:'Stand'},{c:'占',n:'zhàn',m:'Occupy'}],
+'破':[{c:'石',n:'shí',m:'Stone'},{c:'皮',n:'pí',m:'Skin'}],
+'男':[{c:'田',n:'tián',m:'Field'},{c:'力',n:'lì',m:'Strength'}],
+'笔':[{c:'竹',n:'zhú',m:'Bamboo'},{c:'毛',n:'máo',m:'Hair'}],
+'多':[{c:'夕',n:'xī',m:'Evening'},{c:'夕',n:'xī',m:'Evening'}],
+'新':[{c:'亲',n:'qīn',m:'Parent'},{c:'斤',n:'jīn',m:'Axe'}],
+};
+
+/* ══════════════════════════════════════════════════════
+   ONLINE DATA FETCHER
+   Uses Google Translate (gtx) for pinyin + meaning,
+   falls back to MyMemory for meaning only.
+   Also fetches decomposition from makemeahanzi IDS.
+   Cache: _onlineCache[word] = {p:'pīnyīn', m:'meaning'}
+══════════════════════════════════════════════════════ */
+var _onlineCache = {};
+
+function _fetchOnlineData(word, callback) {
+  // callback({p:'pinyin', m:'meaning'})  — either field may be ''
+  if (_onlineCache[word]) { callback(_onlineCache[word]); return; }
+
+  var gtxUrl = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-CN&tl=en&dt=t&dt=rm&q=' + encodeURIComponent(word);
+  fetch(gtxUrl)
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      var result = {p:'', m:''};
+      // Meaning from data[0]
+      if (data && data[0]) {
+        var parts = [];
+        for (var i = 0; i < data[0].length; i++) {
+          if (data[0][i] && data[0][i][0] && typeof data[0][i][0] === 'string') {
+            parts.push(data[0][i][0]);
+          }
+        }
+        result.m = parts.join('; ');
+      }
+      // Pinyin — scan arrays from end for a romanization string
+      if (data) {
+        for (var j = data.length - 1; j >= 0; j--) {
+          if (Array.isArray(data[j])) {
+            for (var k = 0; k < data[j].length; k++) {
+              var s = data[j][k];
+              if (typeof s === 'string' && /[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/.test(s)) {
+                result.p = s;
+                break;
+              }
+            }
+            if (result.p) break;
+          }
+        }
+        // Secondary pinyin scan: check nested arrays
+        if (!result.p && data[0]) {
+          for (var q = 0; q < data[0].length; q++) {
+            var seg = data[0][q];
+            if (seg && seg[3] && typeof seg[3] === 'string' && /[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜa-z]/.test(seg[3])) {
+              result.p = seg[3];
+              break;
+            }
+          }
+        }
+      }
+      // Always lowercase pinyin (Google Translate sometimes capitalizes)
+      if (result.p) result.p = result.p.toLowerCase();
+      _onlineCache[word] = result;
+      callback(result);
+    })
+    .catch(function(){
+      // Fallback: MyMemory for meaning only
+      fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(word) + '&langpair=zh|en')
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          var t = data && data.responseData && data.responseData.translatedText;
+          var result = {p:'', m:(t && t !== word) ? t : ''};
+          _onlineCache[word] = result;
+          callback(result);
+        })
+        .catch(function(){ callback({p:'',m:''}); });
+    });
+}
+
+/* Legacy wrapper — for code that still calls _fetchMeaning */
+function _fetchMeaning(word, onSuccess) {
+  _fetchOnlineData(word, function(r) { if (r && r.m) onSuccess(r.m); });
+}
+
+/* ── Stroke Mode Toggle ──────────────────────────────── */
+var _strokeMode = 'stroke'; // 'stroke' | 'radical'
+
+function setStrokeMode(mode) {
+  _strokeMode = mode;
+  var strokeContent = document.getElementById('strokeOrderContent');
+  var radicalContent = document.getElementById('radicalIntegrated');
+  var btnStroke = document.getElementById('modeStrokeBtn');
+  var btnRadical = document.getElementById('modeRadicalBtn');
+
+  if (mode === 'stroke') {
+    strokeContent.style.display = 'flex';
+    radicalContent.style.display = 'none';
+    btnStroke.classList.add('active');
+    btnRadical.classList.remove('active');
+  } else {
+    strokeContent.style.display = 'none';
+    radicalContent.style.display = 'flex';
+    btnStroke.classList.remove('active');
+    btnRadical.classList.add('active');
+    // Auto-populate radical panel if a character is already selected
+    if (_selectedWord) exploreCharRadical(_selectedWord);
+  }
+}
+
+/* ── Component renderer (local + online fallback) ──── */
+function _renderComponents(ch) {
+  var compEl  = document.getElementById('radComponents');
+  var compRow = document.getElementById('radCompRow');
+  if (!compEl || !compRow) return;
+
+  var decomp = _decomp[ch];
+  if (decomp && (decomp.length > 1 || (decomp.length === 1 && decomp[0].c !== ch))) {
+    // Local decomposition available
+    _showCompCards(compEl, compRow, decomp);
+  } else if (!decomp) {
+    // Not in local DB — try fetching online from makemeahanzi dictionary
+    compEl.style.display = 'block';
+    compRow.innerHTML = '<div style="color:#bbb;font-size:0.75rem">loading components…</div>';
+    _fetchDecomp(ch, function(parts) {
+      if (parts && parts.length > 0) {
+        _showCompCards(compEl, compRow, parts);
+      } else {
+        compEl.style.display = 'none';
+      }
+    });
+  } else {
+    compEl.style.display = 'none'; // basic radical, single-entry = itself
+  }
+}
+
+function _showCompCards(compEl, compRow, parts) {
+  compEl.style.display = 'block';
+  compRow.innerHTML = '';
+  parts.forEach(function(p) {
+    var card = document.createElement('div');
+    card.className = 'rad-comp-card';
+    card.innerHTML = '<div class="rad-comp-char">' + p.c + '</div>' +
+                     '<div class="rad-comp-name">' + p.n + '</div>' +
+                     (p.m ? '<div class="rad-comp-meaning">' + p.m.replace(/\s*\(basic.*?\)/,'') + '</div>' : '');
+    compRow.appendChild(card);
+  });
+}
+
+/* ── Online decomposition fetcher ─────────────────── */
+var _decompCache = {};
+
+function _fetchDecomp(ch, callback) {
+  if (_decompCache[ch] !== undefined) { callback(_decompCache[ch]); return; }
+
+  // Try to get IDS decomposition from cjkvi-ids on CDN
+  // File: ids.txt — each line: U+XXXX\tchar\tIDS
+  // We'll fetch per-character from the HanziWriter data which has radical info
+  // then use Google Translate for component meanings
+
+  // Strategy: Use IDS from raw GitHub, search for our character
+  var idsUrl = 'https://cdn.jsdelivr.net/gh/cjkvi/cjkvi-ids@master/ids.txt';
+
+  // Only fetch the IDS file once and cache
+  if (window._idsData) {
+    _parseIDS(ch, window._idsData, callback);
+    return;
+  }
+
+  fetch(idsUrl)
+    .then(function(r) { return r.text(); })
+    .then(function(text) {
+      window._idsData = text;
+      _parseIDS(ch, text, callback);
+    })
+    .catch(function() {
+      _decompCache[ch] = null;
+      callback(null);
+    });
+}
+
+function _parseIDS(ch, idsText, callback) {
+  // Find the line for this character
+  var lines = idsText.split('\n');
+  var ids = '';
+  for (var i = 0; i < lines.length; i++) {
+    var parts = lines[i].split('\t');
+    if (parts[1] === ch && parts[2]) {
+      ids = parts[2];
+      break;
+    }
+  }
+
+  if (!ids) { _decompCache[ch] = null; callback(null); return; }
+
+  // Parse IDS: remove operator chars (⿰⿱⿲⿳⿴⿵⿶⿷⿸⿹⿺⿻) to get component chars
+  var operators = /[⿰⿱⿲⿳⿴⿵⿶⿷⿸⿹⿺⿻]/g;
+  var components = ids.replace(operators, '').split('');
+  // Filter: remove the char itself, keep unique components
+  var seen = {};
+  var unique = [];
+  for (var j = 0; j < components.length; j++) {
+    var c = components[j];
+    if (c && c !== ch && c.trim() && !seen[c] && c.charCodeAt(0) > 0x2E00) {
+      seen[c] = true;
+      unique.push(c);
+    }
+  }
+
+  if (unique.length === 0) { _decompCache[ch] = null; callback(null); return; }
+
+  // Build parts with pinyin+meaning from vocabDB or _decomp
+  var result = unique.map(function(comp) {
+    var vd = (typeof _vocabDB !== 'undefined' && _vocabDB[comp]) || {};
+    var dd = _decomp[comp];
+    var pinyin = vd.p || (dd && dd[0] ? dd[0].n : '') || '';
+    var meaning = vd.m || (dd && dd[0] ? dd[0].m : '') || '';
+    return {c: comp, n: pinyin, m: meaning.replace(/\s*\(basic.*?\)/,'')};
+  });
+
+  _decompCache[ch] = result;
+  callback(result);
+
+  // For components without pinyin/meaning, try online fetch for each
+  result.forEach(function(part, idx) {
+    if (!part.n || !part.m) {
+      _fetchOnlineData(part.c, function(r) {
+        if (!r) return;
+        if (!part.n && r.p) part.n = r.p;
+        if (!part.m && r.m) part.m = r.m;
+        // Re-render if we got new data
+        var compEl  = document.getElementById('radComponents');
+        var compRow = document.getElementById('radCompRow');
+        if (compEl && compRow && _decompCache[ch]) {
+          _showCompCards(compEl, compRow, _decompCache[ch]);
+        }
+      });
+    }
+  });
+}
+
+/* ── Radical Explorer (integrated) ─────────────────── */
+function exploreCharRadical(ch) {
+  if (!ch) return;
+  var d  = charData[ch] || {};
+  var vd = (typeof _vocabDB !== 'undefined' && _vocabDB[ch]) || {};
+
+  // Local data
+  var localPinyin  = [d.p || vd.p, d.p2, d.p3].filter(Boolean).join(' / ');
+  var localMeaning = d.m || vd.m || '';
+  var pos   = vd.t || '';
+  var level = vd.lv || d.hsk || '';
+  var levelMap = {N1:'TOCFL Novice 1',N2:'TOCFL Novice 2',L1:'TOCFL Level 1',L2:'TOCFL Level 2',L3:'TOCFL Level 3',L4:'TOCFL Level 4',L5:'TOCFL Level 5'};
+
+  // Show char info section
+  document.getElementById('radCharPlaceholder').style.display = 'none';
+  document.getElementById('radCharInfo').style.display = 'block';
+  document.getElementById('radBigChar').textContent = ch;
+  document.getElementById('radPinyin').textContent  = localPinyin || '…';
+  document.getElementById('radPos').textContent     = pos;
+  var srcEl   = document.getElementById('radMeaningSource');
+  var meanEl  = document.getElementById('radMeaning');
+  var levelEl = document.getElementById('radLevel');
+
+  if (level && levelMap[level]) {
+    levelEl.innerHTML = '<span class="rad-level-badge">' + levelMap[level] + '</span>';
+  } else {
+    levelEl.innerHTML = '';
+  }
+
+  // Set local meaning, or placeholder
+  meanEl.textContent = localMeaning || '…';
+  if (srcEl) srcEl.textContent = (!localPinyin || !localMeaning) ? 'fetching…' : '';
+
+  // Fetch online for ANY missing field (pinyin, meaning)
+  if (!localPinyin || !localMeaning) {
+    _fetchOnlineData(ch, function(r) {
+      if (!r) return;
+      if (!localPinyin && r.p) {
+        var pe = document.getElementById('radPinyin');
+        if (pe) pe.textContent = r.p;
+      }
+      if (!localMeaning && r.m) {
+        var me = document.getElementById('radMeaning');
+        if (me) me.textContent = r.m;
+      }
+      var s2 = document.getElementById('radMeaningSource');
+      if (s2) s2.textContent = (r.p || r.m) ? '(online)' : '';
+    });
+  }
+
+  // ── Character decomposition (components) ──
+  _renderComponents(ch);
+
+  // ── Build word family from vocabDB ──
+  var grid = document.getElementById('radFamilyGrid');
+  grid.innerHTML = '';
+  if (typeof _vocabDB === 'undefined') {
+    grid.innerHTML = '<div style="color:#bbb;font-size:0.88rem">Vocabulary database not loaded</div>';
+    return;
+  }
+
+  var family = [];
+  var keys = Object.keys(_vocabDB);
+  for (var i = 0; i < keys.length; i++) {
+    var w = keys[i];
+    if (w.length >= 2 && w.indexOf(ch) !== -1) {
+      family.push(w);
+      if (family.length >= 60) break;
+    }
+  }
+
+  if (family.length === 0) {
+    grid.innerHTML = '<div style="color:#bbb;font-size:0.88rem">No multi-character words found for <strong>' + ch + '</strong></div>';
+    return;
+  }
+
+  // Sort: shorter words first, then by pinyin
+  family.sort(function(a, b) {
+    if (a.length !== b.length) return a.length - b.length;
+    var pa = (_vocabDB[a] && _vocabDB[a].p) || '';
+    var pb = (_vocabDB[b] && _vocabDB[b].p) || '';
+    return pa.localeCompare(pb);
+  });
+
+  family.forEach(function(word) {
+    var btn = document.createElement('button');
+    btn.className = 'rad-family-btn';
+    btn.textContent = word;
+    btn.onclick = function() { openExamplePopup(word); };
+    grid.appendChild(btn);
+  });
+}
+
+
+
+/* practiceFromStrokes — navigate to drawing board */
+function practiceFromStrokes() {
+  location.href = 'drawing.html';
+}
+function strokeQuiz() {
+  practiceFromStrokes();
+}
+
+/* setPracticeChar stub (used by practice dropdown in drawing board — not needed here) */
+function setPracticeChar(ch) { /* no-op in strokes page */ }
+
+/* Load HanziWriter lib (already loaded) then render the empty word list */
+document.addEventListener('DOMContentLoaded', function() {
+  _loadHanziWriterLib(function() {});
+  renderWordList();   /* shows "Type a character above to begin" */
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Meihua Boss Raid // 梅花奇幻讨伐战</title>
+  
+  <!-- Fantasy & RPG Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Noto+Sans+SC:wght@400;700;900&family=Noto+Serif+SC:wght@700;900&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Databases & Bridge -->
+  <script src="common/bridge.js"></script>
+  <script src="meihuadb.js"></script>
+  <script src="dict.js"></script>
+  
+  <style>
+    :root {
+      --gold-light: #fef08a;
+      --gold-primary: #f59e0b;
+      --gold-dark: #b45309;
+      --gold-border: #d97706;
+      --gold-glow: rgba(245, 158, 11, 0.45);
+      
+      --rpg-bg: #090d16;
+      --rpg-panel: rgba(14, 20, 36, 0.94);
+      --rpg-card: rgba(19, 27, 48, 0.96);
+      --rpg-border: rgba(217, 119, 6, 0.45);
+      
+      --ruby-red: #e11d48;
+      --ruby-glow: rgba(225, 29, 72, 0.5);
+      --sapphire-blue: #0284c7;
+      --emerald-green: #10b981;
+      --amber-yellow: #f59e0b;
+      
+      --text-main: #f8fafc;
+      --text-gold: #fde047;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      width: 100vw; height: 100vh; overflow: hidden; background: #04060a;
+      font-family: 'Outfit', 'Noto Sans SC', sans-serif; color: var(--text-main);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ══════════════════════════════════════
+       1920×1080 CENTERED VIEWPORT
+    ══════════════════════════════════════ */
+    #sceneContainer {
+      position: absolute; width: 1920px; height: 1080px;
+      transform-origin: top left; overflow: hidden;
+      display: flex; flex-direction: column;
+      background: #080c14;
+      box-shadow: 0 0 80px rgba(0, 0, 0, 0.98);
+    }
+
+    /* ── TOP NAV: FANTASY GOLD HEADER ── */
+    .rpg-nav {
+      height: 64px; padding: 0 36px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: relative; z-index: 100; flex-shrink: 0;
+      background: linear-gradient(180deg, #182238 0%, #0c1220 100%);
+      border-bottom: 2px solid var(--gold-border);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    }
+    .nav-left { display: flex; align-items: center; gap: 20px; }
+    .rpg-btn-back {
+      background: linear-gradient(180deg, #263554 0%, #131c30 100%);
+      border: 1.5px solid var(--gold-primary);
+      color: var(--gold-light); padding: 7px 22px; border-radius: 10px;
+      font-family: 'Cinzel', serif; font-size: 0.95rem; font-weight: 800;
+      cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+    .rpg-btn-back:hover {
+      background: linear-gradient(180deg, #d97706 0%, #92400e 100%);
+      color: #fff; box-shadow: 0 0 16px var(--gold-glow);
+    }
+    .nav-title {
+      font-family: 'Cinzel', serif; font-size: 1.55rem; font-weight: 900;
+      letter-spacing: 2px;
+      background: linear-gradient(180deg, #fffbeb 0%, #fde047 50%, #b45309 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);
+    }
+    .rpg-audio-panel {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(8, 12, 24, 0.7); border: 1.5px solid var(--gold-border);
+      border-radius: 12px; padding: 5px 16px;
+    }
+    .bgm-tag { font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 800; color: var(--gold-light); }
+    .nav-sound-btn { background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: var(--gold-light); }
+    .vol-slider { width: 90px; accent-color: var(--gold-primary); cursor: pointer; }
+    .vol-val-label { font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 800; color: var(--gold-light); min-width: 36px; }
+
+    /* ── SCREEN WRAPPER ── */
+    .br-screen {
+      position: absolute; top: 64px; bottom: 0; left: 0; right: 0;
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      padding: 0; z-index: 10;
+      animation: brScreenIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .br-screen.active { display: flex; }
+    @keyframes brScreenIn {
+      from { opacity: 0; transform: scale(0.98) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* ══════════════════════════════════════
+       SCREEN 1: SETUP SCREEN
+    ══════════════════════════════════════ */
+    .setup-card {
+      width: 1480px; height: 920px; background: var(--rpg-panel);
+      border: 2.5px solid var(--gold-border); border-radius: 24px;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), inset 0 0 40px rgba(245, 158, 11, 0.06);
+      padding: 28px 44px; display: flex; flex-direction: column; gap: 16px;
+      overflow: hidden;
+    }
+    .setup-header h1 {
+      font-family: 'Cinzel', serif; font-size: 1.85rem; font-weight: 900;
+      color: var(--gold-light); letter-spacing: 1.5px;
+    }
+    .setup-header p { font-size: 1.05rem; color: var(--text-muted); margin-top: 2px; }
+
+    .setup-tabs-row { display: flex; gap: 12px; }
+    .book-tab-btn {
+      flex: 1; padding: 10px; border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04); border: 1.5px solid rgba(217, 119, 6, 0.3);
+      font-family: 'Cinzel', serif; font-size: 1.05rem; font-weight: 800; color: #fff;
+      cursor: pointer; transition: all 0.2s; text-align: center;
+    }
+    .book-tab-btn:hover { background: rgba(245, 158, 11, 0.15); border-color: var(--gold-primary); }
+    .book-tab-btn.active {
+      background: linear-gradient(180deg, #f59e0b 0%, #b45309 100%);
+      color: #fff; border-color: var(--gold-light);
+      box-shadow: 0 0 18px var(--gold-glow);
+    }
+
+    .units-selector-box {
+      background: rgba(8, 12, 22, 0.65); border: 1.5px solid var(--rpg-border);
+      border-radius: 18px; padding: 16px 24px; display: flex; flex-direction: column; gap: 10px;
+      flex: 1;
+    }
+    .units-toolbar { display: flex; justify-content: space-between; align-items: center; }
+    .units-tool-title { font-family: 'Cinzel', serif; font-size: 1.05rem; font-weight: 800; color: var(--gold-light); }
+    .units-quick-btns { display: flex; gap: 10px; }
+    .btn-quick {
+      padding: 6px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 800;
+      background: rgba(255, 255, 255, 0.06); border: 1px solid var(--gold-border);
+      color: var(--gold-light); cursor: pointer; transition: all 0.15s; font-family: 'Cinzel', serif;
+    }
+    .btn-quick:hover { background: var(--gold-primary); color: #000; }
+
+    .units-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
+      max-height: 220px; overflow-y: auto; padding-right: 6px;
+    }
+    .unit-pill {
+      background: rgba(255, 255, 255, 0.03); border: 1.5px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px; padding: 8px 12px; cursor: pointer; transition: all 0.15s;
+      display: flex; flex-direction: column; gap: 2px; text-align: left;
+    }
+    .unit-pill:hover { border-color: var(--gold-primary); background: rgba(245, 158, 11, 0.1); }
+    .unit-pill.active {
+      border-color: var(--gold-primary); background: rgba(245, 158, 11, 0.22);
+      box-shadow: 0 0 14px var(--gold-glow);
+    }
+    .unit-num { font-family: 'Cinzel', serif; font-size: 0.95rem; font-weight: 900; color: var(--gold-light); }
+    .unit-title { font-size: 0.82rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .team-modes-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .team-mode-card {
+      background: rgba(255, 255, 255, 0.03); border: 1.5px solid rgba(217, 119, 6, 0.3);
+      border-radius: 16px; padding: 12px 16px; cursor: pointer; transition: all 0.2s;
+      display: flex; flex-direction: column; gap: 3px; text-align: center;
+    }
+    .team-mode-card:hover { border-color: var(--gold-primary); background: rgba(245, 158, 11, 0.1); }
+    .team-mode-card.active {
+      border-color: var(--gold-primary); background: rgba(245, 158, 11, 0.25);
+      box-shadow: 0 0 20px var(--gold-glow);
+    }
+    .tm-icon { font-size: 1.7rem; }
+    .tm-name { font-family: 'Cinzel', serif; font-size: 1.05rem; font-weight: 800; color: var(--gold-light); }
+    .tm-desc { font-size: 0.82rem; color: var(--text-muted); }
+
+    .setup-bottom-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 8px; border-top: 1.5px solid rgba(217, 119, 6, 0.3);
+    }
+    .btn-start-raid {
+      background: linear-gradient(180deg, #f59e0b 0%, #b45309 100%);
+      border: 2px solid var(--gold-light); border-radius: 16px; padding: 14px 44px;
+      font-family: 'Cinzel', serif; font-size: 1.35rem; font-weight: 900;
+      color: #fff; cursor: pointer; box-shadow: 0 0 30px var(--gold-glow);
+      transition: all 0.2s; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+    }
+    .btn-start-raid:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 0 45px rgba(245, 158, 11, 0.8); }
+
+    /* ══════════════════════════════════════
+       SCREEN 2: JRPG TURN-BASED BATTLE ARENA
+    ══════════════════════════════════════ */
+    .rpg-battle-container {
+      width: 100%; height: 100%; display: flex; flex-direction: column;
+      position: relative; overflow: hidden;
+    }
+
+    /* ── TOP HALF: BATTLEFIELD (530px) ── */
+    .battlefield-stage {
+      width: 100%; height: 530px; position: relative;
+      background-image: url('bg/game_background_3.png');
+      background-size: cover; background-position: center 36%;
+      border-bottom: 3px solid var(--gold-border);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9);
+      overflow: hidden;
+    }
+
+    #battleCanvas {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      image-rendering: pixelated;
+    }
+
+    /* Ornate Boss HP Header */
+    .boss-rpg-hud {
+      position: absolute; top: 16px; right: 36px; width: 560px;
+      background: linear-gradient(180deg, rgba(26, 16, 24, 0.94) 0%, rgba(12, 8, 14, 0.94) 100%);
+      border: 2px solid var(--ruby-red); border-radius: 16px; padding: 10px 22px;
+      display: flex; flex-direction: column; gap: 6px;
+      box-shadow: 0 4px 25px rgba(225, 29, 72, 0.4); z-index: 20;
+    }
+    .boss-name-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: 'Cinzel', serif; font-size: 1.2rem; font-weight: 900;
+      color: #fda4af; text-shadow: 0 0 10px var(--ruby-glow);
+    }
+    .boss-hp-track {
+      width: 100%; height: 22px; background: rgba(0, 0, 0, 0.85);
+      border-radius: 11px; border: 1.5px solid var(--ruby-red); overflow: hidden; position: relative;
+    }
+    .boss-hp-fill {
+      height: 100%; width: 100%;
+      background: linear-gradient(90deg, #e11d48, #f59e0b);
+      box-shadow: 0 0 16px var(--ruby-glow); transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .boss-hp-text {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 900; color: #fff;
+    }
+
+    /* Turn Indicator (Left) */
+    .turn-rpg-hud {
+      position: absolute; top: 16px; left: 36px;
+      background: linear-gradient(180deg, rgba(20, 28, 48, 0.94) 0%, rgba(10, 16, 30, 0.94) 100%);
+      border: 2px solid var(--gold-border); border-radius: 16px; padding: 10px 24px;
+      font-family: 'Cinzel', serif; font-size: 1.15rem; font-weight: 900; color: var(--gold-light);
+      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.6); z-index: 20;
+    }
+
+    /* ── BOTTOM HALF: TURN-BASED QUIZ & COMMANDS (486px) ── */
+    .rpg-quiz-stage {
+      width: 100%; flex: 1;
+      background: linear-gradient(180deg, #101626 0%, #080c14 100%);
+      padding: 14px 36px 14px; display: flex; flex-direction: column;
+      justify-content: space-between; position: relative;
+    }
+
+    .quiz-main-grid {
+      display: grid; grid-template-columns: 1fr 500px; gap: 20px;
+      flex: 1; align-items: center;
+    }
+
+    /* Ornate Grimoire Question Box */
+    .grimoire-card-box {
+      background: linear-gradient(180deg, #141c30 0%, #0e1424 100%);
+      border: 2.5px solid var(--gold-border); border-radius: 20px;
+      padding: 14px 24px; height: 100%;
+      display: flex; flex-direction: column; justify-content: space-between;
+      gap: 8px; box-shadow: 0 6px 30px rgba(0, 0, 0, 0.7), inset 0 0 30px rgba(245, 158, 11, 0.05);
+      position: relative;
+    }
+    
+    .q-prompt-header {
+      display: flex; align-items: baseline; justify-content: center; gap: 24px;
+      border-bottom: 1px solid rgba(217, 119, 6, 0.3); padding-bottom: 4px;
+    }
+    .q-hanzi {
+      font-family: 'Noto Serif SC', serif; font-size: 4.6rem; font-weight: 900;
+      color: #fff; text-shadow: 0 0 25px rgba(254, 240, 138, 0.4); line-height: 1;
+    }
+    .q-pinyin {
+      font-size: 2.3rem; font-weight: 800; color: var(--gold-light);
+      letter-spacing: 2px; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+    }
+
+    /* 2x2 Option Choices Grid */
+    .options-2x2-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%;
+    }
+    .opt-choice-btn {
+      background: linear-gradient(180deg, #1b253c 0%, #101728 100%);
+      border: 2px solid rgba(217, 119, 6, 0.4);
+      border-radius: 14px; padding: 10px 16px;
+      display: flex; align-items: center; gap: 12px;
+      cursor: pointer; transition: all 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+      text-align: left;
+    }
+    .opt-choice-btn:hover {
+      border-color: var(--gold-light);
+      background: linear-gradient(180deg, #2b3a5c 0%, #17223b 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 18px var(--gold-glow);
+    }
+    .opt-choice-btn:active { transform: translateY(1px); }
+
+    .opt-badge {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: linear-gradient(180deg, #f59e0b 0%, #b45309 100%);
+      color: #fff; font-family: 'Cinzel', serif; font-size: 1.2rem; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    }
+    .opt-text {
+      font-size: 1.55rem; font-weight: 700; color: #f1f5f9; line-height: 1.2;
+    }
+
+    /* Option feedback states */
+    .opt-choice-btn.correct-glow {
+      background: linear-gradient(180deg, #059669 0%, #047857 100%) !important;
+      border-color: #34d399 !important;
+      box-shadow: 0 0 30px rgba(52, 211, 153, 0.8) !important;
+    }
+    .opt-choice-btn.wrong-glow {
+      background: linear-gradient(180deg, #dc2626 0%, #991b1b 100%) !important;
+      border-color: #f87171 !important;
+      box-shadow: 0 0 30px rgba(239, 68, 68, 0.8) !important;
+    }
+
+    /* 4 Hero Status Cards Grid (Turn-Based Party UI) */
+    .party-status-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; height: 100%;
+    }
+    .hero-status-card {
+      background: linear-gradient(180deg, #162036 0%, #0d1424 100%);
+      border: 2px solid rgba(217, 119, 6, 0.35); border-radius: 16px;
+      padding: 10px 16px; display: flex; flex-direction: column;
+      justify-content: center; align-items: center; gap: 4px;
+      cursor: pointer; transition: all 0.2s; position: relative;
+    }
+    .hero-status-card.active-turn {
+      border-color: var(--gold-light); transform: scale(1.03);
+      box-shadow: 0 0 25px var(--gold-glow);
+      background: linear-gradient(180deg, #243456 0%, #121c32 100%);
+    }
+    .hero-role-title { font-family: 'Cinzel', serif; font-size: 0.95rem; font-weight: 800; }
+    .hero-score-val { font-family: 'Cinzel', serif; font-size: 2rem; font-weight: 900; color: #fff; }
+
+    /* Turn-Based Action Command Bar */
+    .rpg-command-bar {
+      display: flex; gap: 14px; align-items: center; justify-content: space-between;
+      background: linear-gradient(180deg, #18243c 0%, #0c1220 100%);
+      border: 2px solid var(--gold-border); border-radius: 14px; padding: 6px 20px;
+      margin-top: 6px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    }
+    .cmd-hint-text { font-family: 'Cinzel', serif; font-size: 0.95rem; font-weight: 700; color: var(--gold-light); }
+    .cmd-btns-right { display: flex; gap: 10px; }
+    .cmd-btn {
+      padding: 8px 20px; border-radius: 10px; font-family: 'Cinzel', serif;
+      font-size: 0.95rem; font-weight: 900; cursor: pointer; transition: all 0.15s;
+      display: flex; align-items: center; gap: 6px; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    }
+    .cmd-btn-force-win {
+      background: linear-gradient(180deg, #10b981 0%, #047857 100%);
+      border: 1.5px solid #6ee7b7; color: #fff;
+    }
+    .cmd-btn-force-miss {
+      background: linear-gradient(180deg, #e11d48 0%, #9f1239 100%);
+      border: 1.5px solid #fda4af; color: #fff;
+    }
+    .cmd-btn-audio {
+      background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%);
+      border: 1.5px solid #c4b5fd; color: #fff;
+    }
+
+    /* ══════════════════════════════════════
+       SCREEN 3: VICTORY CELEBRATION
+    ══════════════════════════════════════ */
+    .victory-card {
+      width: 1200px; background: var(--rpg-panel); border: 2.5px solid var(--gold-primary);
+      border-radius: 28px; box-shadow: 0 0 60px var(--gold-glow);
+      padding: 44px 50px; display: flex; flex-direction: column; align-items: center; gap: 20px;
+    }
+    .vic-title {
+      font-family: 'Cinzel', serif; font-size: 3.4rem; font-weight: 900;
+      background: linear-gradient(180deg, #fffbeb 0%, #fde047 50%, #b45309 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .vic-teams-grid { display: flex; gap: 20px; width: 100%; justify-content: center; margin: 16px 0; }
+    .vic-team-box {
+      background: rgba(8, 12, 22, 0.85); border: 2px solid var(--gold-border);
+      border-radius: 18px; padding: 20px 28px; text-align: center; flex: 1; max-width: 260px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="sceneContainer">
+
+  <!-- TOP NAV -->
+  <nav class="rpg-nav">
+    <div class="nav-left">
+      <button class="rpg-btn-back" id="btnNavBack" onclick="handleNavBack()">◀ HUB</button>
+      <div class="nav-title">MEIHUA BOSS RAID // 梅花奇幻讨伐战</div>
+    </div>
+    <div class="nav-right">
+      <div class="rpg-audio-panel">
+        <span class="bgm-tag">🎵 BGM</span>
+        <button class="nav-sound-btn" id="btnAudioToggle" onclick="GameAudio.toggleMute()">🔊</button>
+        <div class="vol-slider-wrap">
+          <input type="range" min="0" max="100" value="65" class="vol-slider" id="volSlider" oninput="GameAudio.handleSliderChange(this.value)">
+          <span class="vol-val-label" id="volValLabel">65%</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 1: SETUP
+  ══════════════════════════════════════ -->
+  <div class="br-screen active" id="screenSetup">
+    <div class="setup-card">
+      <div class="setup-header">
+        <h1>// SELECT MEIHUA RAID MISSION</h1>
+        <p>Pilih 1 Bab saja atau Banyak Bab dari Meihua 1–6 untuk diserang bersama seluruh kelas!</p>
+      </div>
+
+      <!-- Book Selector Tabs (Buku 1 - 6) -->
+      <div class="setup-tabs-row">
+        <button class="book-tab-btn active" id="bookTab_1" onclick="switchBookTab(1)">🌸 MEIHUA 1</button>
+        <button class="book-tab-btn" id="bookTab_2" onclick="switchBookTab(2)">🌸 MEIHUA 2</button>
+        <button class="book-tab-btn" id="bookTab_3" onclick="switchBookTab(3)">🌸 MEIHUA 3</button>
+        <button class="book-tab-btn" id="bookTab_4" onclick="switchBookTab(4)">🌸 MEIHUA 4</button>
+        <button class="book-tab-btn" id="bookTab_5" onclick="switchBookTab(5)">🌸 MEIHUA 5</button>
+        <button class="book-tab-btn" id="bookTab_6" onclick="switchBookTab(6)">🌸 MEIHUA 6</button>
+      </div>
+
+      <!-- Units Grid (Bab 1 - 10) -->
+      <div class="units-selector-box">
+        <div class="units-toolbar">
+          <span class="units-tool-title" id="unitsToolbarTitle">DAFTAR BAB MEIHUA BUKU 1</span>
+          <div class="units-quick-btns">
+            <button class="btn-quick" onclick="selectAllCurrentBookUnits()">✓ PILIH SEMUA BAB</button>
+            <button class="btn-quick" onclick="clearCurrentBookUnits()">✗ HAPUS PILIHAN</button>
+          </div>
+        </div>
+        <div class="units-grid" id="unitsGridContainer"></div>
+      </div>
+
+      <!-- Team Mode Selector -->
+      <div>
+        <div style="font-family:'Cinzel', serif; font-size:1.05rem; font-weight:800; color:var(--gold-light); margin-bottom:8px;">
+          👥 MODE FORMASI TIM
+        </div>
+        <div class="team-modes-row">
+          <div class="team-mode-card active" id="tmCard_coop" onclick="selectTeamMode('coop')">
+            <span class="tm-icon">🌟</span>
+            <span class="tm-name">Class Co-op</span>
+            <span class="tm-desc">4 Hero bertarung bersama seisi kelas</span>
+          </div>
+          <div class="team-mode-card" id="tmCard_2" onclick="selectTeamMode(2)">
+            <span class="tm-icon">⚔️</span>
+            <span class="tm-name">2 Tim Duel</span>
+            <span class="tm-desc">🔴 Knight vs 🔵 Wizard</span>
+          </div>
+          <div class="team-mode-card" id="tmCard_3" onclick="selectTeamMode(3)">
+            <span class="tm-icon">⚔️</span>
+            <span class="tm-name">3 Tim Duel</span>
+            <span class="tm-desc">🔴 Knight · 🔵 Wizard · 🟢 Kunoichi</span>
+          </div>
+          <div class="team-mode-card" id="tmCard_4" onclick="selectTeamMode(4)">
+            <span class="tm-icon">⚔️</span>
+            <span class="tm-name">4 Tim Duel</span>
+            <span class="tm-desc">🔴 Knight · 🔵 Wizard · 🟢 Kunoichi · 🟡 Mage</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="setup-bottom-bar">
+        <div class="setup-summary-text" id="setupSummaryText">
+          Dipilih: <strong>1 Bab</strong> · Mode: <strong>Class Co-op</strong>
+        </div>
+        <button class="btn-start-raid" onclick="startBossRaid()">
+          ⚔️ MULAI PERTEMPURAN ▶
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 2: JRPG TURN-BASED ARENA
+  ══════════════════════════════════════ -->
+  <div class="br-screen" id="screenRaid">
+    <div class="rpg-battle-container">
+
+      <!-- ── TOP HALF: BATTLEFIELD (530px) ── -->
+      <div class="battlefield-stage" id="battlefieldStage">
+        <canvas id="battleCanvas" width="1920" height="530"></canvas>
+
+        <!-- Turn Indicator (Left) -->
+        <div class="turn-rpg-hud" id="turnRpgHud">
+          ⚔️ GILIRAN: <span id="activeHeroTurnName" style="color:var(--gold-light);">FLAME KNIGHT</span>
+        </div>
+
+        <!-- Boss HUD Overlay (Right) -->
+        <div class="boss-rpg-hud">
+          <div class="boss-name-row">
+            <span id="bossNameLabel">🐂 MINOTAUR DEMON WARLORD</span>
+            <span id="bossStageLabel" style="font-size:0.9rem; color:var(--gold-light);">STAGE 1/15</span>
+          </div>
+          <div class="boss-hp-track">
+            <div class="boss-hp-fill" id="bossHpFill"></div>
+            <div class="boss-hp-text" id="bossHpText">1500 / 1500 HP</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── BOTTOM HALF: TURN-BASED QUIZ & COMMANDS (486px) ── -->
+      <div class="rpg-quiz-stage">
+        <div class="quiz-main-grid">
+
+          <!-- Grimoire Multiple Choice Card -->
+          <div class="grimoire-card-box">
+            <div class="q-prompt-header">
+              <div class="q-hanzi" id="qHanzi">个</div>
+              <div class="q-pinyin" id="qPinyin">gè</div>
+            </div>
+
+            <!-- 4 Options (A, B, C, D) -->
+            <div class="options-2x2-grid" id="quizOptionsGrid">
+              <!-- Dynamic Options Generated Here -->
+            </div>
+          </div>
+
+          <!-- 4 Hero Party Status Cards -->
+          <div class="party-status-grid" id="partyStatusGrid">
+            <!-- Dynamic Hero Status Cards -->
+          </div>
+
+        </div>
+
+        <!-- Turn-Based Action Command Bar -->
+        <div class="rpg-command-bar">
+          <div class="cmd-hint-text">
+            🎮 PILIH JAWABAN: TEKAN <kbd>1/A</kbd>, <kbd>2/B</kbd>, <kbd>3/C</kbd>, <kbd>4/D</kbd> ATAU KLIK TOMBOL
+          </div>
+          <div class="cmd-btns-right">
+            <button class="cmd-btn cmd-btn-force-win" onclick="handleOptionChosen(true)" title="Shortcut: Space">
+              ⚡ BENAR [SPACE]
+            </button>
+            <button class="cmd-btn cmd-btn-force-miss" onclick="handleOptionChosen(false)" title="Shortcut: X">
+              🛡️ SALAH [X]
+            </button>
+            <button class="cmd-btn cmd-btn-audio" onclick="playCurrentAudio()" title="Shortcut: P">
+              📢 AUDIO [P]
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 3: VICTORY CELEBRATION
+  ══════════════════════════════════════ -->
+  <div class="br-screen" id="screenVictory">
+    <div class="victory-card">
+      <div class="vic-title" id="endGameTitle">👑 VICTORY ACHIEVED!</div>
+      <div style="font-family:'Cinzel', serif; font-size:1.4rem; color:#fff; font-weight:700;" id="endGameSub">Monster Meihua berhasil ditaklukkan!</div>
+
+      <div class="vic-teams-grid" id="victoryTeamsGrid"></div>
+
+      <div style="display:flex; gap:16px; margin-top:10px;">
+        <button class="btn-start-raid" onclick="startBossRaid()">🔄 MAIN LAGI</button>
+        <button class="btn-quick" style="padding:14px 36px; font-size:1.1rem;" onclick="showScreen('screenSetup')">⚙️ SETTING BAB</button>
+        <button class="btn-quick" style="padding:14px 36px; font-size:1.1rem;" onclick="location.href='../index.html'">🏠 MENU HUB</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /#sceneContainer -->
+
+<script>
+/* ══════════════════════════════════════
+   1. AUDIO ENGINE
+══════════════════════════════════════ */
+const GameAudio = {
+  ctx: null, masterGain: null, sfxGain: null, bgmGain: null,
+  isMuted: false, volume: 0.65, bgmTimer: null, bgmStep: 0,
+
+  init() {
+    if (this.ctx) return;
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    this.ctx = new AudioContext();
+
+    this.masterGain = this.ctx.createGain();
+    this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
+    this.masterGain.connect(this.ctx.destination);
+
+    this.sfxGain = this.ctx.createGain();
+    this.sfxGain.gain.setValueAtTime(0.9, this.ctx.currentTime);
+    this.sfxGain.connect(this.masterGain);
+
+    this.bgmGain = this.ctx.createGain();
+    this.bgmGain.gain.setValueAtTime(0.28, this.ctx.currentTime);
+    this.bgmGain.connect(this.masterGain);
+
+    this.startBgmLoop();
+  },
+
+  handleSliderChange(val) {
+    this.volume = val / 100;
+    document.getElementById('volValLabel').textContent = Math.round(val) + '%';
+    if (!this.ctx) this.init();
+    if (this.masterGain && !this.isMuted) {
+      this.masterGain.gain.setTargetAtTime(this.volume, this.ctx.currentTime, 0.05);
+    }
+  },
+
+  toggleMute() {
+    this.isMuted = !this.isMuted;
+    const btn = document.getElementById('btnAudioToggle');
+    if (btn) btn.textContent = this.isMuted ? '🔇' : '🔊';
+    if (!this.ctx) this.init();
+    if (this.masterGain) {
+      this.masterGain.gain.setTargetAtTime(this.isMuted ? 0 : this.volume, this.ctx.currentTime, 0.05);
+    }
+  },
+
+  playSlash() {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(950, now);
+    osc.frequency.exponentialRampToValueAtTime(140, now + 0.18);
+    gain.gain.setValueAtTime(0.6, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.18);
+  },
+
+  playRoar() {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(140, now);
+    osc.frequency.linearRampToValueAtTime(50, now + 0.38);
+    gain.gain.setValueAtTime(0.55, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.38);
+  },
+
+  playVictory() {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    const freqs = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+    freqs.forEach((f, idx) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(f, now + idx * 0.08);
+      gain.gain.setValueAtTime(0.4, now + idx * 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.6);
+      osc.connect(gain);
+      gain.connect(this.sfxGain);
+      osc.start(now + idx * 0.08);
+      osc.stop(now + idx * 0.08 + 0.6);
+    });
+  },
+
+  playDefeat() {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    const freqs = [329.63, 293.66, 261.63, 220.00, 164.81];
+    freqs.forEach((f, idx) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(f, now + idx * 0.14);
+      gain.gain.setValueAtTime(0.35, now + idx * 0.14);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.14 + 0.7);
+      osc.connect(gain);
+      gain.connect(this.sfxGain);
+      osc.start(now + idx * 0.14);
+      osc.stop(now + idx * 0.14 + 0.7);
+    });
+  },
+
+  speakHanzi(text) {
+    if (!('speechSynthesis' in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'zh-CN';
+      u.rate = 0.85;
+      window.speechSynthesis.speak(u);
+    } catch(e) {}
+  },
+
+  startBgmLoop() {
+    const scale = [130.81, 155.56, 174.61, 196.00, 233.08];
+    setInterval(() => {
+      if (!this.ctx || this.isMuted) return;
+      this.bgmStep++;
+      const now = this.ctx.currentTime;
+      if (this.bgmStep % 2 === 0) {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const note = scale[Math.floor(Math.random() * scale.length)];
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(note, now);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+        osc.connect(gain);
+        gain.connect(this.bgmGain);
+        osc.start(now);
+        osc.stop(now + 0.28);
+      }
+    }, 200);
+  }
+};
+
+window.addEventListener('pointerdown', () => GameAudio.init(), { once: true });
+
+/* ══════════════════════════════════════
+   2. SPRITESHEET ATLAS CONFIG & POSITIONS
+══════════════════════════════════════ */
+const BOSS_CONFIG = {
+  name: '🐂 MINOTAUR DEMON WARLORD',
+  src: 'chars/Minotaur_1/Minotaur_1.png',
+  frameSize: 128,
+  displayH: 380,
+  baseX: 1300,
+  baseY: 265,
+  animations: {
+    idle:   { y: 391, frames: 10, fps: 8 },
+    run:    { y: 521, frames: 12, fps: 14 },
+    attack: { y: 1,   frames: 5,  fps: 9 },
+    hurt:   { y: 261, frames: 3,  fps: 6 },
+    dead:   { y: 131, frames: 5,  fps: 6 }
+  }
+};
+
+const HERO_CONFIGS = [
+  {
+    id: 1, name: '🔴 TIM MERAH', role: 'Flame Knight', color: '#f43f5e',
+    src: 'chars/Knight_1/Knight_1.png',
+    frameSize: 128, displayH: 260,
+    baseX: 610, baseY: 305,
+    animations: {
+      idle:   { y: 651, frames: 4, fps: 7 },
+      run:    { y: 781, frames: 7, fps: 12 },
+      attack: { y: 1,   frames: 5, fps: 10 },
+      hurt:   { y: 521, frames: 2, fps: 6 },
+      dead:   { y: 391, frames: 6, fps: 6 }
+    }
+  },
+  {
+    id: 2, name: '🔵 TIM BIRU', role: 'Arcane Wizard', color: '#38bdf8',
+    src: 'chars/Fire Wizard/Fire Wizard.png',
+    frameSize: 128, displayH: 250,
+    baseX: 430, baseY: 245,
+    animations: {
+      idle:   { y: 521, frames: 7, fps: 8 },
+      run:    { y: 651, frames: 8, fps: 12 },
+      attack: { y: 1,   frames: 4, fps: 9 },
+      hurt:   { y: 391, frames: 3, fps: 6 },
+      dead:   { y: 261, frames: 6, fps: 6 }
+    }
+  },
+  {
+    id: 3, name: '🟢 TIM HIJAU', role: 'Wind Kunoichi', color: '#34d399',
+    src: 'chars/Kunoichi/Kunoichi.png',
+    frameSize: 128, displayH: 255,
+    baseX: 620, baseY: 345,
+    animations: {
+      idle:   { y: 521, frames: 9, fps: 9 },
+      run:    { y: 651, frames: 8, fps: 13 },
+      attack: { y: 1,   frames: 6, fps: 11 },
+      hurt:   { y: 391, frames: 2, fps: 6 },
+      dead:   { y: 261, frames: 5, fps: 6 }
+    }
+  },
+  {
+    id: 4, name: '🟡 TIM KUNING', role: 'Lightning Mage', color: '#facc15',
+    src: 'chars/Lightning Mage/Lightning Mage.png',
+    frameSize: 128, displayH: 250,
+    baseX: 440, baseY: 335,
+    animations: {
+      idle:   { y: 521, frames: 7, fps: 8 },
+      run:    { y: 651, frames: 8, fps: 12 },
+      attack: { y: 1,   frames: 10, fps: 12 },
+      hurt:   { y: 391, frames: 3, fps: 6 },
+      dead:   { y: 261, frames: 5, fps: 6 }
+    }
+  }
+];
+
+class BattleActor {
+  constructor(cfg, isBoss = false) {
+    this.cfg = cfg;
+    this.isBoss = isBoss;
+    this.img = new Image();
+    this.loaded = false;
+    this.img.onload = () => { this.loaded = true; };
+    this.img.src = cfg.src;
+
+    this.x = isBoss ? cfg.baseX : cfg.baseX;
+    this.y = isBoss ? cfg.baseY : cfg.baseY;
+    this.targetX = this.x;
+    this.targetY = this.y;
+    this.flipX = isBoss ? true : false;
+
+    this.currentAnim = 'idle';
+    this.frameIndex = 0;
+    this.elapsed = 0;
+    this.isOneShot = false;
+    this.onComplete = null;
+  }
+
+  play(animName, oneShot = false, onComplete = null) {
+    this.currentAnim = animName;
+    this.frameIndex = 0;
+    this.elapsed = 0;
+    this.isOneShot = oneShot;
+    this.onComplete = onComplete;
+  }
+
+  update(dt) {
+    if (!this.loaded) return;
+
+    if (Math.abs(this.x - this.targetX) > 2) {
+      this.x += (this.targetX - this.x) * 0.18;
+    } else {
+      this.x = this.targetX;
+    }
+
+    const anim = this.cfg.animations[this.currentAnim] || this.cfg.animations['idle'];
+    if (!anim) return;
+
+    this.elapsed += dt;
+    const frameDur = 1000 / anim.fps;
+    if (this.elapsed >= frameDur) {
+      this.elapsed -= frameDur;
+      this.frameIndex++;
+      if (this.frameIndex >= anim.frames) {
+        if (this.isOneShot) {
+          this.frameIndex = anim.frames - 1;
+          const cb = this.onComplete;
+          if (this.currentAnim !== 'dead') {
+            this.play('idle');
+          }
+          if (cb) cb();
+        } else {
+          this.frameIndex = 0;
+        }
+      }
+    }
+  }
+
+  draw(ctx) {
+    if (!this.loaded) return;
+    const anim = this.cfg.animations[this.currentAnim] || this.cfg.animations['idle'];
+    if (!anim) return;
+
+    const fSize = this.cfg.frameSize || 128;
+    const sx = 1 + this.frameIndex * fSize;
+    const sy = anim.y;
+
+    const dSize = this.cfg.displayH || 280;
+    const drawX = this.x - dSize / 2;
+    const drawY = this.y - dSize / 2;
+
+    ctx.save();
+    if (this.flipX) {
+      ctx.translate(drawX + dSize, drawY);
+      ctx.scale(-1, 1);
+      ctx.drawImage(this.img, sx, sy, fSize, fSize, 0, 0, dSize, dSize);
+    } else {
+      ctx.drawImage(this.img, sx, sy, fSize, fSize, drawX, drawY, dSize, dSize);
+    }
+    ctx.restore();
+  }
+}
+
+/* ══════════════════════════════════════
+   3. APP STATE & VIEWPORT SCALING
+══════════════════════════════════════ */
+let _activeBookTab = 1;
+let _selectedUnits = ['MH1U1'];
+let _teamMode = 'coop';
+let _activeTeams = [];
+
+let _raidQuestions = [];
+let _currentRaidIndex = 0;
+let _bossMaxHp = 1500;
+let _bossCurrentHp = 1500;
+let _currentTurnTeam = 0;
+let _isEvaluatingAnswer = false;
+
+let _bossActor = null;
+let _heroActors = [];
+let _floatingDamages = [];
+let _slashEffects = [];
+let _lastAnimTime = 0;
+
+function _scaleScene() {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const s = Math.min(vw / 1920, vh / 1080);
+  const container = document.getElementById('sceneContainer');
+  if (container) {
+    container.style.transform = `scale(${s})`;
+    container.style.left = `${(vw - 1920 * s) / 2}px`;
+    container.style.top = `${(vh - 1080 * s) / 2}px`;
+  }
+}
+window.addEventListener('resize', _scaleScene);
+_scaleScene();
+
+function showScreen(screenId) {
+  document.querySelectorAll('.br-screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(screenId);
+  if (el) el.classList.add('active');
+
+  const backBtn = document.getElementById('btnNavBack');
+  if (backBtn) {
+    if (screenId === 'screenSetup') backBtn.innerHTML = '◀ HUB';
+    else backBtn.innerHTML = '⚙️ SETTING';
+  }
+}
+
+function handleNavBack() {
+  const active = document.querySelector('.br-screen.active');
+  if (active && active.id === 'screenSetup') {
+    location.href = '../index.html';
+  } else {
+    showScreen('screenSetup');
+  }
+}
+
+/* ══════════════════════════════════════
+   4. SETUP CURRICULUM LOGIC
+══════════════════════════════════════ */
+function switchBookTab(bookNum) {
+  _activeBookTab = bookNum;
+  document.querySelectorAll('.book-tab-btn').forEach(b => b.classList.remove('active'));
+  const t = document.getElementById('bookTab_' + bookNum);
+  if (t) t.classList.add('active');
+
+  document.getElementById('unitsToolbarTitle').textContent = `DAFTAR BAB MEIHUA BUKU ${bookNum}`;
+  renderUnitsGrid();
+}
+
+function renderUnitsGrid() {
+  const grid = document.getElementById('unitsGridContainer');
+  grid.innerHTML = '';
+
+  const bookKey = 'meihua' + _activeBookTab;
+  const bookData = (typeof _meihuaDB !== 'undefined') ? _meihuaDB[bookKey] : null;
+
+  for (let u = 1; u <= 10; u++) {
+    const unitKey = `MH${_activeBookTab}U${u}`;
+    const unitData = bookData ? bookData['unit' + u] : null;
+    const title = unitData ? unitData.title : `Bab ${u}`;
+    const count = (unitData && unitData.vocab) ? unitData.vocab.length : 0;
+
+    const isSelected = _selectedUnits.includes(unitKey);
+
+    const pill = document.createElement('div');
+    pill.className = `unit-pill ${isSelected ? 'active' : ''}`;
+    pill.innerHTML = `
+      <span class="unit-num">🌸 BAB ${u} (${count} Kata)</span>
+      <span class="unit-title">${title}</span>
+    `;
+
+    pill.onclick = () => toggleUnitSelection(unitKey);
+    grid.appendChild(pill);
+  }
+  updateSetupSummary();
+}
+
+function toggleUnitSelection(unitKey) {
+  const idx = _selectedUnits.indexOf(unitKey);
+  if (idx !== -1) {
+    if (_selectedUnits.length > 1) _selectedUnits.splice(idx, 1);
+  } else {
+    _selectedUnits.push(unitKey);
+  }
+  renderUnitsGrid();
+}
+
+function selectAllCurrentBookUnits() {
+  for (let u = 1; u <= 10; u++) {
+    const unitKey = `MH${_activeBookTab}U${u}`;
+    if (!_selectedUnits.includes(unitKey)) _selectedUnits.push(unitKey);
+  }
+  renderUnitsGrid();
+}
+
+function clearCurrentBookUnits() {
+  _selectedUnits = _selectedUnits.filter(k => !k.startsWith(`MH${_activeBookTab}`));
+  if (_selectedUnits.length === 0) _selectedUnits.push(`MH${_activeBookTab}U1`);
+  renderUnitsGrid();
+}
+
+function selectTeamMode(mode) {
+  _teamMode = mode;
+  document.querySelectorAll('.team-mode-card').forEach(c => c.classList.remove('active'));
+  const target = document.getElementById('tmCard_' + mode);
+  if (target) target.classList.add('active');
+  updateSetupSummary();
+}
+
+function updateSetupSummary() {
+  let totalWords = 0;
+  _selectedUnits.forEach(uKey => {
+    const bNum = uKey.substring(2, 3);
+    const uNum = uKey.substring(4);
+    const bData = _meihuaDB['meihua' + bNum];
+    if (bData && bData['unit' + uNum] && bData['unit' + uNum].vocab) {
+      totalWords += bData['unit' + uNum].vocab.length;
+    }
+  });
+
+  const modeNames = { 'coop': 'Class Co-op (4 Hero Bersatu)', 2: '2 Tim Duel', 3: '3 Tim Duel', 4: '4 Tim Duel' };
+  const lbl = document.getElementById('setupSummaryText');
+  if (lbl) {
+    lbl.innerHTML = `Dipilih: <strong>${_selectedUnits.length} Bab</strong> · <strong>${totalWords} Kosakata</strong> · Mode: <strong>${modeNames[_teamMode]}</strong>`;
+  }
+}
+
+/* ══════════════════════════════════════
+   5. BATTLEFIELD & MULTIPLE-CHOICE ENGINE
+══════════════════════════════════════ */
+function startBossRaid() {
+  let words = [];
+  if (_customRaidQuestions && _customRaidQuestions.length > 0) {
+    words = [..._customRaidQuestions];
+  } else {
+    _selectedUnits.forEach(uKey => {
+      const bNum = uKey.substring(2, 3);
+      const uNum = uKey.substring(4);
+      const bData = _meihuaDB['meihua' + bNum];
+      if (bData && bData['unit' + uNum] && bData['unit' + uNum].vocab) {
+        bData['unit' + uNum].vocab.forEach(v => {
+          if (v.char) words.push({ char: v.char, pinyin: v.pinyin, meaning: v.id || v.en });
+        });
+      }
+    });
+  }
+
+  if (words.length < 2) {
+    alert('Silakan pilih minimal 1 Bab Meihua yang berisi kosakata.');
+    return;
+  }
+
+  // Shuffle
+  for (let i = words.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [words[i], words[j]] = [words[j], words[i]];
+  }
+
+  _raidQuestions = words;
+  _currentRaidIndex = 0;
+  // Boss HP = 80% dari total soal (1 soal = 10 damage), pembulatan ke atas
+  const requiredHits = Math.ceil(_raidQuestions.length * 0.8);
+  _bossMaxHp = requiredHits * 10;
+  _bossCurrentHp = _bossMaxHp;
+  _currentTurnTeam = 0;
+  _isEvaluatingAnswer = false;
+
+  // Initialize Boss
+  _bossActor = new BattleActor(BOSS_CONFIG, true);
+
+  // Initialize Heroes
+  _activeTeams = [];
+  _heroActors = [];
+  const heroCount = (_teamMode === 'coop') ? 4 : Number(_teamMode);
+  const grid = document.getElementById('partyStatusGrid');
+  grid.innerHTML = '';
+
+  for (let i = 0; i < heroCount; i++) {
+    const heroCfg = HERO_CONFIGS[i];
+    const teamObj = {
+      id: i + 1,
+      name: (_teamMode === 'coop') ? `🌟 ${heroCfg.role}` : heroCfg.name,
+      role: heroCfg.role,
+      color: heroCfg.color,
+      score: 0,
+      cfg: heroCfg
+    };
+    _activeTeams.push(teamObj);
+
+    // Build Team Scorecard in Quiz UI
+    const card = document.createElement('div');
+    card.className = `hero-status-card ${i === 0 ? 'active-turn' : ''}`;
+    card.id = 'teamCard_' + i;
+    card.style.borderColor = teamObj.color;
+    card.innerHTML = `
+      <div class="hero-role-title" style="color:${teamObj.color}">${teamObj.name}</div>
+      <div class="hero-score-val" id="teamScore_${i}">0</div>
+    `;
+    grid.appendChild(card);
+
+    // Hero Actor
+    const actor = new BattleActor(heroCfg, false);
+    _heroActors.push(actor);
+  }
+
+  showScreen('screenRaid');
+  loadRaidQuestion(0);
+  startBattleCanvasLoop();
+}
+
+function startBattleCanvasLoop() {
+  const canvas = document.getElementById('battleCanvas');
+  const ctx = canvas.getContext('2d');
+
+  function tick(timestamp) {
+    if (!_lastAnimTime) _lastAnimTime = timestamp;
+    const dt = timestamp - _lastAnimTime;
+    _lastAnimTime = timestamp;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Update & Draw Boss
+    if (_bossActor) {
+      _bossActor.update(dt);
+      _bossActor.draw(ctx);
+    }
+
+    // Update & Draw Heroes
+    _heroActors.forEach(hero => {
+      hero.update(dt);
+      hero.draw(ctx);
+    });
+
+    // Draw Slashes & Floating Damages
+    for (let i = _slashEffects.length - 1; i >= 0; i--) {
+      const s = _slashEffects[i];
+      s.life -= dt;
+      ctx.save();
+      ctx.font = '100px sans-serif';
+      ctx.fillText('⚔️', s.x, s.y);
+      ctx.restore();
+      if (s.life <= 0) _slashEffects.splice(i, 1);
+    }
+
+    for (let i = _floatingDamages.length - 1; i >= 0; i--) {
+      const d = _floatingDamages[i];
+      d.life -= dt;
+      d.y -= 1.2;
+      ctx.save();
+      ctx.font = '900 50px Cinzel, serif';
+      ctx.fillStyle = d.color || '#fef08a';
+      ctx.shadowColor = 'rgba(245,158,11,0.9)';
+      ctx.shadowBlur = 20;
+      ctx.fillText(d.text, d.x, d.y);
+      ctx.restore();
+      if (d.life <= 0) _floatingDamages.splice(i, 1);
+    }
+
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function loadRaidQuestion(idx) {
+  _currentRaidIndex = idx;
+  if (idx >= _raidQuestions.length || _bossCurrentHp <= 0) {
+    finishBossRaid();
+    return;
+  }
+
+  const q = _raidQuestions[idx];
+  document.getElementById('bossStageLabel').textContent = `STAGE ${idx + 1} / ${_raidQuestions.length}`;
+  updateBossHpBar();
+
+  document.getElementById('qHanzi').textContent = q.char;
+  document.getElementById('qPinyin').textContent = q.pinyin;
+  _isEvaluatingAnswer = false;
+
+  // Generate 4 Options (1 Correct + 3 Distractors)
+  let choices = [];
+  if (Array.isArray(q.options) && q.options.length >= 2) {
+    choices = q.options.map(o => ({
+      text: typeof o === 'string' ? o : (o.text || ''),
+      isCorrect: typeof o === 'string' ? (o === q.meaning) : Boolean(o.isCorrect)
+    }));
+    for (let i = choices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [choices[i], choices[j]] = [choices[j], choices[i]];
+    }
+  } else {
+    const otherWords = _raidQuestions.filter(w => w.char !== q.char);
+    for (let i = otherWords.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [otherWords[i], otherWords[j]] = [otherWords[j], otherWords[i]];
+    }
+
+    choices = [
+      { text: q.meaning, isCorrect: true },
+      { text: (otherWords[0] || {}).meaning || 'Pilihan Lain 1', isCorrect: false },
+      { text: (otherWords[1] || {}).meaning || 'Pilihan Lain 2', isCorrect: false },
+      { text: (otherWords[2] || {}).meaning || 'Pilihan Lain 3', isCorrect: false }
+    ];
+
+    // Shuffle Choices
+    for (let i = choices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [choices[i], choices[j]] = [choices[j], choices[i]];
+    }
+  }
+
+  const optionsGrid = document.getElementById('quizOptionsGrid');
+  optionsGrid.innerHTML = '';
+  const badges = ['A', 'B', 'C', 'D'];
+
+  choices.forEach((c, cIdx) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-choice-btn';
+    btn.dataset.correct = c.isCorrect ? 'true' : 'false';
+    btn.innerHTML = `
+      <div class="opt-badge">${badges[cIdx]}</div>
+      <div class="opt-text">${c.text}</div>
+    `;
+    btn.onclick = () => handleOptionClicked(btn, c.isCorrect);
+    optionsGrid.appendChild(btn);
+  });
+
+  GameAudio.speakHanzi(q.char);
+  highlightActiveTurnTeam();
+}
+
+function updateBossHpBar() {
+  const pct = Math.max(0, (_bossCurrentHp / _bossMaxHp) * 100);
+  document.getElementById('bossHpFill').style.width = pct + '%';
+  document.getElementById('bossHpText').textContent = `${Math.max(0, _bossCurrentHp)} / ${_bossMaxHp} HP`;
+}
+
+function playCurrentAudio() {
+  const q = _raidQuestions[_currentRaidIndex];
+  if (q) GameAudio.speakHanzi(q.char);
+}
+
+/* ══════════════════════════════════════
+   OPTION CLICKED & EVALUATION
+══════════════════════════════════════ */
+function handleOptionClicked(clickedBtn, isCorrect) {
+  if (_isEvaluatingAnswer) return;
+  _isEvaluatingAnswer = true;
+
+  // Visual feedback on options
+  const allBtns = document.querySelectorAll('.opt-choice-btn');
+  allBtns.forEach(btn => {
+    if (btn.dataset.correct === 'true') {
+      btn.classList.add('correct-glow');
+    }
+  });
+
+  if (!isCorrect && clickedBtn) {
+    clickedBtn.classList.add('wrong-glow');
+  }
+
+  handleOptionChosen(isCorrect);
+}
+
+function handleOptionChosen(isCorrect) {
+  const hero = _heroActors[_currentTurnTeam];
+  const team = _activeTeams[_currentTurnTeam];
+  if (!hero || !team) return;
+
+  if (isCorrect) {
+    // 1. HERO RUNS TOWARDS THE BOSS
+    hero.play('run');
+    hero.flipX = false;
+    hero.targetX = 1140;
+
+    // 2. HERO STRIKES BOSS
+    setTimeout(() => {
+      hero.play('attack', true, () => {
+        // RETREAT
+        hero.play('run');
+        hero.flipX = true;
+        hero.targetX = hero.cfg.baseX;
+
+        setTimeout(() => {
+          hero.flipX = false;
+          hero.play('idle');
+
+          _currentTurnTeam = (_currentTurnTeam + 1) % _activeTeams.length;
+          loadRaidQuestion(_currentRaidIndex + 1);
+        }, 480);
+      });
+
+      GameAudio.playSlash();
+      if (_bossActor) _bossActor.play('hurt', true);
+
+      _slashEffects.push({ x: 1240, y: 280, life: 350 });
+      _floatingDamages.push({ x: 1260, y: 220, text: '-10 HP!', color: '#fde047', life: 900 });
+
+      _bossCurrentHp = Math.max(0, _bossCurrentHp - 10);
+      updateBossHpBar();
+
+      team.score += 100;
+      const scoreEl = document.getElementById('teamScore_' + _currentTurnTeam);
+      if (scoreEl) scoreEl.textContent = team.score;
+
+    }, 420);
+
+  } else {
+    // WRONG ANSWER: MINOTAUR CHARGES & RUNS TO HEROES TO ATTACK!
+    if (_bossActor) {
+      _bossActor.play('run');
+      _bossActor.flipX = true; // face left toward heroes
+      _bossActor.targetX = 760; // in front of hero party
+
+      setTimeout(() => {
+        // Boss strikes with axe
+        _bossActor.play('attack', true, () => {
+          // Boss runs back to his base
+          _bossActor.play('run');
+          _bossActor.flipX = false; // face right while retreating
+          _bossActor.targetX = _bossActor.cfg.baseX;
+
+          setTimeout(() => {
+            _bossActor.flipX = true; // face left again
+            _bossActor.play('idle');
+
+            _currentTurnTeam = (_currentTurnTeam + 1) % _activeTeams.length;
+            loadRaidQuestion(_currentRaidIndex + 1);
+          }, 480);
+        });
+
+        GameAudio.playRoar();
+        _heroActors.forEach(h => h.play('hurt', true));
+        _floatingDamages.push({ x: 520, y: 260, text: 'MISSED!', color: '#e11d48', life: 800 });
+      }, 420);
+    }
+  }
+}
+
+function highlightActiveTurnTeam() {
+  document.querySelectorAll('.hero-status-card').forEach((c, idx) => {
+    c.classList.toggle('active-turn', idx === _currentTurnTeam);
+  });
+  const currentTeam = _activeTeams[_currentTurnTeam];
+  if (currentTeam) {
+    const lbl = document.getElementById('activeHeroTurnName');
+    if (lbl) {
+      lbl.textContent = currentTeam.name;
+      lbl.style.color = currentTeam.color;
+    }
+  }
+}
+
+function finishBossRaid() {
+  const isBossDefeated = (_bossCurrentHp <= 0);
+
+  if (isBossDefeated) {
+    // HEROES WIN! Boss collapses dead
+    if (_bossActor) _bossActor.play('dead', true);
+    GameAudio.playVictory();
+  } else {
+    // BOSS WINS! Boss roars, ALL HEROES COLLAPSE DEAD!
+    if (_bossActor) _bossActor.play('attack', true);
+    _heroActors.forEach(h => h.play('dead', true));
+    GameAudio.playDefeat();
+  }
+
+  setTimeout(() => {
+    showScreen('screenVictory');
+
+    if (window.GameBridge && typeof window.GameBridge.finishGame === 'function') {
+      const totalScore = _activeTeams.reduce((sum, t) => sum + (t.score || 0), 0);
+      const maxScore = _raidQuestions.length * 100;
+      window.GameBridge.finishGame(totalScore, maxScore, _activeTeams.map(t => ({ team: t.name, score: t.score })), 'Meihua Boss Raid');
+    }
+
+    const titleEl = document.getElementById('endGameTitle');
+    const subEl = document.getElementById('endGameSub');
+
+    if (isBossDefeated) {
+      if (titleEl) {
+        titleEl.textContent = '👑 VICTORY ACHIEVED!';
+        titleEl.style.background = 'linear-gradient(180deg, #fffbeb 0%, #fde047 50%, #b45309 100%)';
+        titleEl.style.webkitBackgroundClip = 'text';
+      }
+      if (subEl) subEl.textContent = 'Seluruh kelas berhasil menaklukkan Monster Meihua!';
+    } else {
+      if (titleEl) {
+        titleEl.textContent = '💀 RAID FAILED — BOSS PREVAILED!';
+        titleEl.style.background = 'linear-gradient(180deg, #fecdd3 0%, #f43f5e 50%, #881337 100%)';
+        titleEl.style.webkitBackgroundClip = 'text';
+      }
+      if (subEl) subEl.textContent = `Boss masih bertahan dengan sisa ${_bossCurrentHp} HP! Para hero telah gugur dalam pertempuran.`;
+    }
+
+    const sorted = [..._activeTeams].sort((a, b) => b.score - a.score);
+    const grid = document.getElementById('victoryTeamsGrid');
+    grid.innerHTML = '';
+
+    const ranks = isBossDefeated
+      ? ['🥇 JUARA 1', '🥈 JUARA 2', '🥉 JUARA 3', '🎖️ HERO']
+      : ['🛡️ TIM 1', '🛡️ TIM 2', '🛡️ TIM 3', '🛡️ TIM 4'];
+
+    sorted.forEach((team, idx) => {
+      const box = document.createElement('div');
+      box.className = 'vic-team-box';
+      box.innerHTML = `
+        <div style="font-size:2.2rem;">${ranks[idx] || '🎖️'}</div>
+        <div style="font-family:'Cinzel', serif; font-size:1.2rem; font-weight:900; color:${team.color}; margin-top:4px;">${team.name}</div>
+        <div style="font-family:'Cinzel', serif; font-size:2.2rem; font-weight:900; color:var(--gold-light);">${team.score} PTS</div>
+      `;
+      grid.appendChild(box);
+    });
+  }, 1600);
+}
+
+/* ══════════════════════════════════════
+   6. KEYBOARD SHORTCUTS
+══════════════════════════════════════ */
+window.addEventListener('keydown', (e) => {
+  const activeScreen = document.querySelector('.br-screen.active');
+  if (!activeScreen || activeScreen.id !== 'screenRaid' || _isEvaluatingAnswer) return;
+
+  const optBtns = document.querySelectorAll('.opt-choice-btn');
+
+  // Keys 1/A, 2/B, 3/C, 4/D select choices
+  if (['1', 'a', 'A'].includes(e.key) && optBtns[0]) {
+    optBtns[0].click();
+  } else if (['2', 'b', 'B'].includes(e.key) && optBtns[1]) {
+    optBtns[1].click();
+  } else if (['3', 'c', 'C'].includes(e.key) && optBtns[2]) {
+    optBtns[2].click();
+  } else if (['4', 'd', 'D'].includes(e.key) && optBtns[3]) {
+    optBtns[3].click();
+  } else if (e.code === 'Space' || e.key === 'Enter') {
+    e.preventDefault();
+    handleOptionChosen(true);
+  } else if (e.key.toLowerCase() === 'x') {
+    handleOptionChosen(false);
+  } else if (e.key.toLowerCase() === 'p') {
+    playCurrentAudio();
+  }
+});
+
+/* Initialize on Load */
+let _customRaidQuestions = null;
+
+if (window.GameBridge && typeof window.GameBridge.onReady === 'function') {
+  window.GameBridge.onReady(function(activity) {
+    if (activity && Array.isArray(activity.questions) && activity.questions.length > 0) {
+      _customRaidQuestions = activity.questions.map(q => ({
+        char: q.text || q.question,
+        pinyin: q.pinyin || '',
+        meaning: q.correctAnswer || (q.options?.find(o => o.isCorrect)?.text) || q.text,
+        options: q.options
+      }));
+      startBossRaid();
+    }
+  });
+}
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'INIT_ACTIVITY' && event.data.activity && Array.isArray(event.data.activity.questions)) {
+    _customRaidQuestions = event.data.activity.questions.map(q => ({
+      char: q.text || q.question,
+      pinyin: q.pinyin || '',
+      meaning: q.correctAnswer || (q.options?.find(o => o.isCorrect)?.text) || q.text,
+      options: q.options
+    }));
+    startBossRaid();
+  }
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  renderUnitsGrid();
+  _scaleScene();
+});
+</script>
+</body>
+</html>

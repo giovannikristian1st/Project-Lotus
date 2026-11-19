@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Boss Battle — 汉字 Hero</title>
+  <script src="common/bridge.js"></script>
+  <script src="meihuadb.js"></script>
+  <script src="vocabdb.js"></script>
+  <script src="audio.js"></script>
+  <style>
+    /* ════════════════════════════════════
+       RESET & BASE
+    ════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: 'Noto Sans SC', 'Segoe UI', Arial, sans-serif;
+      background: #08030f;
+      -webkit-font-smoothing: antialiased;
+      touch-action: none;
+    }
+
+    /* ════════════════════════════════════
+       SCREEN SYSTEM
+    ════════════════════════════════════ */
+    .screen {
+      position: absolute; inset: 0; display: none;
+      flex-direction: column;
+      animation: screenIn 0.3s cubic-bezier(0.22,1,0.36,1);
+    }
+    .screen.active { display: flex; }
+    @keyframes screenIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ════════════════════════════════════
+       SETUP SCREEN
+    ════════════════════════════════════ */
+    #setupScreen {
+      background: linear-gradient(160deg, #0d0520 0%, #1a0840 40%, #2a0e5a 100%);
+      overflow-y: auto;
+      align-items: center;
+      padding: 24px 20px 40px;
+      gap: 20px;
+    }
+
+    .setup-header {
+      text-align: center;
+      padding: 16px 0 8px;
+    }
+    .setup-title {
+      font-size: 2.6rem; font-weight: 900;
+      background: linear-gradient(135deg, #f5c518, #ff8c00, #ff4500);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-shadow: none;
+      letter-spacing: 2px;
+      display: block;
+    }
+    .setup-subtitle {
+      color: rgba(255,255,255,0.5); font-size: 0.9rem; margin-top: 6px;
+    }
+
+    .setup-section-title {
+      color: #c084fc; font-size: 0.8rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 2px;
+      margin-bottom: 10px;
+    }
+
+    .unit-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 6px;
+      width: 100%; max-width: 760px;
+    }
+    .unit-btn {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.7);
+      border-radius: 8px; padding: 8px 4px;
+      font-size: 0.7rem; font-weight: 600;
+      cursor: pointer; text-align: center;
+      transition: all 0.15s; line-height: 1.3;
+      min-height: 52px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+    .unit-btn .u-book { font-size: 0.6rem; color: rgba(255,255,255,0.4); }
+    .unit-btn .u-unit { font-size: 0.72rem; font-weight: 800; }
+    .unit-btn .u-count { font-size: 0.58rem; color: rgba(255,255,255,0.35); margin-top: 2px; }
+    .unit-btn:active { transform: scale(0.93); }
+    .unit-btn.selected {
+      background: linear-gradient(135deg, #6c2fbf, #9333ea);
+      border-color: #c084fc;
+      color: white;
+      box-shadow: 0 0 12px rgba(147,51,234,0.5);
+    }
+    .unit-btn.selected .u-book,
+    .unit-btn.selected .u-count { color: rgba(255,255,255,0.65); }
+
+    .setup-info {
+      color: rgba(255,255,255,0.5); font-size: 0.85rem; text-align: center;
+    }
+    .setup-info strong { color: #c084fc; }
+
+    .setup-start-btn {
+      background: linear-gradient(135deg, #f5c518, #ff8c00);
+      color: #1a0840; border: none; border-radius: 16px;
+      padding: 18px 56px; font-size: 1.3rem; font-weight: 900;
+      cursor: pointer; letter-spacing: 1px;
+      box-shadow: 0 4px 24px rgba(245,197,24,0.4);
+      transition: all 0.2s;
+      text-transform: uppercase;
+    }
+    .setup-start-btn:hover { transform: scale(1.04); box-shadow: 0 8px 32px rgba(245,197,24,0.6); }
+    .setup-start-btn:active { transform: scale(0.97); }
+    .setup-start-btn:disabled {
+      background: linear-gradient(135deg, #444, #333);
+      color: rgba(255,255,255,0.3);
+      box-shadow: none; cursor: default; transform: none;
+    }
+
+    .exit-home-btn {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.7); border-radius: 12px;
+      padding: 12px 28px; font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .exit-home-btn:hover { background: rgba(255,255,255,0.14); }
+
+    /* ════════════════════════════════════
+       GAME SCREEN
+    ════════════════════════════════════ */
+    #gameScreen {
+      background: #08030f;
+      flex-direction: row;
+    }
+
+    /* Three-panel layout */
+    .game-panel {
+      flex: 1; display: flex; flex-direction: column;
+      position: relative; overflow: hidden;
+      height: 100%;
+    }
+
+    /* Side panels */
+    .side-panel {
+      background: rgba(8, 3, 15, 0.88);
+      z-index: 5;
+    }
+    .side-panel::before {
+      content: '';
+      position: absolute; inset: 0;
+      pointer-events: none; z-index: 1;
+    }
+    #p1Panel::before {
+      background: linear-gradient(90deg, rgba(30,60,160,0.18) 0%, transparent 100%);
+    }
+    #p2Panel::before {
+      background: linear-gradient(270deg, rgba(160,30,30,0.18) 0%, transparent 100%);
+    }
+
+    /* Player header */
+    .player-header {
+      padding: 14px 16px 10px;
+      display: flex; align-items: center; gap: 10px;
+      position: relative; z-index: 2;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .player-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; flex-shrink: 0;
+    }
+    .p1-avatar { background: linear-gradient(135deg, #1e3ca0, #4466cc); box-shadow: 0 0 12px rgba(68,102,204,0.5); }
+    .p2-avatar { background: linear-gradient(135deg, #a01e1e, #cc4444); box-shadow: 0 0 12px rgba(204,68,68,0.5); }
+
+    .player-info { flex: 1; }
+    .player-name { color: white; font-size: 0.88rem; font-weight: 800; letter-spacing: 0.5px; }
+    .player-score-row { display: flex; align-items: center; gap: 8px; margin-top: 3px; }
+    .player-score-label { color: rgba(255,255,255,0.4); font-size: 0.72rem; }
+    .player-score-val { color: #f5c518; font-size: 1.1rem; font-weight: 900; line-height: 1; }
+    .player-streak { color: #ff6b35; font-size: 0.72rem; font-weight: 700; }
+
+    /* Speed timer bar */
+    .speed-bar-wrap {
+      padding: 6px 16px 0;
+      position: relative; z-index: 2;
+    }
+    .speed-bar-track {
+      height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden;
+    }
+    .speed-bar-fill {
+      height: 100%; border-radius: 2px;
+      transition: width 0.1s linear, background 0.3s;
+      background: #4ade80;
+    }
+    .speed-bar-fill.medium { background: #f5c518; }
+    .speed-bar-fill.slow   { background: #ef4444; }
+
+    /* Question area */
+    .question-area {
+      flex: 1; padding: 16px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 14px;
+      position: relative; z-index: 2;
+    }
+    .question-type-badge {
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1.5px; color: rgba(255,255,255,0.35);
+    }
+    .question-char {
+      font-size: clamp(2.8rem, 7vw, 4.5rem);
+      font-weight: 900; color: white;
+      text-align: center; line-height: 1.1;
+      text-shadow: 0 2px 16px rgba(255,255,255,0.2);
+      font-family: 'Noto Serif SC', serif;
+    }
+    .question-pinyin {
+      color: rgba(255,255,255,0.45); font-size: 0.95rem;
+      text-align: center;
+    }
+
+    .answer-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 8px; width: 100%;
+    }
+    .answer-btn {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.9);
+      border-radius: 12px; padding: 0 10px;
+      min-height: 60px; font-size: clamp(0.75rem, 2vw, 0.95rem);
+      font-weight: 700; cursor: pointer; text-align: center;
+      transition: all 0.12s; line-height: 1.3;
+      display: flex; align-items: center; justify-content: center;
+      font-family: inherit;
+      word-break: break-word;
+    }
+    .answer-btn:active { transform: scale(0.95); }
+    .answer-btn.flash-correct {
+      background: #16a34a !important;
+      border-color: #4ade80 !important;
+      color: white !important;
+      box-shadow: 0 0 20px rgba(74,222,128,0.6) !important;
+      animation: flashPulse 0.4s ease;
+    }
+    .answer-btn.flash-wrong {
+      background: #991b1b !important;
+      border-color: #ef4444 !important;
+      color: white !important;
+      animation: flashShake 0.35s ease;
+    }
+    @keyframes flashPulse {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.06); }
+      100% { transform: scale(1); }
+    }
+    @keyframes flashShake {
+      0%   { transform: translateX(0); }
+      20%  { transform: translateX(-6px); }
+      60%  { transform: translateX(6px); }
+      100% { transform: translateX(0); }
+    }
+
+    /* Feedback overlay label inside panel */
+    .feedback-overlay {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 3rem; font-weight: 900;
+      pointer-events: none; z-index: 10;
+      opacity: 0;
+    }
+    .feedback-overlay.show-correct {
+      color: #4ade80;
+      animation: feedbackPop 0.6s forwards;
+    }
+    .feedback-overlay.show-wrong {
+      color: #ef4444;
+      animation: feedbackPop 0.6s forwards;
+    }
+    @keyframes feedbackPop {
+      0%   { opacity: 0; transform: translate(-50%,-50%) scale(0.5); }
+      30%  { opacity: 1; transform: translate(-50%,-60%) scale(1.2); }
+      70%  { opacity: 1; transform: translate(-50%,-65%) scale(1.0); }
+      100% { opacity: 0; transform: translate(-50%,-80%) scale(0.8); }
+    }
+
+    /* ════════════════════════════════════
+       CENTER PANEL — BATTLE SCENE
+    ════════════════════════════════════ */
+    #centerPanel {
+      flex: 0 0 50%; max-width: 50%;
+      position: relative; overflow: hidden;
+      background: transparent;
+    }
+    .battle-bg {
+      position: absolute; inset: 0;
+      background: url('bg/game_background_2.png') center bottom / cover no-repeat;
+      z-index: 0;
+    }
+    /* Vignette edges so it blends with side panels */
+    .battle-bg::after {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(90deg, rgba(8,3,15,0.72) 0%, transparent 18%, transparent 82%, rgba(8,3,15,0.72) 100%),
+        linear-gradient(0deg, rgba(8,3,15,0.55) 0%, transparent 30%);
+      pointer-events: none;
+    }
+
+    /* Boss HP bar (Tap Titans Style) */
+    .boss-hp-section {
+      position: absolute; top: 20px; left: 24px; right: 24px;
+      z-index: 10;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .boss-hp-label {
+      width: 100%; display: flex; justify-content: center; align-items: center;
+      margin-bottom: 6px;
+    }
+    .boss-hp-name {
+      color: #ffb84d; font-size: 1.2rem; font-weight: 900;
+      text-transform: uppercase; letter-spacing: 2px;
+      text-shadow: 2px 2px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000, 0 4px 10px rgba(0,0,0,0.8);
+    }
+    .boss-hp-track {
+      width: 100%; height: 32px;
+      background: rgba(30, 0, 5, 0.9);
+      border: 3px solid #ffb84d;
+      border-radius: 8px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.5), inset 0 4px 8px rgba(0,0,0,0.8);
+      position: relative;
+    }
+    .boss-hp-fill {
+      height: 100%; border-radius: 4px;
+      background: linear-gradient(180deg, #ff8a80 0%, #ff5252 40%, #d32f2f 100%);
+      transition: width 0.3s cubic-bezier(0.22,1,0.36,1);
+      box-shadow: inset 0 2px 4px rgba(255,255,255,0.4), 0 0 16px rgba(255, 82, 82, 0.6);
+      position: relative; overflow: hidden;
+    }
+    .boss-hp-fill::after {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 50%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 100%);
+    }
+    .boss-hp-text {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 1.1rem; font-weight: 900; letter-spacing: 1px;
+      text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.8);
+      z-index: 2;
+    }
+
+    /* Round timer */
+    .round-timer {
+      position: absolute; top: 66px; left: 50%; transform: translateX(-50%);
+      z-index: 10; text-align: center;
+    }
+    .timer-ring {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: conic-gradient(#f5c518 0deg, rgba(255,255,255,0.08) 0deg);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 16px rgba(245,197,24,0.3), inset 0 0 0 4px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .timer-ring::before {
+      content: '';
+      position: absolute; inset: 5px; border-radius: 50%;
+      background: rgba(8,3,15,0.9);
+    }
+    .timer-number {
+      position: relative; z-index: 1;
+      font-size: 1.5rem; font-weight: 900; color: #f5c518;
+      text-shadow: 0 0 8px rgba(245,197,24,0.6);
+      line-height: 1;
+    }
+    .timer-number.urgent { color: #ef4444; text-shadow: 0 0 10px rgba(239,68,68,0.8); }
+
+    /* ── Canvas for sprites ── */
+    #battleCanvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      z-index: 5;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    /* Damage number float */
+    .damage-float {
+      position: absolute; z-index: 20;
+      font-size: 1.8rem; font-weight: 900;
+      color: #f5c518; text-shadow: 0 2px 6px rgba(0,0,0,0.8), 0 0 12px rgba(245,197,24,0.6);
+      pointer-events: none;
+      animation: damageRise 0.9s ease-out forwards;
+      white-space: nowrap;
+    }
+    .damage-float.heal { color: #ef4444; }
+    @keyframes damageRise {
+      0%   { opacity: 1; transform: translateY(0) scale(0.7); }
+      20%  { opacity: 1; transform: translateY(-12px) scale(1.2); }
+      80%  { opacity: 1; transform: translateY(-40px) scale(1.0); }
+      100% { opacity: 0; transform: translateY(-65px) scale(0.8); }
+    }
+
+    /* Exit button */
+    #exitBtn {
+      position: absolute; top: 10px; right: 10px;
+      z-index: 50; background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);
+      border-radius: 10px; padding: 8px 16px; font-size: 0.8rem; font-weight: 700;
+      cursor: pointer; transition: all 0.15s;
+    }
+    #exitBtn:hover { background: rgba(255,255,255,0.15); color: white; }
+
+    /* Boss flash/shake effects */
+    @keyframes bossShake {
+      0%   { transform: translateX(0); }
+      15%  { transform: translateX(-8px) rotate(-1deg); }
+      35%  { transform: translateX(8px) rotate(1deg); }
+      55%  { transform: translateX(-5px) rotate(-0.5deg); }
+      75%  { transform: translateX(5px) rotate(0.5deg); }
+      100% { transform: translateX(0) rotate(0); }
+    }
+    @keyframes heroAttack {
+      0%   { transform: translateX(0); }
+      30%  { transform: translateX(18px); }
+      60%  { transform: translateX(-6px); }
+      100% { transform: translateX(0); }
+    }
+    @keyframes heroAttack2 {
+      0%   { transform: translateX(0) scaleX(-1); }
+      30%  { transform: translateX(-18px) scaleX(-1); }
+      60%  { transform: translateX(6px) scaleX(-1); }
+      100% { transform: translateX(0) scaleX(-1); }
+    }
+    @keyframes bossDeath {
+      0%   { opacity: 1; transform: scale(1) translateY(0); filter: brightness(1); }
+      30%  { opacity: 1; transform: scale(1.1) translateY(-10px); filter: brightness(2) saturate(0); }
+      60%  { opacity: 0.6; transform: scale(0.9) translateY(10px); filter: brightness(0.5); }
+      100% { opacity: 0; transform: scale(0.7) translateY(30px); filter: brightness(0); }
+    }
+    @keyframes heroDeath {
+      0%   { opacity: 1; transform: translateY(0) rotate(0); }
+      40%  { opacity: 0.8; transform: translateY(-8px) rotate(-10deg); }
+      100% { opacity: 0; transform: translateY(20px) rotate(-40deg); }
+    }
+    @keyframes bossEnter {
+      from { transform: scale(1.4) translateY(-30px); opacity: 0; filter: brightness(2); }
+      to   { transform: scale(1) translateY(0); opacity: 1; filter: brightness(1); }
+    }
+    @keyframes screenFlash {
+      0%   { opacity: 0.7; }
+      100% { opacity: 0; }
+    }
+    .screen-flash {
+      position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+      animation: screenFlash 0.35s ease-out forwards;
+    }
+    .screen-flash.red  { background: rgba(239,68,68,0.4); }
+    .screen-flash.gold { background: rgba(245,197,24,0.3); }
+    .screen-flash.purple { background: rgba(168,85,247,0.5); }
+
+    /* VS display in center during countdown */
+    .battle-vs {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      z-index: 20; text-align: center;
+      animation: vsAppear 0.5s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+    @keyframes vsAppear {
+      from { opacity:0; transform: translate(-50%,-50%) scale(0.3); }
+      to   { opacity:1; transform: translate(-50%,-50%) scale(1); }
+    }
+
+    /* ════════════════════════════════════
+       RESULT SCREEN
+    ════════════════════════════════════ */
+    #resultScreen {
+      background: linear-gradient(160deg, #0d0520 0%, #1a0840 40%, #2a0e5a 100%);
+      align-items: center; justify-content: flex-start;
+      padding: 28px 20px 40px;
+      overflow-y: auto; gap: 20px;
+    }
+
+    .result-banner {
+      text-align: center; padding: 20px 0 8px;
+    }
+    .result-outcome {
+      font-size: 3.5rem; font-weight: 900;
+      letter-spacing: 3px; text-transform: uppercase;
+      display: block;
+    }
+    .result-outcome.win {
+      background: linear-gradient(135deg, #f5c518, #ff8c00);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-shadow: none;
+    }
+    .result-outcome.lose { color: #ef4444; text-shadow: 0 0 20px rgba(239,68,68,0.5); }
+
+    .result-outcome-sub {
+      color: rgba(255,255,255,0.45); font-size: 1rem; margin-top: 8px;
+    }
+
+    .result-stats-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 12px; width: 100%; max-width: 600px;
+    }
+    .result-stat-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px; padding: 14px 12px;
+      text-align: center;
+    }
+    .result-stat-num { font-size: 2rem; font-weight: 900; color: #f5c518; line-height: 1; }
+    .result-stat-label { font-size: 0.72rem; color: rgba(255,255,255,0.4); margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; }
+
+    .score-entry-section {
+      width: 100%; max-width: 520px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px; padding: 18px 20px;
+    }
+    .score-entry-title { color: #c084fc; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; }
+    .score-entry-row { display: flex; gap: 10px; }
+    .score-name-input {
+      flex: 1; background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15); color: white;
+      border-radius: 10px; padding: 12px 14px; font-size: 0.95rem;
+      font-family: inherit; outline: none;
+    }
+    .score-name-input::placeholder { color: rgba(255,255,255,0.3); }
+    .score-name-input:focus { border-color: #c084fc; box-shadow: 0 0 0 2px rgba(192,132,252,0.2); }
+    .score-save-btn {
+      background: linear-gradient(135deg, #6c2fbf, #9333ea);
+      border: none; color: white; border-radius: 10px;
+      padding: 12px 20px; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; white-space: nowrap; transition: all 0.15s; font-family: inherit;
+    }
+    .score-save-btn:hover { box-shadow: 0 0 16px rgba(147,51,234,0.5); }
+
+    .leaderboard-section {
+      width: 100%; max-width: 520px;
+    }
+    .lb-title { color: #c084fc; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+    .lb-table { width: 100%; border-collapse: collapse; }
+    .lb-table th {
+      color: rgba(255,255,255,0.35); font-size: 0.7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1px;
+      padding: 6px 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .lb-table td {
+      padding: 10px 10px; font-size: 0.85rem; color: rgba(255,255,255,0.8);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .lb-table tr:first-child td { color: #f5c518; }
+    .lb-rank { width: 36px; text-align: center; font-weight: 900; color: rgba(255,255,255,0.4); }
+    .lb-name { font-weight: 700; }
+    .lb-score { text-align: right; font-weight: 900; color: #c084fc; }
+    .lb-date { font-size: 0.72rem; color: rgba(255,255,255,0.3); text-align: right; }
+    .lb-empty { color: rgba(255,255,255,0.3); font-size: 0.85rem; text-align: center; padding: 20px; font-style: italic; }
+
+    .result-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .result-play-again-btn {
+      background: linear-gradient(135deg, #f5c518, #ff8c00);
+      color: #1a0840; border: none; border-radius: 14px;
+      padding: 16px 40px; font-size: 1.1rem; font-weight: 900;
+      cursor: pointer; transition: all 0.15s; letter-spacing: 0.5px; font-family: inherit;
+    }
+    .result-play-again-btn:hover { transform: scale(1.04); }
+    .result-home-btn {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.7); border-radius: 14px;
+      padding: 16px 32px; font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: all 0.15s; font-family: inherit;
+    }
+    .result-home-btn:hover { background: rgba(255,255,255,0.14); }
+
+    /* ════════════════════════════════════
+       BOSS INTRO OVERLAY
+    ════════════════════════════════════ */
+    #bossIntro {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.92);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 20px;
+      animation: bossIntroIn 0.4s ease;
+    }
+    @keyframes bossIntroIn { from {opacity:0;} to {opacity:1;} }
+    #bossIntro .bi-warning {
+      font-size: 1rem; color: #ef4444; font-weight: 800;
+      letter-spacing: 4px; text-transform: uppercase;
+      animation: warningFlash 0.6s ease infinite alternate;
+    }
+    @keyframes warningFlash { from { opacity: 0.4; } to { opacity: 1; } }
+    #bossIntro .bi-name {
+      font-size: 3.5rem; font-weight: 900; color: white;
+      text-align: center; line-height: 1.1;
+      text-shadow: 0 0 30px rgba(239,68,68,0.8), 0 0 60px rgba(168,85,247,0.5);
+    }
+    #bossIntro .bi-hp {
+      color: #c084fc; font-size: 1.1rem; font-weight: 700;
+    }
+    #bossIntro .bi-canvas-wrap {
+      width: 260px; height: 200px; position: relative; overflow: visible;
+    }
+
+    /* ════════════════════════════════════
+       SPRITE CANVAS WRAPPERS
+    ════════════════════════════════════ */
+    .sprite-wrap {
+      position: absolute; bottom: 14%; z-index: 6;
+      image-rendering: pixelated;
+    }
+    #hero1Wrap {
+      left: 6%;
+    }
+    #hero2Wrap {
+      right: 6%;
+      transform: scaleX(-1);
+    }
+    #bossWrap {
+      left: 50%; transform: translateX(-50%);
+      bottom: 22%;
+      z-index: 7;
+    }
+
+    /* animate classes added by JS */
+    #hero1Wrap.attacking { animation: heroAttack 0.45s ease; }
+    #hero2Wrap.attacking { animation: heroAttack2 0.45s ease; }
+    #bossWrap.hit        { animation: bossShake 0.45s ease; }
+    #bossWrap.dying      { animation: bossDeath 1.2s ease forwards; }
+    #hero1Wrap.dying     { animation: heroDeath 1.0s ease forwards; }
+    #hero2Wrap.dying     { animation: heroDeath 1.0s ease forwards; }
+
+    /* Idle breathing animation for sprites */
+    @keyframes breathe {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-4px); }
+    }
+    @keyframes breatheFlipped {
+      0%, 100% { transform: scaleX(-1) translateY(0); }
+      50%       { transform: scaleX(-1) translateY(-4px); }
+    }
+    #hero1Wrap { animation: breathe 2.8s ease-in-out infinite; }
+    #hero2Wrap { animation: breatheFlipped 3.1s ease-in-out infinite; }
+    @keyframes bossBreathe {
+      0%, 100% { transform: translateX(-50%) scale(1); }
+      50%       { transform: translateX(-50%) scale(1.025); }
+    }
+    #bossWrap { animation: bossBreathe 3.5s ease-in-out infinite; }
+
+    /* Glowing eyes on boss */
+    .boss-eyes {
+      position: absolute; z-index: 8;
+      display: flex; gap: 0;
+      pointer-events: none;
+    }
+    .boss-eye {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #ef4444;
+      box-shadow: 0 0 8px #ef4444, 0 0 16px rgba(239,68,68,0.8);
+      animation: eyeGlow 1.8s ease-in-out infinite alternate;
+    }
+    @keyframes eyeGlow {
+      from { box-shadow: 0 0 6px #ef4444, 0 0 12px rgba(239,68,68,0.6); opacity: 0.7; }
+      to   { box-shadow: 0 0 12px #ff6b6b, 0 0 24px rgba(239,68,68,1); opacity: 1; }
+    }
+
+    /* Round transition splash */
+    .round-splash {
+      position: fixed; inset: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.7);
+      pointer-events: none;
+    }
+    .round-splash-text {
+      font-size: 5rem; font-weight: 900; color: white;
+      text-shadow: 0 0 30px rgba(245,197,24,0.8);
+      animation: splashAnim 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+    @keyframes splashAnim {
+      0%   { opacity:0; transform: scale(0.4); }
+      50%  { opacity:1; transform: scale(1.15); }
+      80%  { opacity:1; transform: scale(1.0); }
+      100% { opacity:0; transform: scale(1.5); }
+    }
+
+    /* Disabled state while locked */
+    .answer-btn:disabled {
+      opacity: 0.4; cursor: default;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════
+     SETUP SCREEN
+════════════════════════════════════ -->
+<div class="screen active" id="setupScreen">
+  <div class="setup-header">
+    <span class="setup-title">👾 BOSS BATTLE</span>
+    <div class="setup-subtitle">Two heroes. One boss. Answer vocab questions to deal damage!</div>
+  </div>
+
+  <div class="setup-section-title">SELECT VOCABULARY UNITS</div>
+  <div class="unit-grid" id="unitGrid"></div>
+
+  <div class="setup-info" id="setupInfo">
+    Select units to build your question pool. Need at least <strong>8 words</strong>.
+  </div>
+
+  <button class="setup-start-btn" id="startBtn" disabled onclick="startGame()">
+    ⚔ START BATTLE
+  </button>
+
+  <button class="exit-home-btn" onclick="GameAudio.playClick(); location.href='../index.html'">← Back to Home</button>
+</div>
+
+<!-- ════════════════════════════════════
+     GAME SCREEN
+════════════════════════════════════ -->
+<div class="screen" id="gameScreen">
+  <!-- Exit & Mute buttons -->
+  <button id="audioBtn" class="audio-mute-btn" onclick="GameAudio.toggleMute()" style="position: absolute; top: 10px; right: 90px; z-index: 50; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7); border-radius: 10px; padding: 8px 16px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.15s;">🔊</button>
+  <button id="exitBtn" onclick="confirmExit()">✕ Exit</button>
+
+  <!-- P1 Panel -->
+  <div class="game-panel side-panel" id="p1Panel">
+    <div class="player-header">
+      <div class="player-avatar p1-avatar">⚔</div>
+      <div class="player-info">
+        <div class="player-name">PLAYER 1</div>
+        <div class="player-score-row">
+          <span class="player-score-label">SCORE</span>
+          <span class="player-score-val" id="p1Score">0</span>
+          <span class="player-streak" id="p1Streak"></span>
+        </div>
+      </div>
+    </div>
+    <div class="speed-bar-wrap">
+      <div class="speed-bar-track">
+        <div class="speed-bar-fill" id="p1SpeedBar"></div>
+      </div>
+    </div>
+    <div class="question-area" id="p1QuestionArea">
+      <div class="feedback-overlay" id="p1Feedback"></div>
+      <div class="question-type-badge" id="p1TypeBadge">LOADING...</div>
+      <div class="question-char" id="p1Question"></div>
+      <div class="question-pinyin" id="p1Pinyin"></div>
+      <div class="answer-grid" id="p1Answers"></div>
+    </div>
+  </div>
+
+  <!-- Center Battle Panel -->
+  <div class="game-panel" id="centerPanel">
+    <div class="battle-bg"></div>
+
+    <!-- Boss HP -->
+    <div class="boss-hp-section">
+      <div class="boss-hp-label">
+        <span class="boss-hp-name">⚡ THE SHADOW BEAST</span>
+      </div>
+      <div class="boss-hp-track">
+        <div class="boss-hp-fill" id="bossHpFill" style="width:100%"></div>
+        <span class="boss-hp-text" id="bossHpText">200 / 200</span>
+      </div>
+    </div>
+
+    <!-- Timer -->
+    <div class="round-timer">
+      <div class="timer-ring" id="timerRing">
+        <div class="timer-number" id="timerDisplay">60</div>
+      </div>
+    </div>
+
+    <!-- Sprites drawn on canvas -->
+    <canvas id="battleCanvas"></canvas>
+
+    <!-- Sprite wrapper divs for CSS animations -->
+    <div class="sprite-wrap" id="hero1Wrap"></div>
+    <div class="sprite-wrap" id="hero2Wrap"></div>
+    <div class="sprite-wrap" id="bossWrap"></div>
+  </div>
+
+  <!-- P2 Panel -->
+  <div class="game-panel side-panel" id="p2Panel">
+    <div class="player-header">
+      <div class="player-avatar p2-avatar">🗡</div>
+      <div class="player-info">
+        <div class="player-name">PLAYER 2</div>
+        <div class="player-score-row">
+          <span class="player-score-label">SCORE</span>
+          <span class="player-score-val" id="p2Score">0</span>
+          <span class="player-streak" id="p2Streak"></span>
+        </div>
+      </div>
+    </div>
+    <div class="speed-bar-wrap">
+      <div class="speed-bar-track">
+        <div class="speed-bar-fill" id="p2SpeedBar"></div>
+      </div>
+    </div>
+    <div class="question-area" id="p2QuestionArea">
+      <div class="feedback-overlay" id="p2Feedback"></div>
+      <div class="question-type-badge" id="p2TypeBadge">LOADING...</div>
+      <div class="question-char" id="p2Question"></div>
+      <div class="question-pinyin" id="p2Pinyin"></div>
+      <div class="answer-grid" id="p2Answers"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     RESULT SCREEN
+════════════════════════════════════ -->
+<div class="screen" id="resultScreen">
+  <div class="result-banner">
+    <span class="result-outcome" id="resultOutcome">VICTORY!</span>
+    <div class="result-outcome-sub" id="resultSub">The Shadow Beast has been defeated!</div>
+  </div>
+
+  <div class="result-stats-grid">
+    <div class="result-stat-card">
+      <div class="result-stat-num" id="statDamage">0</div>
+      <div class="result-stat-label">Total Damage</div>
+    </div>
+    <div class="result-stat-card">
+      <div class="result-stat-num" id="statScore">0</div>
+      <div class="result-stat-label">Final Score</div>
+    </div>
+    <div class="result-stat-card">
+      <div class="result-stat-num" id="statBossHp">0</div>
+      <div class="result-stat-label">Boss HP Left</div>
+    </div>
+  </div>
+
+  <div class="score-entry-section" id="scoreEntrySection">
+    <div class="score-entry-title">Save Your Score</div>
+    <div class="score-entry-row">
+      <input type="text" class="score-name-input" id="teamNameInput" placeholder="Enter team name..." maxlength="24">
+      <button class="score-save-btn" id="scoreSaveBtn" onclick="saveScore()">Save</button>
+    </div>
+  </div>
+
+  <div class="leaderboard-section">
+    <div class="lb-title">🏆 Leaderboard — Top 10</div>
+    <table class="lb-table">
+      <thead>
+        <tr>
+          <th class="lb-rank">#</th>
+          <th>Name</th>
+          <th style="text-align:right">Score</th>
+          <th style="text-align:right">Date</th>
+        </tr>
+      </thead>
+      <tbody id="lbBody"></tbody>
+    </table>
+  </div>
+
+  <div class="result-btns">
+    <button class="result-play-again-btn" onclick="GameAudio.playClick(); playAgain();">PLAY AGAIN</button>
+    <button class="result-home-btn" onclick="GameAudio.playClick(); location.href='../index.html'">MAIN MENU</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════ -->
+<script>
+/* ───────────────────────────────────────────────
+   SPRITE CONFIG
+   Using existing sprite sheets from chars/ folder.
+   Hero 1 = Knight_1, Hero 2 = Knight_2, Boss = Black_Werewolf
+─────────────────────────────────────────────── */
+var SPRITES = {
+  hero1: {
+    src: 'chars/hero1_new.png',
+    sheetW: 768, sheetH: 256, frameH: 256,
+    animations: {
+      idle:   { x: 0,   y: 0, w: 256, frames: 1, fps: 5 },
+      attack: { x: 256, y: 0, w: 256, frames: 1, fps: 1 },
+      dead:   { x: 512, y: 0, w: 256, frames: 1, fps: 1 },
+      hurt:   { x: 0,   y: 0, w: 256, frames: 1, fps: 1 },
+      run:    { x: 0,   y: 0, w: 256, frames: 1, fps: 5 }
+    },
+    displayH: 150
+  },
+  hero2: {
+    src: 'chars/hero2_new.png',
+    sheetW: 768, sheetH: 256, frameH: 256,
+    animations: {
+      idle:   { x: 0,   y: 0, w: 256, frames: 1, fps: 5 },
+      attack: { x: 256, y: 0, w: 256, frames: 1, fps: 1 },
+      dead:   { x: 512, y: 0, w: 256, frames: 1, fps: 1 },
+      hurt:   { x: 0,   y: 0, w: 256, frames: 1, fps: 1 },
+      run:    { x: 0,   y: 0, w: 256, frames: 1, fps: 5 }
+    },
+    displayH: 150
+  },
+  boss: {
+    src: 'chars/boss_new.png',
+    sheetW: 1536, sheetH: 384, frameH: 384,
+    animations: {
+      idle:   { x: 0,    y: 0, w: 384, frames: 1, fps: 5 },
+      hurt:   { x: 384,  y: 0, w: 384, frames: 1, fps: 1 },
+      attack: { x: 768,  y: 0, w: 384, frames: 1, fps: 1 },
+      dead:   { x: 1152, y: 0, w: 384, frames: 1, fps: 1 },
+      run:    { x: 0,    y: 0, w: 384, frames: 1, fps: 5 }
+    },
+    displayH: 400
+  }
+};
+
+/* ───────────────────────────────────────────────
+   SPRITE RENDERER
+─────────────────────────────────────────────── */
+function SpriteRenderer(config) {
+  this.cfg = config;
+  this.img = new Image();
+  this.loaded = false;
+  this.loadFailed = false;
+  this.currentAnim = 'idle';
+  this.frame = 0;
+  this.elapsed = 0;
+  this.oneShot = false;
+  this.oneShotDone = false;
+  this.onOneShotEnd = null;
+  var self = this;
+  this.img.onload = function() { 
+    self.loaded = true; 
+  };
+  this.img.onerror = function() {
+    self.loadFailed = true;
+    console.error('[BossBattle] Gagal memuat sprite dari path: ' + config.src + '. Pastikan folder chars/ terunggah!');
+  };
+  this.img.src = config.src;
+}
+SpriteRenderer.prototype.play = function(anim, oneShot, callback) {
+  if (this.currentAnim === anim && !oneShot) return;
+  this.currentAnim = anim;
+  this.frame = 0;
+  this.elapsed = 0;
+  this.oneShot = !!oneShot;
+  this.oneShotDone = false;
+  this.onOneShotEnd = callback || null;
+};
+SpriteRenderer.prototype.update = function(dt) {
+  if (!this.loaded || this.oneShotDone) return;
+  var anim = this.cfg.animations[this.currentAnim];
+  if (!anim) return;
+  this.elapsed += dt;
+  var frameDur = 1000 / anim.fps;
+  if (this.elapsed >= frameDur) {
+    this.elapsed -= frameDur;
+    this.frame++;
+    if (this.frame >= anim.frames) {
+      if (this.oneShot) {
+        this.frame = anim.frames - 1;
+        this.oneShotDone = true;
+        if (this.onOneShotEnd) this.onOneShotEnd();
+      } else {
+        this.frame = 0;
+      }
+    }
+  }
+};
+SpriteRenderer.prototype.draw = function(ctx, x, y, flipX) {
+  if (!this.loaded) return;
+  var anim = this.cfg.animations[this.currentAnim];
+  if (!anim) return;
+  var frameW = Math.floor(anim.w / anim.frames);
+  var sx = anim.x + this.frame * frameW;
+  var sy = anim.y;
+  var scale = this.cfg.displayH / this.cfg.frameH;
+  var dw = frameW * scale;
+  var dh = this.cfg.displayH;
+  ctx.save();
+  if (flipX) {
+    ctx.translate(x + dw, y);
+    ctx.scale(-1, 1);
+    ctx.drawImage(this.img, sx, sy, frameW, this.cfg.frameH, 0, 0, dw, dh);
+  } else {
+    ctx.drawImage(this.img, sx, sy, frameW, this.cfg.frameH, x, y, dw, dh);
+  }
+  ctx.restore();
+};
+SpriteRenderer.prototype.getWidth = function() {
+  var anim = this.cfg.animations[this.currentAnim];
+  if (!anim) return 64;
+  var frameW = Math.floor(anim.w / anim.frames);
+  return frameW * (this.cfg.displayH / this.cfg.frameH);
+};
+
+/* ───────────────────────────────────────────────
+   GAME STATE
+─────────────────────────────────────────────── */
+var state = {
+  screen: 'setup',
+  pool: [],
+  customQuestions: null,
+  bossMaxHp: 200,
+  bossHp: 200,
+  roundTime: 60,
+  timeLeft: 60,
+  timerInterval: null,
+  gameOver: false,
+  totalDamage: 0,
+  startTime: 0,
+  selectedUnits: {},
+  p1: { score: 0, streak: 0, questionTime: 0, locked: false },
+  p2: { score: 0, streak: 0, questionTime: 0, locked: false },
+  p1Question: null,
+  p2Question: null,
+  speedBarIntervals: { p1: null, p2: null }
+};
+
+/* ───────────────────────────────────────────────
+   SETUP SCREEN — UNIT GRID
+─────────────────────────────────────────────── */
+(function buildUnitGrid() {
+  var grid = document.getElementById('unitGrid');
+  var books = ['meihua1','meihua2','meihua3','meihua4','meihua5','meihua6'];
+  books.forEach(function(book, bi) {
+    for (var ui = 1; ui <= 10; ui++) {
+      var unit = 'unit' + ui;
+      var data = (_meihuaDB && _meihuaDB[book] && _meihuaDB[book][unit]) ? _meihuaDB[book][unit] : null;
+      var count = (data && data.vocab) ? data.vocab.length : 0;
+      var btn = document.createElement('button');
+      btn.className = 'unit-btn';
+      if (count === 0) { btn.style.opacity = '0.3'; btn.disabled = true; }
+      btn.innerHTML =
+        '<span class="u-book">MH' + (bi+1) + '</span>' +
+        '<span class="u-unit">U' + ui + '</span>' +
+        '<span class="u-count">' + (count > 0 ? count + ' words' : 'empty') + '</span>';
+      btn.dataset.book = book;
+      btn.dataset.unit = unit;
+      btn.addEventListener('click', function() { toggleUnit(this); });
+      grid.appendChild(btn);
+    }
+  });
+})();
+
+function toggleUnit(btn) {
+  GameAudio.playClick();
+  var key = btn.dataset.book + '_' + btn.dataset.unit;
+  if (btn.classList.contains('selected')) {
+    btn.classList.remove('selected');
+    delete state.selectedUnits[key];
+  } else {
+    btn.classList.add('selected');
+    state.selectedUnits[key] = { book: btn.dataset.book, unit: btn.dataset.unit };
+  }
+  updateSetupInfo();
+}
+
+function updateSetupInfo() {
+  var pool = buildPool();
+  var info = document.getElementById('setupInfo');
+  var startBtn = document.getElementById('startBtn');
+  if (state.customQuestions && state.customQuestions.length > 0) {
+    info.innerHTML = '<strong>' + state.customQuestions.length + ' custom questions</strong> loaded from Lotus Platform!';
+    startBtn.disabled = false;
+  } else if (pool.length >= 8) {
+    info.innerHTML = '<strong>' + pool.length + ' words</strong> selected — ready to battle!';
+    startBtn.disabled = false;
+  } else if (pool.length > 0) {
+    info.innerHTML = '<strong>' + pool.length + '</strong> words selected — need at least <strong>8</strong>.';
+    startBtn.disabled = true;
+  } else {
+    info.innerHTML = 'Select units to build your question pool. Need at least <strong>8 words</strong>.';
+    startBtn.disabled = true;
+  }
+}
+
+function buildPool() {
+  var pool = [];
+  var seen = {};
+  Object.keys(state.selectedUnits).forEach(function(key) {
+    var s = state.selectedUnits[key];
+    var data = _meihuaDB && _meihuaDB[s.book] && _meihuaDB[s.book][s.unit];
+    if (data && data.vocab) {
+      data.vocab.forEach(function(v) {
+        if (!seen[v.char]) { seen[v.char] = true; pool.push(v); }
+      });
+    }
+  });
+  return pool;
+}
+
+/* ───────────────────────────────────────────────
+   CANVAS & SPRITES
+─────────────────────────────────────────────── */
+var canvas, ctx;
+/* Preload sprites immediately when page loads so they are ready before battle starts */
+var hero1Spr = new SpriteRenderer(SPRITES.hero1);
+var hero2Spr = new SpriteRenderer(SPRITES.hero2);
+var bossSpr  = new SpriteRenderer(SPRITES.boss);
+var lastFrameTime = 0;
+var animFrameId = null;
+
+function initCanvas() {
+  canvas = document.getElementById('battleCanvas');
+  ctx = canvas.getContext('2d');
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  if (!hero1Spr) hero1Spr = new SpriteRenderer(SPRITES.hero1);
+  if (!hero2Spr) hero2Spr = new SpriteRenderer(SPRITES.hero2);
+  if (!bossSpr)  bossSpr  = new SpriteRenderer(SPRITES.boss);
+}
+
+function resizeCanvas() {
+  var panel = document.getElementById('centerPanel');
+  canvas.width  = panel.offsetWidth  || Math.round(window.innerWidth  * 0.34);
+  canvas.height = panel.offsetHeight || window.innerHeight;
+}
+
+function gameLoop(ts) {
+  if (!lastFrameTime) lastFrameTime = ts;
+  var dt = ts - lastFrameTime;
+  lastFrameTime = ts;
+
+  hero1Spr.update(dt);
+  hero2Spr.update(dt);
+  bossSpr.update(dt);
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  var cw = canvas.width;
+  var ch = canvas.height;
+
+  /* Helper: draw elliptical ground shadow */
+  function drawShadow(cx, groundY, w, alpha) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    ctx.ellipse(cx, groundY, w * 0.5, w * 0.08, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fill();
+    ctx.restore();
+  }
+
+  /* Helper: draw fallback indicator if image failed to load */
+  function drawMissingFallback(x, y, w, h, label) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(231, 76, 60, 0.15)';
+    ctx.strokeStyle = '#e74c3c';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.rect(x, y, w, h);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#ff7675';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(label + ' missing', x + w / 2, y + h / 2);
+    ctx.restore();
+  }
+
+  /* Boss — center, larger (drawn first so it's behind heroes) */
+  var bw = bossSpr.getWidth();
+  var bx = (cw - bw) / 2;
+  var by = ch * 0.12;
+  drawShadow(bx + bw * 0.5, by + SPRITES.boss.displayH * 0.97, bw * 0.85, 0.6);
+  if (bossSpr.loaded) {
+    bossSpr.draw(ctx, bx, by, false);
+  } else if (bossSpr.loadFailed) {
+    drawMissingFallback(bx, by, bw, SPRITES.boss.displayH, 'Boss Sprite');
+  }
+
+  /* Hero 1 — left side, facing right */
+  var h1w = hero1Spr.getWidth();
+  var h1x = cw * 0.30;
+  var h1y = ch * 0.575;
+  drawShadow(h1x + h1w * 0.5, h1y + SPRITES.hero1.displayH * 0.95, h1w * 0.9, 0.55);
+  if (hero1Spr.loaded) {
+    hero1Spr.draw(ctx, h1x, h1y, false);
+  } else if (hero1Spr.loadFailed) {
+    drawMissingFallback(h1x, h1y, h1w, SPRITES.hero1.displayH, 'Hero 1');
+  }
+
+  /* Hero 2 — right side, facing left (flipped) */
+  var h2w = hero2Spr.getWidth();
+  var h2x = cw * 0.70 - h2w;
+  var h2y = ch * 0.575;
+  drawShadow(h2x + h2w * 0.5, h2y + SPRITES.hero2.displayH * 0.95, h2w * 0.9, 0.55);
+  if (hero2Spr.loaded) {
+    hero2Spr.draw(ctx, h2x, h2y, true);
+  } else if (hero2Spr.loadFailed) {
+    drawMissingFallback(h2x, h2y, h2w, SPRITES.hero2.displayH, 'Hero 2');
+  }
+
+  animFrameId = requestAnimationFrame(gameLoop);
+}
+
+/* ───────────────────────────────────────────────
+   QUESTION GENERATION
+─────────────────────────────────────────────── */
+function pickRandom(arr, exclude) {
+  var filtered = exclude ? arr.filter(function(x) { return x !== exclude; }) : arr;
+  return filtered[Math.floor(Math.random() * filtered.length)];
+}
+
+function shuffle(arr) {
+  for (var i = arr.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+  }
+  return arr;
+}
+
+function generateQuestion(pool) {
+  /* Custom Activity questions from LotusGameBridge */
+  if (state.customQuestions && state.customQuestions.length > 0) {
+    var item = state.customQuestions[Math.floor(Math.random() * state.customQuestions.length)];
+    var correctAns = item.correctAnswer || (item.options && item.options.find(function(o){ return o.isCorrect; })?.text) || item.text;
+    var opts = [];
+    if (Array.isArray(item.options) && item.options.length >= 2) {
+      opts = shuffle(item.options.map(function(o){
+        var isCorr = (typeof o === 'object') ? Boolean(o.isCorrect) : (o === correctAns);
+        var txt = (typeof o === 'object') ? o.text : o;
+        return { text: txt, isCorrect: isCorr };
+      }));
+    } else {
+      var poolDistractors = (item.wrongAnswers && item.wrongAnswers.length > 0)
+        ? item.wrongAnswers
+        : state.customQuestions.filter(function(x){ return (x.correctAnswer || x.text) !== correctAns; }).map(function(x){ return x.correctAnswer || x.text; });
+      var allOpts = [{ text: correctAns, isCorrect: true }].concat(poolDistractors.slice(0, 3).map(function(w){ return { text: w, isCorrect: false }; }));
+      opts = shuffle(allOpts);
+    }
+    return {
+      type: 'custom',
+      prompt: item.text || item.question || correctAns,
+      pinyin: item.pinyin || '',
+      options: opts,
+      correctChar: correctAns,
+      typeBadge: item.category || 'Battle Question'
+    };
+  }
+
+  if (pool.length < 4) return null;
+  var correct = pool[Math.floor(Math.random() * pool.length)];
+  var wrongPool = pool.filter(function(v) { return v.char !== correct.char; });
+  var wrongs = shuffle(wrongPool.slice()).slice(0, 3);
+  var type = Math.random() < 0.5 ? 'char2en' : 'en2char';
+
+  var options;
+  if (type === 'char2en') {
+    options = shuffle([{ text: correct.en, isCorrect: true }].concat(
+      wrongs.map(function(w) { return { text: w.en, isCorrect: false }; })
+    ));
+    return {
+      type: type,
+      prompt: correct.char,
+      pinyin: correct.pinyin,
+      options: options,
+      correctChar: correct.char,
+      typeBadge: 'Chinese → English'
+    };
+  } else {
+    options = shuffle([{ text: correct.char, isCorrect: true }].concat(
+      wrongs.map(function(w) { return { text: w.char, isCorrect: false }; })
+    ));
+    return {
+      type: type,
+      prompt: correct.en,
+      pinyin: '',
+      options: options,
+      correctChar: correct.char,
+      typeBadge: 'English → Chinese'
+    };
+  }
+}
+
+/* ───────────────────────────────────────────────
+   RENDER QUIZ PANEL
+─────────────────────────────────────────────── */
+function renderQuestion(player) {
+  var q = player === 1 ? state.p1Question : state.p2Question;
+  var prefix = player === 1 ? 'p1' : 'p2';
+  if (!q) return;
+
+  document.getElementById(prefix + 'TypeBadge').textContent = q.typeBadge;
+  document.getElementById(prefix + 'Question').textContent  = q.prompt;
+  document.getElementById(prefix + 'Pinyin').textContent    = q.pinyin || '';
+
+  var grid = document.getElementById(prefix + 'Answers');
+  grid.innerHTML = '';
+  var pState = player === 1 ? state.p1 : state.p2;
+
+  q.options.forEach(function(opt) {
+    var btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.textContent = opt.text;
+    if (pState.locked) btn.disabled = true;
+    btn.addEventListener('click', function() { handleAnswer(player, opt.isCorrect, btn); });
+    grid.appendChild(btn);
+  });
+
+  /* Reset speed bar */
+  var bar = document.getElementById(prefix + 'SpeedBar');
+  bar.style.width = '100%';
+  bar.className = 'speed-bar-fill';
+
+  if (player === 1) state.p1.questionTime = Date.now();
+  else              state.p2.questionTime = Date.now();
+
+  /* Animated speed bar drain */
+  var maxTime = 8000; /* 8s until bar empty */
+  var pData = player === 1 ? state.p1 : state.p2;
+  if (pData.speedInterval) clearInterval(pData.speedInterval);
+  pData.speedInterval = setInterval(function() {
+    if (state.gameOver) { clearInterval(pData.speedInterval); return; }
+    var elapsed = Date.now() - pData.questionTime;
+    var pct = Math.max(0, 100 - (elapsed / maxTime * 100));
+    bar.style.width = pct + '%';
+    if (elapsed < 3000) bar.className = 'speed-bar-fill';
+    else if (elapsed < 5000) bar.className = 'speed-bar-fill medium';
+    else bar.className = 'speed-bar-fill slow';
+  }, 80);
+}
+
+function nextQuestion(player) {
+  if (state.gameOver) return;
+  var q = generateQuestion(state.pool);
+  if (player === 1) { state.p1Question = q; state.p1.locked = false; }
+  else              { state.p2Question = q; state.p2.locked = false; }
+  renderQuestion(player);
+}
+
+/* ───────────────────────────────────────────────
+   ANSWER HANDLER
+─────────────────────────────────────────────── */
+function handleAnswer(player, isCorrect, btn) {
+  if (state.gameOver) return;
+  var pState = player === 1 ? state.p1 : state.p2;
+  if (pState.locked) return;
+  pState.locked = true;
+
+  var prefix = player === 1 ? 'p1' : 'p2';
+  var allBtns = document.getElementById(prefix + 'Answers').querySelectorAll('.answer-btn');
+  allBtns.forEach(function(b) { b.disabled = true; });
+
+  var elapsed = Date.now() - pState.questionTime;
+
+  if (isCorrect) {
+    GameAudio.playSuccess(pState.streak);
+    btn.classList.add('flash-correct');
+    pState.score++;
+    pState.streak++;
+    document.getElementById(prefix + 'Score').textContent = pState.score;
+    document.getElementById(prefix + 'Streak').textContent = pState.streak >= 3 ? '🔥×' + pState.streak : '';
+
+    /* Calculate damage */
+    var base = 10 + Math.floor(Math.random() * 16);
+    var speedMult = elapsed < 3000 ? 1.5 : elapsed < 5000 ? 1.25 : 1.0;
+    var dmg = Math.round(base * speedMult);
+
+    state.totalDamage += dmg;
+    dealDamage(dmg, player);
+
+    /* Hero attack animation */
+    if (player === 1) {
+      hero1Spr.play('attack', true, function() { hero1Spr.play('idle'); });
+    } else {
+      hero2Spr.play('attack', true, function() { hero2Spr.play('idle'); });
+    }
+
+    showFeedback(prefix, '✓', true);
+    flashScreen('gold');
+    setTimeout(function() { nextQuestion(player); }, 500);
+
+  } else {
+    GameAudio.playFailure();
+    btn.classList.add('flash-wrong');
+    pState.streak = 0;
+    document.getElementById(prefix + 'Streak').textContent = '';
+
+    /* Boss recovers 5 HP */
+    healBoss(5);
+    showFeedback(prefix, '✗', false);
+    flashScreen('red');
+    setTimeout(function() { nextQuestion(player); }, 500);
+  }
+}
+
+/* ───────────────────────────────────────────────
+   BOSS HP
+─────────────────────────────────────────────── */
+function dealDamage(dmg, player) {
+  GameAudio.playHit();
+  state.bossHp = Math.max(0, state.bossHp - dmg);
+  updateBossHpBar();
+
+  /* Boss hurt animation */
+  bossSpr.play('hurt', true, function() { bossSpr.play('idle'); });
+
+  /* Floating damage number */
+  spawnDamageFloat('-' + dmg, false, player);
+
+  if (state.bossHp <= 0) {
+    endGame(true);
+  }
+}
+
+function healBoss(hp) {
+  state.bossHp = Math.min(state.bossMaxHp, state.bossHp + hp);
+  updateBossHpBar();
+  spawnDamageFloat('+' + hp + ' HP', true, 0);
+}
+
+function updateBossHpBar() {
+  var pct = (state.bossHp / state.bossMaxHp) * 100;
+  document.getElementById('bossHpFill').style.width = pct + '%';
+  document.getElementById('bossHpText').textContent = state.bossHp + ' / ' + state.bossMaxHp;
+}
+
+function spawnDamageFloat(text, isHeal, player) {
+  var center = document.getElementById('centerPanel');
+  var el = document.createElement('div');
+  el.className = 'damage-float' + (isHeal ? ' heal' : '');
+  el.textContent = text;
+
+  /* Position near boss or side */
+  var cw = center.offsetWidth;
+  var ch = center.offsetHeight;
+  var x = (cw / 2) + (Math.random() * 40 - 20);
+  var y = ch * 0.35 + (Math.random() * 20 - 10);
+  el.style.left = x + 'px';
+  el.style.top  = y + 'px';
+  center.appendChild(el);
+  setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 950);
+}
+
+/* ───────────────────────────────────────────────
+   FEEDBACK OVERLAY
+─────────────────────────────────────────────── */
+function showFeedback(prefix, text, correct) {
+  var el = document.getElementById(prefix + 'Feedback');
+  el.textContent = text;
+  el.className = 'feedback-overlay ' + (correct ? 'show-correct' : 'show-wrong');
+  setTimeout(function() { el.className = 'feedback-overlay'; }, 650);
+}
+
+function flashScreen(color) {
+  var el = document.createElement('div');
+  el.className = 'screen-flash ' + color;
+  document.body.appendChild(el);
+  setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 360);
+}
+
+/* ───────────────────────────────────────────────
+   TIMER
+─────────────────────────────────────────────── */
+function startTimer() {
+  state.timeLeft = state.roundTime;
+  updateTimerDisplay();
+
+  state.timerInterval = setInterval(function() {
+    if (state.gameOver) { clearInterval(state.timerInterval); return; }
+    state.timeLeft--;
+    updateTimerDisplay();
+    if (state.timeLeft <= 0) {
+      clearInterval(state.timerInterval);
+      endGame(false);
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  var el = document.getElementById('timerDisplay');
+  el.textContent = state.timeLeft;
+  if (state.timeLeft <= 10) {
+    el.classList.add('urgent');
+    document.getElementById('timerRing').style.background =
+      'conic-gradient(#ef4444 ' + (state.timeLeft / state.roundTime * 360) + 'deg, rgba(255,255,255,0.08) 0deg)';
+  } else {
+    el.classList.remove('urgent');
+    document.getElementById('timerRing').style.background =
+      'conic-gradient(#f5c518 ' + (state.timeLeft / state.roundTime * 360) + 'deg, rgba(255,255,255,0.08) 0deg)';
+  }
+}
+
+/* ───────────────────────────────────────────────
+   START GAME
+─────────────────────────────────────────────── */
+function startGame() {
+  GameAudio.playClick();
+  state.pool = buildPool();
+  if (state.pool.length < 8 && (!state.customQuestions || state.customQuestions.length < 1)) return;
+
+  GameAudio.startBGM();
+
+  /* Reset state */
+  state.bossHp = state.bossMaxHp;
+  state.gameOver = false;
+  state.totalDamage = 0;
+  state.startTime = Date.now();
+  state.p1 = { score: 0, streak: 0, questionTime: Date.now(), locked: false, speedInterval: null };
+  state.p2 = { score: 0, streak: 0, questionTime: Date.now(), locked: false, speedInterval: null };
+
+  /* Show game screen */
+  showScreen('gameScreen');
+
+  /* Reset UI immediately (doesn't need layout) */
+  document.getElementById('p1Score').textContent = '0';
+  document.getElementById('p2Score').textContent = '0';
+  document.getElementById('p1Streak').textContent = '';
+  document.getElementById('p2Streak').textContent = '';
+  updateBossHpBar();
+
+  /* Defer canvas init by 2 frames so browser computes layout first
+     (panel was display:none, offsetWidth = 0 until layout is flushed) */
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      initCanvas();
+
+      /* Start sprites */
+      hero1Spr.play('idle');
+      hero2Spr.play('idle');
+      bossSpr.play('idle');
+
+      /* Begin render loop */
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+      lastFrameTime = 0;
+      animFrameId = requestAnimationFrame(gameLoop);
+
+      /* Show boss intro then begin */
+      showBossIntro(function() {
+        state.p1Question = generateQuestion(state.pool);
+        state.p2Question = generateQuestion(state.pool);
+        renderQuestion(1);
+        renderQuestion(2);
+        startTimer();
+      });
+    });
+  });
+}
+
+/* Boss intro sequence */
+function showBossIntro(callback) {
+  var intro = document.createElement('div');
+  intro.id = 'bossIntro';
+  intro.innerHTML =
+    '<div class="bi-warning">⚠ WARNING ⚠</div>' +
+    '<div class="bi-name">THE SHADOW BEAST<br>APPROACHES!</div>' +
+    '<div class="bi-hp">Boss HP: ' + state.bossMaxHp + ' | Timer: ' + state.roundTime + 's</div>' +
+    '<div style="color:rgba(255,255,255,0.4);font-size:0.85rem;margin-top:8px;">Work together to deal ' + state.bossMaxHp + ' damage!</div>';
+  document.body.appendChild(intro);
+
+  bossSpr.play('idle');
+
+  setTimeout(function() {
+    if (intro.parentNode) intro.parentNode.removeChild(intro);
+    flashScreen('purple');
+    if (callback) callback();
+  }, 2200);
+}
+
+/* ───────────────────────────────────────────────
+   END GAME
+─────────────────────────────────────────────── */
+function endGame(victory) {
+  GameAudio.stopBGM();
+  if (victory) GameAudio.playVictory();
+  else         GameAudio.playDefeat();
+  state.gameOver = true;
+  clearInterval(state.timerInterval);
+  if (state.p1.speedInterval) clearInterval(state.p1.speedInterval);
+  if (state.p2.speedInterval) clearInterval(state.p2.speedInterval);
+
+  if (victory) {
+    bossSpr.play('dead', true, null);
+    flashScreen('gold');
+    /* Show victory splash */
+    showRoundSplash('VICTORY!', function() {
+      setTimeout(function() { showResults(true); }, 600);
+    });
+  } else {
+    /* Boss attacks — heroes die */
+    bossSpr.play('attack', false, null);
+    hero1Spr.play('dead', true, null);
+    hero2Spr.play('dead', true, null);
+    flashScreen('red');
+    showRoundSplash('DEFEATED!', function() {
+      setTimeout(function() { showResults(false); }, 600);
+    });
+  }
+
+  if (animFrameId) {
+    /* Keep rendering for death animation */
+    setTimeout(function() {
+      cancelAnimationFrame(animFrameId);
+      animFrameId = null;
+    }, 2000);
+  }
+}
+
+function showRoundSplash(text, cb) {
+  var el = document.createElement('div');
+  el.className = 'round-splash';
+  el.innerHTML = '<div class="round-splash-text">' + text + '</div>';
+  document.body.appendChild(el);
+  setTimeout(function() {
+    if (el.parentNode) el.parentNode.removeChild(el);
+    if (cb) cb();
+  }, 900);
+}
+
+/* ───────────────────────────────────────────────
+   RESULT SCREEN
+─────────────────────────────────────────────── */
+function showResults(victory) {
+  showScreen('resultScreen');
+
+  var outcome = document.getElementById('resultOutcome');
+  outcome.textContent = victory ? '⚔ VICTORY!' : '💀 DEFEATED!';
+  outcome.className = 'result-outcome ' + (victory ? 'win' : 'lose');
+
+  document.getElementById('resultSub').textContent = victory
+    ? 'The Shadow Beast has been slain! Excellent teamwork!'
+    : 'The Shadow Beast survived... Train harder and try again!';
+
+  var elapsed = Math.round((Date.now() - state.startTime) / 1000);
+  var finalScore = Math.round(state.totalDamage * 1.5) + (victory ? 500 : 0) +
+    (state.p1.score + state.p2.score) * 10;
+
+  document.getElementById('statDamage').textContent = state.totalDamage;
+  document.getElementById('statScore').textContent  = finalScore;
+  document.getElementById('statBossHp').textContent = state.bossHp;
+
+  state._lastFinalScore = finalScore;
+  state._lastVictory    = victory;
+
+  if (window.GameBridge && typeof window.GameBridge.finishGame === 'function') {
+    var maxPotentialScore = 2000;
+    window.GameBridge.finishGame(finalScore, maxPotentialScore, [
+      { player: 1, score: state.p1.score },
+      { player: 2, score: state.p2.score }
+    ], 'Boss Battle 2P');
+  }
+
+  renderLeaderboard();
+}
+
+/* ───────────────────────────────────────────────
+   LEADERBOARD
+─────────────────────────────────────────────── */
+var LB_KEY = 'ifp_bossbattle_leaderboard';
+
+function loadLeaderboard() {
+  try {
+    return JSON.parse(localStorage.getItem(LB_KEY)) || [];
+  } catch(e) { return []; }
+}
+
+function saveLeaderboard(lb) {
+  try { localStorage.setItem(LB_KEY, JSON.stringify(lb)); } catch(e) {}
+}
+
+function saveScore() {
+  var name = document.getElementById('teamNameInput').value.trim();
+  if (!name) { document.getElementById('teamNameInput').focus(); return; }
+
+  var lb = loadLeaderboard();
+  lb.push({
+    name: name,
+    score: state._lastFinalScore,
+    damage: state.totalDamage,
+    victory: state._lastVictory,
+    date: new Date().toLocaleDateString()
+  });
+  lb.sort(function(a, b) { return b.score - a.score; });
+  lb = lb.slice(0, 10);
+  saveLeaderboard(lb);
+
+  document.getElementById('scoreSaveBtn').textContent = 'Saved!';
+  document.getElementById('scoreSaveBtn').disabled = true;
+  document.getElementById('teamNameInput').disabled = true;
+
+  renderLeaderboard();
+}
+
+function renderLeaderboard() {
+  var lb = loadLeaderboard();
+  var tbody = document.getElementById('lbBody');
+  tbody.innerHTML = '';
+
+  if (lb.length === 0) {
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td colspan="4" class="lb-empty">No scores yet — be the first!</td>';
+    tbody.appendChild(tr);
+    return;
+  }
+
+  lb.forEach(function(entry, i) {
+    var tr = document.createElement('tr');
+    var medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
+    tr.innerHTML =
+      '<td class="lb-rank">' + medal + '</td>' +
+      '<td class="lb-name">' + escHtml(entry.name) + (entry.victory ? ' ⚔' : '') + '</td>' +
+      '<td class="lb-score">' + entry.score + '</td>' +
+      '<td class="lb-date">' + escHtml(entry.date || '') + '</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ───────────────────────────────────────────────
+   NAVIGATION
+─────────────────────────────────────────────── */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  var el = document.getElementById(id);
+  if (el) el.classList.add('active');
+}
+
+function playAgain() {
+  GameAudio.playClick();
+  /* Reset score entry */
+  document.getElementById('teamNameInput').value = '';
+  document.getElementById('scoreSaveBtn').textContent = 'Save';
+  document.getElementById('scoreSaveBtn').disabled = false;
+  document.getElementById('teamNameInput').disabled = false;
+  showScreen('setupScreen');
+}
+
+function confirmExit() {
+  GameAudio.stopBGM();
+  GameAudio.playClick();
+  state.gameOver = true;
+  clearInterval(state.timerInterval);
+  if (state.p1.speedInterval) clearInterval(state.p1.speedInterval);
+  if (state.p2.speedInterval) clearInterval(state.p2.speedInterval);
+  if (animFrameId) { cancelAnimationFrame(animFrameId); animFrameId = null; }
+  showScreen('setupScreen');
+}
+
+/* LotusGameBridge Integration */
+if (window.GameBridge && typeof window.GameBridge.onReady === 'function') {
+  window.GameBridge.onReady(function(activity) {
+    if (activity && Array.isArray(activity.questions) && activity.questions.length > 0) {
+      state.customQuestions = activity.questions;
+      updateSetupInfo();
+      startGame();
+    }
+  });
+}
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'INIT_ACTIVITY' && event.data.activity && Array.isArray(event.data.activity.questions)) {
+    state.customQuestions = event.data.activity.questions;
+    updateSetupInfo();
+    startGame();
+  }
+});
+</script>
+</body>
+</html>

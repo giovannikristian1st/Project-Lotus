@@ -987,7 +987,6 @@
 
     function renderPortalUserMenu() {
       const teacher = LotusDB.getCurrentTeacherStrict();
-      updatePortalAuthNav();
       const wrapper = document.getElementById('portal-user-menu-wrapper');
       if (!wrapper) return;
 
@@ -1069,13 +1068,12 @@
         if (navRegister) navRegister.classList.add('hidden');
         if (navDashboard) navDashboard.classList.remove('hidden');
         if (userMenuWrapper) userMenuWrapper.classList.remove('hidden');
-        renderPortalUserMenu();
 
         if (loginTabBtn) {
           loginTabBtn.onclick = () => goToTeacherProjectsDashboard();
           loginTabBtn.innerHTML = `
             <span class="ui-sprite ui-sm ui-dashboard"></span>
-            <span class="truncate">Dashboard Guru</span>
+            <span class="truncate" data-i18n="nav.dashboard">Dashboard Guru</span>
           `;
           loginTabBtn.setAttribute('title', 'Buka Dashboard Proyek');
         }
@@ -1785,6 +1783,10 @@
       const countEl = document.getElementById('comm-result-count');
       if (!grid) return;
 
+      if (typeof LotusDB.ensureMeihuaPresets === 'function') {
+        LotusDB.ensureMeihuaPresets();
+      }
+
       const level = document.getElementById('comm-filter-level')?.value || 'all';
       const subject = document.getElementById('comm-filter-subject')?.value || 'all';
       const language = document.getElementById('comm-filter-lang')?.value || 'all';
@@ -2319,7 +2321,7 @@
     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
     <span id="version-badge-text">v2026.11.17 • Cloud</span>
     <span class="text-[#a1a1aa]">•</span>
-    <span class="font-mono text-[10px] text-[#71717a]">Build d276.4</span>
+    <span class="font-mono text-[10px] text-[#71717a]">Build 2026.11.19.5</span>
   </div>
 </body>
 </html>

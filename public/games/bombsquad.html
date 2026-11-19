@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Meihua Bomb Squad // 梅花拆弹专家</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&family=Noto+Serif+SC:wght@700;900&family=Orbitron:wght@600;700;800;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Databases & Bridge -->
+  <script src="common/bridge.js"></script>
+  <script src="meihuadb.js"></script>
+  <script src="dict.js"></script>
+  
+  <style>
+    :root {
+      --bg-dark: #05070e;
+      --bg-card: rgba(10, 16, 32, 0.94);
+      --cyan: #00f0ff;
+      --cyan-glow: rgba(0, 240, 255, 0.5);
+      --magenta: #ff007f;
+      --magenta-glow: rgba(255, 0, 127, 0.5);
+      --purple: #a855f7;
+      --purple-glow: rgba(168, 85, 247, 0.5);
+      --green: #00ff9d;
+      --green-glow: rgba(0, 255, 157, 0.5);
+      --yellow: #ffe600;
+      --yellow-glow: rgba(255, 230, 0, 0.5);
+      --red: #ff2a55;
+      --red-glow: rgba(255, 42, 85, 0.6);
+      --border-cyan: rgba(0, 240, 255, 0.35);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      width: 100vw; height: 100vh; overflow: hidden; background: #020306;
+      font-family: 'Outfit', 'Noto Sans SC', sans-serif; color: var(--text-main);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ══════════════════════════════════════
+       1920×1080 CENTERED VIEWPORT
+    ══════════════════════════════════════ */
+    #sceneContainer {
+      position: absolute; width: 1920px; height: 1080px;
+      transform-origin: top left; overflow: hidden;
+      display: flex; flex-direction: column;
+      background: radial-gradient(circle at 50% 30%, #15101a 0%, #05070e 100%);
+      box-shadow: 0 0 80px rgba(0, 0, 0, 0.9);
+    }
+
+    .cyber-grid-bg {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0.12;
+      background-image: 
+        linear-gradient(rgba(255, 42, 85, 0.4) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 42, 85, 0.4) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .cyber-scanlines {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0.2;
+      background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0, 0, 0, 0.4) 3px, rgba(0, 0, 0, 0.4) 6px);
+    }
+
+    /* ── TOP NAV ── */
+    .cyber-nav {
+      height: 72px; padding: 0 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: relative; z-index: 100; flex-shrink: 0;
+      background: rgba(8, 12, 24, 0.9);
+      border-bottom: 1px solid var(--border-cyan);
+      backdrop-filter: blur(12px);
+    }
+    .nav-left { display: flex; align-items: center; gap: 20px; }
+    .cyber-btn-back {
+      background: rgba(0, 240, 255, 0.1); border: 1px solid var(--cyan);
+      color: var(--cyan); padding: 8px 24px; border-radius: 12px;
+      font-family: 'Orbitron', sans-serif; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;
+    }
+    .cyber-btn-back:hover { background: var(--cyan); color: #000; box-shadow: 0 0 16px var(--cyan-glow); }
+    .nav-title {
+      font-family: 'Orbitron', sans-serif; font-size: 1.65rem; font-weight: 900;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, #ff2a55, #ffe600, #00f0ff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 20px rgba(255, 42, 85, 0.4);
+    }
+    .cyber-audio-panel {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(0, 0, 0, 0.55); border: 1px solid var(--border-cyan);
+      border-radius: 14px; padding: 6px 16px;
+    }
+    .bgm-tag { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 800; color: var(--cyan); }
+    .nav-sound-btn { background: transparent; border: none; font-size: 1.3rem; cursor: pointer; }
+    .vol-slider { width: 100px; accent-color: var(--cyan); cursor: pointer; }
+    .vol-val-label { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 800; color: #fff; min-width: 36px; }
+
+    /* ── SCREEN WRAPPER ── */
+    .bs-screen {
+      position: absolute; top: 72px; bottom: 0; left: 0; right: 0;
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      padding: 24px 40px; z-index: 10;
+      animation: bsScreenIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .bs-screen.active { display: flex; }
+    @keyframes bsScreenIn {
+      from { opacity: 0; transform: scale(0.98) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* ══════════════════════════════════════
+       SCREEN 1: SETUP
+    ══════════════════════════════════════ */
+    .setup-card {
+      width: 1460px; height: 920px; background: var(--bg-card);
+      border: 2px solid var(--red); border-radius: 28px;
+      box-shadow: 0 0 60px rgba(255, 42, 85, 0.2);
+      padding: 30px 44px; display: flex; flex-direction: column; gap: 20px;
+      backdrop-filter: blur(20px); overflow: hidden;
+    }
+    .setup-header h1 {
+      font-family: 'Orbitron', sans-serif; font-size: 1.9rem; font-weight: 900;
+      color: #fff; letter-spacing: 1.5px;
+    }
+    .setup-header p { font-size: 1.1rem; color: var(--text-muted); margin-top: 4px; }
+
+    .setup-tabs-row { display: flex; gap: 12px; }
+    .book-tab-btn {
+      flex: 1; padding: 12px; border-radius: 14px;
+      background: rgba(255, 255, 255, 0.05); border: 1.5px solid rgba(255, 255, 255, 0.15);
+      font-family: 'Orbitron', sans-serif; font-size: 1.05rem; font-weight: 800; color: #fff;
+      cursor: pointer; transition: all 0.2s; text-align: center;
+    }
+    .book-tab-btn:hover { background: rgba(255, 42, 85, 0.15); border-color: var(--red); }
+    .book-tab-btn.active { background: var(--red); color: #fff; box-shadow: 0 0 18px var(--red-glow); }
+
+    .units-selector-box {
+      background: rgba(0, 0, 0, 0.45); border: 1.5px solid rgba(255, 42, 85, 0.25);
+      border-radius: 20px; padding: 18px 24px; display: flex; flex-direction: column; gap: 12px;
+      flex: 1;
+    }
+    .units-toolbar { display: flex; justify-content: space-between; align-items: center; }
+    .units-tool-title { font-family: 'Orbitron', sans-serif; font-size: 1rem; font-weight: 800; color: var(--red); }
+    .units-quick-btns { display: flex; gap: 10px; }
+    .btn-quick {
+      padding: 6px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 800;
+      background: rgba(255, 255, 255, 0.08); border: 1px solid var(--border-cyan);
+      color: #fff; cursor: pointer; transition: all 0.15s;
+    }
+    .btn-quick:hover { background: var(--red); color: #fff; }
+
+    .units-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;
+      max-height: 220px; overflow-y: auto; padding-right: 6px;
+    }
+    .unit-pill {
+      background: rgba(255, 255, 255, 0.05); border: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px; padding: 10px 14px; cursor: pointer; transition: all 0.15s;
+      display: flex; flex-direction: column; gap: 2px; text-align: left;
+    }
+    .unit-pill:hover { border-color: var(--red); background: rgba(255, 42, 85, 0.1); }
+    .unit-pill.active {
+      border-color: var(--yellow); background: rgba(255, 230, 0, 0.2);
+      box-shadow: 0 0 14px var(--yellow-glow);
+    }
+    .unit-num { font-family: 'Orbitron', sans-serif; font-size: 0.95rem; font-weight: 900; color: #fff; }
+    .unit-title { font-size: 0.85rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .timer-pills-row { display: flex; gap: 14px; }
+    .timer-pill {
+      background: rgba(255, 255, 255, 0.05); border: 1.5px solid rgba(255, 255, 255, 0.15);
+      border-radius: 14px; padding: 10px 24px; font-family: 'Orbitron', sans-serif;
+      font-size: 1.05rem; font-weight: 800; color: #fff; cursor: pointer; transition: all 0.2s;
+    }
+    .timer-pill:hover { border-color: var(--red); background: rgba(255, 42, 85, 0.15); }
+    .timer-pill.active { background: var(--red); color: #fff; box-shadow: 0 0 16px var(--red-glow); }
+
+    .setup-bottom-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .btn-start-bomb {
+      background: linear-gradient(135deg, #ff2a55, #ffe600);
+      border: none; border-radius: 18px; padding: 16px 48px;
+      font-family: 'Orbitron', sans-serif; font-size: 1.4rem; font-weight: 900;
+      color: #000; cursor: pointer; box-shadow: 0 0 30px rgba(255, 42, 85, 0.6);
+      transition: all 0.2s;
+    }
+    .btn-start-bomb:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 0 45px rgba(255, 230, 0, 0.8); }
+
+    /* ══════════════════════════════════════
+       SCREEN 2: BOMB ARENA
+    ══════════════════════════════════════ */
+    .bomb-arena {
+      width: 1540px; height: 920px; display: grid;
+      grid-template-columns: 1fr 340px; gap: 24px; position: relative;
+    }
+
+    .bomb-case {
+      background: var(--bg-card); border: 2.5px solid var(--red);
+      border-radius: 28px; box-shadow: 0 0 50px rgba(255, 42, 85, 0.3);
+      padding: 26px 36px; display: flex; flex-direction: column;
+      justify-content: space-between; position: relative; overflow: hidden;
+    }
+
+    /* Bomb Clock Header */
+    .bomb-clock-header {
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(0, 0, 0, 0.65); border: 1.5px solid var(--red);
+      border-radius: 20px; padding: 12px 30px;
+    }
+    .bomb-clock-display {
+      font-family: 'Orbitron', monospace; font-size: 2.8rem; font-weight: 900;
+      color: var(--red); text-shadow: 0 0 20px var(--red-glow);
+    }
+    .bomb-clock-display.fast-tick { animation: clockPanic 0.3s infinite alternate; color: #ff0000; }
+    @keyframes clockPanic { 0% { transform: scale(1); } 100% { transform: scale(1.08); } }
+
+    /* Question & Prompt */
+    .bomb-q-prompt-box {
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      text-align: center;
+    }
+    .bomb-q-hanzi {
+      font-family: 'Noto Serif SC', serif; font-size: 7.2rem; font-weight: 900;
+      color: #fff; text-shadow: 0 0 35px var(--cyan-glow); line-height: 1.1;
+    }
+    .bomb-q-pinyin { font-size: 2.8rem; font-weight: 800; color: var(--yellow); }
+
+    /* 4 Wire Cutting Panels */
+    .bomb-wires-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; width: 100%;
+    }
+    .wire-btn {
+      background: rgba(0, 0, 0, 0.6); border: 2.5px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px; padding: 18px 24px; display: flex; align-items: center;
+      gap: 16px; cursor: pointer; transition: all 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .wire-btn.wire-1 { border-color: #ff2a55; }
+    .wire-btn.wire-2 { border-color: #00f0ff; }
+    .wire-btn.wire-3 { border-color: #00ff9d; }
+    .wire-btn.wire-4 { border-color: #ffe600; }
+    .wire-btn:hover { transform: translateY(-3px) scale(1.02); background: rgba(255, 255, 255, 0.1); }
+    .wire-btn:active { transform: translateY(1px); }
+
+    .wire-badge {
+      width: 50px; height: 50px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Orbitron', sans-serif; font-size: 1.4rem; font-weight: 900; color: #000;
+    }
+    .wire-1 .wire-badge { background: #ff2a55; color: #fff; }
+    .wire-2 .wire-badge { background: #00f0ff; }
+    .wire-3 .wire-badge { background: #00ff9d; }
+    .wire-4 .wire-badge { background: #ffe600; }
+    .wire-text { font-size: 2.2rem; font-weight: 800; color: #fff; }
+
+    /* Defuse Overlay */
+    .bomb-overlay-state {
+      position: absolute; inset: 0; display: none; flex-direction: column;
+      align-items: center; justify-content: center; z-index: 100;
+      animation: modalZoom 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .bomb-overlay-state.active { display: flex; }
+    .bomb-overlay-state.defused { background: rgba(5, 20, 15, 0.95); }
+    .bomb-overlay-state.exploded { background: rgba(30, 5, 10, 0.95); }
+
+    .overlay-title { font-family: 'Orbitron', sans-serif; font-size: 4rem; font-weight: 900; }
+    .overlay-sub { font-size: 2rem; font-weight: 700; color: #fff; margin-top: 10px; }
+
+    /* Scoreboard */
+    .bomb-scoreboard-col {
+      background: var(--bg-card); border: 2px solid var(--border-cyan);
+      border-radius: 28px; padding: 20px; display: flex; flex-direction: column;
+      gap: 14px; box-shadow: 0 0 40px rgba(0, 240, 255, 0.1);
+    }
+    .team-card {
+      background: rgba(0, 0, 0, 0.5); border: 2px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px; padding: 14px 16px; display: flex; justify-content: space-between;
+      align-items: center;
+    }
+    .team-card.active-turn {
+      background: rgba(255, 255, 255, 0.12); transform: scale(1.03);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+    }
+  </style>
+</head>
+<body>
+
+<div id="sceneContainer">
+  <div class="cyber-grid-bg"></div>
+  <div class="cyber-scanlines"></div>
+
+  <!-- TOP NAV -->
+  <nav class="cyber-nav">
+    <div class="nav-left">
+      <button class="cyber-btn-back" id="btnNavBack" onclick="handleNavBack()">◀ HUB</button>
+      <div class="nav-title">MEIHUA BOMB SQUAD // 梅花拆弹专家</div>
+    </div>
+    <div class="nav-right">
+      <div class="cyber-audio-panel">
+        <span class="bgm-tag">🎵 BGM</span>
+        <button class="nav-sound-btn" id="btnAudioToggle" onclick="GameAudio.toggleMute()">🔊</button>
+        <div class="vol-slider-wrap">
+          <input type="range" min="0" max="100" value="65" class="vol-slider" id="volSlider" oninput="GameAudio.handleSliderChange(this.value)">
+          <span class="vol-val-label" id="volValLabel">65%</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 1: SETUP
+  ══════════════════════════════════════ -->
+  <div class="bs-screen active" id="screenSetup">
+    <div class="setup-card">
+      <div class="setup-header">
+        <h1>// SELECT BOMB SQUAD MISSION</h1>
+        <p>Pilih 1 Bab saja atau Banyak Bab untuk operasi penjinakan bom waktu kosakata Mandarin!</p>
+      </div>
+
+      <!-- Book Selector Tabs (Buku 1 - 6) -->
+      <div class="setup-tabs-row">
+        <button class="book-tab-btn active" id="bookTab_1" onclick="switchBookTab(1)">🌸 MEIHUA 1</button>
+        <button class="book-tab-btn" id="bookTab_2" onclick="switchBookTab(2)">🌸 MEIHUA 2</button>
+        <button class="book-tab-btn" id="bookTab_3" onclick="switchBookTab(3)">🌸 MEIHUA 3</button>
+        <button class="book-tab-btn" id="bookTab_4" onclick="switchBookTab(4)">🌸 MEIHUA 4</button>
+        <button class="book-tab-btn" id="bookTab_5" onclick="switchBookTab(5)">🌸 MEIHUA 5</button>
+        <button class="book-tab-btn" id="bookTab_6" onclick="switchBookTab(6)">🌸 MEIHUA 6</button>
+      </div>
+
+      <!-- Units Grid (Bab 1 - 10) -->
+      <div class="units-selector-box">
+        <div class="units-toolbar">
+          <span class="units-tool-title" id="unitsToolbarTitle">DAFTAR BAB MEIHUA BUKU 1</span>
+          <div class="units-quick-btns">
+            <button class="btn-quick" onclick="selectAllCurrentBookUnits()">✓ PILIH SEMUA BAB</button>
+            <button class="btn-quick" onclick="clearCurrentBookUnits()">✗ HAPUS PILIHAN</button>
+          </div>
+        </div>
+        <div class="units-grid" id="unitsGridContainer"></div>
+      </div>
+
+      <!-- Timer Speed & Teams -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+        <div>
+          <div style="font-family:'Orbitron', sans-serif; font-size:1rem; font-weight:800; color:var(--red); margin-bottom:8px;">
+            ⏱️ WAKTU DETIK BOM
+          </div>
+          <div class="timer-pills-row">
+            <button class="timer-pill" id="tp_10" onclick="selectTimerSpeed(10)">10s (Cepat)</button>
+            <button class="timer-pill active" id="tp_15" onclick="selectTimerSpeed(15)">15s (Normal)</button>
+            <button class="timer-pill" id="tp_20" onclick="selectTimerSpeed(20)">20s (Santai)</button>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-family:'Orbitron', sans-serif; font-size:1rem; font-weight:800; color:var(--cyan); margin-bottom:8px;">
+            👥 JUMLAH TIM
+          </div>
+          <div class="timer-pills-row">
+            <button class="timer-pill active" id="tmp_coop" onclick="selectBombTeams('coop')">1 Kelas</button>
+            <button class="timer-pill" id="tmp_2" onclick="selectBombTeams(2)">2 Tim</button>
+            <button class="timer-pill" id="tmp_3" onclick="selectBombTeams(3)">3 Tim</button>
+            <button class="timer-pill" id="tmp_4" onclick="selectBombTeams(4)">4 Tim</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="setup-bottom-bar">
+        <div class="setup-summary-text" id="setupSummaryText">
+          Dipilih: <strong>1 Bab</strong> · <strong>15s per Bom</strong>
+        </div>
+        <button class="btn-start-bomb" onclick="startBombSquadGame()">
+          💣 AKTIFKAN PENJINAK BOM ▶
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 2: BOMB ARENA
+  ══════════════════════════════════════ -->
+  <div class="bs-screen" id="screenBomb">
+    <div class="bomb-arena">
+
+      <!-- Bomb Case -->
+      <div class="bomb-case" id="bombCase">
+        <div class="bomb-clock-header">
+          <span style="font-family:'Orbitron', sans-serif; font-size:1.2rem; font-weight:900; color:var(--red);" id="bombMissionStage">MISSION 1/15</span>
+          <div class="bomb-clock-display" id="bombClockDisplay">15.0s</div>
+          <span style="font-family:'Orbitron', sans-serif; font-size:1.1rem; color:var(--yellow);" id="activeTurnTeamLabel">GILIRAN: TIM MERAH</span>
+        </div>
+
+        <div class="bomb-q-prompt-box">
+          <div class="bomb-q-hanzi" id="bombHanzi">你好</div>
+          <div class="bomb-q-pinyin" id="bombPinyin">nǐ hǎo</div>
+        </div>
+
+        <!-- 4 Wires -->
+        <div class="bomb-wires-grid" id="bombWiresGrid">
+          <!-- Dynamic 4 Wire Buttons -->
+        </div>
+
+        <!-- Defuse / Explode Overlay -->
+        <div class="bomb-overlay-state" id="bombOverlayState">
+          <div class="overlay-title" id="overlayTitle">🎉 DEFUSED!</div>
+          <div class="overlay-sub" id="overlaySub">+200 POIN UNTUK TIM</div>
+        </div>
+      </div>
+
+      <!-- Scoreboard Sidebar -->
+      <div class="bomb-scoreboard-col">
+        <div style="font-family:'Orbitron', sans-serif; font-size:1.15rem; font-weight:900; color:var(--cyan); text-align:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">
+          🏆 PAPAN SKOR
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px; flex:1;" id="bombTeamsListWrap"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /#sceneContainer -->
+
+<script>
+/* ══════════════════════════════════════
+   1. PROCEDURAL AUDIO & WEB SPEECH ENGINE
+══════════════════════════════════════ */
+const GameAudio = {
+  ctx: null, masterGain: null, sfxGain: null, bgmGain: null,
+  isMuted: false, volume: 0.65, bgmTimer: null, bgmStep: 0,
+
+  init() {
+    if (this.ctx) return;
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    this.ctx = new AudioContext();
+
+    this.masterGain = this.ctx.createGain();
+    this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
+    this.masterGain.connect(this.ctx.destination);
+
+    this.sfxGain = this.ctx.createGain();
+    this.sfxGain.gain.setValueAtTime(0.9, this.ctx.currentTime);
+    this.sfxGain.connect(this.masterGain);
+
+    this.bgmGain = this.ctx.createGain();
+    this.bgmGain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+    this.bgmGain.connect(this.masterGain);
+  },
+
+  handleSliderChange(val) {
+    this.volume = val / 100;
+    document.getElementById('volValLabel').textContent = Math.round(val) + '%';
+    if (!this.ctx) this.init();
+    if (this.masterGain && !this.isMuted) {
+      this.masterGain.gain.setTargetAtTime(this.volume, this.ctx.currentTime, 0.05);
+    }
+  },
+
+  toggleMute() {
+    this.isMuted = !this.isMuted;
+    const btn = document.getElementById('btnAudioToggle');
+    if (btn) btn.textContent = this.isMuted ? '🔇' : '🔊';
+    if (!this.ctx) this.init();
+    if (this.masterGain) {
+      this.masterGain.gain.setTargetAtTime(this.isMuted ? 0 : this.volume, this.ctx.currentTime, 0.05);
+    }
+  },
+
+  playTick() {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(800, now);
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.04);
+  },
+
+  playDefused() {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    const freqs = [523.25, 659.25, 783.99, 1046.50];
+    freqs.forEach((f, idx) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(f, now + idx * 0.07);
+      gain.gain.setValueAtTime(0.35, now + idx * 0.07);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.4);
+      osc.connect(gain);
+      gain.connect(this.sfxGain);
+      osc.start(now + idx * 0.07);
+      osc.stop(now + idx * 0.07 + 0.4);
+    });
+  },
+
+  playBoom() {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(100, now);
+    osc.frequency.linearRampToValueAtTime(30, now + 0.6);
+    gain.gain.setValueAtTime(0.7, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.6);
+  },
+
+  speakHanzi(text) {
+    if (!('speechSynthesis' in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'zh-CN';
+      u.rate = 0.85;
+      window.speechSynthesis.speak(u);
+    } catch(e) {}
+  }
+};
+
+window.addEventListener('pointerdown', () => GameAudio.init(), { once: true });
+
+/* ══════════════════════════════════════
+   2. APP STATE & CENTERED SCALING
+══════════════════════════════════════ */
+let _activeBookTab = 1;
+let _selectedUnits = ['MH1U1'];
+let _timerDuration = 15;
+let _teamMode = 'coop';
+let _teams = [];
+
+let _bombQuestions = [];
+let _currentBombIndex = 0;
+let _currentTurnTeam = 0;
+let _bombTimerInterval = null;
+let _timeRemaining = 15.0;
+
+function _scaleScene() {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const s = Math.min(vw / 1920, vh / 1080);
+  const container = document.getElementById('sceneContainer');
+  if (container) {
+    container.style.transform = `scale(${s})`;
+    container.style.left = `${(vw - 1920 * s) / 2}px`;
+    container.style.top = `${(vh - 1080 * s) / 2}px`;
+  }
+}
+window.addEventListener('resize', _scaleScene);
+_scaleScene();
+
+function showScreen(screenId) {
+  document.querySelectorAll('.bs-screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(screenId);
+  if (el) el.classList.add('active');
+
+  const backBtn = document.getElementById('btnNavBack');
+  if (backBtn) {
+    if (screenId === 'screenSetup') backBtn.innerHTML = '◀ HUB';
+    else backBtn.innerHTML = '⚙️ SETTING BAB';
+  }
+}
+
+function handleNavBack() {
+  const active = document.querySelector('.bs-screen.active');
+  if (active && active.id === 'screenSetup') {
+    location.href = '../index.html';
+  } else {
+    clearInterval(_bombTimerInterval);
+    showScreen('screenSetup');
+  }
+}
+
+/* ══════════════════════════════════════
+   3. SETUP CURRICULUM LOGIC
+══════════════════════════════════════ */
+function switchBookTab(bookNum) {
+  _activeBookTab = bookNum;
+  document.querySelectorAll('.book-tab-btn').forEach(b => b.classList.remove('active'));
+  const t = document.getElementById('bookTab_' + bookNum);
+  if (t) t.classList.add('active');
+
+  document.getElementById('unitsToolbarTitle').textContent = `DAFTAR BAB MEIHUA BUKU ${bookNum}`;
+  renderUnitsGrid();
+}
+
+function renderUnitsGrid() {
+  const grid = document.getElementById('unitsGridContainer');
+  grid.innerHTML = '';
+
+  const bookKey = 'meihua' + _activeBookTab;
+  const bookData = (typeof _meihuaDB !== 'undefined') ? _meihuaDB[bookKey] : null;
+
+  for (let u = 1; u <= 10; u++) {
+    const unitKey = `MH${_activeBookTab}U${u}`;
+    const unitData = bookData ? bookData['unit' + u] : null;
+    const title = unitData ? unitData.title : `Bab ${u}`;
+    const count = (unitData && unitData.vocab) ? unitData.vocab.length : 0;
+
+    const isSelected = _selectedUnits.includes(unitKey);
+
+    const pill = document.createElement('div');
+    pill.className = `unit-pill ${isSelected ? 'active' : ''}`;
+    pill.innerHTML = `
+      <span class="unit-num">🌸 BAB ${u} (${count} Kata)</span>
+      <span class="unit-title">${title}</span>
+    `;
+
+    pill.onclick = () => toggleUnitSelection(unitKey);
+    grid.appendChild(pill);
+  }
+  updateSetupSummary();
+}
+
+function toggleUnitSelection(unitKey) {
+  const idx = _selectedUnits.indexOf(unitKey);
+  if (idx !== -1) {
+    if (_selectedUnits.length > 1) _selectedUnits.splice(idx, 1);
+  } else {
+    _selectedUnits.push(unitKey);
+  }
+  renderUnitsGrid();
+}
+
+function selectAllCurrentBookUnits() {
+  for (let u = 1; u <= 10; u++) {
+    const unitKey = `MH${_activeBookTab}U${u}`;
+    if (!_selectedUnits.includes(unitKey)) _selectedUnits.push(unitKey);
+  }
+  renderUnitsGrid();
+}
+
+function clearCurrentBookUnits() {
+  _selectedUnits = _selectedUnits.filter(k => !k.startsWith(`MH${_activeBookTab}`));
+  if (_selectedUnits.length === 0) _selectedUnits.push(`MH${_activeBookTab}U1`);
+  renderUnitsGrid();
+}
+
+function selectTimerSpeed(sec) {
+  _timerDuration = sec;
+  document.querySelectorAll('.timer-pills-row .timer-pill').forEach(p => {
+    if (p.id.startsWith('tp_')) p.classList.toggle('active', p.id === 'tp_' + sec);
+  });
+  updateSetupSummary();
+}
+
+function selectBombTeams(mode) {
+  _teamMode = mode;
+  document.querySelectorAll('.timer-pills-row .timer-pill').forEach(p => {
+    if (p.id.startsWith('tmp_')) p.classList.toggle('active', p.id === 'tmp_' + mode);
+  });
+  updateSetupSummary();
+}
+
+function updateSetupSummary() {
+  const lbl = document.getElementById('setupSummaryText');
+  if (lbl) {
+    lbl.innerHTML = `Dipilih: <strong>${_selectedUnits.length} Bab</strong> · <strong>${_timerDuration}s per Bom</strong> · <strong>${_teamMode === 'coop' ? '1 Kelas' : _teamMode + ' Tim'}</strong>`;
+  }
+}
+
+/* ══════════════════════════════════════
+   4. BOMB SQUAD ENGINE
+══════════════════════════════════════ */
+function startBombSquadGame() {
+  let words = [];
+  if (_customBombQuestions && _customBombQuestions.length > 0) {
+    words = [..._customBombQuestions];
+  } else {
+    _selectedUnits.forEach(uKey => {
+      const bNum = uKey.substring(2, 3);
+      const uNum = uKey.substring(4);
+      const bData = _meihuaDB['meihua' + bNum];
+      if (bData && bData['unit' + uNum] && bData['unit' + uNum].vocab) {
+        bData['unit' + uNum].vocab.forEach(v => {
+          if (v.char) words.push({ char: v.char, pinyin: v.pinyin, meaning: v.id || v.en });
+        });
+      }
+    });
+  }
+
+  if (words.length < 2) {
+    alert('Silakan pilih Bab yang memiliki kosakata.');
+    return;
+  }
+
+  // Shuffle
+  for (let i = words.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [words[i], words[j]] = [words[j], words[i]];
+  }
+
+  _bombQuestions = words;
+  _currentBombIndex = 0;
+  _currentTurnTeam = 0;
+
+  _teams = [];
+  if (_teamMode === 'coop') {
+    _teams.push({ id: 1, name: '🌟 1 KELAS', score: 0, color: '#00f0ff' });
+  } else {
+    const colors = ['#ff2a55', '#00f0ff', '#00ff9d', '#ffe600'];
+    const names = ['🔴 TIM MERAH', '🔵 TIM BIRU', '🟢 TIM HIJAU', '🟡 TIM KUNING'];
+    for (let t = 0; t < Number(_teamMode); t++) {
+      _teams.push({ id: t + 1, name: names[t], score: 0, color: colors[t] });
+    }
+  }
+
+  showScreen('screenBomb');
+  renderBombScoreboard();
+  loadBombStage(0);
+}
+
+function renderBombScoreboard() {
+  const wrap = document.getElementById('bombTeamsListWrap');
+  wrap.innerHTML = '';
+
+  _teams.forEach((team, idx) => {
+    const card = document.createElement('div');
+    card.className = `team-card ${idx === _currentTurnTeam ? 'active-turn' : ''}`;
+    card.style.borderColor = team.color;
+    card.innerHTML = `
+      <span style="font-family:'Orbitron', sans-serif; font-size:1.1rem; font-weight:800; color:${team.color};">${team.name}</span>
+      <span style="font-family:'Orbitron', sans-serif; font-size:1.6rem; font-weight:900; color:#fff;" id="bTeamScore_${team.id}">${team.score}</span>
+    `;
+    wrap.appendChild(card);
+  });
+}
+
+function loadBombStage(idx) {
+  _currentBombIndex = idx;
+  if (idx >= _bombQuestions.length) {
+    if (window.GameBridge && typeof window.GameBridge.finishGame === 'function') {
+      const totalScore = _teams.reduce((sum, t) => sum + (t.score || 0), 0);
+      const maxScore = _bombQuestions.length * 200;
+      window.GameBridge.finishGame(totalScore, maxScore, _teams.map(t => ({ team: t.name, score: t.score })), 'Bomb Squad');
+    }
+    alert('SELURUH MISI PENJINAKAN BOM SELESAI!');
+    showScreen('screenSetup');
+    return;
+  }
+
+  const currentQ = _bombQuestions[idx];
+  document.getElementById('bombMissionStage').textContent = `MISSION ${idx + 1} / ${_bombQuestions.length}`;
+  document.getElementById('bombHanzi').textContent = currentQ.char;
+  document.getElementById('bombPinyin').textContent = currentQ.pinyin || '';
+
+  const curTeam = _teams[_currentTurnTeam];
+  document.getElementById('activeTurnTeamLabel').textContent = `GILIRAN: ${curTeam.name}`;
+  document.getElementById('activeTurnTeamLabel').style.color = curTeam.color;
+
+  document.getElementById('bombOverlayState').classList.remove('active', 'defused', 'exploded');
+
+  let choices = [];
+  if (Array.isArray(currentQ.options) && currentQ.options.length >= 2) {
+    choices = currentQ.options.map(o => ({
+      text: typeof o === 'string' ? o : (o.text || ''),
+      isCorrect: typeof o === 'string' ? (o === currentQ.meaning) : Boolean(o.isCorrect)
+    }));
+    for (let i = choices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [choices[i], choices[j]] = [choices[j], choices[i]];
+    }
+  } else {
+    // Build 4 Wire choices (1 correct + 3 distractors)
+    const otherWords = _bombQuestions.filter(w => w.char !== currentQ.char);
+    for (let i = otherWords.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [otherWords[i], otherWords[j]] = [otherWords[j], otherWords[i]];
+    }
+
+    choices = [
+      { text: currentQ.meaning, isCorrect: true },
+      { text: (otherWords[0] || {}).meaning || 'Lainnya 1', isCorrect: false },
+      { text: (otherWords[1] || {}).meaning || 'Lainnya 2', isCorrect: false },
+      { text: (otherWords[2] || {}).meaning || 'Lainnya 3', isCorrect: false }
+    ];
+
+    for (let i = choices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [choices[i], choices[j]] = [choices[j], choices[i]];
+    }
+  }
+
+  const grid = document.getElementById('bombWiresGrid');
+  grid.innerHTML = '';
+  const badges = ['A', 'B', 'C', 'D'];
+
+  choices.forEach((c, cIdx) => {
+    const btn = document.createElement('button');
+    btn.className = `wire-btn wire-${cIdx + 1}`;
+    btn.innerHTML = `
+      <div class="wire-badge">${badges[cIdx]}</div>
+      <div class="wire-text">${c.text}</div>
+    `;
+    btn.onclick = () => handleWireCut(c.isCorrect, currentQ);
+    grid.appendChild(btn);
+  });
+
+  startBombCountdown();
+}
+
+function startBombCountdown() {
+  clearInterval(_bombTimerInterval);
+  _timeRemaining = _timerDuration;
+  const clock = document.getElementById('bombClockDisplay');
+  clock.classList.remove('fast-tick');
+  clock.textContent = _timeRemaining.toFixed(1) + 's';
+
+  _bombTimerInterval = setInterval(() => {
+    _timeRemaining -= 0.1;
+    GameAudio.playTick();
+
+    if (_timeRemaining <= 3.5) {
+      clock.classList.add('fast-tick');
+    }
+
+    if (_timeRemaining <= 0) {
+      _timeRemaining = 0;
+      clearInterval(_bombTimerInterval);
+      handleBombExplode();
+    }
+    clock.textContent = _timeRemaining.toFixed(1) + 's';
+  }, 100);
+}
+
+function handleWireCut(isCorrect, q) {
+  clearInterval(_bombTimerInterval);
+
+  if (isCorrect) {
+    // DEFUSED!
+    GameAudio.playDefused();
+    GameAudio.speakHanzi(q.char);
+
+    _teams[_currentTurnTeam].score += 200;
+    const scoreEl = document.getElementById('bTeamScore_' + _teams[_currentTurnTeam].id);
+    if (scoreEl) scoreEl.textContent = _teams[_currentTurnTeam].score;
+
+    const overlay = document.getElementById('bombOverlayState');
+    overlay.className = 'bomb-overlay-state defused active';
+    document.getElementById('overlayTitle').textContent = '🎉 BOMB DEFUSED!';
+    document.getElementById('overlayTitle').style.color = '#00ff9d';
+    document.getElementById('overlaySub').textContent = `+200 POIN (${q.char} = ${q.meaning})`;
+
+    setTimeout(() => {
+      _currentTurnTeam = (_currentTurnTeam + 1) % _teams.length;
+      renderBombScoreboard();
+      loadBombStage(_currentBombIndex + 1);
+    }, 2400);
+
+  } else {
+    handleBombExplode();
+  }
+}
+
+function handleBombExplode() {
+  clearInterval(_bombTimerInterval);
+  GameAudio.playBoom();
+
+  const q = _bombQuestions[_currentBombIndex];
+  const overlay = document.getElementById('bombOverlayState');
+  overlay.className = 'bomb-overlay-state exploded active';
+  document.getElementById('overlayTitle').textContent = '💥 BOOM! MELEDAK!';
+  document.getElementById('overlayTitle').style.color = '#ff2a55';
+  document.getElementById('overlaySub').textContent = `Jawaban: ${q.char} (${q.pinyin}) = ${q.meaning}`;
+
+  setTimeout(() => {
+    _currentTurnTeam = (_currentTurnTeam + 1) % _teams.length;
+    renderBombScoreboard();
+    loadBombStage(_currentBombIndex + 1);
+  }, 2600);
+}
+
+/* Keyboard Shortcuts */
+window.addEventListener('keydown', (e) => {
+  const activeScreen = document.querySelector('.bs-screen.active');
+  if (!activeScreen || activeScreen.id !== 'screenBomb') return;
+
+  const wireBtns = document.querySelectorAll('.wire-btn');
+  if (['1', '2', '3', '4'].includes(e.key)) {
+    const idx = Number(e.key) - 1;
+    if (wireBtns[idx]) wireBtns[idx].click();
+  }
+});
+
+/* Initialize on Load */
+let _customBombQuestions = null;
+
+if (window.GameBridge && typeof window.GameBridge.onReady === 'function') {
+  window.GameBridge.onReady(function(activity) {
+    if (activity && Array.isArray(activity.questions) && activity.questions.length > 0) {
+      _customBombQuestions = activity.questions.map(q => ({
+        char: q.text || q.question,
+        pinyin: q.pinyin || '',
+        meaning: q.correctAnswer || (q.options?.find(o => o.isCorrect)?.text) || q.text,
+        options: q.options
+      }));
+      startBombSquadGame();
+    }
+  });
+}
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'INIT_ACTIVITY' && event.data.activity && Array.isArray(event.data.activity.questions)) {
+    _customBombQuestions = event.data.activity.questions.map(q => ({
+      char: q.text || q.question,
+      pinyin: q.pinyin || '',
+      meaning: q.correctAnswer || (q.options?.find(o => o.isCorrect)?.text) || q.text,
+      options: q.options
+    }));
+    startBombSquadGame();
+  }
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  renderUnitsGrid();
+  _scaleScene();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,2699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Word Match Quest — Cyberpunk Edition</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Outfit:wght@400;600;700;900&family=Inter:wght@400;500;600;700&family=Noto+Serif+SC:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark:       #080c14;
+      --bg-card:       rgba(13, 20, 36, 0.88);
+      --bg-card-hover: rgba(20, 32, 58, 0.95);
+      --cyan:          #00f0ff;
+      --cyan-glow:     rgba(0, 240, 255, 0.45);
+      --magenta:       #ff007f;
+      --magenta-glow:  rgba(255, 0, 127, 0.45);
+      --yellow:        #ffe600;
+      --yellow-glow:   rgba(255, 230, 0, 0.45);
+      --green:         #00ff9d;
+      --green-glow:    rgba(0, 255, 157, 0.45);
+      --purple:        #9d00ff;
+      --purple-glow:   rgba(157, 0, 255, 0.45);
+      --red:           #ff2a55;
+      --text-main:     #ffffff;
+      --text-muted:    #8ea3c4;
+      --border-cyan:   rgba(0, 240, 255, 0.3);
+      --border-mag:    rgba(255, 0, 127, 0.3);
+      --r: 20px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: 'Outfit', 'Inter', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-main);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── SCENE CONTAINER (1920x1080 scaling) ── */
+    #sceneContainer {
+      position: absolute; left: 50%; top: 50%;
+      width: 1920px; height: 1080px;
+      margin-left: -960px; margin-top: -540px;
+      transform-origin: center center;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 30%, #111a2e 0%, #080c14 85%);
+    }
+
+    /* Background Cyber Grid & Floating Dust */
+    .cyber-grid-bg {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0.28;
+      background-image: 
+        linear-gradient(rgba(0, 240, 255, 0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.12) 1px, transparent 1px);
+      background-size: 60px 60px;
+      background-position: center center;
+    }
+    .cyber-scanlines {
+      position: absolute; inset: 0; pointer-events: none; z-index: 99; opacity: 0.15;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.75) 50%);
+      background-size: 100% 4px;
+    }
+
+    /* ── TOP NAV BAR ── */
+    .cyber-nav {
+      position: absolute; top: 0; left: 0; width: 100%; height: 74px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; z-index: 50;
+      background: rgba(8, 12, 20, 0.85);
+      border-bottom: 1px solid var(--border-cyan);
+      backdrop-filter: blur(12px);
+    }
+    .nav-left { display: flex; align-items: center; gap: 20px; }
+    .cyber-btn-back {
+      background: rgba(0, 240, 255, 0.1); border: 1px solid var(--cyan);
+      color: var(--cyan); padding: 8px 24px; border-radius: 12px;
+      font-family: 'Orbitron', sans-serif; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;
+      white-space: nowrap;
+    }
+    .cyber-btn-back:hover {
+      background: var(--cyan); color: #000;
+      box-shadow: 0 0 16px var(--cyan-glow);
+    }
+    .nav-title {
+      font-family: 'Orbitron', sans-serif; font-size: 1.6rem; font-weight: 900;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, #00f0ff, #ff007f, #ffe600);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+    }
+    .cyber-audio-panel {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(0, 0, 0, 0.55); border: 1px solid var(--border-cyan);
+      border-radius: 14px; padding: 6px 16px;
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.15);
+    }
+    .bgm-tag {
+      font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 700;
+      color: var(--yellow); letter-spacing: 1px;
+    }
+    .vol-slider-wrap {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .vol-slider {
+      -webkit-appearance: none; appearance: none;
+      width: 120px; height: 6px; border-radius: 3px;
+      background: rgba(255, 255, 255, 0.25);
+      outline: none; cursor: pointer;
+      box-shadow: 0 0 8px rgba(0, 240, 255, 0.3);
+    }
+    .vol-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 12px var(--cyan-glow);
+      cursor: pointer; transition: transform 0.15s;
+    }
+    .vol-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.3);
+    }
+    .vol-val-label {
+      font-family: 'Orbitron', sans-serif; font-size: 0.9rem; font-weight: 800;
+      color: var(--cyan); min-width: 44px; text-align: right;
+    }
+    .nav-sound-btn {
+      background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff; border-radius: 10px; padding: 6px 12px; font-size: 1.15rem; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .nav-sound-btn:hover { background: rgba(0, 240, 255, 0.2); border-color: var(--cyan); }
+
+    /* ── SCREENS ── */
+    .wm-screen {
+      position: absolute; inset: 74px 0 0 0;
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      padding: 24px 60px;
+    }
+    .wm-screen.active { display: flex; animation: screenFade 0.3s ease-out; }
+    @keyframes screenFade { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+
+    /* ══════════════════════════════════════
+       1. SETUP SCREEN
+    ══════════════════════════════════════ */
+    .setup-card {
+      width: 1400px; height: 860px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-cyan);
+      border-radius: 28px;
+      box-shadow: 0 0 40px rgba(0, 240, 255, 0.15), inset 0 0 30px rgba(0, 240, 255, 0.04);
+      display: flex; flex-direction: column;
+      padding: 32px 48px; gap: 20px;
+      backdrop-filter: blur(20px);
+    }
+    .setup-header {
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 16px;
+    }
+    .setup-header h1 {
+      font-family: 'Orbitron', sans-serif; font-size: 2.2rem; font-weight: 900;
+      color: var(--cyan); letter-spacing: 1.5px;
+      text-shadow: 0 0 16px var(--cyan-glow);
+    }
+    .setup-tabs {
+      display: flex; gap: 12px; background: rgba(0, 0, 0, 0.4);
+      padding: 6px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.1);
+    }
+    .setup-tab-btn {
+      background: transparent; border: none; color: var(--text-muted);
+      padding: 10px 28px; border-radius: 12px; font-family: 'Orbitron', sans-serif;
+      font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    }
+    .setup-tab-btn.active {
+      background: var(--cyan); color: #000;
+      box-shadow: 0 0 16px var(--cyan-glow);
+    }
+
+    /* Tab Panes */
+    .tab-pane { display: none; flex: 1; flex-direction: column; gap: 16px; overflow: hidden; }
+    .tab-pane.active { display: flex; }
+
+    /* TOCFL buttons */
+    .tocfl-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; padding: 10px 0;
+    }
+    .tocfl-btn {
+      background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(0, 240, 255, 0.2);
+      border-radius: 16px; padding: 18px 20px; text-align: left; cursor: pointer;
+      transition: all 0.2s; display: flex; flex-direction: column; gap: 4px;
+    }
+    .tocfl-btn:hover { background: rgba(0, 240, 255, 0.12); transform: translateY(-2px); }
+    .tocfl-btn.active {
+      background: rgba(0, 240, 255, 0.2); border-color: var(--cyan);
+      box-shadow: 0 0 20px var(--cyan-glow);
+    }
+    .tocfl-btn .lvl-code { font-family: 'Orbitron', sans-serif; font-size: 1.4rem; font-weight: 900; color: var(--cyan); }
+    .tocfl-btn .lvl-name { font-size: 1rem; color: #fff; font-weight: 600; }
+    .tocfl-btn .lvl-count { font-size: 0.85rem; color: var(--text-muted); }
+
+    /* Meihua Grid */
+    .mh-grid {
+      display: flex; flex-direction: column; gap: 8px; max-height: 330px;
+      overflow-y: auto; padding-right: 8px;
+    }
+    .mh-grid::-webkit-scrollbar { width: 6px; }
+    .mh-grid::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 4px; }
+    .mh-row { display: flex; align-items: center; gap: 10px; }
+    .mh-book-btn {
+      width: 130px; height: 42px; background: rgba(255, 0, 127, 0.15);
+      border: 1px solid var(--magenta); border-radius: 10px; color: #fff;
+      font-family: 'Orbitron', sans-serif; font-size: 0.95rem; font-weight: 800;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .mh-book-btn.active { background: var(--magenta); box-shadow: 0 0 14px var(--magenta-glow); }
+    .mh-units { display: flex; gap: 6px; flex: 1; }
+    .mh-unit-btn {
+      flex: 1; height: 42px; background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; color: #cbd5e1;
+      font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.15s;
+    }
+    .mh-unit-btn:hover { background: rgba(255, 255, 255, 0.15); }
+    .mh-unit-btn.active {
+      background: var(--cyan); border-color: var(--cyan); color: #000;
+      box-shadow: 0 0 12px var(--cyan-glow); font-weight: 900;
+    }
+
+    /* Options Section (Mode, Count, Minigame Type, Minigame Freq) */
+    .setup-bottom-options {
+      display: grid; grid-template-columns: 1fr 1.3fr; gap: 12px 24px;
+      background: rgba(0, 0, 0, 0.35); padding: 14px 24px; border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .opt-group { display: flex; flex-direction: column; gap: 10px; }
+    .opt-label { font-family: 'Orbitron', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--text-muted); }
+    .opt-btns-row { display: flex; gap: 8px; }
+    .opt-btn {
+      flex: 1; height: 42px; background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; color: #fff;
+      font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    }
+    .opt-btn:hover { background: rgba(255, 255, 255, 0.15); }
+    .opt-btn.active {
+      background: var(--yellow); border-color: var(--yellow); color: #000;
+      box-shadow: 0 0 14px var(--yellow-glow); font-weight: 800;
+    }
+
+    /* Stepper for custom question count */
+    .stepper-wrap { display: flex; align-items: center; gap: 8px; }
+    .stepper-btn {
+      width: 42px; height: 42px; background: rgba(0, 240, 255, 0.15);
+      border: 1px solid var(--cyan); border-radius: 10px; color: var(--cyan);
+      font-size: 1.4rem; font-weight: 900; cursor: pointer; transition: all 0.15s;
+    }
+    .stepper-btn:hover { background: var(--cyan); color: #000; }
+    .stepper-input {
+      width: 70px; height: 42px; background: rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--cyan); border-radius: 10px; color: #fff;
+      font-family: 'Orbitron', sans-serif; font-size: 1.2rem; font-weight: 800;
+      text-align: center; outline: none;
+    }
+
+    /* Start Bar */
+    .setup-start-bar {
+      display: flex; justify-content: space-between; align-items: center; padding-top: 8px;
+    }
+    .selection-summary { font-size: 1.15rem; color: #cbd5e1; }
+    .selection-summary strong { color: var(--cyan); }
+    .btn-start-quest {
+      background: linear-gradient(135deg, #00f0ff, #00ff9d);
+      border: none; border-radius: 16px; padding: 16px 48px;
+      color: #041019; font-family: 'Orbitron', sans-serif; font-size: 1.4rem; font-weight: 900;
+      letter-spacing: 1.5px; cursor: pointer;
+      box-shadow: 0 0 28px rgba(0, 240, 255, 0.6);
+      transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .btn-start-quest:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 0 40px rgba(0, 255, 157, 0.8);
+    }
+    .btn-start-quest:active { transform: translateY(1px); }
+
+    /* ══════════════════════════════════════
+       2. QUIZ ARENA
+    ══════════════════════════════════════ */
+    .quiz-arena {
+      width: 1400px; height: 860px; display: flex; flex-direction: column;
+      gap: 24px; position: relative;
+    }
+
+    /* Top HUD */
+    .quiz-hud {
+      display: grid; grid-template-columns: 1fr 1.2fr 1fr; align-items: center;
+      background: var(--bg-card); border: 1.5px solid var(--border-cyan);
+      border-radius: 20px; padding: 16px 36px;
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.1);
+    }
+    .hud-progress-wrap { display: flex; flex-direction: column; gap: 6px; }
+    .hud-label { font-family: 'Orbitron', sans-serif; font-size: 0.9rem; font-weight: 700; color: var(--text-muted); }
+    .hud-val { font-family: 'Orbitron', sans-serif; font-size: 1.4rem; font-weight: 900; color: var(--cyan); }
+    .cyber-bar-track {
+      width: 220px; height: 10px; background: rgba(0, 0, 0, 0.5);
+      border-radius: 6px; overflow: hidden; border: 1px solid rgba(0, 240, 255, 0.3);
+    }
+    .cyber-bar-fill {
+      height: 100%; width: 0%; background: linear-gradient(90deg, var(--cyan), var(--green));
+      transition: width 0.3s;
+    }
+
+    .hud-timer-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .hud-timer-track {
+      width: 320px; height: 12px; background: rgba(0, 0, 0, 0.6);
+      border-radius: 6px; overflow: hidden; border: 1px solid rgba(255, 230, 0, 0.4);
+    }
+    .hud-timer-fill {
+      height: 100%; width: 100%; background: var(--yellow);
+      box-shadow: 0 0 10px var(--yellow-glow);
+      transition: width 0.1s linear, background 0.3s;
+    }
+    .hud-timer-num { font-family: 'Orbitron', sans-serif; font-size: 1.3rem; font-weight: 900; color: var(--yellow); }
+
+    .hud-score-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+    .hud-score-num { font-family: 'Orbitron', sans-serif; font-size: 2.2rem; font-weight: 900; color: var(--green); text-shadow: 0 0 14px var(--green-glow); }
+    .hud-streak-badge {
+      display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 0, 127, 0.2);
+      border: 1px solid var(--magenta); padding: 4px 14px; border-radius: 12px;
+      font-family: 'Orbitron', sans-serif; font-size: 0.95rem; font-weight: 800; color: #ff66b2;
+      opacity: 0; transform: scale(0.8); transition: all 0.2s;
+    }
+    .hud-streak-badge.active { opacity: 1; transform: scale(1); }
+
+    /* Question Hologram Box */
+    .question-box {
+      flex: 1; min-height: 300px;
+      background: var(--bg-card);
+      border: 2px solid var(--cyan);
+      border-radius: 24px;
+      box-shadow: 0 0 40px rgba(0, 240, 255, 0.2), inset 0 0 40px rgba(0, 240, 255, 0.05);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: relative; overflow: hidden; gap: 14px;
+    }
+    .question-box::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    }
+    .q-type-badge {
+      position: absolute; top: 18px; left: 24px;
+      font-family: 'Orbitron', sans-serif; font-size: 0.95rem; font-weight: 800;
+      color: var(--cyan); background: rgba(0, 240, 255, 0.12);
+      padding: 6px 18px; border-radius: 10px; border: 1px solid var(--cyan);
+    }
+    .q-prompt-hanzi {
+      font-family: 'Noto Serif SC', serif; font-size: 7.5rem; font-weight: 900;
+      color: #fff; text-shadow: 0 0 35px rgba(0, 240, 255, 0.75);
+      line-height: 1.1;
+    }
+    .q-prompt-pinyin {
+      font-size: 2.6rem; font-weight: 800; color: var(--yellow);
+      letter-spacing: 2px; text-shadow: 0 0 16px var(--yellow-glow);
+    }
+    .q-prompt-meaning {
+      font-family: 'Outfit', sans-serif; font-size: 3.6rem; font-weight: 900;
+      color: #ffffff; text-align: center; padding: 0 40px;
+      text-shadow: 0 0 24px rgba(255, 255, 255, 0.6);
+    }
+
+    /* Option Terminals Grid (A, B, C, D) */
+    .answers-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
+      height: 310px;
+    }
+    .cyber-opt-btn {
+      background: rgba(13, 20, 36, 0.92);
+      border: 2px solid rgba(255, 255, 255, 0.16);
+      border-radius: 22px; padding: 18px 32px;
+      display: flex; align-items: center; gap: 24px;
+      cursor: pointer; transition: all 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+      position: relative; overflow: hidden;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+    }
+    .cyber-opt-btn:hover:not(.locked) {
+      transform: translateY(-4px) scale(1.01);
+      background: rgba(20, 32, 58, 0.98);
+      border-color: var(--cyan);
+      box-shadow: 0 0 30px var(--cyan-glow);
+    }
+    .cyber-opt-btn:active:not(.locked) { transform: translateY(1px); }
+
+    .opt-key {
+      width: 66px; height: 66px; border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Orbitron', sans-serif; font-size: 2.1rem; font-weight: 900;
+      background: rgba(255, 255, 255, 0.08); border: 2px solid rgba(255, 255, 255, 0.25);
+      color: #fff; flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+    .cyber-opt-btn.opt-a .opt-key { color: var(--cyan); border-color: var(--cyan); background: rgba(0, 240, 255, 0.16); box-shadow: 0 0 16px rgba(0, 240, 255, 0.25); }
+    .cyber-opt-btn.opt-b .opt-key { color: var(--green); border-color: var(--green); background: rgba(0, 255, 157, 0.16); box-shadow: 0 0 16px rgba(0, 255, 157, 0.25); }
+    .cyber-opt-btn.opt-c .opt-key { color: var(--yellow); border-color: var(--yellow); background: rgba(255, 230, 0, 0.16); box-shadow: 0 0 16px rgba(255, 230, 0, 0.25); }
+    .cyber-opt-btn.opt-d .opt-key { color: var(--magenta); border-color: var(--magenta); background: rgba(255, 0, 127, 0.16); box-shadow: 0 0 16px rgba(255, 0, 127, 0.25); }
+
+    .opt-content { display: flex; flex-direction: column; gap: 4px; flex: 1; text-align: left; justify-content: center; overflow: hidden; }
+    .opt-text-primary {
+      font-family: 'Outfit', sans-serif; font-size: 2.6rem; font-weight: 800; color: #fff;
+      line-height: 1.2; letter-spacing: 0.5px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+    .opt-text-primary.hanzi-mode {
+      font-family: 'Noto Serif SC', serif; font-size: 3.8rem; font-weight: 900;
+      line-height: 1.1;
+      text-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+    }
+    .opt-text-primary.compact {
+      font-size: 2.05rem;
+    }
+    .opt-text-sub {
+      font-size: 1.5rem; color: var(--yellow); font-weight: 700;
+      letter-spacing: 1.5px;
+    }
+
+    /* Answer Feedback States */
+    .cyber-opt-btn.correct {
+      background: rgba(0, 255, 157, 0.25) !important;
+      border-color: var(--green) !important;
+      box-shadow: 0 0 32px var(--green-glow) !important;
+    }
+    .cyber-opt-btn.wrong {
+      background: rgba(255, 42, 85, 0.25) !important;
+      border-color: var(--red) !important;
+      box-shadow: 0 0 32px rgba(255, 42, 85, 0.5) !important;
+      animation: errorShake 0.4s;
+    }
+    @keyframes errorShake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+
+    /* ══════════════════════════════════════
+       3. MINI-GAME 1: CYBER CARD SHUFFLE
+    ══════════════════════════════════════ */
+    .mg-arena {
+      width: 1400px; height: 860px; background: var(--bg-card);
+      border: 2px solid var(--magenta); border-radius: 28px;
+      box-shadow: 0 0 50px var(--magenta-glow);
+      display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+      padding: 40px; position: relative;
+    }
+    .mg-header { text-align: center; }
+    .mg-tag {
+      font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 900;
+      color: var(--magenta); letter-spacing: 2px;
+    }
+    .mg-title {
+      font-family: 'Orbitron', sans-serif; font-size: 2.4rem; font-weight: 900;
+      color: #fff; margin-top: 4px;
+    }
+    .mg-subtitle { font-size: 1.25rem; color: var(--text-muted); margin-top: 6px; }
+
+    /* 5 Shuffle Cards Track */
+    .shuffle-stage {
+      width: 1200px; height: 420px; position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .shuffle-cards-row {
+      display: flex; gap: 28px; position: relative; width: 100%; justify-content: center;
+    }
+    .shuffle-card {
+      width: 200px; height: 320px; border-radius: 20px;
+      perspective: 1000px; cursor: pointer; position: relative;
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s;
+    }
+    .shuffle-card:hover:not(.locked) {
+      transform: translateY(-12px) scale(1.04);
+    }
+    .shuffle-card-inner {
+      width: 100%; height: 100%; position: relative;
+      transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 20px;
+    }
+    .shuffle-card.flipped .shuffle-card-inner { transform: rotateY(180deg); }
+
+    .shuffle-front, .shuffle-back {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      backface-visibility: hidden; -webkit-backface-visibility: hidden;
+      border-radius: 20px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    /* Front: Value Display */
+    .shuffle-front {
+      background: linear-gradient(145deg, #16223b, #0e1526);
+      border: 2px solid var(--cyan);
+      box-shadow: 0 0 24px rgba(0, 240, 255, 0.25);
+    }
+    .shuffle-card.c-p200 .shuffle-front { border-color: var(--yellow); box-shadow: 0 0 30px var(--yellow-glow); }
+    .shuffle-card.c-p100 .shuffle-front { border-color: var(--cyan); box-shadow: 0 0 25px var(--cyan-glow); }
+    .shuffle-card.c-p50  .shuffle-front { border-color: var(--green); box-shadow: 0 0 20px var(--green-glow); }
+    .shuffle-card.c-m100 .shuffle-front { border-color: var(--magenta); box-shadow: 0 0 20px var(--magenta-glow); }
+    .shuffle-card.c-m200 .shuffle-front { border-color: var(--red); box-shadow: 0 0 30px rgba(255, 42, 85, 0.5); }
+
+    .shuffle-icon { width: 100px; height: 100px; object-fit: contain; margin-bottom: 12px; }
+    .shuffle-val { font-family: 'Orbitron', sans-serif; font-size: 2.2rem; font-weight: 900; }
+    .shuffle-name { font-size: 1rem; font-weight: 700; color: var(--text-muted); margin-top: 4px; }
+
+    /* Back: Cyber Card Pattern */
+    .shuffle-back {
+      transform: rotateY(180deg);
+      background: radial-gradient(circle at center, #1b2a47 0%, #0c1220 90%);
+      border: 2px solid var(--magenta);
+      box-shadow: 0 0 24px rgba(255, 0, 127, 0.3);
+    }
+    .shuffle-back-logo {
+      font-family: 'Orbitron', sans-serif; font-size: 2.8rem; font-weight: 900;
+      color: var(--magenta); text-shadow: 0 0 16px var(--magenta-glow);
+    }
+    .shuffle-back-sub {
+      font-family: 'Orbitron', sans-serif; font-size: 0.9rem; font-weight: 700;
+      color: var(--cyan); letter-spacing: 2px; margin-top: 8px;
+    }
+
+    .mg-status-bar {
+      font-family: 'Orbitron', sans-serif; font-size: 1.4rem; font-weight: 800;
+      color: var(--yellow); text-align: center;
+    }
+
+    /* ══════════════════════════════════════
+       4. MINI-GAME 2: NEURAL MEMORY SEQUENCE
+    ══════════════════════════════════════ */
+    .seq-display-terminal {
+      width: 1000px; height: 260px;
+      background: rgba(0, 0, 0, 0.5); border: 2px solid var(--cyan);
+      border-radius: 20px; display: flex; align-items: center; justify-content: center;
+      position: relative; box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+    }
+    .seq-char-display {
+      font-family: 'Noto Serif SC', serif; font-size: 7.5rem; font-weight: 900;
+      color: #fff; text-shadow: 0 0 35px var(--cyan);
+      animation: pulseChar 0.5s ease-out;
+    }
+    @keyframes pulseChar {
+      0% { transform: scale(0.6); opacity: 0; }
+      50% { transform: scale(1.15); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* User Recall Slots & Choices */
+    .seq-slots-row {
+      display: flex; gap: 18px; margin: 16px 0;
+    }
+    .seq-slot {
+      width: 80px; height: 80px; border-radius: 14px;
+      background: rgba(255, 255, 255, 0.05); border: 2px dashed rgba(0, 240, 255, 0.4);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Noto Serif SC', serif; font-size: 2.4rem; font-weight: 900; color: var(--cyan);
+      transition: all 0.2s;
+    }
+    .seq-slot.filled {
+      background: rgba(0, 240, 255, 0.2); border-style: solid; border-color: var(--cyan);
+      box-shadow: 0 0 16px var(--cyan-glow);
+    }
+    .seq-slot.correct { border-color: var(--green); color: var(--green); box-shadow: 0 0 20px var(--green-glow); }
+    .seq-slot.wrong { border-color: var(--red); color: var(--red); box-shadow: 0 0 20px rgba(255,42,85,0.6); }
+
+    .seq-keyboard-grid {
+      display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; width: 900px;
+    }
+    .seq-choice-btn {
+      height: 76px; background: rgba(20, 32, 58, 0.9);
+      border: 1.5px solid rgba(255, 255, 255, 0.2); border-radius: 14px;
+      font-family: 'Noto Serif SC', serif; font-size: 2.2rem; font-weight: 900; color: #fff;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .seq-choice-btn:hover:not(.disabled) {
+      background: var(--cyan); color: #000; border-color: var(--cyan);
+      box-shadow: 0 0 20px var(--cyan-glow); transform: translateY(-3px);
+    }
+    .seq-choice-btn.disabled { opacity: 0.3; cursor: default; }
+
+    /* ══════════════════════════════════════
+       5. RESULTS SCREEN
+    ══════════════════════════════════════ */
+    .results-card {
+      width: 1200px; height: 860px; background: var(--bg-card);
+      border: 2px solid var(--cyan); border-radius: 28px;
+      box-shadow: 0 0 50px var(--cyan-glow);
+      display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+      padding: 48px; position: relative; backdrop-filter: blur(20px);
+    }
+    .res-header { text-align: center; }
+    .res-title {
+      font-family: 'Orbitron', sans-serif; font-size: 3rem; font-weight: 900;
+      background: linear-gradient(90deg, #00f0ff, #00ff9d);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      letter-spacing: 2px;
+    }
+
+    .res-center {
+      display: flex; align-items: center; gap: 60px;
+    }
+    .res-rank-img {
+      width: 220px; height: 220px; object-fit: contain;
+      filter: drop-shadow(0 0 30px rgba(0, 240, 255, 0.6));
+      animation: floatRank 3s ease-in-out infinite;
+    }
+    @keyframes floatRank { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+    .res-stats-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
+    }
+    .res-stat-box {
+      background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(0, 240, 255, 0.2);
+      border-radius: 16px; padding: 18px 28px; min-width: 240px;
+    }
+    .res-stat-label { font-family: 'Orbitron', sans-serif; font-size: 0.9rem; font-weight: 700; color: var(--text-muted); }
+    .res-stat-val { font-family: 'Orbitron', sans-serif; font-size: 2rem; font-weight: 900; color: #fff; margin-top: 4px; }
+    .res-stat-val.c-green { color: var(--green); text-shadow: 0 0 14px var(--green-glow); }
+    .res-stat-val.c-yellow { color: var(--yellow); }
+
+    .res-actions-row { display: flex; gap: 20px; }
+    .res-btn {
+      padding: 16px 36px; border-radius: 14px; font-family: 'Orbitron', sans-serif;
+      font-size: 1.15rem; font-weight: 800; cursor: pointer; transition: all 0.2s;
+    }
+    .res-btn.primary {
+      background: var(--cyan); border: none; color: #000;
+      box-shadow: 0 0 24px var(--cyan-glow);
+    }
+    .res-btn.primary:hover { transform: translateY(-3px); box-shadow: 0 0 36px var(--cyan); }
+    .res-btn.secondary {
+      background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+    .res-btn.secondary:hover { background: rgba(255, 255, 255, 0.16); }
+
+    /* ══════════════════════════════════════
+       6. CYBER GLITCH TRANSITION OVERLAY
+    ══════════════════════════════════════ */
+    #cyberGlitchOverlay {
+      position: absolute; inset: 0; z-index: 1000;
+      background: rgba(8, 12, 20, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      transition: opacity 0.35s ease;
+    }
+    #cyberGlitchOverlay.active { display: flex; animation: glitchOverlayIn 0.35s ease-out; }
+    @keyframes glitchOverlayIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+
+    .glitch-box {
+      background: rgba(13, 20, 36, 0.95);
+      border: 2px solid var(--magenta);
+      border-radius: 28px; padding: 48px 72px;
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
+      box-shadow: 0 0 60px var(--magenta-glow), inset 0 0 30px rgba(255, 0, 127, 0.1);
+      text-align: center; max-width: 900px;
+    }
+    .glitch-icon {
+      font-size: 4.2rem; filter: drop-shadow(0 0 20px var(--magenta));
+      animation: pulseIcon 0.8s infinite alternate ease-in-out;
+    }
+    @keyframes pulseIcon { from { transform: scale(1); } to { transform: scale(1.15); } }
+
+    .glitch-text {
+      font-family: 'Orbitron', sans-serif; font-size: 2.8rem; font-weight: 900;
+      color: var(--magenta); text-shadow: 0 0 24px var(--magenta);
+      letter-spacing: 3px; text-transform: uppercase;
+      line-height: 1.2;
+    }
+    .glitch-sub {
+      font-family: 'Orbitron', sans-serif; font-size: 1.25rem; font-weight: 700;
+      color: var(--cyan); letter-spacing: 2px;
+    }
+    .glitch-loader-bar {
+      width: 480px; height: 10px; background: rgba(0, 0, 0, 0.6);
+      border: 1px solid var(--cyan); border-radius: 6px; overflow: hidden; margin-top: 10px;
+    }
+    .glitch-loader-fill {
+      height: 100%; width: 0%; background: linear-gradient(90deg, var(--cyan), var(--magenta), var(--yellow));
+      transition: width 1.3s ease-in-out;
+    }
+
+    /* Shuffle Start Button */
+    .btn-start-shuffle {
+      background: linear-gradient(135deg, var(--yellow), #ff9900);
+      border: 2px solid #fff; border-radius: 18px; padding: 14px 44px;
+      color: #050b14; font-family: 'Orbitron', sans-serif; font-size: 1.35rem; font-weight: 900;
+      letter-spacing: 1.5px; cursor: pointer;
+      box-shadow: 0 0 30px var(--yellow-glow);
+      animation: pulseStartShuffle 1.2s infinite alternate ease-in-out;
+      transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes pulseStartShuffle {
+      from { transform: scale(1); box-shadow: 0 0 20px var(--yellow-glow); }
+      to { transform: scale(1.06); box-shadow: 0 0 36px var(--yellow); }
+    }
+    .btn-start-shuffle:hover {
+      transform: scale(1.08) translateY(-2px);
+      box-shadow: 0 0 44px rgba(255, 230, 0, 0.8);
+    }
+    .btn-start-shuffle:active { transform: scale(0.98); }
+
+    /* Flying Score Popup Animation */
+    .score-popup {
+      position: absolute; font-family: 'Orbitron', sans-serif;
+      font-size: 2.4rem; font-weight: 900; pointer-events: none; z-index: 500;
+      animation: popupFloat 1s forwards ease-out;
+    }
+    @keyframes popupFloat {
+      0% { opacity: 0; transform: translateY(0) scale(0.6); }
+      20% { opacity: 1; transform: translateY(-20px) scale(1.2); }
+      80% { opacity: 1; transform: translateY(-50px) scale(1); }
+      100% { opacity: 0; transform: translateY(-80px) scale(0.9); }
+    }
+  </style>
+</head>
+<body>
+
+<div id="sceneContainer">
+  <div class="cyber-grid-bg"></div>
+  <div class="cyber-scanlines"></div>
+
+  <!-- TOP NAV -->
+  <nav class="cyber-nav">
+    <div class="nav-left">
+      <button class="cyber-btn-back" id="btnNavBack" onclick="handleNavBack()">◀ HUB</button>
+      <div class="nav-title">WORD MATCH QUEST // 词汇任务</div>
+    </div>
+    <div class="nav-right">
+      <div class="cyber-audio-panel">
+        <span class="bgm-tag">🎵 BGM</span>
+        <button class="nav-sound-btn" id="btnAudioToggle" onclick="GameAudio.toggleMute()" title="Mute / Unmute">🔊</button>
+        <div class="vol-slider-wrap">
+          <input type="range" min="0" max="100" value="65" class="vol-slider" id="volSlider" oninput="GameAudio.handleSliderChange(this.value)" title="Volume Slider">
+          <span class="vol-val-label" id="volValLabel">65%</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 1: SETUP
+  ══════════════════════════════════════ -->
+  <div class="wm-screen active" id="screenSetup">
+    <div class="setup-card">
+      <div class="setup-header">
+        <h1>// SELECT CURRICULUM & LEVEL</h1>
+        <div class="setup-tabs">
+          <button class="setup-tab-btn active" id="tabBtnMeihua" onclick="switchSetupTab('meihua')">🌸 MEIHUA</button>
+          <button class="setup-tab-btn" id="tabBtnTocfl" onclick="switchSetupTab('tocfl')">🇹🇼 TOCFL</button>
+        </div>
+      </div>
+
+      <!-- Tab Meihua -->
+      <div class="tab-pane active" id="paneMeihua">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:0.95rem; color:var(--text-muted);">Select multiple books and units to customize your question database:</div>
+          <div style="display:flex; gap:10px;">
+            <button class="opt-btn" style="padding:0 18px;" onclick="selectAllMeihua()">Select All (B1-B6)</button>
+            <button class="opt-btn" style="padding:0 18px;" onclick="clearAllMeihua()">Clear All</button>
+          </div>
+        </div>
+        <div class="mh-grid" id="mhSetupGrid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Tab TOCFL -->
+      <div class="tab-pane" id="paneTocfl">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:0.95rem; color:var(--text-muted);">Choose standard TOCFL proficiency levels (multi-select enabled):</div>
+          <div style="display:flex; gap:10px;">
+            <button class="opt-btn" style="padding:0 18px;" onclick="selectAllTocfl()">Select All</button>
+            <button class="opt-btn" style="padding:0 18px;" onclick="clearAllTocfl()">Clear</button>
+          </div>
+        </div>
+        <div class="tocfl-grid" id="tocflSetupGrid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Options Bottom (Mode, Question Count, Minigame Type, Minigame Interval) -->
+      <div class="setup-bottom-options">
+        <!-- 1. Game Mode -->
+        <div class="opt-group">
+          <div class="opt-label">GAME MODE</div>
+          <div class="opt-btns-row">
+            <button class="opt-btn active" id="modeBtnNormal" onclick="setGameMode('normal')">🔵 Normal (Hanzi → En)</button>
+            <button class="opt-btn" id="modeBtnReverse" onclick="setGameMode('reverse')">🟣 Reverse (En → Hanzi)</button>
+          </div>
+        </div>
+
+        <!-- 2. Question Count Stepper -->
+        <div class="opt-group">
+          <div class="opt-label">QUESTION COUNT</div>
+          <div class="opt-btns-row" style="align-items:center;">
+            <button class="opt-btn active" id="qPresetAll" onclick="setQuestionPreset('all')">All (Max)</button>
+            <button class="opt-btn" id="qPreset10" onclick="setQuestionPreset(10)">10</button>
+            <button class="opt-btn" id="qPreset20" onclick="setQuestionPreset(20)">20</button>
+            <div class="stepper-wrap">
+              <button class="stepper-btn" onclick="stepQuestionCount(-5)">−</button>
+              <input type="text" class="stepper-input" id="qCountInput" value="10" readonly>
+              <button class="stepper-btn" onclick="stepQuestionCount(5)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Minigame Type Selection -->
+        <div class="opt-group">
+          <div class="opt-label">MINIGAME SELECTION</div>
+          <div class="opt-btns-row">
+            <button class="opt-btn active" id="mgTypeBoth" onclick="setMinigameType('both')" title="Card Shuffle & Memory Sequence bergantian">✨ Both (Keduanya)</button>
+            <button class="opt-btn" id="mgTypeShuffle" onclick="setMinigameType('shuffle')" title="Hanya Card Shuffle">🃏 Card Shuffle</button>
+            <button class="opt-btn" id="mgTypeSequence" onclick="setMinigameType('sequence')" title="Hanya Memory Sequence">🧠 Memory Seq</button>
+            <button class="opt-btn" id="mgTypeNone" onclick="setMinigameType('none')" title="Tanpa Minigame">🚫 Off</button>
+          </div>
+        </div>
+
+        <!-- 4. Minigame Interval -->
+        <div class="opt-group">
+          <div class="opt-label">MINIGAME INTERVAL</div>
+          <div class="opt-btns-row" id="mgFreqRow">
+            <button class="opt-btn" id="mgFreq3" onclick="setMinigameFreq(3)">Every 3</button>
+            <button class="opt-btn" id="mgFreq4" onclick="setMinigameFreq(4)">Every 4</button>
+            <button class="opt-btn active" id="mgFreq5" onclick="setMinigameFreq(5)">Every 5</button>
+            <button class="opt-btn" id="mgFreq6" onclick="setMinigameFreq(6)">Every 6</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Start Bar -->
+      <div class="setup-start-bar">
+        <div class="selection-summary" id="setupSummary">
+          Selected: <strong>0 Units (0 Words Available)</strong>
+        </div>
+        <button class="btn-start-quest" onclick="startQuizQuest()">INITIALIZE QUEST ▶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 2: QUIZ ARENA
+  ══════════════════════════════════════ -->
+  <div class="wm-screen" id="screenQuiz">
+    <div class="quiz-arena">
+      <!-- HUD -->
+      <div class="quiz-hud">
+        <div class="hud-progress-wrap">
+          <div class="hud-label">PROGRESS // STAGE</div>
+          <div style="display:flex; align-items:center; gap:14px;">
+            <div class="hud-val" id="hudProgressText">1 / 20</div>
+            <div class="cyber-bar-track">
+              <div class="cyber-bar-fill" id="hudProgressBar"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hud-timer-wrap">
+          <div style="display:flex; justify-content:space-between; width:320px;">
+            <span class="hud-label">TIME REMAINING</span>
+            <span class="hud-timer-num" id="hudTimerNum">10.0s</span>
+          </div>
+          <div class="hud-timer-track">
+            <div class="hud-timer-fill" id="hudTimerBar"></div>
+          </div>
+        </div>
+
+        <div class="hud-score-wrap">
+          <div class="hud-label">CYBER SCORE</div>
+          <div class="hud-score-num" id="hudScoreText">0</div>
+          <div class="hud-streak-badge" id="hudStreakBadge">🔥 COMBO x3</div>
+        </div>
+      </div>
+
+      <!-- Center Question Display -->
+      <div class="question-box">
+        <div class="q-type-badge" id="qTypeBadge">PROMPT: HANZI</div>
+        <div class="q-prompt-hanzi" id="qPromptHanzi">你好</div>
+        <div class="q-prompt-pinyin" id="qPromptPinyin">nǐ hǎo</div>
+        <div class="q-prompt-meaning" id="qPromptMeaning" style="display:none;">Hello / Hi</div>
+      </div>
+
+      <!-- Option Grid -->
+      <div class="answers-grid" id="answersGrid">
+        <div class="cyber-opt-btn opt-a" id="optBtn0" onclick="handleOptionClick(0)">
+          <div class="opt-key">A</div>
+          <div class="opt-content">
+            <div class="opt-text-primary" id="optText0">Option A</div>
+            <div class="opt-text-sub" id="optSub0"></div>
+          </div>
+        </div>
+        <div class="cyber-opt-btn opt-b" id="optBtn1" onclick="handleOptionClick(1)">
+          <div class="opt-key">B</div>
+          <div class="opt-content">
+            <div class="opt-text-primary" id="optText1">Option B</div>
+            <div class="opt-text-sub" id="optSub1"></div>
+          </div>
+        </div>
+        <div class="cyber-opt-btn opt-c" id="optBtn2" onclick="handleOptionClick(2)">
+          <div class="opt-key">C</div>
+          <div class="opt-content">
+            <div class="opt-text-primary" id="optText2">Option C</div>
+            <div class="opt-text-sub" id="optSub2"></div>
+          </div>
+        </div>
+        <div class="cyber-opt-btn opt-d" id="optBtn3" onclick="handleOptionClick(3)">
+          <div class="opt-key">D</div>
+          <div class="opt-content">
+            <div class="opt-text-primary" id="optText3">Option D</div>
+            <div class="opt-text-sub" id="optSub3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 3: MINI-GAME 1 (CARD SHUFFLE)
+  ══════════════════════════════════════ -->
+  <div class="wm-screen" id="screenShuffle">
+    <div class="mg-arena">
+      <div class="mg-header">
+        <div class="mg-tag">⚡ BONUS PROTOCOL 01 // HIGH STAKES</div>
+        <div class="mg-title">CYBER CARD SHUFFLE</div>
+        <div class="mg-subtitle" id="shuffleSubtitle">Inspect and memorize the 5 cards before they flip and shuffle!</div>
+      </div>
+
+      <!-- Start Shuffle Action Button -->
+      <div id="shuffleStartWrap" style="display:flex; justify-content:center; margin: 4px 0 10px;">
+        <button class="btn-start-shuffle" id="btnStartShuffle" onclick="triggerUserShuffleStart()">
+          🔀 TAP TO START SHUFFLE ▶
+        </button>
+      </div>
+
+      <div class="shuffle-stage">
+        <div class="shuffle-cards-row" id="shuffleCardsRow">
+          <!-- 5 Cards populated by JS -->
+        </div>
+      </div>
+
+      <div class="mg-status-bar" id="shuffleStatusBar">
+        READY — MEMORIZE THE 5 CARDS THEN TAP BUTTON TO SHUFFLE
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 4: MINI-GAME 2 (NEURAL SEQUENCE)
+  ══════════════════════════════════════ -->
+  <div class="wm-screen" id="screenSequence">
+    <div class="mg-arena" style="border-color: var(--cyan); box-shadow: 0 0 50px var(--cyan-glow);">
+      <div class="mg-header">
+        <div class="mg-tag" style="color:var(--cyan);">🧠 BONUS PROTOCOL 02 // NEURAL LINK</div>
+        <div class="mg-title">NEURAL MEMORY SEQUENCE</div>
+        <div class="mg-subtitle" id="seqSubtitle">Memorize the sequence of characters being transmitted!</div>
+      </div>
+
+      <!-- Start Sequence Action Button -->
+      <div id="seqStartWrap" style="display:flex; justify-content:center; margin: 4px 0 10px;">
+        <button class="btn-start-shuffle" id="btnStartSeq" onclick="triggerUserSequenceStart()">
+          🧠 TAP TO START SEQUENCE ▶
+        </button>
+      </div>
+
+      <!-- Display Terminal -->
+      <div class="seq-display-terminal">
+        <div class="seq-char-display" id="seqDisplayChar">⚡</div>
+      </div>
+
+      <!-- Recall Slots -->
+      <div class="seq-slots-row" id="seqSlotsRow">
+        <!-- Filled dynamically -->
+      </div>
+
+      <!-- Selection Keypad -->
+      <div class="seq-keyboard-grid" id="seqKeyboardGrid">
+        <!-- Buttons populated dynamically -->
+      </div>
+
+      <div class="mg-status-bar" id="seqStatusBar" style="color:var(--cyan);">
+        STANDBY FOR NEURAL BROADCAST...
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 5: RESULTS SCREEN
+  ══════════════════════════════════════ -->
+  <div class="wm-screen" id="screenResults">
+    <div class="results-card">
+      <div class="res-header">
+        <div style="font-family:'Orbitron', sans-serif; font-size:1.1rem; color:var(--cyan); letter-spacing:2px;">MISSION DEBRIEF // SUMMARY</div>
+        <div class="res-title">QUEST COMPLETED</div>
+      </div>
+
+      <div class="res-center">
+        <img src="icons/cyber/rank_s.png" class="res-rank-img" id="resRankImg" alt="Rank S+">
+
+        <div class="res-stats-grid">
+          <div class="res-stat-box">
+            <div class="res-stat-label">TOTAL SCORE</div>
+            <div class="res-stat-val c-green" id="resFinalScore">0</div>
+          </div>
+          <div class="res-stat-box">
+            <div class="res-stat-label">ACCURACY</div>
+            <div class="res-stat-val c-yellow" id="resAccuracy">0%</div>
+          </div>
+          <div class="res-stat-box">
+            <div class="res-stat-label">CORRECT ANSWERS</div>
+            <div class="res-stat-val" id="resCorrectCount">0 / 0</div>
+          </div>
+          <div class="res-stat-box">
+            <div class="res-stat-label">MAX COMBO STREAK</div>
+            <div class="res-stat-val" id="resMaxStreak">0🔥</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="res-actions-row">
+        <button class="res-btn primary" onclick="startQuizQuest()">🔄 REPLAY MISSION</button>
+        <button class="res-btn secondary" onclick="showScreen('screenSetup')">⚙️ SETUP & LEVELS</button>
+        <button class="res-btn secondary" onclick="location.href='../index.html'">🏠 BACK TO HUB</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CYBER GLITCH TRANSITION OVERLAY -->
+  <div id="cyberGlitchOverlay">
+    <div class="glitch-box">
+      <div class="glitch-icon" id="glitchIcon">⚡</div>
+      <div class="glitch-text" id="glitchTitle">BONUS PROTOCOL ACTIVATED</div>
+      <div class="glitch-sub" id="glitchSub">// ENTERING MINI-GAME ARENA //</div>
+      <div class="glitch-loader-bar">
+        <div class="glitch-loader-fill" id="glitchLoaderFill"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /#sceneContainer -->
+
+<!-- Load Existing Vocab Databases & Bridge -->
+<script src="common/bridge.js"></script>
+<script src="vocabdb.js"></script>
+<script src="meihuadb.js"></script>
+
+<script>
+/* ══════════════════════════════════════
+   WEB AUDIO CYBER SYNTHESIZER & CONTINUOUS BGM ENGINE
+   Features:
+   - Roland TR-808/909 Drums (Punchy Kick, Snare, Hi-Hats, Industrial Percussion)
+   - Moog Sawtooth / Square Bass with WaveShaper Overdrive & Distortion
+   - Sidechain Compression (ducking bass & synths on kick hits for pulsing groove)
+   - FM Synthesizer (Yamaha DX7 metallic bell chime arpeggios)
+   - Sweeping Futuristic Pad with LFO Filter Phaser & Spatial Delay Echo
+   - Live Volume Slider & Mute/Unmute
+══════════════════════════════════════ */
+const GameAudio = {
+  ctx: null,
+  masterGain: null,
+  bgmGain: null,
+  sfxGain: null,
+  sidechainGain: null,
+  delayNode: null,
+  distortionCurve: null,
+  muted: false,
+  volume: 0.65,
+  isPlayingBgm: false,
+  tempo: 124, // BPM
+  currentStep: 0,
+  nextStepTime: 0,
+  timerID: null,
+
+  init() {
+    if (this.ctx) {
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+      return;
+    }
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      this.ctx = new AudioCtx();
+
+      // Master Gain
+      this.masterGain = this.ctx.createGain();
+      this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
+      this.masterGain.connect(this.ctx.destination);
+
+      // SFX Gain (Sound Effects)
+      this.sfxGain = this.ctx.createGain();
+      this.sfxGain.gain.setValueAtTime(0.85, this.ctx.currentTime);
+      this.sfxGain.connect(this.masterGain);
+
+      // BGM Gain (Background Music)
+      this.bgmGain = this.ctx.createGain();
+      this.bgmGain.gain.setValueAtTime(0.55, this.ctx.currentTime);
+      this.bgmGain.connect(this.masterGain);
+
+      // Sidechain Ducking Gain (Electronic Pumping effect)
+      this.sidechainGain = this.ctx.createGain();
+      this.sidechainGain.gain.setValueAtTime(1.0, this.ctx.currentTime);
+      this.sidechainGain.connect(this.bgmGain);
+
+      // Stereo Delay Echo FX Node (Dotted-8th echo)
+      this.delayNode = this.ctx.createDelay();
+      this.delayNode.delayTime.setValueAtTime(0.24, this.ctx.currentTime);
+      const delayFeedback = this.ctx.createGain();
+      delayFeedback.gain.setValueAtTime(0.35, this.ctx.currentTime);
+      this.delayNode.connect(delayFeedback);
+      delayFeedback.connect(this.delayNode);
+      this.delayNode.connect(this.bgmGain);
+
+      // Pre-calculate Saturation / Distortion Curve for Analog Warmth
+      this.distortionCurve = this.makeDistortionCurve(18);
+
+      // Start continuous BGM loop
+      this.startBgm();
+    } catch(e) {
+      console.warn("Web Audio Init warning:", e);
+    }
+  },
+
+  makeDistortionCurve(amount) {
+    const k = typeof amount === 'number' ? amount : 15;
+    const n_samples = 44100;
+    const curve = new Float32Array(n_samples);
+    const deg = Math.PI / 180;
+    for (let i = 0; i < n_samples; ++i) {
+      const x = (i * 2) / n_samples - 1;
+      curve[i] = ((3 + k) * x * 20 * deg) / (Math.PI + k * Math.abs(x));
+    }
+    return curve;
+  },
+
+  handleSliderChange(val) {
+    this.init();
+    const pct = parseInt(val, 10);
+    this.volume = pct / 100;
+    const label = document.getElementById('volValLabel');
+    if (label) label.textContent = pct + '%';
+    if (this.masterGain && this.ctx && !this.muted) {
+      this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
+    }
+    if (this.muted && pct > 0) {
+      this.toggleMute();
+    }
+  },
+
+  toggleMute() {
+    this.init();
+    this.muted = !this.muted;
+    const btn = document.getElementById('btnAudioToggle');
+    if (btn) btn.textContent = this.muted ? '🔇' : '🔊';
+
+    if (this.masterGain && this.ctx) {
+      this.masterGain.gain.setValueAtTime(this.muted ? 0 : this.volume, this.ctx.currentTime);
+    }
+  },
+
+  startBgm() {
+    if (this.isPlayingBgm || !this.ctx) return;
+    this.isPlayingBgm = true;
+    this.currentStep = 0;
+    this.nextStepTime = this.ctx.currentTime + 0.08;
+    this.bgmScheduler();
+  },
+
+  stopBgm() {
+    this.isPlayingBgm = false;
+    if (this.timerID) clearTimeout(this.timerID);
+  },
+
+  bgmScheduler() {
+    if (!this.isPlayingBgm) return;
+    const scheduleAheadTime = 0.12; // 120ms lookahead
+    while (this.nextStepTime < this.ctx.currentTime + scheduleAheadTime) {
+      this.scheduleStep(this.currentStep, this.nextStepTime);
+      const stepDuration = 60 / this.tempo / 4; // 16th note step
+      this.nextStepTime += stepDuration;
+      this.currentStep = (this.currentStep + 1) % 16;
+    }
+    this.timerID = setTimeout(() => this.bgmScheduler(), 25);
+  },
+
+  scheduleStep(step, t) {
+    // 1. Kick Drum (TR-808/909) on steps 0, 4, 8, 12 + Sidechain Ducking
+    if (step === 0 || step === 4 || step === 8 || step === 12) {
+      this.triggerKick(t);
+      // Trigger Sidechain Pump: Duck down instantly, ramp back in 220ms
+      if (this.sidechainGain) {
+        this.sidechainGain.gain.setValueAtTime(0.18, t);
+        this.sidechainGain.gain.exponentialRampToValueAtTime(1.0, t + 0.22);
+      }
+    }
+
+    // 2. Snare Drum on steps 4, 12
+    if (step === 4 || step === 12) {
+      this.triggerSnare(t);
+    }
+
+    // 3. Hi-Hats (Closed & Open)
+    if (step % 2 === 0) {
+      const isOpen = (step === 2 || step === 6 || step === 10 || step === 14);
+      this.triggerHiHat(t, isOpen);
+    }
+
+    // 4. Industrial Percussion on offbeats (steps 3, 11, 15)
+    if (step === 3 || step === 11 || step === 15) {
+      this.triggerIndustrialPerc(t);
+    }
+
+    // 5. Moog Driving Bassline (16th notes in D Minor)
+    this.triggerBassStep(step, t);
+
+    // 6. FM Bell / DX7 Arp Lead
+    this.triggerFMArpStep(step, t);
+
+    // 7. Sweeping Atmospheric Pad on bar start (step 0)
+    if (step === 0) {
+      this.triggerCyberPad(t);
+    }
+  },
+
+  triggerKick(t) {
+    if (!this.ctx) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(145, t);
+    osc.frequency.exponentialRampToValueAtTime(38, t + 0.22);
+
+    gain.gain.setValueAtTime(0.7, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.24);
+
+    osc.connect(gain);
+    gain.connect(this.bgmGain);
+    osc.start(t);
+    osc.stop(t + 0.25);
+  },
+
+  triggerSnare(t) {
+    if (!this.ctx) return;
+    // Noise burst
+    const bufferSize = Math.floor(this.ctx.sampleRate * 0.14);
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 1750;
+    filter.Q.value = 1.2;
+
+    const noiseGain = this.ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.42, t);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.13);
+
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(this.bgmGain);
+
+    noise.start(t);
+    noise.stop(t + 0.14);
+
+    // Body tone
+    const osc = this.ctx.createOscillator();
+    const toneGain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(185, t);
+    osc.frequency.exponentialRampToValueAtTime(60, t + 0.09);
+
+    toneGain.gain.setValueAtTime(0.35, t);
+    toneGain.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+
+    osc.connect(toneGain);
+    toneGain.connect(this.bgmGain);
+    osc.start(t);
+    osc.stop(t + 0.1);
+  },
+
+  triggerHiHat(t, isOpen) {
+    if (!this.ctx) return;
+    const dur = isOpen ? 0.15 : 0.04;
+    const bufferSize = Math.floor(this.ctx.sampleRate * dur);
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.value = 7500;
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(isOpen ? 0.22 : 0.14, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.bgmGain);
+
+    noise.start(t);
+    noise.stop(t + dur + 0.01);
+  },
+
+  triggerIndustrialPerc(t) {
+    if (!this.ctx) return;
+    const carrier = this.ctx.createOscillator();
+    const mod = this.ctx.createOscillator();
+    const modGain = this.ctx.createGain();
+    const outGain = this.ctx.createGain();
+
+    carrier.type = 'sine';
+    carrier.frequency.setValueAtTime(840, t);
+    carrier.frequency.exponentialRampToValueAtTime(260, t + 0.07);
+
+    mod.type = 'sawtooth';
+    mod.frequency.setValueAtTime(420, t);
+    modGain.gain.setValueAtTime(600, t);
+    modGain.gain.exponentialRampToValueAtTime(10, t + 0.06);
+
+    mod.connect(modGain);
+    modGain.connect(carrier.frequency);
+
+    outGain.gain.setValueAtTime(0.18, t);
+    outGain.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
+
+    carrier.connect(outGain);
+    outGain.connect(this.delayNode); // sent to delay echo
+    carrier.start(t);
+    mod.start(t);
+    carrier.stop(t + 0.08);
+    mod.stop(t + 0.08);
+  },
+
+  triggerBassStep(step, t) {
+    if (!this.ctx) return;
+    // D Minor rolling bass notes: D1 (36.7), D2 (73.4), F2 (87.3), G2 (98.0), A2 (110.0), C2 (65.4)
+    const bassNotes = [
+      73.42, 73.42, 146.83, 73.42,
+      87.31, 73.42, 98.00,  110.00,
+      73.42, 73.42, 146.83, 73.42,
+      65.41, 73.42, 87.31,  110.00
+    ];
+    const freq = bassNotes[step] || 73.42;
+
+    const osc = this.ctx.createOscillator();
+    const subOsc = this.ctx.createOscillator();
+    const filter = this.ctx.createBiquadFilter();
+    const gain = this.ctx.createGain();
+    const shaper = this.ctx.createWaveShaper();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(freq, t);
+
+    subOsc.type = 'square';
+    subOsc.frequency.setValueAtTime(freq / 2, t);
+
+    // Moog style lowpass filter envelope with resonance
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(800, t);
+    filter.frequency.exponentialRampToValueAtTime(180, t + 0.11);
+    filter.Q.value = 5.5;
+
+    shaper.curve = this.distortionCurve;
+    shaper.oversample = '2x';
+
+    gain.gain.setValueAtTime(0.48, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.115);
+
+    osc.connect(filter);
+    subOsc.connect(filter);
+    filter.connect(shaper);
+    shaper.connect(gain);
+    gain.connect(this.sidechainGain); // routed through Sidechain bus
+
+    osc.start(t);
+    subOsc.start(t);
+    osc.stop(t + 0.12);
+    subOsc.stop(t + 0.12);
+  },
+
+  triggerFMArpStep(step, t) {
+    if (!this.ctx) return;
+    // DX7 Arpeggio in D Minor on steps 1, 3, 5, 7, 9, 11, 13, 15
+    const arpNotes = [
+      587.33, 698.46, 880.00, 1046.50,
+      587.33, 880.00, 1174.66, 880.00
+    ];
+    if (step % 2 !== 1) return;
+    const noteIdx = Math.floor(step / 2) % arpNotes.length;
+    const freq = arpNotes[noteIdx];
+
+    const carrier = this.ctx.createOscillator();
+    const mod = this.ctx.createOscillator();
+    const modGain = this.ctx.createGain();
+    const outGain = this.ctx.createGain();
+
+    carrier.type = 'sine';
+    carrier.frequency.setValueAtTime(freq, t);
+
+    mod.type = 'sine';
+    mod.frequency.setValueAtTime(freq * 2, t);
+
+    modGain.gain.setValueAtTime(850, t);
+    modGain.gain.exponentialRampToValueAtTime(20, t + 0.18);
+
+    mod.connect(modGain);
+    modGain.connect(carrier.frequency);
+
+    outGain.gain.setValueAtTime(0.18, t);
+    outGain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+
+    carrier.connect(outGain);
+    outGain.connect(this.sidechainGain);
+    outGain.connect(this.delayNode); // Stereo Echo
+
+    carrier.start(t);
+    mod.start(t);
+    carrier.stop(t + 0.22);
+    mod.stop(t + 0.22);
+  },
+
+  triggerCyberPad(t) {
+    if (!this.ctx) return;
+    // Cyber Dm9 pad frequencies (D3, F3, A3, C4, E4)
+    const padFreqs = [146.83, 174.61, 220.00, 261.63, 329.63];
+    const dur = (60 / this.tempo) * 4; // 4 beats = 1 bar
+
+    padFreqs.forEach((freq, idx) => {
+      const osc = this.ctx.createOscillator();
+      const filter = this.ctx.createBiquadFilter();
+      const gain = this.ctx.createGain();
+
+      osc.type = (idx % 2 === 0) ? 'sawtooth' : 'triangle';
+      osc.frequency.setValueAtTime(freq, t);
+
+      // Sweeping Phaser / Lowpass LFO Motion
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(450 + idx * 80, t);
+      filter.frequency.linearRampToValueAtTime(1400, t + dur * 0.5);
+      filter.frequency.linearRampToValueAtTime(450, t + dur);
+      filter.Q.value = 3.0;
+
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(0.07, t + 0.4);
+      gain.gain.setValueAtTime(0.07, t + dur - 0.4);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.sidechainGain);
+
+      osc.start(t);
+      osc.stop(t + dur);
+    });
+  },
+
+  /* Sound Effects */
+  playTone(freq, type, duration, vol = 0.25) {
+    if (this.muted) return;
+    this.init();
+    if (!this.ctx || !this.sfxGain) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+      gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(this.sfxGain);
+      osc.start();
+      osc.stop(this.ctx.currentTime + duration);
+    } catch(e) {}
+  },
+  playLaserBeep() { this.playTone(880, 'sawtooth', 0.12, 0.2); },
+  playCorrect() {
+    if (this.muted) return;
+    this.playTone(523.25, 'sine', 0.1, 0.22);
+    setTimeout(() => this.playTone(659.25, 'sine', 0.1, 0.22), 80);
+    setTimeout(() => this.playTone(783.99, 'sine', 0.18, 0.26), 160);
+  },
+  playWrong() {
+    if (this.muted) return;
+    this.playTone(180, 'sawtooth', 0.25, 0.32);
+    setTimeout(() => this.playTone(130, 'sawtooth', 0.35, 0.35), 100);
+  },
+  playWhoosh() {
+    this.playTone(340, 'triangle', 0.18, 0.22);
+  },
+  playJackpot() {
+    if (this.muted) return;
+    [440, 554, 659, 880, 1108].forEach((f, i) => {
+      setTimeout(() => this.playTone(f, 'sine', 0.2, 0.26), i * 90);
+    });
+  },
+  playGlitch() {
+    if (this.muted) return;
+    this.playTone(220, 'square', 0.08, 0.26);
+    setTimeout(() => this.playTone(120, 'sawtooth', 0.12, 0.32), 50);
+  }
+};
+
+// Autostart audio on first user gesture to comply with browser audio policy
+window.addEventListener('click', () => { GameAudio.init(); }, { once: true });
+window.addEventListener('touchstart', () => { GameAudio.init(); }, { once: true });
+
+/* ══════════════════════════════════════
+   SCENE RESIZING (1920x1080)
+══════════════════════════════════════ */
+function _scaleScene() {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const s = Math.min(vw / 1920, vh / 1080);
+  const el = document.getElementById('sceneContainer');
+  if (el) el.style.transform = 'scale(' + s + ')';
+}
+window.addEventListener('resize', _scaleScene);
+_scaleScene();
+
+/* ══════════════════════════════════════
+   GLOBAL GAME STATE
+══════════════════════════════════════ */
+let _activeTab = 'meihua'; // 'meihua' | 'tocfl'
+let _selectedMHUnits = ['MH1U1', 'MH1U2'];
+let _selectedTocflLevels = ['N1'];
+let _gameMode = 'normal'; // 'normal' | 'reverse'
+let _qCountMode = 'all'; // 'all' | number
+let _customQCount = 10;
+let _minigameType = 'both'; // 'both' | 'shuffle' | 'sequence' | 'none'
+let _minigameFreq = 5; // 3, 4, 5, 6
+
+/* In-game Quiz State */
+let _quizPool = [];
+let _quizQuestions = [];
+let _currentQIndex = 0;
+let _currentScore = 0;
+let _streak = 0;
+let _maxStreak = 0;
+let _correctAnswers = 0;
+let _qTimerInterval = null;
+let _qTimeRemaining = 10.0;
+let _qStartTime = 0;
+let _isAnsweringLocked = false;
+let _minigameCounter = 0;
+
+/* ══════════════════════════════════════
+   1. SETUP LOGIC & UI BUILDER
+══════════════════════════════════════ */
+function switchSetupTab(tab) {
+  GameAudio.playLaserBeep();
+  _activeTab = tab;
+  document.getElementById('tabBtnMeihua').classList.toggle('active', tab === 'meihua');
+  document.getElementById('tabBtnTocfl').classList.toggle('active', tab === 'tocfl');
+  document.getElementById('paneMeihua').classList.toggle('active', tab === 'meihua');
+  document.getElementById('paneTocfl').classList.toggle('active', tab === 'tocfl');
+  updateSetupSummary();
+}
+
+/* Build Meihua Selection Grid (6 Books x 10 Units) */
+function buildMeihuaSetupGrid() {
+  const grid = document.getElementById('mhSetupGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  for (let b = 1; b <= 6; b++) {
+    const row = document.createElement('div');
+    row.className = 'mh-row';
+
+    const bookBtn = document.createElement('button');
+    bookBtn.className = 'mh-book-btn';
+    bookBtn.id = 'mhBookBtn_' + b;
+    bookBtn.textContent = 'BOOK ' + b;
+    bookBtn.onclick = () => toggleMeihuaBook(b);
+    row.appendChild(bookBtn);
+
+    const unitsWrap = document.createElement('div');
+    unitsWrap.className = 'mh-units';
+    for (let u = 1; u <= 10; u++) {
+      const key = `MH${b}U${u}`;
+      const btn = document.createElement('button');
+      btn.className = 'mh-unit-btn';
+      btn.id = 'mhUnitBtn_' + key;
+      btn.textContent = 'U' + u;
+      btn.onclick = () => toggleMeihuaUnit(key);
+      unitsWrap.appendChild(btn);
+    }
+    row.appendChild(unitsWrap);
+    grid.appendChild(row);
+  }
+}
+
+/* Build TOCFL Selection Grid */
+const _tocflMetadata = [
+  { code: 'N1', name: '準備一 (Novice 1)' },
+  { code: 'N2', name: '準備二 (Novice 2)' },
+  { code: 'L1', name: '入門級 (Level 1)' },
+  { code: 'L2', name: '基礎級 (Level 2)' },
+  { code: 'L3', name: '進階級 (Level 3)' },
+  { code: 'L4', name: '高階級 (Level 4)' },
+  { code: 'L5', name: '流利級 (Level 5)' }
+];
+
+function buildTocflSetupGrid() {
+  const grid = document.getElementById('tocflSetupGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  _tocflMetadata.forEach(item => {
+    const btn = document.createElement('div');
+    btn.className = 'tocfl-btn';
+    btn.id = 'tocflBtn_' + item.code;
+    btn.onclick = () => toggleTocflLevel(item.code);
+    btn.innerHTML = `
+      <div class="lvl-code">${item.code}</div>
+      <div class="lvl-name">${item.name}</div>
+      <div class="lvl-count" id="tocflCount_${item.code}">Loading...</div>
+    `;
+    grid.appendChild(btn);
+  });
+}
+
+function toggleMeihuaUnit(key) {
+  GameAudio.playLaserBeep();
+  const idx = _selectedMHUnits.indexOf(key);
+  if (idx >= 0) _selectedMHUnits.splice(idx, 1);
+  else _selectedMHUnits.push(key);
+  refreshSetupUIHighlights();
+  updateSetupSummary();
+}
+
+function toggleMeihuaBook(book) {
+  GameAudio.playLaserBeep();
+  const bookUnits = [];
+  for (let u = 1; u <= 10; u++) bookUnits.push(`MH${book}U${u}`);
+  const allIn = bookUnits.every(k => _selectedMHUnits.includes(k));
+  if (allIn) {
+    _selectedMHUnits = _selectedMHUnits.filter(k => !bookUnits.includes(k));
+  } else {
+    bookUnits.forEach(k => { if (!_selectedMHUnits.includes(k)) _selectedMHUnits.push(k); });
+  }
+  refreshSetupUIHighlights();
+  updateSetupSummary();
+}
+
+function selectAllMeihua() {
+  GameAudio.playLaserBeep();
+  _selectedMHUnits = [];
+  for (let b = 1; b <= 6; b++) {
+    for (let u = 1; u <= 10; u++) _selectedMHUnits.push(`MH${b}U${u}`);
+  }
+  refreshSetupUIHighlights();
+  updateSetupSummary();
+}
+
+function clearAllMeihua() {
+  GameAudio.playLaserBeep();
+  _selectedMHUnits = [];
+  refreshSetupUIHighlights();
+  updateSetupSummary();
+}
+
+function toggleTocflLevel(code) {
+  GameAudio.playLaserBeep();
+  const idx = _selectedTocflLevels.indexOf(code);
+  if (idx >= 0) _selectedTocflLevels.splice(idx, 1);
+  else _selectedTocflLevels.push(code);
+  refreshSetupUIHighlights();
+  updateSetupSummary();
+}
+
+function selectAllTocfl() {
+  GameAudio.playLaserBeep();
+  _selectedTocflLevels = _tocflMetadata.map(m => m.code);
+  refreshSetupUIHighlights();
+  updateSetupSummary();
+}
+
+function clearAllTocfl() {
+  GameAudio.playLaserBeep();
+  _selectedTocflLevels = [];
+  refreshSetupUIHighlights();
+  updateSetupSummary();
+}
+
+function refreshSetupUIHighlights() {
+  // Meihua units
+  document.querySelectorAll('.mh-unit-btn').forEach(btn => {
+    const key = btn.id.replace('mhUnitBtn_', '');
+    btn.classList.toggle('active', _selectedMHUnits.includes(key));
+  });
+  // Meihua book buttons
+  for (let b = 1; b <= 6; b++) {
+    const bookUnits = [];
+    for (let u = 1; u <= 10; u++) bookUnits.push(`MH${b}U${u}`);
+    const allIn = bookUnits.length > 0 && bookUnits.every(k => _selectedMHUnits.includes(k));
+    const btn = document.getElementById('mhBookBtn_' + b);
+    if (btn) btn.classList.toggle('active', allIn);
+  }
+  // TOCFL buttons
+  document.querySelectorAll('.tocfl-btn').forEach(btn => {
+    const code = btn.id.replace('tocflBtn_', '');
+    btn.classList.toggle('active', _selectedTocflLevels.includes(code));
+  });
+}
+
+/* Game Mode Selector */
+function setGameMode(mode) {
+  GameAudio.playLaserBeep();
+  _gameMode = mode;
+  document.getElementById('modeBtnNormal').classList.toggle('active', mode === 'normal');
+  document.getElementById('modeBtnReverse').classList.toggle('active', mode === 'reverse');
+}
+
+/* Question Count Preset & Stepper */
+function setQuestionPreset(preset) {
+  GameAudio.playLaserBeep();
+  _qCountMode = preset;
+  document.getElementById('qPresetAll').classList.toggle('active', preset === 'all');
+  document.getElementById('qPreset10').classList.toggle('active', preset === 10);
+  document.getElementById('qPreset20').classList.toggle('active', preset === 20);
+  if (typeof preset === 'number') {
+    _customQCount = preset;
+  }
+  updateSetupSummary();
+}
+
+function stepQuestionCount(delta) {
+  GameAudio.playLaserBeep();
+  _qCountMode = 'custom';
+  document.getElementById('qPresetAll').classList.remove('active');
+  document.getElementById('qPreset10').classList.remove('active');
+  document.getElementById('qPreset20').classList.remove('active');
+
+  const pool = getActiveVocabPool();
+  const maxWords = Math.max(5, pool.length);
+  _customQCount = Math.max(5, Math.min(maxWords, _customQCount + delta));
+  updateSetupSummary();
+}
+
+/* Minigame Type Selector */
+function setMinigameType(type) {
+  GameAudio.playLaserBeep();
+  _minigameType = type;
+  document.getElementById('mgTypeBoth').classList.toggle('active', type === 'both');
+  document.getElementById('mgTypeShuffle').classList.toggle('active', type === 'shuffle');
+  document.getElementById('mgTypeSequence').classList.toggle('active', type === 'sequence');
+  document.getElementById('mgTypeNone').classList.toggle('active', type === 'none');
+
+  // Dim/enable frequency row
+  const freqRow = document.getElementById('mgFreqRow');
+  if (freqRow) {
+    freqRow.style.opacity = type === 'none' ? '0.35' : '1';
+    freqRow.style.pointerEvents = type === 'none' ? 'none' : 'auto';
+  }
+}
+
+/* Minigame Frequency Selector */
+function setMinigameFreq(freq) {
+  GameAudio.playLaserBeep();
+  _minigameFreq = freq;
+  [3, 4, 5, 6].forEach(f => {
+    const btn = document.getElementById('mgFreq' + f);
+    if (btn) btn.classList.toggle('active', _minigameFreq === f);
+  });
+}
+
+/* ══════════════════════════════════════
+   VOCAB DATABASE POOL AGGREGATOR
+══════════════════════════════════════ */
+let _customWmQuestions = null;
+
+function getActiveVocabPool() {
+  if (_customWmQuestions && _customWmQuestions.length > 0) {
+    return _customWmQuestions;
+  }
+  const pool = [];
+  const seen = {};
+
+  if (_activeTab === 'meihua') {
+    const bookKeys = ['meihua1','meihua2','meihua3','meihua4','meihua5','meihua6'];
+    _selectedMHUnits.forEach(key => {
+      const m = key.match(/MH(\d)U(\d+)/);
+      if (!m) return;
+      const book = typeof _meihuaDB !== 'undefined' && _meihuaDB[bookKeys[parseInt(m[1])-1]];
+      const unit = book && book['unit' + m[2]];
+      if (!unit || !unit.vocab) return;
+      unit.vocab.forEach(v => {
+        if (!v.char || !v.pinyin || seen[v.char]) return;
+        seen[v.char] = true;
+        pool.push({ hanzi: v.char, pinyin: v.pinyin, meaning: v.en || '' });
+      });
+    });
+  } else {
+    // TOCFL Standards
+    if (typeof _vocabDB !== 'undefined') {
+      for (const ch in _vocabDB) {
+        const e = _vocabDB[ch];
+        if (!e || !e.p || seen[ch]) continue;
+        const lvlStr = (e.lv || e.l || '').trim();
+        const matches = _selectedTocflLevels.some(lvl => lvlStr === lvl || lvlStr.includes(lvl));
+        if (matches) {
+          seen[ch] = true;
+          pool.push({ hanzi: ch, pinyin: e.p, meaning: e.m || e.e || '' });
+        }
+      }
+    }
+  }
+  return pool;
+}
+
+function updateSetupSummary() {
+  const pool = getActiveVocabPool();
+  const poolCount = pool.length;
+
+  let finalCount = poolCount;
+  if (_qCountMode === 'all') {
+    finalCount = poolCount;
+    _customQCount = poolCount;
+  } else {
+    finalCount = Math.min(poolCount, _customQCount);
+  }
+  document.getElementById('qCountInput').value = finalCount;
+
+  const sumEl = document.getElementById('setupSummary');
+  if (_activeTab === 'meihua') {
+    sumEl.innerHTML = `Selected: 🌸 <strong>${_selectedMHUnits.length} Meihua Units</strong> · Pool: <strong>${poolCount} Words</strong> · Quest Size: <strong>${finalCount} Questions</strong>`;
+  } else {
+    sumEl.innerHTML = `Selected: 🇹🇼 <strong>${_selectedTocflLevels.join(', ') || 'None'}</strong> · Pool: <strong>${poolCount} Words</strong> · Quest Size: <strong>${finalCount} Questions</strong>`;
+  }
+
+  // Update TOCFL counts
+  if (typeof _vocabDB !== 'undefined') {
+    _tocflMetadata.forEach(m => {
+      let c = 0;
+      for (const ch in _vocabDB) {
+        const lv = (_vocabDB[ch].lv || _vocabDB[ch].l || '').trim();
+        if (lv === m.code || lv.includes(m.code)) c++;
+      }
+      const el = document.getElementById('tocflCount_' + m.code);
+      if (el) el.textContent = `${c} Words`;
+    });
+  }
+}
+
+/* ══════════════════════════════════════
+   2. QUIZ ENGINE
+══════════════════════════════════════ */
+function startQuizQuest() {
+  const pool = getActiveVocabPool();
+  if (pool.length < 4) {
+    alert('Please select more units or levels to have at least 4 words in the question pool!');
+    return;
+  }
+  GameAudio.playLaserBeep();
+
+  _quizPool = [...pool];
+  // Shuffle pool
+  for (let i = _quizPool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [_quizPool[i], _quizPool[j]] = [_quizPool[j], _quizPool[i]];
+  }
+
+  const numQuestions = _qCountMode === 'all' ? _quizPool.length : Math.min(_quizPool.length, _customQCount);
+  _quizQuestions = _quizPool.slice(0, numQuestions);
+
+  _currentQIndex = 0;
+  _currentScore = 0;
+  _streak = 0;
+  _maxStreak = 0;
+  _correctAnswers = 0;
+  _minigameCounter = 0;
+
+  showScreen('screenQuiz');
+  loadQuestion(_currentQIndex);
+}
+
+function loadQuestion(index) {
+  if (index >= _quizQuestions.length) {
+    finishQuizQuest();
+    return;
+  }
+
+  _isAnsweringLocked = false;
+  const qData = _quizQuestions[index];
+  const totalQ = _quizQuestions.length;
+
+  // Update HUD
+  document.getElementById('hudProgressText').textContent = `${index + 1} / ${totalQ}`;
+  document.getElementById('hudProgressBar').style.width = `${((index) / totalQ) * 100}%`;
+  document.getElementById('hudScoreText').textContent = _currentScore;
+
+  // Update streak badge
+  const streakBadge = document.getElementById('hudStreakBadge');
+  if (_streak >= 3) {
+    streakBadge.classList.add('active');
+    streakBadge.textContent = `🔥 COMBO x${_streak}`;
+  } else {
+    streakBadge.classList.remove('active');
+  }
+
+  // Generate 4 Options (1 correct + 3 distinct distractors)
+  const distractors = [];
+  const distractorPool = _quizPool.filter(item => item.hanzi !== qData.hanzi);
+  for (let i = distractorPool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [distractorPool[i], distractorPool[j]] = [distractorPool[j], distractorPool[i]];
+  }
+  for (let i = 0; i < 3 && i < distractorPool.length; i++) {
+    distractors.push(distractorPool[i]);
+  }
+
+  const options = [qData, ...distractors];
+  for (let i = options.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [options[i], options[j]] = [options[j], options[i]];
+  }
+
+  // Render Prompt
+  const hanziEl = document.getElementById('qPromptHanzi');
+  const pinyinEl = document.getElementById('qPromptPinyin');
+  const meaningEl = document.getElementById('qPromptMeaning');
+  const typeBadge = document.getElementById('qTypeBadge');
+
+  if (_gameMode === 'normal') {
+    typeBadge.textContent = 'PROMPT: HANZI → MEANING';
+    hanziEl.style.display = 'block';
+    pinyinEl.style.display = 'block';
+    meaningEl.style.display = 'none';
+    hanziEl.textContent = qData.hanzi;
+    pinyinEl.textContent = qData.pinyin;
+  } else {
+    typeBadge.textContent = 'PROMPT: MEANING → HANZI';
+    hanziEl.style.display = 'none';
+    pinyinEl.style.display = 'none';
+    meaningEl.style.display = 'block';
+    meaningEl.textContent = qData.meaning || 'Translate this word';
+  }
+
+  // Render 4 Options
+  for (let i = 0; i < 4; i++) {
+    const btn = document.getElementById('optBtn' + i);
+    const textEl = document.getElementById('optText' + i);
+    const subEl = document.getElementById('optSub' + i);
+    btn.className = `cyber-opt-btn opt-${['a','b','c','d'][i]}`;
+    btn.dataset.correct = options[i].hanzi === qData.hanzi ? 'true' : 'false';
+
+    if (_gameMode === 'normal') {
+      const txt = options[i].meaning || 'Option';
+      textEl.textContent = txt;
+      textEl.className = 'opt-text-primary' + (txt.length > 20 ? ' compact' : '');
+      subEl.textContent = '';
+      subEl.style.display = 'none';
+    } else {
+      textEl.textContent = options[i].hanzi;
+      textEl.className = 'opt-text-primary hanzi-mode';
+      subEl.textContent = options[i].pinyin;
+      subEl.style.display = 'block';
+    }
+  }
+
+  // Start 10-second Question Timer
+  startQuestionTimer();
+}
+
+function startQuestionTimer() {
+  clearInterval(_qTimerInterval);
+  _qTimeRemaining = 10.0;
+  _qStartTime = Date.now();
+
+  const timerBar = document.getElementById('hudTimerBar');
+  const timerNum = document.getElementById('hudTimerNum');
+  timerBar.style.width = '100%';
+  timerBar.style.background = 'var(--yellow)';
+  timerNum.textContent = '10.0s';
+
+  _qTimerInterval = setInterval(() => {
+    _qTimeRemaining -= 0.1;
+    if (_qTimeRemaining <= 0) {
+      _qTimeRemaining = 0;
+      clearInterval(_qTimerInterval);
+      handleQuestionTimeout();
+    }
+    const pct = Math.max(0, (_qTimeRemaining / 10.0) * 100);
+    timerBar.style.width = pct + '%';
+    timerNum.textContent = _qTimeRemaining.toFixed(1) + 's';
+
+    if (pct < 30) {
+      timerBar.style.background = 'var(--red)';
+    } else if (pct < 60) {
+      timerBar.style.background = 'var(--yellow)';
+    }
+  }, 100);
+}
+
+function handleOptionClick(index) {
+  if (_isAnsweringLocked) return;
+  _isAnsweringLocked = true;
+  clearInterval(_qTimerInterval);
+
+  const btn = document.getElementById('optBtn' + index);
+  const isCorrect = btn.dataset.correct === 'true';
+  const elapsed = (Date.now() - _qStartTime) / 1000.0;
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    GameAudio.playCorrect();
+    _correctAnswers++;
+    _streak++;
+    if (_streak > _maxStreak) _maxStreak = _streak;
+
+    // Speed Scoring
+    let pts = 40;
+    if (elapsed <= 2.5) pts = 100;
+    else if (elapsed <= 5.0) pts = 70;
+
+    // Streak Bonus
+    let bonus = 0;
+    if (_streak > 0 && _streak % 3 === 0) {
+      bonus = 50;
+      pts += bonus;
+    }
+
+    _currentScore += pts;
+    showFlyingScore(`+${pts}` + (bonus ? ' 🔥BONUS!' : ''), btn, '#00ff9d');
+  } else {
+    btn.classList.add('wrong');
+    GameAudio.playWrong();
+    _streak = 0;
+    // Highlight correct answer
+    for (let i = 0; i < 4; i++) {
+      const b = document.getElementById('optBtn' + i);
+      if (b.dataset.correct === 'true') b.classList.add('correct');
+    }
+  }
+
+  document.getElementById('hudScoreText').textContent = _currentScore;
+
+  setTimeout(() => {
+    checkNextStageOrMinigame();
+  }, 1200);
+}
+
+function handleQuestionTimeout() {
+  _isAnsweringLocked = true;
+  GameAudio.playWrong();
+  _streak = 0;
+
+  // Highlight correct answer in red/correct
+  for (let i = 0; i < 4; i++) {
+    const b = document.getElementById('optBtn' + i);
+    if (b.dataset.correct === 'true') b.classList.add('correct');
+  }
+  showFlyingScore(`+0 TIME OUT`, document.querySelector('.question-box'), '#ff2a55');
+
+  setTimeout(() => {
+    checkNextStageOrMinigame();
+  }, 1200);
+}
+
+function getTotalMinigamesInQuest() {
+  if (_minigameType === 'none' || _minigameFreq <= 0 || !_quizQuestions || _quizQuestions.length <= 1) return 0;
+  let count = 0;
+  for (let q = 1; q < _quizQuestions.length; q++) {
+    if (q % _minigameFreq === 0) count++;
+  }
+  return count;
+}
+
+function checkNextStageOrMinigame() {
+  _currentQIndex++;
+  const isFinished = _currentQIndex >= _quizQuestions.length;
+
+  // Check if Minigame interval triggered
+  if (!isFinished && _minigameType !== 'none' && _minigameFreq > 0 && (_currentQIndex % _minigameFreq === 0)) {
+    _minigameCounter++;
+    let isShuffle = true;
+    if (_minigameType === 'both') {
+      isShuffle = (_minigameCounter % 2 === 1);
+    } else if (_minigameType === 'shuffle') {
+      isShuffle = true;
+    } else if (_minigameType === 'sequence') {
+      isShuffle = false;
+    }
+
+    triggerCyberGlitchTransition(
+      () => {
+        if (isShuffle) {
+          startCardShuffleMiniGame();
+        } else {
+          startNeuralSequenceMiniGame();
+        }
+      },
+      isShuffle ? 'BONUS: CYBER CARD SHUFFLE' : 'BONUS: NEURAL MEMORY SEQUENCE',
+      '// INCOMING MINI-GAME CHALLENGE... GET READY! //',
+      isShuffle ? '⚡' : '🧠',
+      2600
+    );
+  } else if (isFinished) {
+    triggerCyberGlitchTransition(
+      () => {
+        finishQuizQuest();
+      },
+      'MISSION DEBRIEF',
+      '// CALCULATING FINAL PERFORMANCE //',
+      '👑',
+      2400
+    );
+  } else {
+    loadQuestion(_currentQIndex);
+  }
+}
+
+/* ══════════════════════════════════════
+   3. CYBER GLITCH TRANSITION
+══════════════════════════════════════ */
+function triggerCyberGlitchTransition(callback, title = 'BONUS PROTOCOL ACTIVATED', sub = '// ENTERING MINI-GAME ARENA //', icon = '⚡', duration = 2600) {
+  GameAudio.playGlitch();
+  const overlay = document.getElementById('cyberGlitchOverlay');
+  const titleEl = document.getElementById('glitchTitle');
+  const subEl = document.getElementById('glitchSub');
+  const iconEl = document.getElementById('glitchIcon');
+  const loaderEl = document.getElementById('glitchLoaderFill');
+
+  if (titleEl) titleEl.textContent = title;
+  if (subEl) subEl.textContent = sub;
+  if (iconEl) iconEl.textContent = icon;
+  if (loaderEl) {
+    loaderEl.style.transition = 'none';
+    loaderEl.style.width = '0%';
+    setTimeout(() => {
+      loaderEl.style.transition = `width ${duration - 500}ms ease-out`;
+      loaderEl.style.width = '100%';
+    }, 60);
+  }
+
+  overlay.style.opacity = '0';
+  overlay.classList.add('active');
+  setTimeout(() => { overlay.style.opacity = '1'; }, 30);
+
+  // Switch screen midway while overlay is covering the scene
+  const switchTime = Math.floor(duration * 0.62);
+  setTimeout(() => {
+    if (callback) callback();
+  }, switchTime);
+
+  // Fade out overlay cleanly
+  setTimeout(() => {
+    overlay.style.opacity = '0';
+    setTimeout(() => {
+      overlay.classList.remove('active');
+    }, 400);
+  }, duration);
+}
+
+function showFlyingScore(text, anchorEl, color = '#00ff9d') {
+  const rect = anchorEl.getBoundingClientRect();
+  const pop = document.createElement('div');
+  pop.className = 'score-popup';
+  pop.textContent = text;
+  pop.style.color = color;
+  pop.style.left = (rect.left + rect.width / 2 - 60) + 'px';
+  pop.style.top = (rect.top + 20) + 'px';
+  document.body.appendChild(pop);
+  setTimeout(() => pop.remove(), 1000);
+}
+
+/* ══════════════════════════════════════
+   4. MINI-GAME 1: CYBER CARD SHUFFLE
+══════════════════════════════════════ */
+const _shuffleCardsData = [
+  { val: 200, label: '+200', name: 'JACKPOT', icon: 'icons/cyber/star_200.png', cls: 'c-p200', col: '#ffe600' },
+  { val: 100, label: '+100', name: 'BOOST', icon: 'icons/cyber/lightning_100.png', cls: 'c-p100', col: '#00f0ff' },
+  { val: 50,  label: '+50',  name: 'BONUS', icon: 'icons/cyber/spark_50.png', cls: 'c-p50', col: '#00ff9d' },
+  { val: -100, label: '-100', name: 'PENALTY', icon: 'icons/cyber/hazard_minus100.png', cls: 'c-m100', col: '#ff007f' },
+  { val: -200, label: '-200', name: 'TRAP', icon: 'icons/cyber/skull_minus200.png', cls: 'c-m200', col: '#ff2a55' }
+];
+
+let _shuffleCardsInstances = [];
+let _shuffleLocked = true;
+let _shuffleState = 'inspecting'; // 'inspecting' | 'shuffling' | 'choosing' | 'revealed'
+
+function startCardShuffleMiniGame() {
+  showScreen('screenShuffle');
+  const row = document.getElementById('shuffleCardsRow');
+  row.innerHTML = '';
+  _shuffleLocked = true;
+  _shuffleState = 'inspecting';
+
+  // Show Start button
+  const startBtnWrap = document.getElementById('shuffleStartWrap');
+  if (startBtnWrap) startBtnWrap.style.display = 'flex';
+  const startBtn = document.getElementById('btnStartShuffle');
+  if (startBtn) {
+    startBtn.disabled = false;
+    startBtn.style.opacity = '1';
+  }
+
+  // Clone and randomize card initial values
+  const shuffledData = [..._shuffleCardsData];
+  for (let i = shuffledData.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledData[i], shuffledData[j]] = [shuffledData[j], shuffledData[i]];
+  }
+
+  // Create Card Instances
+  _shuffleCardsInstances = [];
+  shuffledData.forEach((c, idx) => {
+    const cardEl = document.createElement('div');
+    cardEl.className = `shuffle-card ${c.cls}`;
+    cardEl.id = 'shCard_' + idx;
+
+    cardEl.innerHTML = `
+      <div class="shuffle-card-inner">
+        <div class="shuffle-front">
+          <img src="${c.icon}" class="shuffle-icon" alt="${c.name}">
+          <div class="shuffle-val" style="color:${c.col}">${c.label}</div>
+          <div class="shuffle-name">${c.name}</div>
+        </div>
+        <div class="shuffle-back">
+          <div class="shuffle-back-logo">❖</div>
+          <div class="shuffle-back-sub">CYBER DECK</div>
+        </div>
+      </div>
+    `;
+
+    const cardObj = {
+      id: idx,
+      data: c,
+      slot: idx,
+      dom: cardEl
+    };
+
+    cardEl.onclick = () => handleShuffleCardClick(cardObj);
+    _shuffleCardsInstances.push(cardObj);
+    row.appendChild(cardEl);
+  });
+
+  const subtitleEl = document.getElementById('shuffleSubtitle');
+  const statusEl = document.getElementById('shuffleStatusBar');
+  subtitleEl.textContent = '👀 Memorize where the rewards and traps are. When ready, tap the yellow button below!';
+  statusEl.textContent = 'READY — MEMORIZE THE 5 CARDS THEN TAP BUTTON TO SHUFFLE';
+}
+
+function triggerUserShuffleStart() {
+  if (_shuffleState !== 'inspecting') return;
+  _shuffleState = 'shuffling';
+  GameAudio.playLaserBeep();
+
+  const startBtnWrap = document.getElementById('shuffleStartWrap');
+  if (startBtnWrap) startBtnWrap.style.display = 'none';
+
+  const subtitleEl = document.getElementById('shuffleSubtitle');
+  const statusEl = document.getElementById('shuffleStatusBar');
+  subtitleEl.textContent = '⚠️ Flipping cards... Watch closely as they glide!';
+  statusEl.textContent = 'SHUFFLING CARDS... KEEP YOUR EYES ON THE TARGET!';
+
+  executeShuffleAnimation();
+}
+
+function executeShuffleAnimation() {
+  // Flip all cards to face down
+  _shuffleCardsInstances.forEach(c => c.dom.classList.add('flipped'));
+
+  // User-calibrated parameters
+  const totalMGs = getTotalMinigamesInQuest();
+  const pauseBetween = 200; // ms pause between swaps for all levels
+  let numSwaps = 5;
+  let swapDuration = 550; // ms to glide from one slot to another
+
+  if (totalMGs <= 1) {
+    // Single Minigame in Quiz -> Middle Difficulty
+    numSwaps = 6;
+    swapDuration = 430;
+  } else {
+    // Progressive Difficulty
+    if (_minigameCounter === 1) {
+      numSwaps = 5; swapDuration = 550; // Mudah: 5x swap, 550ms
+    } else if (_minigameCounter === 2) {
+      numSwaps = 6; swapDuration = 430; // Menengah: 6x swap, 430ms
+    } else {
+      numSwaps = 7; swapDuration = 320; // Lanjut: 7x swap, 320ms
+    }
+  }
+
+  let currentSwap = 0;
+  const card200 = _shuffleCardsInstances.find(c => c.data.val === 200);
+  const initial200Slot = card200 ? card200.slot : 0;
+
+  function doNextSwap() {
+    currentSwap++;
+    GameAudio.playWhoosh();
+
+    let sA, sB;
+
+    if (currentSwap === 1 && card200) {
+      // 1st swap: ALWAYS move the +200 card immediately
+      sA = card200.slot;
+      sB = Math.floor(Math.random() * 5);
+      while (sB === sA) sB = Math.floor(Math.random() * 5);
+    } else if (currentSwap === numSwaps && card200 && card200.slot === initial200Slot) {
+      // Final swap: Ensure the +200 card does not stay at its original inspection slot!
+      sA = card200.slot;
+      sB = Math.floor(Math.random() * 5);
+      while (sB === sA) sB = Math.floor(Math.random() * 5);
+    } else {
+      // 55% chance to involve the +200 card for active tracking, 45% between other slots
+      if (card200 && Math.random() < 0.55) {
+        sA = card200.slot;
+        sB = Math.floor(Math.random() * 5);
+        while (sB === sA) sB = Math.floor(Math.random() * 5);
+      } else {
+        sA = Math.floor(Math.random() * 5);
+        sB = Math.floor(Math.random() * 5);
+        while (sB === sA) sB = Math.floor(Math.random() * 5);
+      }
+    }
+
+    // Find cards currently occupying slot sA and slot sB
+    const cardA = _shuffleCardsInstances.find(c => c.slot === sA);
+    const cardB = _shuffleCardsInstances.find(c => c.slot === sB);
+
+    if (cardA && cardB) {
+      // Update slots
+      cardA.slot = sB;
+      cardB.slot = sA;
+
+      // Slot pitch is 228px (card width 200px + gap 28px)
+      const dxA = (cardA.slot - cardA.id) * 228;
+      const dxB = (cardB.slot - cardB.id) * 228;
+
+      cardA.dom.style.zIndex = '25';
+      cardB.dom.style.zIndex = '20';
+      cardA.dom.style.transition = `transform ${swapDuration}ms cubic-bezier(0.25, 1, 0.5, 1)`;
+      cardB.dom.style.transition = `transform ${swapDuration}ms cubic-bezier(0.25, 1, 0.5, 1)`;
+
+      // Graceful 3D arc motion (one slides over, one dips slightly)
+      cardA.dom.style.transform = `translateX(${dxA}px) translateY(-18px) scale(1.05)`;
+      cardB.dom.style.transform = `translateX(${dxB}px) translateY(18px) scale(0.96)`;
+
+      setTimeout(() => {
+        cardA.dom.style.transform = `translateX(${dxA}px)`;
+        cardB.dom.style.transform = `translateX(${dxB}px)`;
+        cardA.dom.style.zIndex = '1';
+        cardB.dom.style.zIndex = '1';
+      }, Math.floor(swapDuration * 0.85));
+    }
+
+    if (currentSwap < numSwaps) {
+      setTimeout(doNextSwap, swapDuration + pauseBetween);
+    } else {
+      setTimeout(() => {
+        _shuffleLocked = false;
+        _shuffleState = 'choosing';
+        document.getElementById('shuffleStatusBar').textContent = `👉 CHOOSE YOUR CARD NOW! (CLICK TO REVEAL)`;
+        document.getElementById('shuffleSubtitle').textContent = `Tap your chosen card to claim reward or avoid hazard!`;
+      }, swapDuration + 200);
+    }
+  }
+
+  // Start swaps after 3D flip settles
+  setTimeout(doNextSwap, 650);
+}
+
+function handleShuffleCardClick(chosenCard) {
+  if (_shuffleLocked || _shuffleState !== 'choosing') return;
+  _shuffleLocked = true;
+  _shuffleState = 'revealed';
+
+  const chosenCardData = chosenCard.data;
+  const cardEl = chosenCard.dom;
+
+  // Reveal All Cards
+  _shuffleCardsInstances.forEach(c => c.dom.classList.remove('flipped'));
+
+  if (chosenCardData.val > 0) {
+    GameAudio.playJackpot();
+    _currentScore += chosenCardData.val;
+    showFlyingScore(`+${chosenCardData.val} ${chosenCardData.name}!`, cardEl, chosenCardData.col);
+    document.getElementById('shuffleStatusBar').textContent = `🎉 REVEALED: ${chosenCardData.name} (+${chosenCardData.val} PTS)! NEW SCORE: ${_currentScore}`;
+  } else {
+    GameAudio.playWrong();
+    _currentScore = Math.max(0, _currentScore + chosenCardData.val);
+    showFlyingScore(`${chosenCardData.val} ${chosenCardData.name}!`, cardEl, chosenCardData.col);
+    document.getElementById('shuffleStatusBar').textContent = `⚠️ REVEALED: ${chosenCardData.name} (${chosenCardData.val} PTS)! NEW SCORE: ${_currentScore}`;
+  }
+
+  // Allow children 3.8 seconds to review the outcome and celebrate before smooth transition back
+  setTimeout(() => {
+    triggerCyberGlitchTransition(
+      () => {
+        showScreen('screenQuiz');
+        loadQuestion(_currentQIndex);
+      },
+      'BONUS PROTOCOL COMPLETED',
+      '// RETURNING TO QUIZ ARENA... GET READY! //',
+      '🎮',
+      2600
+    );
+  }, 3800);
+}
+
+/* ══════════════════════════════════════
+   5. MINI-GAME 2: NEURAL SEQUENCE
+══════════════════════════════════════ */
+let _seqTargetChars = [];
+let _seqUserInputs = [];
+let _seqLength = 3;
+let _seqSpeed = 1000;
+let _seqState = 'ready'; // 'ready' | 'transmitting' | 'recalling' | 'evaluated'
+
+function startNeuralSequenceMiniGame() {
+  showScreen('screenSequence');
+  _seqUserInputs = [];
+  _seqState = 'ready';
+
+  // Calculate difficulty: If only 1 minigame in quiz, use Middle Difficulty (4 characters, 1000ms speed)
+  const totalMGs = getTotalMinigamesInQuest();
+  _seqLength = 3;
+  _seqSpeed = 1300;
+
+  if (totalMGs <= 1) {
+    // Single Minigame in Quiz -> Middle Difficulty
+    _seqLength = 4;
+    _seqSpeed = 1000;
+  } else {
+    // Progressive Difficulty
+    if (_minigameCounter === 1) {
+      _seqLength = 3; _seqSpeed = 1300;
+    } else if (_minigameCounter === 2) {
+      _seqLength = 4; _seqSpeed = 1000;
+    } else {
+      _seqLength = 5; _seqSpeed = 800;
+    }
+  }
+
+  // Show Start button
+  const startBtnWrap = document.getElementById('seqStartWrap');
+  if (startBtnWrap) startBtnWrap.style.display = 'flex';
+  const startBtn = document.getElementById('btnStartSeq');
+  if (startBtn) {
+    startBtn.disabled = false;
+    startBtn.style.opacity = '1';
+  }
+
+  // Pick unique characters from quiz pool
+  const poolCopy = [..._quizPool];
+  for (let i = poolCopy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [poolCopy[i], poolCopy[j]] = [poolCopy[j], poolCopy[i]];
+  }
+  _seqTargetChars = poolCopy.slice(0, _seqLength).map(v => v.hanzi);
+
+  // Setup Slots
+  const slotsRow = document.getElementById('seqSlotsRow');
+  slotsRow.innerHTML = '';
+  for (let i = 0; i < _seqLength; i++) {
+    const s = document.createElement('div');
+    s.className = 'seq-slot';
+    s.id = 'seqSlot_' + i;
+    s.textContent = (i + 1);
+    slotsRow.appendChild(s);
+  }
+
+  // Setup Keyboard with targets + 3 distractors
+  const distractors = poolCopy.slice(_seqLength, _seqLength + (6 - _seqLength)).map(v => v.hanzi);
+  const keypadChars = [..._seqTargetChars, ...distractors];
+  for (let i = keypadChars.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [keypadChars[i], keypadChars[j]] = [keypadChars[j], keypadChars[i]];
+  }
+
+  const kbGrid = document.getElementById('seqKeyboardGrid');
+  kbGrid.innerHTML = '';
+  keypadChars.forEach(ch => {
+    const btn = document.createElement('button');
+    btn.className = 'seq-choice-btn disabled';
+    btn.textContent = ch;
+    btn.onclick = () => handleSeqInput(ch, btn);
+    kbGrid.appendChild(btn);
+  });
+
+  const displayEl = document.getElementById('seqDisplayChar');
+  const statusEl = document.getElementById('seqStatusBar');
+  const subtitleEl = document.getElementById('seqSubtitle');
+
+  displayEl.textContent = '⚡';
+  subtitleEl.textContent = '👀 When ready, tap the yellow button below to start the character transmission!';
+  statusEl.textContent = 'STANDBY — TAP BUTTON BELOW TO START TRANSMISSION';
+}
+
+function triggerUserSequenceStart() {
+  if (_seqState !== 'ready') return;
+  _seqState = 'transmitting';
+  GameAudio.playLaserBeep();
+
+  const startBtnWrap = document.getElementById('seqStartWrap');
+  if (startBtnWrap) startBtnWrap.style.display = 'none';
+
+  const displayEl = document.getElementById('seqDisplayChar');
+  const statusEl = document.getElementById('seqStatusBar');
+  const subtitleEl = document.getElementById('seqSubtitle');
+
+  subtitleEl.textContent = `Memorize the ${_seqLength} characters in exact order!`;
+  statusEl.textContent = `TRANSMITTING ${_seqLength} NEURAL NODES...`;
+
+  let step = 0;
+  const broadcastInt = setInterval(() => {
+    if (step < _seqTargetChars.length) {
+      GameAudio.playLaserBeep();
+      displayEl.textContent = _seqTargetChars[step];
+      statusEl.textContent = `NODE [${step + 1} / ${_seqLength}]`;
+      step++;
+    } else {
+      clearInterval(broadcastInt);
+      setTimeout(() => {
+        _seqState = 'recalling';
+        displayEl.textContent = '???';
+        subtitleEl.textContent = 'Tap the characters in the same order as they appeared!';
+        statusEl.textContent = `TRANSMISSION COMPLETE — RECALL SEQUENCE!`;
+        // Enable keypad
+        document.querySelectorAll('.seq-choice-btn').forEach(b => b.classList.remove('disabled'));
+      }, _seqSpeed);
+    }
+  }, _seqSpeed);
+}
+
+function handleSeqInput(char, btn) {
+  if (btn.classList.contains('disabled') || _seqUserInputs.length >= _seqLength) return;
+  GameAudio.playLaserBeep();
+  _seqUserInputs.push(char);
+
+  // Fill Slot
+  const slotIdx = _seqUserInputs.length - 1;
+  const slot = document.getElementById('seqSlot_' + slotIdx);
+  if (slot) {
+    slot.textContent = char;
+    slot.classList.add('filled');
+  }
+
+  if (_seqUserInputs.length === _seqLength) {
+    evaluateSequence();
+  }
+}
+
+function evaluateSequence() {
+  document.querySelectorAll('.seq-choice-btn').forEach(b => b.classList.add('disabled'));
+
+  let correctCount = 0;
+  for (let i = 0; i < _seqLength; i++) {
+    const slot = document.getElementById('seqSlot_' + i);
+    if (_seqUserInputs[i] === _seqTargetChars[i]) {
+      slot.classList.add('correct');
+      correctCount++;
+    } else {
+      slot.classList.add('wrong');
+    }
+  }
+
+  const statusEl = document.getElementById('seqStatusBar');
+  if (correctCount === _seqLength) {
+    GameAudio.playJackpot();
+    _currentScore += 300;
+    statusEl.textContent = `🎉 PERFECT RECALL! +300 POINTS! NEW SCORE: ${_currentScore}`;
+    showFlyingScore(`+300 PERFECT!`, document.querySelector('.seq-display-terminal'), '#00ff9d');
+  } else {
+    GameAudio.playWrong();
+    const partial = correctCount * 50;
+    _currentScore += partial;
+    statusEl.textContent = `⚡ PARTIAL MATCH: ${correctCount}/${_seqLength} (+${partial} PTS)! NEW SCORE: ${_currentScore}`;
+    showFlyingScore(`+${partial} PTS`, document.querySelector('.seq-display-terminal'), '#ffe600');
+  }
+
+  // Allow children 3.8 seconds to review sequence results before smooth transition back
+  setTimeout(() => {
+    triggerCyberGlitchTransition(
+      () => {
+        showScreen('screenQuiz');
+        loadQuestion(_currentQIndex);
+      },
+      'NEURAL LINK DEACTIVATED',
+      '// RETURNING TO QUIZ ARENA... GET READY! //',
+      '🧠',
+      2600
+    );
+  }, 3800);
+}
+
+/* ══════════════════════════════════════
+   6. RESULTS SCREEN
+══════════════════════════════════════ */
+function finishQuizQuest() {
+  showScreen('screenResults');
+  GameAudio.playJackpot();
+
+  const totalQ = _quizQuestions.length;
+  const accuracy = totalQ > 0 ? Math.round((_correctAnswers / totalQ) * 100) : 0;
+
+  document.getElementById('resFinalScore').textContent = _currentScore;
+  document.getElementById('resAccuracy').textContent = accuracy + '%';
+  document.getElementById('resCorrectCount').textContent = `${_correctAnswers} / ${totalQ}`;
+  document.getElementById('resMaxStreak').textContent = `${_maxStreak}🔥`;
+
+  // Rank determination
+  const rankImg = document.getElementById('resRankImg');
+  if (accuracy >= 90) {
+    rankImg.src = 'icons/cyber/rank_s.png';
+  } else if (accuracy >= 75) {
+    rankImg.src = 'icons/cyber/rank_a.png';
+  } else if (accuracy >= 60) {
+    rankImg.src = 'icons/cyber/rank_b.png';
+  } else {
+    rankImg.src = 'icons/cyber/rank_c.png';
+  }
+
+  if (window.GameBridge && typeof window.GameBridge.finishGame === 'function') {
+    const maxScore = totalQ * 100;
+    window.GameBridge.finishGame(_currentScore, maxScore, [
+      { correct: _correctAnswers, total: totalQ, accuracy: accuracy, maxStreak: _maxStreak }
+    ], 'Word Match Quest');
+  }
+}
+
+function handleNavBack() {
+  GameAudio.playLaserBeep();
+  const currentScreen = document.querySelector('.wm-screen.active');
+  const screenId = currentScreen ? currentScreen.id : '';
+
+  if (screenId === 'screenSetup') {
+    // Already on Setup screen -> exit to main Hub (index.html)
+    location.href = '../index.html';
+  } else {
+    // In Quiz, Minigame, or Results -> Return to Game Setting!
+    if (_qTimerInterval) clearInterval(_qTimerInterval);
+    showScreen('screenSetup');
+  }
+}
+
+function showScreen(screenId) {
+  document.querySelectorAll('.wm-screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(screenId);
+  if (el) el.classList.add('active');
+
+  // Dynamically update Top Nav Back Button
+  const backBtn = document.getElementById('btnNavBack');
+  if (backBtn) {
+    if (screenId === 'screenSetup') {
+      backBtn.innerHTML = '◀ HUB';
+      backBtn.title = 'Kembali ke Menu Hub Utama';
+    } else {
+      backBtn.innerHTML = '⚙️ SETTING GAME';
+      backBtn.title = 'Kembali ke Pengaturan Soal / Level';
+    }
+  }
+}
+
+/* LotusGameBridge Integration */
+if (window.GameBridge && typeof window.GameBridge.onReady === 'function') {
+  window.GameBridge.onReady(function(activity) {
+    if (activity && Array.isArray(activity.questions) && activity.questions.length > 0) {
+      _customWmQuestions = activity.questions.map(q => ({
+        hanzi: q.text || q.question,
+        pinyin: q.pinyin || '',
+        meaning: q.correctAnswer || (q.options?.find(o => o.isCorrect)?.text) || q.meaning || q.text,
+        options: q.options
+      }));
+      _qCountMode = 'custom';
+      _customQCount = _customWmQuestions.length;
+      updateSetupSummary();
+      startQuizQuest();
+    }
+  });
+}
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'INIT_ACTIVITY' && event.data.activity && Array.isArray(event.data.activity.questions)) {
+    _customWmQuestions = event.data.activity.questions.map(q => ({
+      hanzi: q.text || q.question,
+      pinyin: q.pinyin || '',
+      meaning: q.correctAnswer || (q.options?.find(o => o.isCorrect)?.text) || q.meaning || q.text,
+      options: q.options
+    }));
+    _qCountMode = 'custom';
+    _customQCount = _customWmQuestions.length;
+    updateSetupSummary();
+    startQuizQuest();
+  }
+});
+
+/* Initial Initialization on Load */
+window.addEventListener('DOMContentLoaded', () => {
+  buildMeihuaSetupGrid();
+  buildTocflSetupGrid();
+  refreshSetupUIHighlights();
+  updateSetupSummary();
+});
+</script>
+</body>
+</html>

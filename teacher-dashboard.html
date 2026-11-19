@@ -90,49 +90,50 @@
           <span class="ui-sprite ui-xs ui-home"></span>
           <span>Home</span>
         </a>
-        <a href="index.html#tab=community" class="px-3 py-1.5 rounded-lg text-xs font-bold text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] flex items-center gap-1.5 transition-colors">
+        <button type="button" onclick="switchDashboardTab('community')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] flex items-center gap-1.5 transition-colors cursor-pointer">
           <span class="ui-sprite ui-xs ui-community"></span>
           <span>Komunitas</span>
-        </a>
+        </button>
         <a href="tools/human-skeleton-3d/index.html" target="_blank" class="px-3 py-1.5 rounded-lg text-xs font-bold text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] flex items-center gap-1.5 transition-colors">
           <span>🦴</span>
           <span>Media Ajar 3D</span>
         </a>
 
         <!-- Mandarin Tools Dropdown -->
-        <div class="relative group">
-          <button type="button" class="px-3 py-1.5 rounded-lg text-xs font-bold text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] flex items-center gap-1 transition-colors cursor-pointer">
+        <div class="relative flex items-center">
+          <button type="button" id="dash-mandarin-btn" onclick="toggleDashboardMandarinDropdown(event)"
+            class="px-3 py-1.5 rounded-lg text-xs font-bold text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] focus:outline-none focus:ring-2 focus:ring-[#1E5E3A]/20 flex items-center gap-1.5 transition-colors cursor-pointer"
+            aria-haspopup="true" aria-expanded="false">
             <span>🏮</span>
             <span>Mandarin Tools</span>
-            <svg class="w-3 h-3 text-[#57534e] group-hover:text-[#1E5E3A] transition-transform group-hover:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            <svg id="dash-mandarin-chevron" class="w-3.5 h-3.5 text-[#57534e] transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
           </button>
-          <div class="absolute left-0 top-full pt-1 hidden group-hover:block z-50">
-            <div class="w-56 bg-white rounded-xl border border-[#d6cfc2] shadow-xl py-2 px-1 space-y-1">
-              <a href="tools/mandarin/drawing.html" target="_blank" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#EAF5ED] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
-                <span class="w-6 h-6 rounded bg-[#EAF5ED] text-[#1E5E3A] flex items-center justify-center font-bold text-xs">✍️</span>
-                <div>
-                  <div>Papan Tulis Hanzi</div>
-                  <div class="text-[10px] text-[#78716c] font-normal">Latihan Tulis Bebas & Grid</div>
-                </div>
-              </a>
-              <a href="tools/mandarin/strokes.html" target="_blank" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#EAF5ED] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
-                <span class="w-6 h-6 rounded bg-[#EAF5ED] text-[#1E5E3A] flex items-center justify-center font-bold text-xs">📖</span>
-                <div>
-                  <div>Lab Goresan & Radikal</div>
-                  <div class="text-[10px] text-[#78716c] font-normal">Urutan Goresan & Kamus</div>
-                </div>
-              </a>
-            </div>
+          <div id="dash-mandarin-menu" class="hidden absolute left-0 top-full mt-1.5 w-60 bg-white rounded-xl border border-[#d6cfc2] shadow-[0_12px_32px_rgba(0,0,0,0.15)] py-2 px-1.5 space-y-1 z-50">
+            <a href="tools/mandarin/drawing.html" target="_blank" onclick="toggleDashboardMandarinDropdown()" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#EAF5ED] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
+              <span class="w-7 h-7 rounded-lg bg-[#EAF5ED] text-[#1E5E3A] flex items-center justify-center font-bold text-sm shrink-0">✍️</span>
+              <div>
+                <div class="font-bold text-[#18181b]">Papan Tulis Hanzi</div>
+                <div class="text-[10px] text-[#78716c] font-normal">Latihan Tulis Bebas & Grid Tianzige</div>
+              </div>
+            </a>
+            <a href="tools/mandarin/strokes.html" target="_blank" onclick="toggleDashboardMandarinDropdown()" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#EAF5ED] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
+              <span class="w-7 h-7 rounded-lg bg-[#EAF5ED] text-[#1E5E3A] flex items-center justify-center font-bold text-sm shrink-0">📖</span>
+              <div>
+                <div class="font-bold text-[#18181b]">Lab Goresan & Radikal</div>
+                <div class="text-[10px] text-[#78716c] font-normal">Animasi Urutan Goresan Hanzi</div>
+              </div>
+            </a>
           </div>
         </div>
       </nav>
 
       <!-- Right Controls -->
       <div class="flex items-center gap-1.5 sm:gap-3 min-w-0">
-        <a href="index.html#tab=community"
+        <button type="button" onclick="switchDashboardTab('community')"
           class="inline-flex md:hidden items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] text-[#18181b] text-xs font-semibold transition-colors shrink-0">
           <span class="ui-sprite ui-sm ui-community"></span>
           <span>Komunitas</span>
+        </button>
         </a>
 
         <!-- Clickable Teacher Username Dropdown Trigger -->
@@ -235,6 +236,13 @@
             <span data-i18n="assign.tabTitle">Penugasan</span>
             <span id="badge-assignments-count" class="px-1.5 py-0.5 rounded bg-[#e5dfd3] text-[#18181b] text-[11px] font-bold">0</span>
           </button>
+
+          <button type="button" id="tab-btn-community" onclick="switchDashboardTab('community')"
+            class="px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#f4f1ea] text-[#57534e] hover:bg-[#e7e2d8] transition-colors flex items-center gap-2 cursor-pointer">
+            <span class="ui-sprite ui-sm ui-community"></span>
+            <span>Perpustakaan Komunitas</span>
+            <span id="badge-community-count" class="px-1.5 py-0.5 rounded bg-[#e5dfd3] text-[#18181b] text-[11px] font-bold">64</span>
+          </button>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
@@ -307,6 +315,87 @@
         </div>
 
         <div id="assignments-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Tab 4: Perpustakaan Komunitas (Community Library) -->
+      <div id="tab-content-community" class="hidden space-y-4">
+        <div class="bg-white p-4 sm:p-5 rounded-xl border border-[#e5dfd3] space-y-4">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-[#eee9df] pb-3">
+            <div>
+              <h3 class="text-base font-bold text-[#18181b] flex items-center gap-2">
+                <span class="ui-sprite ui-sm ui-community"></span>
+                <span>Perpustakaan Aktivitas Komunitas &amp; Meihua</span>
+              </h3>
+              <p class="text-xs text-[#57534e] mt-0.5">
+                Jelajahi aktivitas umum &amp; materi Meihua Books 1–6 (60 unit). Klik <span class="font-bold text-[#1d4ed8]">"Tugaskan ke Siswa"</span> untuk langsung membagikan ke kelas tanpa perlu menduplikasi!
+              </p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span id="dash-comm-count" class="px-2.5 py-1 rounded-full text-xs font-bold bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9]">
+                Memuat aktivitas...
+              </span>
+            </div>
+          </div>
+
+          <!-- Filter Bar -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
+            <!-- Search -->
+            <div class="lg:col-span-4">
+              <label for="dash-comm-search" class="block text-[11px] font-bold text-[#78716c] uppercase tracking-wider mb-1">
+                Cari Judul / Topik
+              </label>
+              <div class="relative flex items-center">
+                <span class="ui-sprite ui-sm ui-search absolute left-3"></span>
+                <input type="text" id="dash-comm-search" oninput="renderDashboardCommunityCards()"
+                  placeholder="Cari Meihua, IPA, Anatomi..."
+                  class="w-full pl-9 pr-3 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-xs sm:text-sm font-medium focus:outline-none focus:border-[#1E5E3A]">
+              </div>
+            </div>
+
+            <!-- Level -->
+            <div class="lg:col-span-3">
+              <label for="dash-comm-level" class="flex items-center gap-1.5 text-[11px] font-bold text-[#78716c] uppercase tracking-wider mb-1">
+                <span class="ui-sprite ui-xs ui-level"></span>
+                <span>Jenjang</span>
+              </label>
+              <select id="dash-comm-level" onchange="renderDashboardCommunityCards()"
+                class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-white text-xs sm:text-sm font-semibold text-[#18181b] focus:outline-none focus:border-[#1E5E3A]">
+                <option value="all">Semua Jenjang</option>
+                <option value="TK">TK (Taman Kanak-kanak)</option>
+                <option value="SD">SD (Sekolah Dasar)</option>
+                <option value="SMP">SMP</option>
+                <option value="SMA">SMA</option>
+                <option value="SMK">SMK</option>
+              </select>
+            </div>
+
+            <!-- Subject -->
+            <div class="lg:col-span-3">
+              <label for="dash-comm-subject" class="flex items-center gap-1.5 text-[11px] font-bold text-[#78716c] uppercase tracking-wider mb-1">
+                <span class="ui-sprite ui-xs ui-subject"></span>
+                <span>Mata Pelajaran</span>
+              </label>
+              <select id="dash-comm-subject" onchange="renderDashboardCommunityCards()"
+                class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-white text-xs sm:text-sm font-semibold text-[#18181b] focus:outline-none focus:border-[#1E5E3A]">
+                <option value="all">Semua Mapel</option>
+              </select>
+            </div>
+
+            <!-- Reset -->
+            <div class="lg:col-span-2">
+              <button type="button" onclick="resetDashboardCommFilters()"
+                class="w-full py-2 px-3 rounded-lg bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] text-[#18181b] font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+                <span class="ui-sprite ui-sm ui-refresh"></span>
+                <span>Reset Filter</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Community Grid -->
+        <div id="dash-comm-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
           <!-- Rendered by JS -->
         </div>
       </div>
@@ -1746,13 +1835,15 @@
     }
 
     function switchDashboardTab(tab, updateNav = true) {
-      currentActiveTab = ['projects', 'recycle', 'assignments'].includes(tab) ? tab : 'projects';
+      currentActiveTab = ['projects', 'recycle', 'assignments', 'community'].includes(tab) ? tab : 'projects';
       const btnProjects = document.getElementById('tab-btn-projects');
       const btnRecycle = document.getElementById('tab-btn-recycle');
       const btnAssignments = document.getElementById('tab-btn-assignments');
+      const btnCommunity = document.getElementById('tab-btn-community');
       const contentProjects = document.getElementById('tab-content-projects');
       const contentRecycle = document.getElementById('tab-content-recycle');
       const contentAssignments = document.getElementById('tab-content-assignments');
+      const contentCommunity = document.getElementById('tab-content-community');
 
       btnProjects.className = currentActiveTab === 'projects'
         ? 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#18181b] text-white transition-colors flex items-center gap-2 cursor-pointer'
@@ -1768,11 +1859,23 @@
           : 'px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#f4f1ea] text-[#57534e] hover:bg-[#e7e2d8] transition-colors flex items-center gap-2 cursor-pointer';
       }
 
+      if (btnCommunity) {
+        btnCommunity.className = currentActiveTab === 'community'
+          ? 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#1E5E3A] text-white transition-colors flex items-center gap-2 cursor-pointer shadow-xs'
+          : 'px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#f4f1ea] text-[#57534e] hover:bg-[#e7e2d8] transition-colors flex items-center gap-2 cursor-pointer';
+      }
+
       contentProjects.classList.toggle('hidden', currentActiveTab !== 'projects');
       contentRecycle.classList.toggle('hidden', currentActiveTab !== 'recycle');
       if (contentAssignments) contentAssignments.classList.toggle('hidden', currentActiveTab !== 'assignments');
+      if (contentCommunity) contentCommunity.classList.toggle('hidden', currentActiveTab !== 'community');
 
       renderDashboard();
+      if (currentActiveTab === 'community') {
+        populateDashboardCommSubjects();
+        renderDashboardCommunityCards();
+      }
+
       if (updateNav) {
         saveCurrentNavigation({ view: 'view-dashboard', dashboardTab: currentActiveTab });
       }
@@ -1783,14 +1886,20 @@
       const allActive = LotusDB.getTeacherActiveProjects(currentTeacher.id);
       const deletedProjects = LotusDB.getTeacherRecycleBin(currentTeacher.id);
       const teacherAssignments = LotusDB.getTeacherAssignments(currentTeacher.id);
+      const allCommunity = LotusDB.getCommunityProjects();
 
       document.getElementById('badge-projects-count').textContent = allActive.length;
       document.getElementById('badge-recycle-count').textContent = deletedProjects.length;
       const asgBadge = document.getElementById('badge-assignments-count');
       if (asgBadge) asgBadge.textContent = teacherAssignments.filter(a => a.status === 'active').length;
+      const commBadge = document.getElementById('badge-community-count');
+      if (commBadge) commBadge.textContent = allCommunity.length;
 
       if (currentActiveTab === 'assignments') {
         renderAssignmentsList();
+      } else if (currentActiveTab === 'community') {
+        populateDashboardCommSubjects();
+        renderDashboardCommunityCards();
       }
 
       const searchQ = (document.getElementById('dash-search-input')?.value || '').trim().toLowerCase();
@@ -4753,6 +4862,150 @@
       link.click();
       document.body.removeChild(link);
     }
+
+    // -------------------------------------------------------------------------
+    // COMMUNITY LIBRARY TAB (INSIDE TEACHER DASHBOARD)
+    // -------------------------------------------------------------------------
+    function populateDashboardCommSubjects() {
+      const sel = document.getElementById('dash-comm-subject');
+      if (!sel) return;
+      const prev = sel.value || 'all';
+      const publicProjs = LotusDB.getCommunityProjects({});
+      const subjects = Array.from(new Set(publicProjs.map(p => p.subject).filter(Boolean))).sort();
+      sel.innerHTML = '<option value="all">Semua Mapel</option>' +
+        subjects.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+      if (subjects.includes(prev)) sel.value = prev;
+      else sel.value = 'all';
+    }
+
+    function resetDashboardCommFilters() {
+      const s = document.getElementById('dash-comm-search');
+      const l = document.getElementById('dash-comm-level');
+      const sub = document.getElementById('dash-comm-subject');
+      if (s) s.value = '';
+      if (l) l.value = 'all';
+      if (sub) sub.value = 'all';
+      renderDashboardCommunityCards();
+    }
+
+    function renderDashboardCommunityCards() {
+      const grid = document.getElementById('dash-comm-grid');
+      const countEl = document.getElementById('dash-comm-count');
+      if (!grid) return;
+
+      const level = document.getElementById('dash-comm-level')?.value || 'all';
+      const subject = document.getElementById('dash-comm-subject')?.value || 'all';
+      const search = (document.getElementById('dash-comm-search')?.value || '').trim();
+
+      const list = LotusDB.getCommunityProjects({ level, subject, search });
+      if (countEl) countEl.textContent = `${list.length} Aktivitas Tersedia`;
+
+      if (list.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full bg-white rounded-xl border border-[#e5dfd3] p-12 text-center space-y-3">
+            <div class="w-12 h-12 mx-auto rounded-lg bg-[#f4f1ea] border border-[#e5dfd3] flex items-center justify-center">
+              <span class="ui-sprite ui-md ui-search"></span>
+            </div>
+            <p class="text-sm font-bold text-[#18181b]">Tidak ada aktivitas yang sesuai dengan filter.</p>
+            <button type="button" onclick="resetDashboardCommFilters()"
+              class="px-4 py-2 rounded-lg bg-[#1E5E3A] hover:bg-[#2C6E49] text-white font-semibold text-xs cursor-pointer">
+              Reset Filter
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = list.map(proj => {
+        const meta = getTplMeta(proj.template_type);
+        const tplName = LotusI18n.getTemplateName(meta.id);
+        const qCount = proj.questions?.length || 0;
+        const levelCode = (proj.level || 'SD').toUpperCase();
+        const langCode = (proj.language || 'id').toUpperCase();
+
+        return `
+          <article class="bg-white rounded-xl border border-[#e5dfd3] hover:border-[#1E5E3A] shadow-[0_2px_8px_rgba(24,24,27,0.04)] hover:shadow-[0_4px_14px_rgba(30,94,58,0.1)] transition-all p-4 sm:p-5 flex flex-col justify-between gap-4">
+            <div class="space-y-2.5">
+              <div class="flex items-center justify-between gap-2 text-[11px] font-semibold text-[#57534e]">
+                <div class="truncate">
+                  <span class="text-[#1E5E3A] font-bold">${escapeHtml(levelCode)}</span>
+                  <span class="text-[#c9c1b2] mx-1">·</span>
+                  <span>${escapeHtml(proj.subject || 'Umum')}</span>
+                  <span class="text-[#c9c1b2] mx-1">·</span>
+                  <span class="uppercase">${escapeHtml(langCode)}</span>
+                </div>
+                <span class="text-[#78716c] shrink-0 font-medium">
+                  ${qCount} Soal
+                </span>
+              </div>
+
+              <h4 onclick="playProject('${escapeHtml(proj.id)}')" class="text-sm sm:text-base font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors leading-snug line-clamp-2 cursor-pointer">
+                ${escapeHtml(proj.title)}
+              </h4>
+
+              <div class="flex flex-wrap items-center justify-between gap-1.5 pt-1">
+                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-[#EAF5ED] text-[#1E5E3A]">
+                  <span class="ui-sprite ui-xs ${meta.sprite}"></span>
+                  <span>${escapeHtml(tplName)}</span>
+                </span>
+                <span class="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-[#57534e] bg-[#fcfbf8] border border-[#e5dfd3] px-2 py-0.5 rounded">
+                  <span class="ui-sprite ui-xs ui-key"></span>
+                  <span>${escapeHtml(proj.pin || '')}</span>
+                </span>
+              </div>
+
+              <div class="text-[11px] text-[#78716c] truncate pt-1 border-t border-[#eee9df]">
+                Oleh: <strong class="text-[#18181b]">${escapeHtml(proj.teacher_name || 'Guru Cinta Kasih')}</strong>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="pt-3 border-t border-[#eee9df] flex flex-wrap items-center gap-2">
+              <button type="button" onclick="playProject('${escapeHtml(proj.id)}')"
+                class="flex-1 min-w-[80px] py-2 px-2.5 rounded-lg bg-[#1E5E3A] hover:bg-[#2C6E49] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+                <span class="ui-sprite ui-xs ui-play"></span>
+                <span>Mainkan</span>
+              </button>
+
+              <button type="button" onclick="openGenerateAssignmentModal('${escapeHtml(proj.id)}')"
+                class="flex-1 min-w-[95px] py-2 px-2.5 rounded-lg bg-[#eff6ff] hover:bg-[#dbeafe] text-[#1d4ed8] border border-[#bfdbfe] font-bold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                title="Tugaskan langsung ke Siswa">
+                <span>📋</span>
+                <span>Tugaskan</span>
+              </button>
+
+              <button type="button" onclick="duplicateProject('${escapeHtml(proj.id)}')"
+                class="py-2 px-2.5 rounded-lg bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] text-[#57534e] hover:text-[#18181b] font-semibold text-xs flex items-center justify-center transition-colors cursor-pointer"
+                title="Duplikat ke Proyek Saya">
+                <span class="ui-sprite ui-xs ui-copy"></span>
+              </button>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function toggleDashboardMandarinDropdown(e) {
+      if (e) e.stopPropagation();
+      const menu = document.getElementById('dash-mandarin-menu');
+      const chevron = document.getElementById('dash-mandarin-chevron');
+      if (!menu) return;
+      const isHidden = menu.classList.contains('hidden');
+      menu.classList.toggle('hidden', !isHidden);
+      if (chevron) chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
+
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('dash-mandarin-menu');
+      const btn = document.getElementById('dash-mandarin-btn');
+      if (menu && !menu.classList.contains('hidden')) {
+        if (!menu.contains(e.target) && !btn?.contains(e.target)) {
+          menu.classList.add('hidden');
+          const chevron = document.getElementById('dash-mandarin-chevron');
+          if (chevron) chevron.style.transform = 'rotate(0deg)';
+        }
+      }
+    });
 
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {

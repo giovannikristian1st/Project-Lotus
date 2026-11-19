@@ -132,49 +132,49 @@
       </a>
 
       <!-- Main Navigation -->
-      <nav aria-label="Main navigation" class="order-3 md:order-2 w-full md:w-auto flex items-center justify-center border-t border-[#eee9df] md:border-t-0 md:h-16 gap-1 sm:gap-1.5 overflow-x-auto py-1 md:py-0">
+      <nav aria-label="Main navigation" class="order-3 md:order-2 w-full md:w-auto flex items-center justify-center border-t border-[#eee9df] md:border-t-0 md:h-16 gap-1 sm:gap-1.5 py-1 md:py-0 overflow-visible">
         <button type="button" id="nav-tab-home" onclick="switchPortalTab('home')"
-          class="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-[#1E5E3A] bg-[#EAF5ED]">
+          class="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-[#1E5E3A] bg-[#EAF5ED] border-b-2 border-[#1E5E3A]">
           <span class="ui-sprite ui-sm ui-home"></span>
           <span data-i18n="nav.home" class="truncate">Home</span>
         </button>
 
         <button type="button" id="nav-tab-community" onclick="switchPortalTab('community')"
-          class="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED]">
+          class="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-colors cursor-pointer text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] border-b-2 border-transparent">
           <span class="ui-sprite ui-sm ui-community"></span>
           <span data-i18n="nav.community" class="truncate">Komunitas</span>
         </button>
 
         <a href="tools/human-skeleton-3d/index.html" target="_blank"
-          class="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-colors text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED]">
+          class="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-colors text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED]">
           <span class="text-base">🦴</span>
           <span class="truncate">Media Ajar 3D</span>
         </a>
 
         <!-- Mandarin Tools Dropdown -->
-        <div class="relative group flex items-center">
-          <button type="button" class="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] flex items-center gap-1 transition-colors cursor-pointer">
+        <div class="relative flex items-center">
+          <button type="button" id="mandarin-dropdown-btn" onclick="toggleMandarinDropdown(event)"
+            class="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] focus:outline-none focus:ring-2 focus:ring-[#1E5E3A]/20 flex items-center gap-1.5 transition-colors cursor-pointer"
+            aria-haspopup="true" aria-expanded="false">
             <span class="text-base">🏮</span>
             <span>Mandarin Tools</span>
-            <svg class="w-3.5 h-3.5 text-[#57534e] group-hover:text-[#1E5E3A] transition-transform group-hover:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            <svg id="mandarin-dropdown-chevron" class="w-3.5 h-3.5 text-[#57534e] transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
           </button>
-          <div class="absolute left-0 top-full pt-1 hidden group-hover:block z-50">
-            <div class="w-56 bg-white rounded-xl border border-[#d6cfc2] shadow-xl py-2 px-1 space-y-1">
-              <a href="tools/mandarin/drawing.html" target="_blank" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#EAF5ED] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
-                <span class="w-6 h-6 rounded bg-[#EAF5ED] text-[#1E5E3A] flex items-center justify-center font-bold text-xs">✍️</span>
-                <div>
-                  <div>Papan Tulis Hanzi</div>
-                  <div class="text-[10px] text-[#78716c] font-normal">Latihan Tulis Bebas & Grid</div>
-                </div>
-              </a>
-              <a href="tools/mandarin/strokes.html" target="_blank" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#EAF5ED] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
-                <span class="w-6 h-6 rounded bg-[#EAF5ED] text-[#1E5E3A] flex items-center justify-center font-bold text-xs">📖</span>
-                <div>
-                  <div>Lab Goresan & Radikal</div>
-                  <div class="text-[10px] text-[#78716c] font-normal">Urutan Goresan & Kamus</div>
-                </div>
-              </a>
-            </div>
+          <div id="mandarin-dropdown-menu" class="hidden absolute left-0 top-full mt-1.5 w-60 bg-white rounded-xl border border-[#d6cfc2] shadow-[0_12px_32px_rgba(0,0,0,0.15)] py-2 px-1.5 space-y-1 z-50">
+            <a href="tools/mandarin/drawing.html" target="_blank" onclick="toggleMandarinDropdown()" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#EAF5ED] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
+              <span class="w-7 h-7 rounded-lg bg-[#EAF5ED] text-[#1E5E3A] flex items-center justify-center font-bold text-sm shrink-0">✍️</span>
+              <div>
+                <div class="font-bold text-[#18181b]">Papan Tulis Hanzi</div>
+                <div class="text-[10px] text-[#78716c] font-normal">Latihan Tulis Bebas & Grid Tianzige</div>
+              </div>
+            </a>
+            <a href="tools/mandarin/strokes.html" target="_blank" onclick="toggleMandarinDropdown()" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#EAF5ED] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
+              <span class="w-7 h-7 rounded-lg bg-[#EAF5ED] text-[#1E5E3A] flex items-center justify-center font-bold text-sm shrink-0">📖</span>
+              <div>
+                <div class="font-bold text-[#18181b]">Lab Goresan & Radikal</div>
+                <div class="text-[10px] text-[#78716c] font-normal">Animasi Urutan Goresan Hanzi</div>
+              </div>
+            </a>
           </div>
         </div>
 
@@ -1009,7 +1009,26 @@
       if (wrapper && !wrapper.contains(e.target)) {
         closePortalUserDropdown();
       }
+      const mandarinMenu = document.getElementById('mandarin-dropdown-menu');
+      const mandarinBtn = document.getElementById('mandarin-dropdown-btn');
+      if (mandarinMenu && !mandarinMenu.classList.contains('hidden')) {
+        if (!mandarinMenu.contains(e.target) && !mandarinBtn?.contains(e.target)) {
+          mandarinMenu.classList.add('hidden');
+          const chevron = document.getElementById('mandarin-dropdown-chevron');
+          if (chevron) chevron.style.transform = 'rotate(0deg)';
+        }
+      }
     });
+
+    function toggleMandarinDropdown(event) {
+      if (event) event.stopPropagation();
+      const menu = document.getElementById('mandarin-dropdown-menu');
+      const chevron = document.getElementById('mandarin-dropdown-chevron');
+      if (!menu) return;
+      const isHidden = menu.classList.contains('hidden');
+      menu.classList.toggle('hidden', !isHidden);
+      if (chevron) chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
 
     // -------------------------------------------------------------------------
     // NAVIGATION BETWEEN 3 TABS: Home / Teacher Login or Dashboard / Community
@@ -1092,8 +1111,8 @@
         if (view) view.classList.toggle('hidden', t !== valid);
         if (btn) {
           btn.className = (t === valid)
-            ? 'flex-1 md:flex-initial px-3 sm:px-4 py-2.5 md:py-0 border-b-2 border-[#1d4ed8] text-[#1d4ed8] bg-[#eff6ff]/60 md:bg-transparent text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer'
-            : 'flex-1 md:flex-initial px-3 sm:px-4 py-2.5 md:py-0 border-b-2 border-transparent text-[#57534e] hover:text-[#18181b] hover:bg-[#f7f5f0]/70 text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer';
+            ? 'px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-[#1E5E3A] bg-[#EAF5ED] border-b-2 border-[#1E5E3A]'
+            : 'px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-colors cursor-pointer text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] border-b-2 border-transparent';
         }
       });
 

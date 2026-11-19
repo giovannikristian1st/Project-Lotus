@@ -668,6 +668,17 @@ class LocalDatabase {
       let hasChanges = false;
       const existingIds = new Set(all.map(p => p.id));
       
+      // Ensure Initial Projects (Solar System, Tebas Buah, AI Hand Slicer)
+      if (Array.isArray(INITIAL_PROJECTS)) {
+        for (const initP of INITIAL_PROJECTS) {
+          if (!existingIds.has(initP.id)) {
+            all.push(this.normalizeProjectMeta(initP));
+            existingIds.add(initP.id);
+            hasChanges = true;
+          }
+        }
+      }
+
       if (!existingIds.has(SKELETON_PROJECT.id)) {
         all.push(this.normalizeProjectMeta(SKELETON_PROJECT));
         existingIds.add(SKELETON_PROJECT.id);
@@ -1548,11 +1559,29 @@ class LocalDatabase {
     try {
       const { data, error } = await sb.from('projects').select('*').order('updated_at', { ascending: false });
       if (!error && Array.isArray(data)) {
-        // PURE SUPABASE CLOUD MODE: Supabase is the SINGLE SOURCE OF TRUTH!
-        // Directly overwrite local cache with Supabase projects (no merging with stale local projects)
         const cloudProjects = data.map(cp => this.normalizeProjectMeta(cp));
-        this.saveAllProjects(cloudProjects);
-        return cloudProjects;
+        
+        // Merge cloud projects with built-in presets (Meihua 1-60, Skeleton 3D, and Initial Projects)
+        // Cloud projects override presets with matching id, but presets not in cloud are strictly preserved
+        const allPresets = [
+          ...INITIAL_PROJECTS,
+          SKELETON_PROJECT,
+          ...(typeof generateMeihuaPresets === 'function' ? generateMeihuaPresets() : [])
+        ];
+        
+        const mergedMap = new Map();
+        // 1. Seed with built-in presets
+        allPresets.forEach(p => {
+          if (p && p.id) mergedMap.set(p.id, this.normalizeProjectMeta(p));
+        });
+        // 2. Overlay cloud projects
+        cloudProjects.forEach(cp => {
+          if (cp && cp.id) mergedMap.set(cp.id, cp);
+        });
+        
+        const mergedList = Array.from(mergedMap.values());
+        this.saveAllProjects(mergedList);
+        return mergedList;
       }
     } catch (e) {
       console.warn('LotusDB: Could not fetch projects from Supabase:', e);

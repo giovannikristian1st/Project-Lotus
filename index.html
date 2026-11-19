@@ -3,6 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    // Anti-Frame Recursion: DaAi Hub must never render inside an iframe
+    if (window.top !== window.self) {
+      try { window.top.location.href = window.location.href; }
+      catch (e) { window.parent.location.href = window.location.href; }
+    }
+  </script>
   <title>大愛學海 — DaAi Learning Hub | Sekolah Cinta Kasih Tzu Chi</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap">
@@ -177,6 +184,12 @@
             </a>
           </div>
         </div>
+
+        <a href="teacher-dashboard.html" id="nav-btn-dashboard"
+          class="hidden px-3 sm:px-3.5 py-1.5 rounded-lg bg-[#1E5E3A] hover:bg-[#2C6E49] text-white text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-sm transition-colors">
+          <span class="ui-sprite ui-sm ui-dashboard"></span>
+          <span>Dashboard Guru</span>
+        </a>
 
         <a href="login.html" id="nav-btn-login"
           class="px-3 sm:px-3.5 py-1.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] hover:bg-[#f4f1ea] text-xs sm:text-sm font-bold text-[#18181b] flex items-center gap-1.5 transition-colors">
@@ -884,10 +897,10 @@
   <!-- =========================================================================
        SCRIPTS
        ========================================================================= -->
-  <script src="games/common/i18n.js"></script>
-  <script src="games/common/themes.js"></script>
-  <script src="games/data/meihuadb.js"></script>
-  <script src="games/common/db-local.js"></script>
+  <script src="games/common/i18n.js?v=2026.11.19.4"></script>
+  <script src="games/common/themes.js?v=2026.11.19.4"></script>
+  <script src="games/data/meihuadb.js?v=2026.11.19.4"></script>
+  <script src="games/common/db-local.js?v=2026.11.19.4"></script>
   <script>
     const PORTAL_TEMPLATES = [
       // Standard Games
@@ -915,6 +928,7 @@
       { id: 'fliptile', category: 'ifp', sprite: 'ui-game-match', supportedFormats: ['matching', 'quiz', 'strokes'] },
       { id: 'brushmaster', category: 'ifp', sprite: 'ui-brush', supportedFormats: ['strokes', 'matching'] },
       { id: 'builderbattle', category: 'ifp', sprite: 'ui-gamepad', supportedFormats: ['quiz', 'matching', 'sentence'] },
+      { id: 'builderbattle-custom', category: 'ifp', sprite: 'ui-gamepad', supportedFormats: ['sentence', 'quiz', 'matching'] },
       { id: 'jeopardy', category: 'ifp', sprite: 'ui-game-quiz', supportedFormats: ['jeopardy', 'quiz', 'truefalse'] },
       { id: 'wordmatch', category: 'ifp', sprite: 'ui-game-word', supportedFormats: ['matching', 'quiz', 'strokes'] }
     ];
@@ -1047,11 +1061,13 @@
       const homeCtaBtn = document.getElementById('home-cta-try-now');
       const navLogin = document.getElementById('nav-btn-login');
       const navRegister = document.getElementById('nav-btn-register');
+      const navDashboard = document.getElementById('nav-btn-dashboard');
       const userMenuWrapper = document.getElementById('portal-user-menu-wrapper');
 
       if (teacher) {
         if (navLogin) navLogin.classList.add('hidden');
         if (navRegister) navRegister.classList.add('hidden');
+        if (navDashboard) navDashboard.classList.remove('hidden');
         if (userMenuWrapper) userMenuWrapper.classList.remove('hidden');
         renderPortalUserMenu();
 
@@ -1074,6 +1090,7 @@
       } else {
         if (navLogin) navLogin.classList.remove('hidden');
         if (navRegister) navRegister.classList.remove('hidden');
+        if (navDashboard) navDashboard.classList.add('hidden');
         if (userMenuWrapper) userMenuWrapper.classList.add('hidden');
 
         if (loginTabBtn) {
@@ -2302,7 +2319,7 @@
     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
     <span id="version-badge-text">v2026.11.17 • Cloud</span>
     <span class="text-[#a1a1aa]">•</span>
-    <span class="font-mono text-[10px] text-[#71717a]">Build e8e4</span>
+    <span class="font-mono text-[10px] text-[#71717a]">Build d276.4</span>
   </div>
 </body>
 </html>

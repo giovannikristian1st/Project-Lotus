@@ -4,7 +4,7 @@
  * (Standard & AI Camera templates, TK-SMK levels, multi-language), media blobs, & leaderboards.
  */
 
-const LOTUS_SEED_VERSION = '2026.11.19-daai-meihua-skeleton-v3';
+const LOTUS_SEED_VERSION = '2026.11.19-daai-meihua-v4';
 
 const DEFAULT_TEACHERS = [
   {
@@ -653,9 +653,24 @@ class LocalDatabase {
     const copy = { ...p };
     if (!copy.level) copy.level = 'SD';
     if (!copy.language) copy.language = 'id';
-    if (copy.is_public === undefined) copy.is_public = (copy.visibility !== 'private' && !copy.is_private);
-    if (!copy.visibility) copy.visibility = (copy.is_public && !copy.is_private) ? 'public' : 'private';
-    if (copy.visibility === 'private' || copy.is_private) copy.is_public = false;
+
+    // Strict Rule: Semua aktivitas Mandarin / Hanzi / Meihua WAJIB publik, tidak boleh privat
+    const isHanzi = (copy.language === 'zh') ||
+      (copy.subject && /mandarin|hanzi|meihua/i.test(copy.subject)) ||
+      (copy.title && /[\u4e00-\u9fa5]|meihua/i.test(copy.title)) ||
+      (copy.id && /meihua/i.test(copy.id));
+
+    if (isHanzi) {
+      copy.is_public = true;
+      copy.visibility = 'public';
+      copy.is_private = false;
+    } else {
+      if (copy.is_public === undefined) copy.is_public = (copy.visibility !== 'private' && !copy.is_private);
+      if (!copy.visibility) copy.visibility = (copy.is_public && !copy.is_private) ? 'public' : 'private';
+      if (copy.visibility === 'private' || copy.is_private) copy.is_public = false;
+    }
+
+    if (copy.id === 'proj-1' && copy.template_type === 'wordmatch') copy.template_type = 'quiz';
     if (!copy.content_format) copy.content_format = 'quiz';
     if (!copy.pin) copy.pin = this.generatePin();
     if (!copy.theme || copy.theme === 'cyberpunk') copy.theme = 'white';
@@ -666,31 +681,37 @@ class LocalDatabase {
     try {
       const all = this.getAllProjects();
       let hasChanges = false;
-      const existingIds = new Set(all.map(p => p.id));
+      const existingMap = new Map();
+      all.forEach((p, idx) => {
+        if (p && p.id) existingMap.set(p.id, idx);
+      });
       
-      // Ensure Initial Projects (Solar System, Tebas Buah, AI Hand Slicer)
-      if (Array.isArray(INITIAL_PROJECTS)) {
-        for (const initP of INITIAL_PROJECTS) {
-          if (!existingIds.has(initP.id)) {
-            all.push(this.normalizeProjectMeta(initP));
-            existingIds.add(initP.id);
-            hasChanges = true;
-          }
-        }
-      }
+      const allPresets = [
+        ...INITIAL_PROJECTS,
+        SKELETON_PROJECT,
+        ...(typeof generateMeihuaPresets === 'function' ? generateMeihuaPresets() : [])
+      ];
 
-      if (!existingIds.has(SKELETON_PROJECT.id)) {
-        all.push(this.normalizeProjectMeta(SKELETON_PROJECT));
-        existingIds.add(SKELETON_PROJECT.id);
-        hasChanges = true;
-      }
-      
-      if (typeof generateMeihuaPresets === 'function') {
-        const meihuaList = generateMeihuaPresets();
-        for (const m of meihuaList) {
-          if (!existingIds.has(m.id)) {
-            all.push(this.normalizeProjectMeta(m));
-            existingIds.add(m.id);
+      for (const preset of allPresets) {
+        if (!preset || !preset.id) continue;
+        const norm = this.normalizeProjectMeta(preset);
+        if (!existingMap.has(preset.id)) {
+          all.push(norm);
+          existingMap.set(preset.id, all.length - 1);
+          hasChanges = true;
+        } else {
+          // If already in list but private or deleted, heal it to public & active
+          const idx = existingMap.get(preset.id);
+          const current = all[idx];
+          if (current.is_deleted || current.is_public === false || current.visibility === 'private' || current.is_private) {
+            all[idx] = {
+              ...current,
+              ...norm,
+              is_deleted: false,
+              is_public: true,
+              visibility: 'public',
+              is_private: false
+            };
             hasChanges = true;
           }
         }

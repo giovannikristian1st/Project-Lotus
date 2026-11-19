@@ -266,8 +266,8 @@
     LotusWall Education • Kelas Interaktif & Penugasan Mandiri
   </footer>
 
-  <script src="games/common/i18n.js"></script>
-  <script src="games/common/db-local.js"></script>
+  <script src="games/common/i18n.js?v=2026.11.19.4"></script>
+  <script src="games/common/db-local.js?v=2026.11.19.4"></script>
   <script>
     let currentAssignment = null;
     let currentProject = null;
@@ -415,7 +415,10 @@
 
     function handleGameMessage(event) {
       if (!event.data) return;
-      if (event.data.type === 'GAME_OVER') {
+      if (event.data.type === 'EXIT_GAME') {
+        window.location.href = 'student-dashboard.html';
+        return;
+      } else if (event.data.type === 'GAME_OVER') {
         lastGameResult = event.data;
         showSubmitModal();
       }

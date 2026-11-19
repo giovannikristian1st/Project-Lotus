@@ -590,5 +590,49 @@ const _lotusGameBridgeInstance = new LotusGameBridge();
 
 // Pasang ke window dan global scope agar pemanggilan langsung GameBridge.onReady(...) tidak pernah gagal
 window.GameBridge = _lotusGameBridgeInstance;
+window.gameBridge = _lotusGameBridgeInstance;
 window.LotusGameBridge = LotusGameBridge;
 var GameBridge = _lotusGameBridgeInstance;
+var gameBridge = _lotusGameBridgeInstance;
+
+// Anti-Double-UI: Sembunyikan tombol navigasi 'Kembali ke Hub' internal saat game berjalan di dalam iframe LMS Hub
+(function _initEmbeddedGameProtection() {
+  function applyEmbedFixes() {
+    const isEmbed = (window.self !== window.top) || (new URLSearchParams(window.location.search).get('embedded') === '1');
+    if (!isEmbed) return;
+
+    // 1. Sembunyikan tombol '◀ HUB', 'MENU HUB', dsb di layar game IFP agar tidak ada menu ganda
+    const backSelectors = [
+      '#btnNavBack', '.cyber-btn-back', '.rpg-btn-back', '.exit-home-btn',
+      '.result-home-btn', '.bm-back-btn', '.bm-win-btn.menu', '.setup-home-btn',
+      '#ftExitBtn', '.ft-win-btn.secondary', '#tugBtnExit', '.res-btn.secondary',
+      '#btlClose', '.back-btn'
+    ];
+    backSelectors.forEach(sel => {
+      document.querySelectorAll(sel).forEach(el => {
+        el.style.display = 'none';
+      });
+    });
+
+    // 2. Cegah tautan/tombol yang tidak sengaja memuat index.html di dalam iframe (Double UI)
+    document.addEventListener('click', (e) => {
+      const target = e.target.closest('a, button');
+      if (!target) return;
+      const href = target.getAttribute('href') || '';
+      const onclickAttr = target.getAttribute('onclick') || '';
+      if (href.includes('index.html') || onclickAttr.includes('index.html')) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ type: 'EXIT_GAME' }, '*');
+        }
+      }
+    }, true);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyEmbedFixes);
+  } else {
+    applyEmbedFixes();
+  }
+})();

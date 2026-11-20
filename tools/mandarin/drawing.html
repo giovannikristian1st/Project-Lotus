@@ -1007,12 +1007,23 @@
 
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=Inter:wght@400;500;600;700&family=Noto+Serif+SC:wght@700;900&display=swap" rel="stylesheet">
+<script>
+function safeNavBackHome() {
+  if (window.parent && window.parent !== window) {
+    try {
+      window.parent.postMessage({ type: 'EXIT_GAME' }, '*');
+      return;
+    } catch(e) {}
+  }
+  window.safeNavBackHome();
+}
+</script>
 </head>
 <body>
 
 <div class="screen active" id="drawing">
   <div class="nav-bar">
-    <button class="back-btn" onclick="location.href='../../index.html'">
+    <button class="back-btn" onclick="safeNavBackHome()">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
       <span>Kembali ke DaAi Learning Hub</span>
     </button>
@@ -1481,7 +1492,7 @@
 /* Drawing board is always the active screen on this page */
 function showScreen(id) {
   if (id === 'drawing') return; // already here
-  location.href = '../../index.html';
+  safeNavBackHome();
 }
 
 /* ══════════════════════════════════════

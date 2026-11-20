@@ -302,6 +302,23 @@ function safeExitGame() {
 window.safeExitGame = safeExitGame;
 </script>
 
+
+  <script>
+    (function() {
+      function checkEmbeddedHubNav() {
+        if (window.location.search.includes('embedded=1') || (window.parent && window.parent !== window)) {
+          var btn = document.getElementById('btnNavBack');
+          if (btn) btn.style.display = 'none';
+        }
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', checkEmbeddedHubNav);
+      } else {
+        checkEmbeddedHubNav();
+      }
+    })();
+  </script>
+
 </head>
 <body>
 

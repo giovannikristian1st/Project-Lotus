@@ -1005,12 +1005,23 @@
 
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=Inter:wght@400;500;600;700&family=Noto+Serif+SC:wght@700;900&display=swap" rel="stylesheet">
+<script>
+function safeNavBackHome() {
+  if (window.parent && window.parent !== window) {
+    try {
+      window.parent.postMessage({ type: 'EXIT_GAME' }, '*');
+      return;
+    } catch(e) {}
+  }
+  window.safeNavBackHome();
+}
+</script>
 </head>
 <body>
 
 <div class="screen active" id="drawing">
   <div class="nav-bar">
-    <button class="back-btn" onclick="location.href='index.html'">← Home</button>
+    <button class="back-btn" onclick="safeNavBackHome()">← Home</button>
     <h2>✍️ Drawing Board</h2>
   </div>
 
@@ -1476,7 +1487,7 @@
 /* Drawing board is always the active screen on this page */
 function showScreen(id) {
   if (id === 'drawing') return; // already here
-  location.href = 'index.html';
+  safeNavBackHome();
 }
 
 /* ══════════════════════════════════════

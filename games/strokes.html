@@ -386,12 +386,23 @@
 
 
   </style>
+<script>
+function safeNavBackHome() {
+  if (window.parent && window.parent !== window) {
+    try {
+      window.parent.postMessage({ type: 'EXIT_GAME' }, '*');
+      return;
+    } catch(e) {}
+  }
+  window.safeNavBackHome();
+}
+</script>
 </head>
 <body>
 
 <div class="screen active" id="strokes">
   <div class="nav-bar">
-    <button class="back-btn" onclick="location.href='index.html'">← Home</button>
+    <button class="back-btn" onclick="safeNavBackHome()">← Home</button>
     <h2 style="font-size:1.1rem;margin-right:auto">🖊️ 汉字 Hero</h2>
     <div class="stroke-mode-toggle">
       <button class="stroke-mode-btn active" id="modeStrokeBtn" onclick="setStrokeMode('stroke')">✏️ Stroke Order</button>
@@ -524,7 +535,7 @@
 <script>
 /* Stroke order is always active on this page */
 function showScreen(id) {
-  location.href = 'index.html';
+  safeNavBackHome();
 }
 
 /* HanziWriter is loaded from hanzi-writer.min.js */

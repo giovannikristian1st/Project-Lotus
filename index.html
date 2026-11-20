@@ -129,15 +129,71 @@
       border: none !important;
       border-radius: 0 !important;
     }
+  
+    /* Continuous Marquee for Home Showcase */
+    .marquee-viewport {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      pointer-events: none !important;
+      user-select: none !important;
+      -webkit-user-select: none !important;
+      cursor: default !important;
+      padding: 8px 0 14px 0;
+    }
+    .marquee-viewport * {
+      pointer-events: none !important;
+      user-select: none !important;
+      cursor: default !important;
+    }
+    .marquee-fade-left,
+    .marquee-fade-right {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 68px;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .marquee-fade-left {
+      left: 0;
+      background: linear-gradient(90deg, #FAF8F5 0%, rgba(250, 248, 245, 0) 100%);
+    }
+    .marquee-fade-right {
+      right: 0;
+      background: linear-gradient(270deg, #FAF8F5 0%, rgba(250, 248, 245, 0) 100%);
+    }
+    .marquee-track {
+      display: flex;
+      gap: 1.125rem;
+      width: max-content;
+      animation: lotusMarquee 56s linear infinite;
+      will-change: transform;
+    }
+    @keyframes lotusMarquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    @media (max-width: 640px) {
+      .marquee-fade-left, .marquee-fade-right { width: 24px; }
+      .marquee-track { animation-duration: 44s; }
+    }
+
+    /* Floating Exit Fullscreen Button in Game Window */
+    #game-window-container:fullscreen #player-exit-fullscreen-btn,
+    #game-window-container:-webkit-full-screen #player-exit-fullscreen-btn {
+      display: flex !important;
+    }
+
   </style>
 </head>
 <body class="bg-[#FAF8F5] text-[#18181b] min-h-screen flex flex-col antialiased">
 
   <!-- TOP GLOBAL NAVIGATION BAR -->
   <header class="sticky top-0 z-40 bg-white border-b border-[#e5dfd3]">
-    <div class="w-full max-w-[1840px] mx-auto px-4 sm:px-8 lg:px-12 py-2 md:py-0 flex flex-wrap md:flex-nowrap items-center justify-between gap-2 md:gap-4 md:h-16">
+    <div class="w-full max-w-[1840px] mx-auto px-4 sm:px-8 lg:px-12 py-2 md:py-0 flex items-center justify-between gap-2 md:gap-4 md:h-16">
 
-      <!-- Brand Logo -->
+      <!-- Zone 1 (Left): Brand Logo & School Identity -->
       <a href="index.html" class="flex items-center gap-2.5 sm:gap-3 shrink-0 py-1">
         <img src="public/assets/Main-Logo.png" onerror="this.src='assets/Main-Logo.png'" alt="DaAi Learning Hub Logo" class="h-10 sm:h-11 w-auto object-contain">
         <div class="leading-tight">
@@ -149,74 +205,94 @@
         </div>
       </a>
 
-      <!-- Main Navigation Tabs -->
-      <nav aria-label="Main navigation" class="order-3 md:order-2 w-full md:w-auto flex items-center justify-center border-t border-[#eee9df] md:border-t-0 md:h-16 gap-1 sm:gap-1.5 py-1 md:py-0 overflow-visible">
+      <!-- Zone 2 (Center): Main Navigation Tabs (Static 4 Items, Never Shifts or Collapses) -->
+      <nav aria-label="Main navigation" class="flex items-center justify-center md:h-16 gap-1 sm:gap-2 py-1 md:py-0 overflow-visible">
+        <!-- 1. Home Tab -->
         <button type="button" id="nav-tab-home" onclick="switchPortalTab('home')"
           class="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-[#1E5E3A] bg-[#EAF5ED] border-b-2 border-[#1E5E3A]">
           <span class="ui-sprite ui-sm ui-home"></span>
           <span data-i18n="nav.home" class="truncate">Home</span>
         </button>
 
-        <button type="button" id="nav-tab-dashboard" onclick="switchPortalTab('dashboard')"
-          class="hidden px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-colors cursor-pointer text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] border-b-2 border-transparent">
+        <!-- 2. Dashboard Tab (Adapts dynamically to Teacher / Student / Guest) -->
+        <button type="button" id="nav-tab-dashboard" onclick="handleDashboardNavClick()"
+          class="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-colors cursor-pointer text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] border-b-2 border-transparent">
           <span class="ui-sprite ui-sm ui-dashboard"></span>
-          <span data-i18n="nav.dashboard" class="truncate">Dashboard Guru</span>
+          <span id="nav-dashboard-label" data-i18n="nav.dashboard" class="truncate">Dashboard</span>
         </button>
 
+        <!-- 3. Community Tab -->
         <button type="button" id="nav-tab-community" onclick="switchPortalTab('community')"
           class="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-colors cursor-pointer text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] border-b-2 border-transparent">
           <span class="ui-sprite ui-sm ui-community"></span>
           <span data-i18n="nav.community" class="truncate">Komunitas</span>
         </button>
 
-        <a href="tools/human-skeleton-3d/index.html" target="_blank"
-          class="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-colors text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED]">
-          <span class="text-base">🦴</span>
-          <span class="truncate">Media Ajar 3D</span>
-        </a>
-
-        <!-- Mandarin Tools Dropdown -->
+        <!-- 4. Media Ajar Dropdown (Combines Science & Mandarin) -->
         <div class="relative flex items-center">
-          <button type="button" id="mandarin-dropdown-btn" onclick="toggleMandarinDropdown(event)"
-            class="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] focus:outline-none focus:ring-2 focus:ring-[#1E5E3A]/20 flex items-center gap-1.5 transition-colors cursor-pointer"
+          <button type="button" id="nav-media-btn" onclick="toggleMediaAjarDropdown(event)"
+            class="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] focus:outline-none flex items-center gap-1.5 transition-colors cursor-pointer"
             aria-haspopup="true" aria-expanded="false">
-            <span class="text-base">🏮</span>
-            <span>Mandarin Tools</span>
-            <svg id="mandarin-dropdown-chevron" class="w-3.5 h-3.5 text-[#57534e] transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            <span class="text-sm">📚</span>
+            <span data-i18n="nav.teachingMedia" class="truncate">Media Ajar</span>
+            <svg id="nav-media-chevron" class="w-3.5 h-3.5 text-[#57534e] transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
           </button>
-          <div id="mandarin-dropdown-menu" class="hidden absolute left-0 top-full mt-1.5 w-64 bg-white rounded-xl border border-[#d6cfc2] shadow-[0_12px_32px_rgba(0,0,0,0.15)] py-2 px-1.5 space-y-1 z-50">
-            <a href="tools/mandarin/drawing.html" target="_blank" onclick="toggleMandarinDropdown()" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#EAF5ED] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
-              <span class="w-7 h-7 rounded-lg bg-[#EAF5ED] text-[#1E5E3A] flex items-center justify-center font-bold text-sm shrink-0">✍️</span>
+
+          <!-- Dropdown Menu with Category Headers -->
+          <div id="nav-media-menu" class="hidden absolute left-0 top-full mt-1.5 w-72 bg-white rounded-xl border border-[#d6cfc2] shadow-[0_12px_32px_rgba(0,0,0,0.15)] py-2 px-1.5 space-y-1 z-50">
+            <!-- IPA / Sains Header -->
+            <div class="px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-[#1E5E3A] bg-[#EAF5ED] rounded-md flex items-center gap-1.5">
+              <span>🔬</span>
+              <span data-i18n="media.science">IPA / Sains</span>
+            </div>
+            <a href="tools/human-skeleton-3d/index.html" target="_blank" onclick="closeMediaAjarDropdown()" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#fcfbf8] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
+              <span class="w-8 h-8 rounded-lg bg-emerald-50 text-[#1E5E3A] flex items-center justify-center font-bold text-base shrink-0 border border-emerald-200">🦴</span>
               <div>
-                <div class="font-bold text-[#18181b]">Papan Tulis Hanzi</div>
-                <div class="text-[10px] text-[#78716c] font-normal">Latihan Tulis Bebas & Grid Tianzige</div>
+                <div class="font-bold text-[#18181b]" data-i18n="media.skeletonTitle">Anatomi Rangka Manusia 3D</div>
+                <div class="text-[10px] text-[#78716c] font-normal" data-i18n="media.skeletonDesc">Model 3D Interaktif Rangka Tubuh</div>
               </div>
             </a>
-            <a href="tools/mandarin/strokes.html" target="_blank" onclick="toggleMandarinDropdown()" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#EAF5ED] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
-              <span class="w-7 h-7 rounded-lg bg-[#EAF5ED] text-[#1E5E3A] flex items-center justify-center font-bold text-sm shrink-0">📖</span>
+
+            <!-- Bahasa Mandarin Header -->
+            <div class="px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-[#9a3412] bg-[#ffedd5] rounded-md flex items-center gap-1.5 mt-2">
+              <span>🏮</span>
+              <span data-i18n="media.mandarin">Bahasa Mandarin</span>
+            </div>
+            <a href="tools/mandarin/drawing.html" target="_blank" onclick="closeMediaAjarDropdown()" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#fcfbf8] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
+              <span class="w-8 h-8 rounded-lg bg-orange-50 text-[#ea580c] flex items-center justify-center font-bold text-base shrink-0 border border-orange-200">✍️</span>
               <div>
-                <div class="font-bold text-[#18181b]">Lab Goresan & Radikal</div>
-                <div class="text-[10px] text-[#78716c] font-normal">Animasi Urutan Goresan Hanzi</div>
+                <div class="font-bold text-[#18181b]" data-i18n="media.drawingTitle">Papan Tulis Hanzi</div>
+                <div class="text-[10px] text-[#78716c] font-normal" data-i18n="media.drawingDesc">Latihan Tulis Bebas & Grid Tianzige</div>
+              </div>
+            </a>
+            <a href="tools/mandarin/strokes.html" target="_blank" onclick="closeMediaAjarDropdown()" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#fcfbf8] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
+              <span class="w-8 h-8 rounded-lg bg-orange-50 text-[#ea580c] flex items-center justify-center font-bold text-base shrink-0 border border-orange-200">📖</span>
+              <div>
+                <div class="font-bold text-[#18181b]" data-i18n="media.strokesTitle">Lab Goresan & Radikal</div>
+                <div class="text-[10px] text-[#78716c] font-normal" data-i18n="media.strokesDesc">Animasi Urutan Goresan & Radikal</div>
               </div>
             </a>
           </div>
         </div>
-
-        <button type="button" id="nav-btn-login" onclick="switchPortalTab('login', 'login')"
-          class="px-3 sm:px-3.5 py-1.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] hover:bg-[#f4f1ea] text-xs sm:text-sm font-bold text-[#18181b] flex items-center gap-1.5 transition-colors cursor-pointer">
-          <span class="ui-sprite ui-sm ui-login"></span>
-          <span data-i18n="login.title">Login</span>
-        </button>
-
-        <button type="button" id="nav-btn-register" onclick="switchPortalTab('login', 'register')"
-          class="px-3 sm:px-4 py-1.5 rounded-lg bg-[#1E5E3A] hover:bg-[#2C6E49] text-white text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer">
-          <span data-i18n="login.registerLink">Daftar</span>
-        </button>
       </nav>
 
-      <!-- Top-Right: User Menu & Flags -->
-      <div class="order-2 md:order-3 flex items-center gap-2 sm:gap-2.5 shrink-0">
-        <!-- Logged-in Teacher Menu -->
+      <!-- Zone 3 (Right): Dedicated Account Slot & Language Toggle (Always on the Right) -->
+      <div class="flex items-center gap-2 sm:gap-2.5 shrink-0">
+        <!-- Logged-out buttons (Positioned neatly in account slot) -->
+        <div id="portal-auth-buttons" class="flex items-center gap-1.5">
+          <button type="button" id="nav-btn-login" onclick="switchPortalTab('login', 'login')"
+            class="px-3 sm:px-3.5 py-1.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] hover:bg-[#f4f1ea] text-xs sm:text-sm font-bold text-[#18181b] flex items-center gap-1.5 transition-colors cursor-pointer">
+            <span class="ui-sprite ui-sm ui-login"></span>
+            <span data-i18n="login.title">Login</span>
+          </button>
+
+          <button type="button" id="nav-btn-register" onclick="switchPortalTab('login', 'register')"
+            class="px-3 sm:px-4 py-1.5 rounded-lg bg-[#1E5E3A] hover:bg-[#2C6E49] text-white text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer">
+            <span data-i18n="login.registerLink">Daftar</span>
+          </button>
+        </div>
+
+        <!-- Logged-in Menu (Teacher or Student) in the exact same account slot -->
         <div id="portal-user-menu-wrapper" class="relative hidden">
           <button type="button" id="portal-user-menu-btn" onclick="togglePortalUserDropdown(event)"
             aria-expanded="false" aria-haspopup="true"
@@ -237,26 +313,26 @@
               <div id="portal-dropdown-sub" class="text-[11px] text-[#78716c] truncate mt-0.5">IPA & Umum • Sekolah Cinta Kasih Tzu Chi</div>
             </div>
             <div class="p-1.5 space-y-1">
-              <button type="button" onclick="switchPortalTab('dashboard'); closePortalUserDropdown();"
+              <button type="button" onclick="handleDashboardNavClick(); closePortalUserDropdown();"
                 class="w-full px-3 py-2 rounded-lg hover:bg-[#EAF5ED] text-[#18181b] hover:text-[#1E5E3A] text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer text-left">
                 <span class="ui-sprite ui-sm ui-dashboard"></span>
-                <span data-i18n="nav.dashboard">Dashboard Guru</span>
+                <span id="dropdown-dashboard-label" data-i18n="nav.dashboard">Dashboard</span>
               </button>
               <button type="button" onclick="switchPortalTab('community'); closePortalUserDropdown();"
                 class="w-full px-3 py-2 rounded-lg hover:bg-[#EAF5ED] text-[#18181b] hover:text-[#1E5E3A] text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer text-left">
                 <span class="ui-sprite ui-sm ui-community"></span>
                 <span data-i18n="nav.community">Perpustakaan Komunitas</span>
               </button>
-              <button type="button" onclick="openSwitchTeacherModal(); closePortalUserDropdown();"
+              <button type="button" id="portal-switch-user-btn" onclick="openSwitchTeacherModal(); closePortalUserDropdown();"
                 class="w-full px-3 py-2 rounded-lg hover:bg-[#f4f1ea] text-[#18181b] text-xs font-medium flex items-center gap-2 transition-colors cursor-pointer text-left">
                 <span class="ui-sprite ui-sm ui-users"></span>
                 <span data-i18n="nav.switchTeacher">Ganti Guru</span>
               </button>
-              <a href="student-dashboard.html" target="_blank" onclick="closePortalUserDropdown();"
-                class="w-full px-3 py-2 rounded-lg hover:bg-[#f4f1ea] text-[#18181b] text-xs font-medium flex items-center gap-2 transition-colors text-left">
+              <button type="button" id="portal-student-portal-btn" onclick="switchPortalTab('student-dashboard'); closePortalUserDropdown();"
+                class="w-full px-3 py-2 rounded-lg hover:bg-[#f4f1ea] text-[#18181b] text-xs font-medium flex items-center gap-2 transition-colors cursor-pointer text-left">
                 <span class="text-xs">🎒</span>
-                <span>Portal Murid</span>
-              </a>
+                <span data-i18n="nav.dashboardMurid">Portal Murid</span>
+              </button>
               <div class="border-t border-[#eee9df] my-1"></div>
               <button type="button" id="portal-logout-btn" onclick="logoutTeacher(); closePortalUserDropdown();"
                 class="w-full px-3 py-2 rounded-lg hover:bg-red-50 text-[#18181b] hover:text-red-700 text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer text-left">
@@ -283,11 +359,11 @@
 
   <!-- MAIN SPA CONTENT AREA (8 Views) -->
   <main class="w-full max-w-[1840px] mx-auto px-4 sm:px-8 lg:px-12 py-6 flex-1 flex flex-col">
-    <section id="view-home" class="pb-16">
+    <section id="view-home" class="pb-16 max-w-6xl mx-auto w-full space-y-12">
 
-      <!-- Grounded Editorial Intro (No Sparkle Pill, No Stat Pill Row, No Gradient Clip) -->
-      <div class="w-full max-w-[1840px] mx-auto px-4 sm:px-8 lg:px-12 pt-10 sm:pt-14 pb-7 text-center space-y-4">
-        <h1 class="max-w-5xl mx-auto text-3xl sm:text-5xl font-extrabold tracking-[-0.025em] text-[#18181b] leading-[1.15]">
+      <!-- 1. Hero Intro -->
+      <div class="pt-8 sm:pt-12 text-center space-y-4">
+        <h1 class="text-3xl sm:text-5xl font-extrabold tracking-[-0.025em] text-[#18181b] leading-[1.18]">
           <span data-i18n="home.titlePre">Classroom games built from</span>
           <span class="relative inline-block text-[#1d4ed8]">
             <span data-i18n="home.titleHighlight">one question set.</span>
@@ -297,14 +373,28 @@
           </span>
         </h1>
 
-        <p class="text-sm sm:text-lg text-[#57534e] max-w-4xl mx-auto leading-relaxed font-medium" data-i18n="home.subtitle">
+        <p class="text-sm sm:text-base text-[#57534e] max-w-3xl mx-auto leading-relaxed font-medium" data-i18n="home.subtitle">
           Tulis soal atau kosakata sekali di DaAi Learning Hub, lalu mainkan dalam aneka format interaktif—dari kuis kelas standar hingga game layar sentuh IFP—untuk jenjang TK hingga SMK Sekolah Cinta Kasih Tzu Chi.
         </p>
+
+        <!-- Primary Actions: Try Now (Dashboard / Login) + Browse Community -->
+        <div class="flex flex-wrap items-center justify-center gap-3 pt-3">
+          <button type="button" id="home-cta-try-now" onclick="handleDashboardNavClick()"
+            class="px-6 py-2.5 rounded-xl bg-[#1E5E3A] hover:bg-[#2C6E49] text-white font-bold text-sm shadow-sm transition-all hover:shadow-md cursor-pointer flex items-center gap-2">
+            <span>Mulai Sekarang</span>
+            <span>→</span>
+          </button>
+          <button type="button" onclick="switchPortalTab('community')"
+            class="px-6 py-2.5 rounded-xl border border-[#d6cfc2] bg-white hover:bg-[#f4f1ea] text-[#18181b] font-bold text-sm transition-colors cursor-pointer flex items-center gap-2">
+            <span class="ui-sprite ui-sm ui-community"></span>
+            <span>Jelajahi Pustaka Komunitas</span>
+          </button>
+        </div>
       </div>
 
-      <!-- Continuous Moving Showcase (Strictly Visual & Non-Clickable) -->
-      <div class="w-full max-w-[1840px] mx-auto px-4 sm:px-8 lg:px-12 pt-1">
-        <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 border-b border-[#e5dfd3] pb-2.5 mb-3">
+      <!-- 2. Continuous Moving Game Formats Showcase (Smooth Marquee) -->
+      <div class="space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 border-b border-[#e5dfd3] pb-2">
           <h2 class="text-sm sm:text-base font-bold text-[#18181b]" data-i18n="home.showcaseTitle">
             Available Game Formats
           </h2>
@@ -312,62 +402,112 @@
             12 classic interactive formats and 3 webcam motion games included with every project.
           </p>
         </div>
-      </div>
 
-      <div id="home-marquee-viewport" class="marquee-viewport" aria-hidden="true">
-        <div class="marquee-fade-left"></div>
-        <div class="marquee-fade-right"></div>
-        <div id="home-marquee-track" class="marquee-track">
-          <!-- Rendered dynamically via JS from PORTAL_TEMPLATES -->
+        <div id="home-marquee-viewport" class="marquee-viewport" aria-hidden="true">
+          <div class="marquee-fade-left"></div>
+          <div class="marquee-fade-right"></div>
+          <div id="home-marquee-track" class="marquee-track">
+            <!-- Rendered dynamically via JS from GAME_TEMPLATES_CONFIG -->
+          </div>
         </div>
       </div>
 
-      <!-- Primary Action Below Showcase: Flat Tactile "Try Now!" Button -> Teacher Login -->
-      <div class="w-full max-w-[1840px] mx-auto px-4 sm:px-8 lg:px-12 text-center mt-6 space-y-3">
-        <div class="flex flex-wrap items-center justify-center gap-3">
-          <button type="button" id="home-cta-try-now" onclick="switchPortalTab('login')"
-            class="px-8 py-3.5 rounded-lg bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-base border-b-[3px] border-[#1e3a8a] active:translate-y-[1px] active:border-b-2 inline-flex items-center gap-2.5 transition-colors cursor-pointer">
-            <span data-i18n="home.ctaTryNow">Try Now!</span>
-            <span class="ui-sprite ui-sm ui-arrow-right"></span>
-          </button>
-
-          <button type="button" id="home-cta-community" onclick="switchPortalTab('community')"
-            class="px-5 py-3.5 rounded-lg bg-white hover:bg-[#f4f1ea] text-[#18181b] border border-[#d6cfc2] border-b-[3px] font-semibold text-sm inline-flex items-center gap-2 transition-colors cursor-pointer">
-            <span class="ui-sprite ui-sm ui-community"></span>
-            <span data-i18n="home.ctaCommunity">Browse Community Activities</span>
-          </button>
+      <!-- 3. Student PIN Direct Join Box -->
+      <div class="max-w-xl mx-auto w-full bg-[#18181b] text-white rounded-2xl p-6 sm:p-7 shadow-lg space-y-4">
+        <div class="flex items-center gap-2 border-b border-white/10 pb-3">
+          <span class="text-lg">🎮</span>
+          <div>
+            <h3 class="text-sm font-bold tracking-tight">Punya PIN Game? Gabung Langsung</h3>
+            <p class="text-[11px] text-[#a1a1aa]">Murid dapat langsung memasukkan PIN kuis atau tugas tanpa login guru.</p>
+          </div>
         </div>
 
-        <!-- Student Join by Game PIN Bar (Home Only) -->
-        <div class="max-w-2xl mx-auto pt-4">
-          <div class="bg-[#1e242b] text-white rounded-xl border border-[#2d3642] p-4 sm:p-5 shadow-md space-y-3 text-left">
-            <div class="flex items-center justify-between gap-2">
-              <div class="flex items-center gap-2 text-xs sm:text-sm font-bold text-white">
-                <span class="w-7 h-7 rounded-md bg-[#27303a] border border-[#3d4856] flex items-center justify-center shrink-0">
-                  <span class="ui-sprite ui-xs ui-key"></span>
-                </span>
-                <span id="home-pin-heading" data-i18n="home.pinTitle">Have a Game PIN? Join Directly</span>
-              </div>
+        <form onsubmit="handleHomePinJoin(event)" class="space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label for="home-pin-input" class="block text-[10px] font-bold uppercase tracking-wider text-[#a1a1aa] mb-1">PIN Game (6 Digit)</label>
+              <input type="text" id="home-pin-input" placeholder="contoh: 100101" required
+                class="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/40 text-sm font-mono font-bold focus:outline-none focus:border-emerald-400 focus:bg-white/15">
             </div>
-            <form onsubmit="handleHomePinJoin(event)" class="bg-[#27303a] border border-[#3d4856] rounded-lg p-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-              <div class="flex items-center gap-2 bg-white rounded-md px-3 py-2 flex-1 min-w-0 text-[#18181b]">
-                <span class="ui-sprite ui-sm ui-key shrink-0"></span>
-                <input type="text" id="home-pin-input" data-i18n-placeholder="comm.pinPlaceholder" placeholder="Enter PIN / ID..."
-                  class="w-full min-w-0 text-xs sm:text-sm font-semibold focus:outline-none bg-transparent">
+            <div>
+              <label for="home-student-name" class="block text-[10px] font-bold uppercase tracking-wider text-[#a1a1aa] mb-1">Nama Siswa</label>
+              <input type="text" id="home-student-name" placeholder="Nama lengkap..." required
+                class="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/40 text-sm font-medium focus:outline-none focus:border-emerald-400 focus:bg-white/15">
+            </div>
+          </div>
+
+          <div id="home-pin-error" class="hidden text-xs text-rose-300 font-semibold bg-rose-950/40 p-2 rounded-lg border border-rose-800"></div>
+
+          <button type="submit"
+            class="w-full py-2.5 rounded-lg bg-[#1E5E3A] hover:bg-[#2C6E49] text-white font-bold text-xs sm:text-sm shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2">
+            <span>Mulai Bermain</span>
+            <span>→</span>
+          </button>
+        </form>
+
+        <div class="pt-2 border-t border-white/10 text-center">
+          <button type="button" onclick="switchPortalTab('student-dashboard')" class="text-xs text-[#a1a1aa] hover:text-emerald-400 transition-colors font-medium">
+            Masuk ke Portal Murid (Student Dashboard) →
+          </button>
+        </div>
+      </div>
+
+      <!-- 4. Teaching Media Spotlight (Media Ajar Interaktif: IPA & Bahasa Mandarin) -->
+      <div class="space-y-4 pt-4">
+        <div class="border-b border-[#e5dfd3] pb-2">
+          <h2 class="text-base sm:text-lg font-bold text-[#18181b] flex items-center gap-2">
+            <span>📚</span>
+            <span>Media Ajar Digital Interaktif</span>
+          </h2>
+          <p class="text-xs text-[#78716c]">Eksplorasi media peraga 3D sains dan laboratorium bahasa interaktif Sekolah Cinta Kasih Tzu Chi.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Card 1: IPA / Sains - 3D Skeleton -->
+          <div class="bg-white rounded-2xl border border-[#e5dfd3] p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-4">
+            <div class="space-y-2.5">
+              <div class="flex items-center gap-2.5">
+                <span class="w-10 h-10 rounded-xl bg-emerald-50 text-[#1E5E3A] border border-emerald-200 flex items-center justify-center text-xl shrink-0">🦴</span>
+                <div>
+                  <span class="text-[10px] font-extrabold uppercase tracking-wider text-[#1E5E3A] bg-[#EAF5ED] px-2 py-0.5 rounded-full">IPA / Sains</span>
+                  <h3 class="font-bold text-sm text-[#18181b] mt-0.5" data-i18n="media.skeletonTitle">Anatomi Rangka Manusia 3D</h3>
+                </div>
               </div>
-              <input type="text" id="home-student-name" data-i18n-placeholder="comm.namePlaceholder" placeholder="Student name"
-                class="px-3 py-2 rounded-md bg-white text-[#18181b] placeholder-[#78716c] text-xs sm:text-sm font-medium focus:outline-none sm:w-44 min-w-0">
-              <button type="submit"
-                class="px-4 py-2 rounded-md bg-[#15803d] hover:bg-[#166534] text-white font-bold text-xs sm:text-sm border-b-2 border-[#14532d] flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0">
-                <span class="ui-sprite ui-sm ui-play"></span>
-                <span data-i18n="comm.pinBtn">Join Game</span>
-              </button>
-            </form>
-            <div id="home-pin-error" class="hidden rounded-lg px-3 py-2 bg-red-950/60 border border-red-400/40 text-red-200 text-xs font-semibold"></div>
-            <div class="pt-2 text-center sm:text-left">
-              <a href="student-dashboard.html" class="inline-flex items-center gap-1.5 text-xs text-[#cbd5e1] hover:text-white font-semibold transition-colors">
-                <span>🎓 Masuk ke Portal Murid (Student Dashboard)</span>
-                <span>➔</span>
+              <p class="text-xs text-[#57534e] leading-relaxed" data-i18n="media.skeletonDesc">
+                Model 3D interaktif anatomi tulang manusia dengan navigasi orbit 360°, fitur isolasi bagian kerangka, dan kuis interaktif penamaan tulang untuk kelas sains.
+              </p>
+            </div>
+            <a href="tools/human-skeleton-3d/index.html" target="_blank"
+              class="w-full py-2 px-3 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] hover:bg-[#EAF5ED] text-[#1E5E3A] font-bold text-xs flex items-center justify-center gap-2 transition-colors">
+              <span>Buka Model 3D Rangka</span>
+              <span>↗</span>
+            </a>
+          </div>
+
+          <!-- Card 2: Bahasa Mandarin - Hanzi Whiteboard & Strokes Lab -->
+          <div class="bg-white rounded-2xl border border-[#e5dfd3] p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-4">
+            <div class="space-y-2.5">
+              <div class="flex items-center gap-2.5">
+                <span class="w-10 h-10 rounded-xl bg-orange-50 text-[#ea580c] border border-orange-200 flex items-center justify-center text-xl shrink-0">🏮</span>
+                <div>
+                  <span class="text-[10px] font-extrabold uppercase tracking-wider text-[#9a3412] bg-[#ffedd5] px-2 py-0.5 rounded-full">Bahasa Mandarin</span>
+                  <h3 class="font-bold text-sm text-[#18181b] mt-0.5">Papan Tulis & Lab Goresan Hanzi</h3>
+                </div>
+              </div>
+              <p class="text-xs text-[#57534e] leading-relaxed">
+                Papan tulis digital dengan grid Tianzige untuk latihan menulis karakter Hanzi mandiri, serta visualisasi urutan goresan (Bishun) dan dekonstruksi radikal.
+              </p>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <a href="tools/mandarin/drawing.html" target="_blank"
+                class="py-2 px-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] hover:bg-[#ffedd5] text-[#9a3412] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors">
+                <span>Papan Tulis</span>
+                <span>↗</span>
+              </a>
+              <a href="tools/mandarin/strokes.html" target="_blank"
+                class="py-2 px-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] hover:bg-[#ffedd5] text-[#9a3412] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors">
+                <span>Lab Goresan</span>
+                <span>↗</span>
               </a>
             </div>
           </div>
@@ -1280,6 +1420,11 @@
             </div>
 
             <!-- Real Game Iframe (Supports AI Camera games!) -->
+            <button type="button" id="player-exit-fullscreen-btn" onclick="togglePlayerFullscreen()"
+              class="hidden absolute top-3 right-3 z-50 px-3.5 py-1.5 rounded-lg bg-black/75 hover:bg-black/90 text-white font-bold text-xs shadow-lg backdrop-blur flex items-center gap-1.5 border border-white/20 transition-all cursor-pointer">
+              <span class="ui-sprite ui-xs ui-fullscreen"></span>
+              <span data-i18n="player.exitFullscreen">Keluar Fullscreen</span>
+            </button>
             <iframe id="game-iframe" class="w-full h-full border-none bg-white" allow="camera; microphone; autoplay; fullscreen"></iframe>
           </div>
 
@@ -1468,6 +1613,500 @@
 
       </div>
     </section>
+  
+    <!-- VIEW 9: INTEGRATED STUDENT DASHBOARD -->
+    <section id="view-student-dashboard" class="hidden max-w-7xl w-full mx-auto space-y-6">
+      
+
+    <!-- ============================================================== -->
+    <!-- 1. STUDENT PROFILE HERO BANNER -->
+    <!-- ============================================================== -->
+    <div class="relative overflow-hidden rounded-3xl tc-gradient text-white p-6 sm:p-8 shadow-xl">
+      <!-- Decorative Chinese Character Backdrop -->
+      <div class="absolute -right-6 -bottom-8 select-none pointer-events-none opacity-10 font-chinese text-9xl text-white">
+        慈悲喜捨
+      </div>
+
+      <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        
+        <!-- Left: Student Info & Greeting -->
+        <div class="flex items-start sm:items-center gap-4 sm:gap-5">
+          <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white text-[#1E5E3A] border-4 border-white/20 font-black text-2xl sm:text-3xl flex items-center justify-center shadow-lg shrink-0" id="hero-avatar">
+            KT
+          </div>
+          <div class="space-y-1.5">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-white/20 border border-white/30 text-white backdrop-blur-xs">
+                🎓 Murid Aktif
+              </span>
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-400/20 border border-amber-300/40 text-amber-200" id="hero-badge-level">
+                Jenjang SD
+              </span>
+              <span class="text-xs text-emerald-100 font-mono" id="hero-badge-nisn">
+                NISN: 50239101
+              </span>
+            </div>
+            <h1 class="text-xl sm:text-3xl font-black text-white tracking-tight" id="hero-student-greeting">
+              Halo, Kenjiro Tan! 🌟
+            </h1>
+            <p class="text-xs sm:text-sm text-emerald-100 font-medium">
+              Selamat datang di DaAi Learning Hub. Semangat belajar dan raih prestasi terbaikmu hari ini!
+            </p>
+          </div>
+        </div>
+
+        <!-- Right: Summary Stats Pills -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 shrink-0">
+          <!-- Stat 1: Tugas Aktif -->
+          <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-3.5 text-center">
+            <div class="text-[10px] uppercase font-bold tracking-wider text-emerald-200">Tugas Aktif</div>
+            <div class="text-xl sm:text-2xl font-black text-white mt-0.5" id="stat-active-count">0</div>
+            <div class="text-[10px] text-emerald-200/80">Menunggu dikerjakan</div>
+          </div>
+
+          <!-- Stat 2: Selesai -->
+          <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-3.5 text-center">
+            <div class="text-[10px] uppercase font-bold tracking-wider text-emerald-200">Tugas Selesai</div>
+            <div class="text-xl sm:text-2xl font-black text-white mt-0.5" id="stat-completed-count">0</div>
+            <div class="text-[10px] text-emerald-200/80">Tercatat di sistem</div>
+          </div>
+
+          <!-- Stat 3: Rata-Rata Nilai -->
+          <div class="col-span-2 sm:col-span-1 bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-3.5 text-center">
+            <div class="text-[10px] uppercase font-bold tracking-wider text-emerald-200">Rata-Rata Nilai</div>
+            <div class="text-xl sm:text-2xl font-black text-amber-300 mt-0.5" id="stat-avg-score">0%</div>
+            <div class="text-[10px] text-emerald-200/80" id="stat-stars-label">⭐ Prestasi Gemilang</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- 2. QUICK JOIN BY 6-DIGIT GAME PIN BAR -->
+    <!-- ============================================================== -->
+    <div class="bg-white rounded-2xl border border-[#D5E9DC] p-5 sm:p-6 custom-card-shadow flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5 text-center sm:text-left">
+        <div class="w-12 h-12 rounded-2xl bg-[#EAF5ED] border border-[#BCE1C9] text-[#1E5E3A] flex items-center justify-center text-2xl shrink-0 shadow-2xs">
+          🔑
+        </div>
+        <div>
+          <h2 class="text-sm sm:text-base font-extrabold text-[#0D2B1B]">
+            Punya 6-Digit Game PIN dari Guru?
+          </h2>
+          <p class="text-xs text-[#5A6E62] mt-0.5">
+            Masukkan kode PIN untuk langsung masuk dan mengerjakan kuis atau game interaktif di kelas.
+          </p>
+        </div>
+      </div>
+
+      <!-- PIN Input Form -->
+      <form onsubmit="handlePinJoin(event)" class="w-full md:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+        <div class="relative">
+          <input type="text" id="input-game-pin" maxlength="6" pattern="[0-9]{6}" required placeholder="Contoh: 100101"
+            class="w-full sm:w-44 px-4 py-2.5 rounded-xl border-2 border-[#CDE3D5] focus:border-[#1E5E3A] focus:outline-none text-center font-mono font-extrabold text-base tracking-widest text-[#0D2B1B] bg-[#FBFDFB] transition-all">
+        </div>
+        <button type="submit" id="btn-pin-join"
+          class="px-5 py-2.5 rounded-xl tc-gradient hover:opacity-95 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-emerald-900/15 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0">
+          <span>Gabung Sekarang</span>
+          <span>➔</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- PIN Alert Box (Inline) -->
+    <div id="pin-alert" class="hidden p-3 rounded-xl text-xs font-semibold flex items-center gap-2"></div>
+
+    <!-- ============================================================== -->
+    <!-- 3. TABS NAVIGATION -->
+    <!-- ============================================================== -->
+    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#D5E9DC] pb-4">
+      
+      <!-- 3 Primary Navigation Buttons -->
+      <div class="flex items-center gap-2 p-1.5 rounded-2xl bg-white border border-[#D5E9DC] shadow-xs">
+        <!-- Tab 1: Tugas Aktif -->
+        <button type="button" id="tab-btn-active" onclick="switchDashboardTab('active')"
+          class="tab-active px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-all cursor-pointer">
+          <span>📝</span>
+          <span>Tugas Aktif</span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white" id="badge-tab-active-count">0</span>
+        </button>
+
+        <!-- Tab 2: Riwayat Tugas Selesai -->
+        <button type="button" id="tab-btn-history" onclick="switchDashboardTab('history')"
+          class="tab-inactive px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer">
+          <span>📊</span>
+          <span>Riwayat Selesai</span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EAF5ED] text-[#1E5E3A]" id="badge-tab-history-count">0</span>
+        </button>
+
+        <!-- Tab 3: Ruang Belajar Mandiri -->
+        <button type="button" id="tab-btn-media" onclick="switchDashboardTab('media')"
+          class="tab-inactive px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer">
+          <span>🌸</span>
+          <span>Ruang Belajar Mandiri</span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">4 Media</span>
+        </button>
+      </div>
+
+      <!-- Quick Action / Refresh -->
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="refreshStudentData()"
+          class="px-3 py-1.5 rounded-xl border border-[#D5E9DC] bg-white hover:bg-[#EAF5ED] text-xs font-bold text-[#1E5E3A] flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs">
+          <span>🔄</span>
+          <span class="hidden sm:inline">Perbarui Data</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 1: TUGAS AKTIF (ACTIVE HOMEWORK) -->
+    <!-- ============================================================== -->
+    <section id="view-tab-active" class="space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base sm:text-lg font-black text-[#0D2B1B]">Daftar Tugas Pembelajaran Menanti</h2>
+          <p class="text-xs text-[#5A6E62]">Kerjakan penugasan yang diberikan oleh bapak/ibu guru sebelum batas waktu berakhir.</p>
+        </div>
+        <!-- Filter Subject -->
+        <div class="flex items-center gap-2">
+          <label for="filter-subject" class="text-xs font-bold text-[#355342] shrink-0">Mata Pelajaran:</label>
+          <select id="filter-subject" onchange="filterActiveAssignments()"
+            class="px-3 py-1.5 rounded-xl border border-[#CDE3D5] bg-white text-xs font-medium text-[#0D2B1B] focus:outline-none focus:border-[#1E5E3A]">
+            <option value="all">Semua Pelajaran</option>
+            <option value="IPA / Sains">IPA / Sains</option>
+            <option value="Bahasa Mandarin">Bahasa Mandarin</option>
+            <option value="Matematika">Matematika</option>
+            <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Active Assignments Grid Container -->
+      <div id="active-assignments-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 2: RIWAYAT TUGAS SELESAI (SUBMISSION HISTORY & REVIEW) -->
+    <!-- ============================================================== -->
+    <section id="view-tab-history" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base sm:text-lg font-black text-[#0D2B1B]">Riwayat Tugas & Nilai Pengumpulan</h2>
+          <p class="text-xs text-[#5A6E62]">Periksa skor evaluasi, durasi pengerjaan, serta tinjau kunci jawaban dan pembahasan.</p>
+        </div>
+      </div>
+
+      <!-- History Table Container -->
+      <div class="bg-white rounded-2xl border border-[#D5E9DC] overflow-hidden custom-card-shadow">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-[#EAF5ED] text-[#1E5E3A] font-extrabold uppercase text-[11px] border-b border-[#D5E9DC]">
+              <tr>
+                <th class="py-3 px-4">Judul Penugasan</th>
+                <th class="py-3 px-4">Mata Pelajaran</th>
+                <th class="py-3 px-4 text-center">Nilai Skor</th>
+                <th class="py-3 px-4">Waktu Submit</th>
+                <th class="py-3 px-4 text-center">Durasi</th>
+                <th class="py-3 px-4 text-right">Aksi & Pembahasan</th>
+              </tr>
+            </thead>
+            <tbody id="history-submissions-tbody" class="divide-y divide-[#EBF2ED] text-[#14261C]">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 3: RUANG BELAJAR MANDIRI (INTERACTIVE LEARNING MEDIA) -->
+    <!-- ============================================================== -->
+    <section id="view-tab-media" class="hidden space-y-6">
+      
+      <!-- Section Introduction -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-[11px] font-bold text-amber-800">
+            <span>✨</span>
+            <span>Akses Eksplorasi Bebas</span>
+          </div>
+          <h2 class="text-base sm:text-lg font-black text-[#0D2B1B] mt-1">Ruang Belajar Mandiri & Media Interaktif</h2>
+          <p class="text-xs text-[#5A6E62]">Eksplorasi simulator sains 3D skeleton tubuh, papan kaligrafi Hanzi, dan latihan kosakata Meihua tanpa batas waktu.</p>
+        </div>
+      </div>
+
+      <!-- 4 Prominent Media Ajar Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+        <!-- Card 1: Media Ajar 3D Skeleton (AI Hand Slicer & Motion Anatomy) -->
+        <div class="bg-white rounded-3xl border-2 border-[#D5E9DC] hover:border-[#1E5E3A] p-6 custom-card-shadow transition-all group flex flex-col justify-between gap-4">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9]">
+                🧬 Sains & Biologi
+              </span>
+              <span class="text-[11px] font-bold text-sky-700 bg-sky-50 border border-sky-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <span>📹</span>
+                <span>AI Motion Skeleton</span>
+              </span>
+            </div>
+
+            <div class="flex items-start gap-4 pt-1">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-800 text-white flex items-center justify-center text-3xl shrink-0 shadow-md group-hover:scale-105 transition-transform">
+                🦴
+              </div>
+              <div>
+                <h3 class="text-base font-black text-[#0D2B1B] group-hover:text-[#1E5E3A] transition-colors">
+                  Media Ajar 3D Skeleton & Motion Tracker
+                </h3>
+                <p class="text-xs text-[#4A725A] mt-1 leading-relaxed">
+                  Deteksi kerangka tubuh atas (upper body joints) secara real-time dengan kamera AI. Cocok untuk pembelajaran anatomi rangka manusia, sendi, dan koordinasi gerak fisik.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-1.5 pt-2">
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">MediaPipe Pose</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">Kerangka 3D Sendi</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">IFP Touch Ready</span>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-[#E8F1EC] flex items-center gap-2">
+            <a href="tools/human-skeleton-3d/index.html" target="_blank"
+              class="flex-1 py-2.5 px-4 rounded-xl tc-gradient hover:opacity-95 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-1.5">
+              <span>Buka 3D Human Skeleton</span>
+              <span>➔</span>
+            </a>
+            <a href="games/ai-slicer.html" target="_blank" title="Mode Kamera AI Motion"
+              class="py-2.5 px-3 rounded-xl bg-[#EAF5ED] hover:bg-[#1E5E3A] text-[#1E5E3A] hover:text-white font-bold text-xs transition-colors shrink-0">
+              📹 AI Motion
+            </a>
+          </div>
+        </div>
+
+        <!-- Card 2: Mandarin Drawing Board (Papan Tulis Kaligrafi Hanzi) -->
+        <div class="bg-white rounded-3xl border-2 border-[#D5E9DC] hover:border-[#1E5E3A] p-6 custom-card-shadow transition-all group flex flex-col justify-between gap-4">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9]">
+                🖌️ Budaya Humanis
+              </span>
+              <span class="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <span>田</span>
+                <span>Tian Zi Ge Grid</span>
+              </span>
+            </div>
+
+            <div class="flex items-start gap-4 pt-1">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-700 to-amber-900 text-white flex items-center justify-center text-3xl shrink-0 shadow-md group-hover:scale-105 transition-transform">
+                ✍️
+              </div>
+              <div>
+                <h3 class="text-base font-black text-[#0D2B1B] group-hover:text-[#1E5E3A] transition-colors">
+                  Mandarin Drawing Board (Papan Kaligrafi)
+                </h3>
+                <p class="text-xs text-[#4A725A] mt-1 leading-relaxed">
+                  Papan tulis digital responsif untuk melatih kaligrafi goresan Hanzi dengan panduan kotak Tian Zi Ge (田字格), variasi ketebalan kuas, dan warna tinta tradisional.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-1.5 pt-2">
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">Kuas Tinta Halus</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">Kisi Tian Zi Ge</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">Simpan Tulisan</span>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-[#E8F1EC] flex items-center gap-2">
+            <a href="tools/mandarin/drawing.html" target="_blank"
+              class="flex-1 py-2.5 px-4 rounded-xl tc-gradient hover:opacity-95 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-1.5">
+              <span>Buka Papan Kaligrafi</span>
+              <span>➔</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Card 3: Hanzi Lab (Laboratorium Urutan Goresan Karakter) -->
+        <div class="bg-white rounded-3xl border-2 border-[#D5E9DC] hover:border-[#1E5E3A] p-6 custom-card-shadow transition-all group flex flex-col justify-between gap-4">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9]">
+                📚 Kamus Karakter
+              </span>
+              <span class="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <span>⚡</span>
+                <span>HanziWriter Engine</span>
+              </span>
+            </div>
+
+            <div class="flex items-start gap-4 pt-1">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-800 to-green-950 text-white flex items-center justify-center text-3xl shrink-0 shadow-md group-hover:scale-105 transition-transform">
+                字
+              </div>
+              <div>
+                <h3 class="text-base font-black text-[#0D2B1B] group-hover:text-[#1E5E3A] transition-colors">
+                  Hanzi Lab (Laboratorium Urutan Goresan)
+                </h3>
+                <p class="text-xs text-[#4A725A] mt-1 leading-relaxed">
+                  Pelajari urutan goresan stroke-order (Bishun) ribuan karakter Hanzi dengan visualisasi animasi otomatis, latihan menulis terpandu, serta pengucapan Pinyin yang tepat.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-1.5 pt-2">
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">Animasi Bishun</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">Audio Pinyin</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">Kuis Goresan Mandiri</span>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-[#E8F1EC] flex items-center gap-2">
+            <a href="tools/mandarin/strokes.html" target="_blank"
+              class="flex-1 py-2.5 px-4 rounded-xl tc-gradient hover:opacity-95 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-1.5">
+              <span>Buka Hanzi Lab</span>
+              <span>➔</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Card 4: Meihua Practice (Latihan Kosakata Buku Meihua & AI Battle) -->
+        <div class="bg-white rounded-3xl border-2 border-[#D5E9DC] hover:border-[#1E5E3A] p-6 custom-card-shadow transition-all group flex flex-col justify-between gap-4">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9]">
+                🌸 Kurikulum Meihua
+              </span>
+              <span class="text-[11px] font-bold text-rose-800 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <span>⚔️</span>
+                <span>AI 2P Battle Mode</span>
+              </span>
+            </div>
+
+            <div class="flex items-start gap-4 pt-1">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-600 to-pink-800 text-white flex items-center justify-center text-3xl shrink-0 shadow-md group-hover:scale-105 transition-transform">
+                梅
+              </div>
+              <div>
+                <h3 class="text-base font-black text-[#0D2B1B] group-hover:text-[#1E5E3A] transition-colors">
+                  Meihua Practice & AI Brush Battle
+                </h3>
+                <p class="text-xs text-[#4A725A] mt-1 leading-relaxed">
+                  Kompilasi kosakata resmi dari Buku Meihua SD Kelas 1 hingga 6. Dilengkapi mode tantangan menulis Hanzi di udara dengan gesture jari kamera untuk melatih kecepatan.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-1.5 pt-2">
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">Buku Meihua 1-6</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">Lomba 2 Pemain</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#F4F7F5] text-[#4A725A]">Air-Calligraphy AI</span>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-[#E8F1EC] flex items-center gap-2">
+            <a href="games/hanzi-battle.html" target="_blank"
+              class="flex-1 py-2.5 px-4 rounded-xl tc-gradient hover:opacity-95 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-1.5">
+              <span>Buka Meihua Practice</span>
+              <span>➔</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick Interactive Tzu Chi Hanzi Character Explorer Widget -->
+      <div class="bg-gradient-to-r from-[#EAF5ED] to-[#F1F8F4] rounded-3xl border border-[#BCE1C9] p-6 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 class="text-sm sm:text-base font-black text-[#0D2B1B] flex items-center gap-2">
+              <span>🪷</span>
+              <span>Kamus Karakter Nilai Luhur Tzu Chi (靜思語)</span>
+            </h3>
+            <p class="text-xs text-[#4A725A]">Klik karakter di bawah ini untuk melihat pinyin, arti budaya humanis, dan pelafalan.</p>
+          </div>
+          <span class="text-xs font-bold text-[#1E5E3A] bg-white px-3 py-1 rounded-full border border-[#C2E4CD] shadow-2xs">
+            Edukasi Budi Pekerti
+          </span>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 pt-2">
+          <!-- Char 1 -->
+          <div onclick="showCharDetails('愛', 'ài', 'Cinta Kasih Murni / Great Love', 'Memberi kehangatan dan kepedulian tanpa pamrih.')"
+            class="p-3 bg-white rounded-2xl border border-[#CDE3D5] hover:border-[#1E5E3A] hover:shadow-md cursor-pointer text-center transition-all group">
+            <div class="font-chinese text-3xl text-[#1E5E3A] group-hover:scale-110 transition-transform">愛</div>
+            <div class="text-[11px] font-bold text-[#0D2B1B] mt-1 font-mono">ài</div>
+            <div class="text-[10px] text-[#5A6E62] truncate">Cinta Kasih</div>
+          </div>
+
+          <!-- Char 2 -->
+          <div onclick="showCharDetails('慈', 'cí', 'Welas Asih / Compassion', 'Kebahagiaan sejati saat melihat orang lain terbebas dari penderitaan.')"
+            class="p-3 bg-white rounded-2xl border border-[#CDE3D5] hover:border-[#1E5E3A] hover:shadow-md cursor-pointer text-center transition-all group">
+            <div class="font-chinese text-3xl text-[#1E5E3A] group-hover:scale-110 transition-transform">慈</div>
+            <div class="text-[11px] font-bold text-[#0D2B1B] mt-1 font-mono">cí</div>
+            <div class="text-[10px] text-[#5A6E62] truncate">Welas Asih</div>
+          </div>
+
+          <!-- Char 3 -->
+          <div onclick="showCharDetails('悲', 'bēi', 'Empati Membantu sesama', 'Merasakan penderitaan orang lain dan segera mengulurkan tangan.')"
+            class="p-3 bg-white rounded-2xl border border-[#CDE3D5] hover:border-[#1E5E3A] hover:shadow-md cursor-pointer text-center transition-all group">
+            <div class="font-chinese text-3xl text-[#1E5E3A] group-hover:scale-110 transition-transform">悲</div>
+            <div class="text-[11px] font-bold text-[#0D2B1B] mt-1 font-mono">bēi</div>
+            <div class="text-[10px] text-[#5A6E62] truncate">Empati</div>
+          </div>
+
+          <!-- Char 4 -->
+          <div onclick="showCharDetails('喜', 'xǐ', 'Sukacita / Joy in Doing Good', 'Hati yang riang dan gembira karena melakukan perbuatan bajik.')"
+            class="p-3 bg-white rounded-2xl border border-[#CDE3D5] hover:border-[#1E5E3A] hover:shadow-md cursor-pointer text-center transition-all group">
+            <div class="font-chinese text-3xl text-[#1E5E3A] group-hover:scale-110 transition-transform">喜</div>
+            <div class="text-[11px] font-bold text-[#0D2B1B] mt-1 font-mono">xǐ</div>
+            <div class="text-[10px] text-[#5A6E62] truncate">Sukacita</div>
+          </div>
+
+          <!-- Char 5 -->
+          <div onclick="showCharDetails('捨', 'shě', 'Rela Memberi / Equanimity', 'Ikhlas melepaskan dan memberi yang terbaik untuk sesama makhluk.')"
+            class="p-3 bg-white rounded-2xl border border-[#CDE3D5] hover:border-[#1E5E3A] hover:shadow-md cursor-pointer text-center transition-all group">
+            <div class="font-chinese text-3xl text-[#1E5E3A] group-hover:scale-110 transition-transform">捨</div>
+            <div class="text-[11px] font-bold text-[#0D2B1B] mt-1 font-mono">shě</div>
+            <div class="text-[10px] text-[#5A6E62] truncate">Rela Memberi</div>
+          </div>
+
+          <!-- Char 6 -->
+          <div onclick="showCharDetails('蓮', 'lián', 'Bunga Teratai / Lotus', 'Tumbuh indah bersih tak ternoda dari lumpur — simbol kemurnian hati.')"
+            class="p-3 bg-white rounded-2xl border border-[#CDE3D5] hover:border-[#1E5E3A] hover:shadow-md cursor-pointer text-center transition-all group">
+            <div class="font-chinese text-3xl text-[#1E5E3A] group-hover:scale-110 transition-transform">蓮</div>
+            <div class="text-[11px] font-bold text-[#0D2B1B] mt-1 font-mono">lián</div>
+            <div class="text-[10px] text-[#5A6E62] truncate">Teratai Lotus</div>
+          </div>
+        </div>
+
+        <!-- Detail Box of Selected Char -->
+        <div id="char-detail-box" class="p-4 rounded-2xl bg-white border border-[#CDE3D5] flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <span class="font-chinese text-4xl text-[#1E5E3A]" id="detail-char-hanzi">愛</span>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-extrabold text-[#0D2B1B]" id="detail-char-title">Cinta Kasih Murni / Great Love</span>
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-[#EAF5ED] text-[#1E5E3A] font-mono" id="detail-char-pinyin">ài</span>
+              </div>
+              <p class="text-xs text-[#5A6E62] mt-0.5" id="detail-char-desc">Memberi kehangatan dan kepedulian tanpa pamrih.</p>
+            </div>
+          </div>
+          <button type="button" onclick="openHanziInLab()" class="px-3 py-1.5 rounded-xl bg-[#EAF5ED] hover:bg-[#1E5E3A] text-[#1E5E3A] hover:text-white font-bold text-xs transition-colors shrink-0">
+            Latih di Hanzi Lab ➔
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+  
+    </section>
+
   </main>
 
   <!-- MODALS -->
@@ -2485,6 +3124,10 @@
       }
     }
 
+        function getSubjectDisplayName(subject) {
+      if (!subject) return 'Umum';
+      return subject;
+    }
     function renderDashboard() {
       if (!currentTeacher) return;
       const allActive = LotusDB.getTeacherActiveProjects(currentTeacher.id);
@@ -5758,51 +6401,130 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       currentTeacher = LotusDB.getCurrentTeacherStrict(); updateTeacherUI(); updatePortalAuthNav(); switchPortalTab('dashboard');
     }
 
+        // -------------------------------------------------------------------------
+    // DYNAMIC MEDIA AJAR DROPDOWN
+    // -------------------------------------------------------------------------
+    function toggleMediaAjarDropdown(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      const menu = document.getElementById('nav-media-menu');
+      const chevron = document.getElementById('nav-media-chevron');
+      const btn = document.getElementById('nav-media-btn');
+      if (!menu) return;
+      const isHidden = menu.classList.contains('hidden');
+      if (isHidden) {
+        menu.classList.remove('hidden');
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+        if (btn) btn.setAttribute('aria-expanded', 'true');
+      } else {
+        closeMediaAjarDropdown();
+      }
+    }
+
+    function closeMediaAjarDropdown() {
+      const menu = document.getElementById('nav-media-menu');
+      const chevron = document.getElementById('nav-media-chevron');
+      const btn = document.getElementById('nav-media-btn');
+      if (menu) menu.classList.add('hidden');
+      if (chevron) chevron.style.transform = 'rotate(0deg)';
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    }
+
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('nav-media-menu');
+      const btn = document.getElementById('nav-media-btn');
+      if (menu && !menu.classList.contains('hidden')) {
+        if (!menu.contains(e.target) && (!btn || !btn.contains(e.target))) {
+          closeMediaAjarDropdown();
+        }
+      }
+    });
+
+    // -------------------------------------------------------------------------
+    // DYNAMIC DASHBOARD NAVIGATION ROUTER
+    // -------------------------------------------------------------------------
+    function handleDashboardNavClick() {
+      const teacher = LotusDB.getCurrentTeacherStrict();
+      if (teacher) {
+        switchPortalTab('dashboard');
+        return;
+      }
+      const studentRaw = localStorage.getItem('lotus_student_profile') || sessionStorage.getItem('lotus_student_profile');
+      if (studentRaw) {
+        switchPortalTab('student-dashboard');
+        return;
+      }
+      switchPortalTab('login');
+    }
+
+    // -------------------------------------------------------------------------
+    // AUTH NAVIGATION SYNCHRONIZER (Fixed 3-Zone Support)
+    // -------------------------------------------------------------------------
     function updatePortalAuthNav() {
       const teacher = LotusDB.getCurrentTeacherStrict();
-      const loginTabBtn = document.getElementById('nav-tab-login');
+      const studentRaw = localStorage.getItem('lotus_student_profile') || sessionStorage.getItem('lotus_student_profile');
+      let student = null;
+      try { student = studentRaw ? JSON.parse(studentRaw) : null; } catch(e) {}
+
+      const authBtns = document.getElementById('portal-auth-buttons');
+      const userWrapper = document.getElementById('portal-user-menu-wrapper');
+      const avatarEl = document.getElementById('portal-user-avatar');
+      const nameEl = document.getElementById('portal-user-name');
+      const ddNameEl = document.getElementById('portal-dropdown-name');
+      const ddSubEl = document.getElementById('portal-dropdown-sub');
+      const dashLabel = document.getElementById('nav-dashboard-label');
+      const dropDashLabel = document.getElementById('dropdown-dashboard-label');
+      const switchTeacherBtn = document.getElementById('portal-switch-user-btn');
+      const studentPortalBtn = document.getElementById('portal-student-portal-btn');
       const homeCtaBtn = document.getElementById('home-cta-try-now');
-      const navLogin = document.getElementById('nav-btn-login');
-      const navRegister = document.getElementById('nav-btn-register');
-      const navDashboard = document.getElementById('nav-btn-dashboard');
-      const userMenuWrapper = document.getElementById('portal-user-menu-wrapper');
 
       if (teacher) {
-        if (navLogin) navLogin.classList.add('hidden');
-        if (navRegister) navRegister.classList.add('hidden');
-        if (navDashboard) navDashboard.classList.remove('hidden');
-        if (userMenuWrapper) userMenuWrapper.classList.remove('hidden');
-
-        if (loginTabBtn) {
-          loginTabBtn.onclick = () => goToTeacherProjectsDashboard();
-          loginTabBtn.innerHTML = `
-            <span class="ui-sprite ui-sm ui-dashboard"></span>
-            <span class="truncate" data-i18n="nav.dashboard">Dashboard Guru</span>
-          `;
-          loginTabBtn.setAttribute('title', 'Buka Dashboard Proyek');
-        }
+        if (authBtns) authBtns.classList.add('hidden');
+        if (userWrapper) userWrapper.classList.remove('hidden');
+        const initials = (typeof getTeacherInitials === 'function') ? getTeacherInitials(teacher.name) : 'GD';
+        if (avatarEl) avatarEl.textContent = initials;
+        if (nameEl) nameEl.textContent = teacher.name;
+        if (ddNameEl) ddNameEl.textContent = teacher.name;
+        if (ddSubEl) ddSubEl.textContent = [teacher.subject, teacher.school].filter(Boolean).join(' • ') || 'Sekolah Cinta Kasih Tzu Chi';
+        if (dashLabel) dashLabel.textContent = LotusI18n.t('nav.dashboardGuru');
+        if (dropDashLabel) dropDashLabel.textContent = LotusI18n.t('nav.dashboardGuru');
+        if (switchTeacherBtn) switchTeacherBtn.classList.remove('hidden');
+        if (studentPortalBtn) studentPortalBtn.classList.remove('hidden');
 
         if (homeCtaBtn) {
-          homeCtaBtn.onclick = () => goToTeacherProjectsDashboard();
+          homeCtaBtn.onclick = () => switchPortalTab('dashboard');
           const spanText = homeCtaBtn.querySelector('span:first-child');
           if (spanText) {
             spanText.textContent = LotusI18n.getLang() === 'id' ? 'Buka Dashboard Saya' : 'Open My Dashboard';
           }
         }
-      } else {
-        if (navLogin) navLogin.classList.remove('hidden');
-        if (navRegister) navRegister.classList.remove('hidden');
-        if (navDashboard) navDashboard.classList.add('hidden');
-        if (userMenuWrapper) userMenuWrapper.classList.add('hidden');
+      } else if (student && student.name) {
+        if (authBtns) authBtns.classList.add('hidden');
+        if (userWrapper) userWrapper.classList.remove('hidden');
+        const initial = (student.name[0] || 'M').toUpperCase();
+        if (avatarEl) avatarEl.textContent = initial;
+        if (nameEl) nameEl.textContent = student.name;
+        if (ddNameEl) ddNameEl.textContent = student.name;
+        if (ddSubEl) ddSubEl.textContent = 'Siswa • ' + (student.class || 'Sekolah Cinta Kasih Tzu Chi');
+        if (dashLabel) dashLabel.textContent = LotusI18n.t('nav.dashboardMurid');
+        if (dropDashLabel) dropDashLabel.textContent = LotusI18n.t('nav.dashboardMurid');
+        if (switchTeacherBtn) switchTeacherBtn.classList.add('hidden');
+        if (studentPortalBtn) studentPortalBtn.classList.remove('hidden');
 
-        if (loginTabBtn) {
-          loginTabBtn.onclick = () => switchPortalTab('login');
-          loginTabBtn.innerHTML = `
-            <span class="ui-sprite ui-sm ui-login"></span>
-            <span data-i18n="nav.login" class="truncate">${escapeHtml(LotusI18n.t('nav.login'))}</span>
-          `;
-          loginTabBtn.removeAttribute('title');
+        if (homeCtaBtn) {
+          homeCtaBtn.onclick = () => switchPortalTab('student-dashboard');
+          const spanText = homeCtaBtn.querySelector('span:first-child');
+          if (spanText) {
+            spanText.textContent = LotusI18n.getLang() === 'id' ? 'Buka Portal Murid' : 'Open Student Portal';
+          }
         }
+      } else {
+        if (authBtns) authBtns.classList.remove('hidden');
+        if (userWrapper) userWrapper.classList.add('hidden');
+        if (dashLabel) dashLabel.textContent = LotusI18n.t('nav.dashboard');
+        if (dropDashLabel) dropDashLabel.textContent = LotusI18n.t('nav.dashboard');
 
         if (homeCtaBtn) {
           homeCtaBtn.onclick = () => switchPortalTab('login');
@@ -5814,16 +6536,24 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       }
     }
 
+    // -------------------------------------------------------------------------
+    // PORTAL TAB SWITCHER (Clean Single Source of Truth)
+    // -------------------------------------------------------------------------
     function switchPortalTab(tab, updateHash = true) {
       currentTeacher = LotusDB.getCurrentTeacherStrict();
       if ((tab === 'dashboard' || tab === 'studio' || tab === 'settings' || tab === 'assignment-detail') && !currentTeacher) {
-        tab = 'login';
+        const studentRaw = localStorage.getItem('lotus_student_profile') || sessionStorage.getItem('lotus_student_profile');
+        if (tab === 'dashboard' && studentRaw) {
+          tab = 'student-dashboard';
+        } else {
+          tab = 'login';
+        }
       }
       if (currentTeacher && tab === 'login') {
         tab = 'dashboard';
       }
 
-      const validTabs = ['home', 'login', 'community', 'dashboard', 'studio', 'settings', 'player', 'assignment-detail'];
+      const validTabs = ['home', 'login', 'community', 'dashboard', 'student-dashboard', 'studio', 'settings', 'player', 'assignment-detail'];
       const valid = validTabs.includes(tab) ? tab : 'home';
       activePortalTab = valid;
 
@@ -5832,6 +6562,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
         'login': 'view-login',
         'community': 'view-community',
         'dashboard': 'view-dashboard',
+        'student-dashboard': 'view-student-dashboard',
         'studio': 'view-question-studio',
         'settings': 'view-edit-activity',
         'player': 'view-game-player',
@@ -5840,16 +6571,27 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
 
       showView(viewMap[valid]);
 
-      // Update top nav tabs
-      ['home', 'dashboard', 'community'].forEach(t => {
-        const btn = document.getElementById('nav-tab-' + t);
-        if (btn) {
-          const isActive = (t === valid);
-          btn.className = isActive
-            ? 'px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-[#1E5E3A] bg-[#EAF5ED] border-b-2 border-[#1E5E3A]'
-            : 'px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-colors cursor-pointer text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] border-b-2 border-transparent';
+      // Update static 3 tabs styling
+      const isHome = (valid === 'home');
+      const isDash = (valid === 'dashboard' || valid === 'student-dashboard');
+      const isComm = (valid === 'community');
+
+      const tabHome = document.getElementById('nav-tab-home');
+      const tabDash = document.getElementById('nav-tab-dashboard');
+      const tabComm = document.getElementById('nav-tab-community');
+
+      function setTabStyle(btn, isActive) {
+        if (!btn) return;
+        if (isActive) {
+          btn.className = 'px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-[#1E5E3A] bg-[#EAF5ED] border-b-2 border-[#1E5E3A]';
+        } else {
+          btn.className = 'px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-colors cursor-pointer text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] border-b-2 border-transparent';
         }
-      });
+      }
+
+      setTabStyle(tabHome, isHome);
+      setTabStyle(tabDash, isDash);
+      setTabStyle(tabComm, isComm);
 
       updatePortalAuthNav();
 
@@ -5864,6 +6606,8 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
 
       if (valid === 'dashboard') {
         renderDashboard();
+      } else if (valid === 'student-dashboard') {
+        initStudentDashboard();
       } else if (valid === 'community') {
         populateSubjectFilterOptions();
         renderCommunityCards();
@@ -5873,6 +6617,9 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       }
     }
 
+    // -------------------------------------------------------------------------
+    // HASH / LOCATION SYNCHRONIZER
+    // -------------------------------------------------------------------------
     function syncTabFromLocation() {
       const raw = (window.location.hash || '').replace(/^#/, '');
       const hashParams = new URLSearchParams(raw);
@@ -5882,7 +6629,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
 
       const teacher = LotusDB.getCurrentTeacherStrict();
       if (teacher && requestedTab === 'login') {
-        goToTeacherProjectsDashboard();
+        switchPortalTab('dashboard', false);
         return;
       }
 
@@ -5890,7 +6637,6 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       switchPortalTab(requestedTab, false);
 
       if (pinParam) {
-        switchPortalTab('home', false);
         const pinInput = document.getElementById('home-pin-input');
         if (pinInput) pinInput.value = pinParam;
         const proj = LotusDB.findProjectByPin(pinParam);
@@ -5899,8 +6645,159 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
     }
 
     // -------------------------------------------------------------------------
-    // HOME TAB: Continuous Non-Clickable Animated .webp Marquee
+    // HOME PIN JOIN HANDLER
     // -------------------------------------------------------------------------
+    function handleHomePinJoin(e) {
+      if (e) e.preventDefault();
+      const pinInput = document.getElementById('home-pin-input');
+      const nameInput = document.getElementById('home-student-name');
+      const errBox = document.getElementById('home-pin-error');
+      if (!pinInput || !nameInput) return;
+
+      const pin = pinInput.value.trim();
+      const name = nameInput.value.trim();
+      if (!pin || !name) {
+        if (errBox) {
+          errBox.textContent = 'Mohon masukkan PIN Game dan Nama Siswa lengkap.';
+          errBox.classList.remove('hidden');
+        }
+        return;
+      }
+
+      const proj = LotusDB.findProjectByPin(pin);
+      if (!proj) {
+        if (errBox) {
+          errBox.textContent = 'PIN Game ' + pin + ' tidak ditemukan atau belum aktif.';
+          errBox.classList.remove('hidden');
+        }
+        return;
+      }
+
+      if (errBox) errBox.classList.add('hidden');
+
+      const studentProfile = {
+        name: name,
+        class: proj.level ? 'Kelas ' + proj.level : 'SD Tzu Chi',
+        last_pin: pin,
+        joined_at: new Date().toISOString()
+      };
+      localStorage.setItem('lotus_student_profile', JSON.stringify(studentProfile));
+      updatePortalAuthNav();
+
+      openCommunityPlayer(proj.id, name);
+    }
+
+    // -------------------------------------------------------------------------
+    // INTEGRATED STUDENT DASHBOARD LOGIC
+    // -------------------------------------------------------------------------
+    let _activeStudentProfile = null;
+    let _studentCurrentTab = 'active';
+
+    function initStudentDashboard() {
+      try {
+        const raw = localStorage.getItem('lotus_student_profile') || sessionStorage.getItem('lotus_student_profile');
+        if (raw) {
+          _activeStudentProfile = JSON.parse(raw);
+        } else {
+          _activeStudentProfile = {
+            name: 'Budi Santoso',
+            class: 'Kelas 5-A SD Tzu Chi',
+            joined_at: new Date().toISOString()
+          };
+          localStorage.setItem('lotus_student_profile', JSON.stringify(_activeStudentProfile));
+        }
+      } catch (e) {
+        _activeStudentProfile = { name: 'Murid Tzu Chi', class: 'SD' };
+      }
+
+      const nameEl = document.getElementById('stu-hero-name');
+      const subEl = document.getElementById('stu-hero-sub');
+      if (nameEl) nameEl.textContent = _activeStudentProfile.name;
+      if (subEl) subEl.textContent = _activeStudentProfile.class || 'Sekolah Cinta Kasih Tzu Chi';
+
+      renderStudentAssignments();
+      renderStudentHistory();
+    }
+
+    function renderStudentAssignments() {
+      const container = document.getElementById('student-assignments-container');
+      if (!container) return;
+      const allProjects = LotusDB.getAllProjects();
+      const activeProjects = allProjects.filter(p => !p.is_deleted && p.is_public !== false).slice(0, 8);
+
+      if (activeProjects.length === 0) {
+        container.innerHTML = '<div class="col-span-full p-8 text-center text-sm text-[#78716c] bg-white rounded-xl border border-[#e5dfd3]">Belum ada tugas aktif saat ini. Masukkan PIN game untuk bergabung!</div>';
+        return;
+      }
+
+      container.innerHTML = activeProjects.map(p => {
+        const tplName = LotusI18n.getTemplateName(p.template_type || 'quiz');
+        return `
+          <div class="bg-white rounded-xl border border-[#e5dfd3] p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-4">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between text-[11px] font-bold text-[#57534e]">
+                <span class="text-[#1E5E3A]">${escapeHtml(p.level || 'SD')} · ${escapeHtml(p.subject || 'Umum')}</span>
+                <span class="font-mono bg-[#EAF5ED] text-[#1E5E3A] px-2 py-0.5 rounded">PIN: ${escapeHtml(p.pin || '')}</span>
+              </div>
+              <h4 class="font-bold text-sm sm:text-base text-[#18181b] line-clamp-2">${escapeHtml(p.title)}</h4>
+              <p class="text-xs text-[#78716c]">${tplName} · ${p.questions?.length || 0} Soal</p>
+            </div>
+            <button type="button" onclick="openGamePlayer('${escapeHtml(p.id)}', true)"
+              class="w-full py-2.5 rounded-lg bg-[#1E5E3A] hover:bg-[#2C6E49] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors">
+              <span class="ui-sprite ui-xs ui-play"></span>
+              <span>Kerjakan Tugas</span>
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderStudentHistory() {
+      const container = document.getElementById('student-history-container');
+      if (!container) return;
+      container.innerHTML = `
+        <div class="bg-white rounded-xl border border-[#e5dfd3] p-6 text-center space-y-2">
+          <div class="text-2xl">🌟</div>
+          <h4 class="font-bold text-sm text-[#18181b]">Riwayat Pengerjaan Tugas</h4>
+          <p class="text-xs text-[#78716c]">Tugas yang telah selesai dikerjakan akan tersimpan di sini dengan nilai dan ulasan.</p>
+        </div>
+      `;
+    }
+
+    function switchStudentTab(tab) {
+      _studentCurrentTab = tab;
+      const tabActive = document.getElementById('tab-btn-active');
+      const tabHistory = document.getElementById('tab-btn-history');
+      const viewActive = document.getElementById('student-assignments-container');
+      const viewHistory = document.getElementById('student-history-container');
+
+      if (tab === 'history') {
+        if (tabActive) tabActive.className = 'px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg text-[#57534e] hover:bg-[#f4f1ea] transition-colors cursor-pointer';
+        if (tabHistory) tabHistory.className = 'px-4 py-2 text-xs sm:text-sm font-bold rounded-lg bg-[#1E5E3A] text-white transition-colors cursor-pointer';
+        if (viewActive) viewActive.classList.add('hidden');
+        if (viewHistory) viewHistory.classList.remove('hidden');
+      } else {
+        if (tabActive) tabActive.className = 'px-4 py-2 text-xs sm:text-sm font-bold rounded-lg bg-[#1E5E3A] text-white transition-colors cursor-pointer';
+        if (tabHistory) tabHistory.className = 'px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg text-[#57534e] hover:bg-[#f4f1ea] transition-colors cursor-pointer';
+        if (viewActive) viewActive.classList.remove('hidden');
+        if (viewHistory) viewHistory.classList.add('hidden');
+      }
+    }
+
+    function handleStudentPinSubmit(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById('student-pin-search');
+      if (!input) return;
+      const pin = input.value.trim();
+      if (!pin) return;
+      const proj = LotusDB.findProjectByPin(pin);
+      if (proj) {
+        openCommunityPlayer(proj.id, _activeStudentProfile ? _activeStudentProfile.name : '');
+      } else {
+        alert('PIN Game ' + pin + ' tidak ditemukan.');
+      }
+    }
+
     function renderHomeMarquee() {
       const track = document.getElementById('home-marquee-track');
       if (!track) return;
@@ -5949,6 +6846,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
     // -------------------------------------------------------------------------
     // TEACHER LOGIN TAB: Signed-in Banner, Sign In + Remember Password, Register
     // -------------------------------------------------------------------------
+    function renderDemoTeachersList() {}
     function renderLoginBanner() {
       const teacher = LotusDB.getCurrentTeacherStrict();
       const banner = document.getElementById('login-active-banner');

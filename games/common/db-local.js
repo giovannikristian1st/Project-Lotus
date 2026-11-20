@@ -4,7 +4,7 @@
  * (Standard & AI Camera templates, TK-SMK levels, multi-language), media blobs, & leaderboards.
  */
 
-const LOTUS_SEED_VERSION = '2026.11.19-daai-meihua-v5';
+const LOTUS_SEED_VERSION = '2026.11.20-meihua-clean-pairs-v1';
 
 const DEFAULT_TEACHERS = [
   {
@@ -577,41 +577,30 @@ function generateMeihuaPresets() {
       vocabs.forEach((v, idx) => {
         const otherVocabs = allBookVocab.filter(item => item.char !== v.char);
         const shuffled = otherVocabs.sort(() => 0.5 - Math.random()).slice(0, 3);
-        const meaning = v.id || v.en;
+        const englishMeaning = (v.en || v.id || '').trim();
+        const hanziWithPinyin = v.char + (v.pinyin ? ' [' + v.pinyin + ']' : '');
         
         const options = [
-          { text: meaning + ' (' + v.pinyin + ')', isCorrect: true }
+          { text: hanziWithPinyin, isCorrect: true }
         ];
         shuffled.forEach(s => {
-          options.push({ text: (s.id || s.en) + ' (' + s.pinyin + ')', isCorrect: false });
+          const sText = s.char + (s.pinyin ? ' [' + s.pinyin + ']' : '');
+          options.push({ text: sText, isCorrect: false });
         });
         options.sort(() => 0.5 - Math.random());
         
         questions.push({
           id: 'q_' + b + '_' + u + '_' + (idx + 1),
-          text: 'Pilih arti / pinyin yang tepat untuk 「' + v.char + '」:',
+          text: englishMeaning,
+          answer: hanziWithPinyin,
+          prompt_en: englishMeaning,
+          prompt_zh: hanziWithPinyin,
           image: '',
           audio: '',
           category: 'Bab ' + u,
           options: options
         });
       });
-
-      if (unit.sentences && unit.sentences.length > 0) {
-        unit.sentences.slice(0, 2).forEach((s, sIdx) => {
-          questions.push({
-            id: 'qs_' + b + '_' + u + '_' + (sIdx + 1),
-            text: 'Kalimat Meihua: 「' + s + '」',
-            image: '',
-            audio: '',
-            category: 'Kalimat',
-            options: [
-              { text: 'Benar / Sudah dipelajari di bab ini', isCorrect: true },
-              { text: 'Salah / Bukan bagian bab ini', isCorrect: false }
-            ]
-          });
-        });
-      }
 
       projects.push({
         id: 'meihua-b' + b + '-u' + u,
@@ -703,6 +692,20 @@ class LocalDatabase {
           // If already in list but private or deleted, heal it to public & active
           const idx = existingMap.get(preset.id);
           const current = all[idx];
+          const hasOldText = current.questions && current.questions.some(q => q.text && q.text.includes('Pilih'));
+          if (hasOldText || current.is_deleted || current.is_public === false || current.visibility === 'private' || current.is_private) {
+            all[idx] = {
+              ...current,
+              ...norm,
+              questions: norm.questions,
+              is_deleted: false,
+              is_public: true,
+              visibility: 'public',
+              is_private: false
+            };
+            hasChanges = true;
+            continue;
+          }
           if (current.is_deleted || current.is_public === false || current.visibility === 'private' || current.is_private) {
             all[idx] = {
               ...current,

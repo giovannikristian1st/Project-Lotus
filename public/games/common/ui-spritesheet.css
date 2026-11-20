@@ -131,3 +131,19 @@
 body.theme-magical .hud-icon-white {
   display: none !important;
 }
+
+/* Share / Link Icon for Assignment Generator */
+.ui-share {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231D4ED8' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8'/%3E%3Cpolyline points='16 6 12 2 8 6'/%3E%3Cline x1='12' y1='2' x2='12' y2='15'/%3E%3C/svg%3E") !important;
+  background-position: center !important;
+  background-size: contain !important;
+}
+
+/* Convenience Semantic Aliases */
+.ui-play-green { background-position: 0% 14.2857% !important; }
+.ui-edit       { background-position: 14.2857% 14.2857% !important; }
+.ui-gear       { background-position: 42.8571% 14.2857% !important; }
+.ui-settings   { background-position: 42.8571% 14.2857% !important; }
+.ui-tasks      { background-position: 85.7143% 14.2857% !important; }
+.ui-save       { background-position: 42.8571% 42.8571% !important; }
+.ui-link       { background-position: center !important; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231D4ED8' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8'/%3E%3Cpolyline points='16 6 12 2 8 6'/%3E%3Cline x1='12' y1='2' x2='12' y2='15'/%3E%3C/svg%3E") !important; }

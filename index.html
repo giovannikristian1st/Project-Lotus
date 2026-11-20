@@ -186,6 +186,7 @@
     }
 
   </style>
+  <link rel="stylesheet" href="games/common/ui-spritesheet.css?v=2026.11.20">
 </head>
 <body class="bg-[#FAF8F5] text-[#18181b] min-h-screen flex flex-col antialiased">
 
@@ -193,15 +194,15 @@
   <header class="sticky top-0 z-40 bg-white border-b border-[#e5dfd3]">
     <div class="w-full max-w-[1840px] mx-auto px-4 sm:px-8 lg:px-12 py-2 md:py-0 flex items-center justify-between gap-2 md:gap-4 md:h-16">
 
-      <!-- Zone 1 (Left): Brand Logo & School Identity -->
-      <a href="index.html" class="flex items-center gap-2.5 sm:gap-3 shrink-0 py-1">
-        <img src="public/assets/Main-Logo.png" onerror="this.src='assets/Main-Logo.png'" alt="DaAi Learning Hub Logo" class="h-10 sm:h-11 w-auto object-contain">
-        <div class="leading-tight">
-          <div class="flex items-center gap-1.5">
-            <span class="font-extrabold text-sm sm:text-base tracking-tight text-[#18181b]">大愛學海</span>
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EAF5ED] text-[#1E5E3A] border border-[#c4e3cf]">DaAi Hub</span>
-          </div>
-          <p class="text-[11px] font-medium text-[#2C6E49] hidden sm:block">Sekolah Cinta Kasih Tzu Chi</p>
+      <!-- Zone 1 (Left): Brand Logo & Official Identity -->
+      <a href="index.html" class="flex items-center gap-2.5 sm:gap-3.5 shrink-0 py-1 group">
+        <img src="public/assets/Main-Logo.png" onerror="this.src='assets/Main-Logo.png'" alt="DaAi Learning Hub Logo" class="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105">
+        <div class="flex items-center gap-2">
+          <span class="font-black text-base sm:text-xl tracking-tight text-[#18181b] font-serif">大愛學海</span>
+          <span class="px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-black tracking-wide text-white bg-gradient-to-r from-[#1E5E3A] to-[#2C6E49] shadow-xs border border-emerald-700/20 inline-flex items-center gap-1.5">
+            <span>DaAi Hub</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+          </span>
         </div>
       </a>
 
@@ -361,33 +362,65 @@
   <main class="w-full max-w-[1840px] mx-auto px-4 sm:px-8 lg:px-12 py-6 flex-1 flex flex-col">
     <section id="view-home" class="pb-16 max-w-6xl mx-auto w-full space-y-12">
 
-      <!-- 1. Hero Intro -->
-      <div class="pt-8 sm:pt-12 text-center space-y-4">
-        <h1 class="text-3xl sm:text-5xl font-extrabold tracking-[-0.025em] text-[#18181b] leading-[1.18]">
-          <span data-i18n="home.titlePre">Classroom games built from</span>
-          <span class="relative inline-block text-[#1d4ed8]">
-            <span data-i18n="home.titleHighlight">one question set.</span>
+      <!-- 1. Integrated Hero: Introducing DaAi Hub (大愛學海) -->
+      <div class="pt-8 sm:pt-12 text-center space-y-5">
+        <!-- Brand Badge -->
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#EAF5ED] border border-[#c4e3cf] text-[#1E5E3A] text-xs font-bold shadow-xs">
+          <span class="text-sm">🌸</span>
+          <span>Platform Pembelajaran Digital Resmi Sekolah Cinta Kasih Tzu Chi</span>
+        </div>
+
+        <!-- Main Title -->
+        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-[#18181b] leading-[1.18] max-w-4xl mx-auto">
+          <span>Selamat Datang di </span>
+          <span class="relative inline-block text-[#1E5E3A]">
+            <span>DaAi Hub (大愛學海)</span>
             <svg class="w-full h-2.5 text-[#f59e0b] mt-0.5 block" viewBox="0 0 220 10" preserveAspectRatio="none" aria-hidden="true">
               <path d="M2 7.5C60 2.5 160 2 218 6.5" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" fill="none"/>
             </svg>
           </span>
         </h1>
 
-        <p class="text-sm sm:text-base text-[#57534e] max-w-3xl mx-auto leading-relaxed font-medium" data-i18n="home.subtitle">
-          Tulis soal atau kosakata sekali di DaAi Learning Hub, lalu mainkan dalam aneka format interaktif—dari kuis kelas standar hingga game layar sentuh IFP—untuk jenjang TK hingga SMK Sekolah Cinta Kasih Tzu Chi.
+        <!-- Subtitle explaining DaAi Hub -->
+        <p class="text-sm sm:text-base text-[#57534e] max-w-3xl mx-auto leading-relaxed font-medium">
+          Pusat media ajar dan gamifikasi pembelajaran terpadu Sekolah Cinta Kasih Tzu Chi. Cukup masukkan bank soal atau materi satu kali, lalu mainkan dalam 15 format game interaktif kelas, eksplorasi media peraga 3D sains, dan laboratorium bahasa Mandarin dari jenjang TK hingga SMK.
         </p>
+
+        <!-- 4 Core Pillars Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto pt-3 text-left">
+          <div class="bg-white rounded-xl border border-[#e5dfd3] p-3.5 shadow-xs flex flex-col justify-between hover:border-[#1E5E3A] transition-colors">
+            <div class="text-2xl mb-1.5">🎮</div>
+            <div class="font-bold text-xs sm:text-sm text-[#18181b]">15 Game Interaktif</div>
+            <p class="text-[11px] text-[#78716c] mt-0.5">Kuis, tebas buah, balapan, hingga game gerak kamera AI.</p>
+          </div>
+          <div class="bg-white rounded-xl border border-[#e5dfd3] p-3.5 shadow-xs flex flex-col justify-between hover:border-[#1E5E3A] transition-colors">
+            <div class="text-2xl mb-1.5">🔬</div>
+            <div class="font-bold text-xs sm:text-sm text-[#18181b]">Media 3D Sains</div>
+            <p class="text-[11px] text-[#78716c] mt-0.5">Anatomi rangka manusia 3D 360° interaktif untuk kelas IPA.</p>
+          </div>
+          <div class="bg-white rounded-xl border border-[#e5dfd3] p-3.5 shadow-xs flex flex-col justify-between hover:border-[#1E5E3A] transition-colors">
+            <div class="text-2xl mb-1.5">🏮</div>
+            <div class="font-bold text-xs sm:text-sm text-[#18181b]">Meihua & Hanzi Lab</div>
+            <p class="text-[11px] text-[#78716c] mt-0.5">Kurikulum Meihua Bab 1–60, papan Tianzige, dan lab goresan.</p>
+          </div>
+          <div class="bg-white rounded-xl border border-[#e5dfd3] p-3.5 shadow-xs flex flex-col justify-between hover:border-[#1E5E3A] transition-colors">
+            <div class="text-2xl mb-1.5">🎒</div>
+            <div class="font-bold text-xs sm:text-sm text-[#18181b]">Portal Siswa Cepat</div>
+            <p class="text-[11px] text-[#78716c] mt-0.5">Murid langsung bergabung lewat PIN game tanpa login guru.</p>
+          </div>
+        </div>
 
         <!-- Primary Actions: Try Now (Dashboard / Login) + Browse Community -->
         <div class="flex flex-wrap items-center justify-center gap-3 pt-3">
           <button type="button" id="home-cta-try-now" onclick="handleDashboardNavClick()"
             class="px-6 py-2.5 rounded-xl bg-[#1E5E3A] hover:bg-[#2C6E49] text-white font-bold text-sm shadow-sm transition-all hover:shadow-md cursor-pointer flex items-center gap-2">
-            <span>Mulai Sekarang</span>
+            <span>Buka Dashboard</span>
             <span>→</span>
           </button>
           <button type="button" onclick="switchPortalTab('community')"
             class="px-6 py-2.5 rounded-xl border border-[#d6cfc2] bg-white hover:bg-[#f4f1ea] text-[#18181b] font-bold text-sm transition-colors cursor-pointer flex items-center gap-2">
             <span class="ui-sprite ui-sm ui-community"></span>
-            <span>Jelajahi Pustaka Komunitas</span>
+            <span>Jelajahi Pustaka Komunitas (64+)</span>
           </button>
         </div>
       </div>
@@ -1179,6 +1212,10 @@
               <span data-i18n="studio.excelImport">Import Excel</span>
             </button>
 
+            <button type="button" id="studio-swap-qa-btn" onclick="invertProjectQuestionsPromptAnswer()" title="Tukar posisi kolom soal dan jawaban untuk pertanyaan 1-ke-1" class="px-3 py-1.5 bg-[#fcfbf8] border border-[#d6cfc2] hover:bg-[#EAF5ED] text-[#1E5E3A] font-bold text-xs rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer">
+              <span>⇄</span>
+              <span>Tukar Soal & Jawaban</span>
+            </button>
             <button type="button" id="studio-excel-export-btn" onclick="exportProjectQuestionsExcel()"
               class="px-3.5 py-2 bg-[#eff6ff] hover:bg-[#dbeafe] border border-[#bfdbfe] text-[#1d4ed8] font-bold text-xs rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer">
               <span class="ui-sprite ui-xs ui-download"></span>
@@ -1431,6 +1468,17 @@
           <!-- Collapsible Game Settings Panel (Right Above Leaderboard, Outside Fullscreen Container) -->
           <div id="player-settings-card" class="bg-white rounded-xl border border-[#e5dfd3] overflow-hidden">
             <div id="player-settings-accordion">
+            <div class="p-3.5 border-b border-[#eee9df] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-[#fcfbf8]">
+              <div>
+                <div class="text-xs font-bold text-[#18181b]">Tukar Arah Soal & Jawaban (Prompt ⇄ Answer)</div>
+                <div class="text-[11px] text-[#78716c]">Mainkan kuis dengan membalik arah (misal: English ⇄ Mandarin)</div>
+              </div>
+              <button type="button" id="player-invert-qa-btn" onclick="togglePlayerInvertQA()"
+                class="px-3.5 py-1.5 rounded-lg border border-[#d6cfc2] bg-white hover:bg-[#EAF5ED] text-xs font-bold text-[#1E5E3A] flex items-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto">
+                <span>⇄</span>
+                <span id="player-invert-qa-label">Arah Standar</span>
+              </button>
+            </div>>
               <button type="button" id="player-settings-toggle-btn" onclick="togglePlayerSettingsAccordion()"
                 aria-expanded="false" aria-controls="player-settings-body"
                 class="w-full px-5 py-3.5 flex flex-wrap items-center justify-between gap-3 text-left hover:bg-[#fcfbf8] transition-colors cursor-pointer">
@@ -3064,7 +3112,8 @@
     function showView(viewId) {
       const allViews = [
         'view-home', 'view-login', 'view-community',
-        'view-dashboard', 'view-assignment-detail', 'view-question-studio', 'view-edit-activity', 'view-game-player'
+        'view-dashboard', 'view-student-dashboard',
+        'view-assignment-detail', 'view-question-studio', 'view-edit-activity', 'view-game-player'
       ];
       allViews.forEach(id => {
         const el = document.getElementById(id);
@@ -5006,7 +5055,9 @@
       const iframe = document.getElementById('game-iframe');
       if (iframe) iframe.src = 'about:blank';
       isPlayerGameStarted = false;
-      switchPortalTab('dashboard');
+      _isPlayerQAInverted = false;
+      const returnTarget = lastOpenedFromView || (currentTeacher ? 'dashboard' : 'home');
+      switchPortalTab(returnTarget);
     }
 
     function editCurrentActiveProject() {
@@ -6539,6 +6590,98 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
     // -------------------------------------------------------------------------
     // PORTAL TAB SWITCHER (Clean Single Source of Truth)
     // -------------------------------------------------------------------------
+    
+    // -------------------------------------------------------------------------
+    // BROWSER NAVIGATION & HISTORY STACK TRACKER
+    // -------------------------------------------------------------------------
+    let lastOpenedFromView = 'home';
+
+    window.addEventListener('popstate', (e) => {
+      const hash = (window.location.hash || '').replace(/^#/, '');
+      const hashParams = new URLSearchParams(hash);
+      const targetTab = hashParams.get('tab') || 'home';
+      const projId = hashParams.get('id');
+
+      if (targetTab === 'player' && projId) {
+        openGamePlayer(projId, false, false);
+      } else if (targetTab === 'studio') {
+        const proj = projId ? LotusDB.getProjectById(projId) : null;
+        openQuestionStudio(proj, false);
+      } else {
+        switchPortalTab(targetTab, false);
+      }
+    });
+
+    // -------------------------------------------------------------------------
+    // PROMPT ⇄ ANSWER INVERTER LOGIC (Question Studio & Game Player)
+    // -------------------------------------------------------------------------
+    function invertProjectQuestionsPromptAnswer() {
+      const proj = editingProject || (typeof window !== 'undefined' ? window.editingProject : null);
+      if (!proj || !Array.isArray(proj.questions)) return;
+      let count = 0;
+      proj.questions.forEach(q => {
+        const correctOpt = q.options && q.options.find(o => o.isCorrect);
+        if (correctOpt && q.text) {
+          const oldText = q.text;
+          const oldAns = correctOpt.text;
+          q.text = oldAns;
+          correctOpt.text = oldText;
+          count++;
+        }
+      });
+      if (count > 0) {
+        if (typeof renderStudioQuestionsList === 'function') renderStudioQuestionsList();
+        if (typeof alert === 'function' && typeof LotusI18n !== 'undefined') {
+          alert(LotusI18n.getLang() === 'id'
+            ? `Berhasil menukar posisi soal & jawaban untuk ${count} pertanyaan!`
+            : `Successfully swapped prompt and answer for ${count} questions!`);
+        }
+      }
+    }
+
+    let _isPlayerQAInverted = false;
+    function togglePlayerInvertQA() {
+      const proj = activePlayerProject || (typeof window !== 'undefined' ? window.activePlayerProject : null);
+      if (!proj || !Array.isArray(proj.questions)) return;
+      _isPlayerQAInverted = !_isPlayerQAInverted;
+      const label = document.getElementById('player-invert-qa-label');
+      const btn = document.getElementById('player-invert-qa-btn');
+      if (label) {
+        label.textContent = _isPlayerQAInverted ? 'Terbalik (Inverted)' : 'Arah Standar';
+      }
+      if (btn) {
+        if (_isPlayerQAInverted) {
+          btn.className = 'px-3.5 py-1.5 rounded-lg border border-[#1E5E3A] bg-[#EAF5ED] text-xs font-bold text-[#1E5E3A] flex items-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto';
+        } else {
+          btn.className = 'px-3.5 py-1.5 rounded-lg border border-[#d6cfc2] bg-white hover:bg-[#EAF5ED] text-xs font-bold text-[#1E5E3A] flex items-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto';
+        }
+      }
+
+      // Invert questions on the active player project in memory
+      proj.questions.forEach(q => {
+        const correctOpt = q.options && q.options.find(o => o.isCorrect);
+        if (correctOpt && q.text) {
+          const oldText = q.text;
+          const oldAns = correctOpt.text;
+          q.text = oldAns;
+          correctOpt.text = oldText;
+        }
+      });
+
+      // Post updated activity to running iframe
+      const iframe = document.getElementById('game-iframe');
+      if (iframe && iframe.contentWindow) {
+        try {
+          iframe.contentWindow.postMessage({
+            type: 'INIT_ACTIVITY',
+            activity: activePlayerProject,
+            playerName: '',
+            playerClass: ''
+          }, '*');
+        } catch(e) {}
+      }
+    }
+
     function switchPortalTab(tab, updateHash = true) {
       currentTeacher = LotusDB.getCurrentTeacherStrict();
       if ((tab === 'dashboard' || tab === 'studio' || tab === 'settings' || tab === 'assignment-detail') && !currentTeacher) {
@@ -6599,7 +6742,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
         try {
           const targetHash = '#tab=' + valid;
           if (window.location.hash !== targetHash) {
-            history.replaceState(null, '', targetHash);
+            history.pushState({ tab: valid }, '', targetHash);
           }
         } catch (e) {}
       }

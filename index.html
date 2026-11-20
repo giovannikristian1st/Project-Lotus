@@ -240,7 +240,7 @@
           </button>
 
           <!-- Dropdown Menu with Category Headers -->
-          <div id="nav-media-menu" class="hidden absolute left-0 top-full mt-1.5 w-72 bg-white rounded-xl border border-[#d6cfc2] shadow-[0_12px_32px_rgba(0,0,0,0.15)] py-2 px-1.5 space-y-1 z-50">
+          <div id="nav-media-menu" class="hidden absolute left-0 top-full mt-1.5 w-80 bg-white rounded-xl border border-[#d6cfc2] shadow-[0_12px_32px_rgba(0,0,0,0.15)] py-2 px-1.5 space-y-1 z-50">
             <!-- IPA / Sains Header -->
             <div class="px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-[#1E5E3A] bg-[#EAF5ED] rounded-md flex items-center gap-1.5">
               <span>🔬</span>
@@ -271,6 +271,20 @@
               <div>
                 <div class="font-bold text-[#18181b]" data-i18n="media.strokesTitle">Lab Goresan & Radikal</div>
                 <div class="text-[10px] text-[#78716c] font-normal" data-i18n="media.strokesDesc">Animasi Urutan Goresan & Radikal</div>
+              </div>
+            </a>
+            <a href="games/builderbattle.html" target="_blank" onclick="closeMediaAjarDropdown()" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#fcfbf8] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
+              <span class="w-8 h-8 rounded-lg bg-orange-50 text-[#ea580c] flex items-center justify-center font-bold text-base shrink-0 border border-orange-200">🏰</span>
+              <div>
+                <div class="font-bold text-[#18181b]" data-i18n="media.builderBattleTitle">Builder Battle (2P)</div>
+                <div class="text-[10px] text-[#78716c] font-normal" data-i18n="media.builderBattleDesc">Adu Cepat Bangun Karakter Hanzi Meihua</div>
+              </div>
+            </a>
+            <a href="games/brushmaster.html" target="_blank" onclick="closeMediaAjarDropdown()" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#fcfbf8] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
+              <span class="w-8 h-8 rounded-lg bg-orange-50 text-[#ea580c] flex items-center justify-center font-bold text-base shrink-0 border border-orange-200">🖌️</span>
+              <div>
+                <div class="font-bold text-[#18181b]" data-i18n="media.brushMasterTitle">Brush Master Kaligrafi</div>
+                <div class="text-[10px] text-[#78716c] font-normal" data-i18n="media.brushMasterDesc">Latihan Kaligrafi & Goresan Kuas Interaktif</div>
               </div>
             </a>
           </div>
@@ -2849,9 +2863,6 @@
       { id: 'bossraid', category: 'ifp', sprite: 'ui-gamepad', supportedFormats: ['quiz', 'matching', 'truefalse'] },
       { id: 'bombsquad', category: 'ifp', sprite: 'ui-gamepad', supportedFormats: ['quiz', 'matching', 'truefalse', 'sentence'] },
       { id: 'fliptile', category: 'ifp', sprite: 'ui-game-match', supportedFormats: ['matching', 'quiz', 'strokes'] },
-      { id: 'brushmaster', category: 'ifp', sprite: 'ui-brush', supportedFormats: ['strokes', 'matching'] },
-      { id: 'builderbattle', category: 'ifp', sprite: 'ui-gamepad', supportedFormats: ['quiz', 'matching', 'sentence'] },
-      { id: 'builderbattle-custom', category: 'ifp', sprite: 'ui-gamepad', supportedFormats: ['sentence', 'quiz', 'matching'] },
       { id: 'jeopardy', category: 'ifp', sprite: 'ui-game-quiz', supportedFormats: ['jeopardy', 'quiz', 'truefalse'] },
       { id: 'wordmatch', category: 'ifp', sprite: 'ui-game-word', supportedFormats: ['matching', 'quiz', 'strokes'] }
     ];

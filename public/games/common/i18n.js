@@ -946,7 +946,7 @@
       'media.drawingDesc': 'Latihan Tulis Bebas & Grid Tianzige',
       'media.strokesTitle': 'Lab Goresan & Radikal',
       'media.strokesDesc': 'Animasi Urutan Goresan & Struktur Radikal',
-      'player.backBtn': 'Kembali ke Proyek',
+      'player.backBtn': 'Kembali ke Dashboard',
       'login.tabRegister': 'Daftar Akun',
       'login.emailLabel': 'Email atau Nama Lengkap',
       'login.emailPlaceholder': 'contoh: budi.prasetyo@sekolah.sch.id',

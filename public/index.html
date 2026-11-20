@@ -275,6 +275,13 @@
             </a>
           </div>
         </div>
+
+        <!-- 5. Login Tab (Shown in navigation bar when NOT logged in) -->
+        <button type="button" id="nav-tab-login" onclick="switchPortalTab('login')"
+          class="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-[#18181b] bg-[#fcfbf8] hover:bg-[#EAF5ED] hover:text-[#1E5E3A] border border-[#d6cfc2]">
+          <span class="ui-sprite ui-sm ui-login"></span>
+          <span data-i18n="login.title" class="truncate">Login</span>
+        </button>
       </nav>
 
       <!-- Zone 3 (Right): Dedicated Account Slot & Language Toggle (Always on the Right) -->
@@ -335,7 +342,7 @@
                 <span data-i18n="nav.dashboardMurid">Portal Murid</span>
               </button>
               <div class="border-t border-[#eee9df] my-1"></div>
-              <button type="button" id="portal-logout-btn" onclick="logoutTeacher(); closePortalUserDropdown();"
+              <button type="button" id="portal-logout-btn" onclick="logoutUser();"
                 class="w-full px-3 py-2 rounded-lg hover:bg-red-50 text-[#18181b] hover:text-red-700 text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer text-left">
                 <span class="ui-sprite ui-sm ui-logout"></span>
                 <span data-i18n="login.signOut">Sign Out</span>
@@ -1390,12 +1397,9 @@
       <!-- Player Header Bar -->
       <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-xl border border-[#e5dfd3]">
         <div class="flex items-center gap-3 min-w-0">
-          <button type="button" onclick="closeGamePlayer()" class="px-3 py-1.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] hover:bg-[#f4f1ea] text-xs font-bold text-[#18181b] flex items-center gap-1.5 transition-colors cursor-pointer" title="Back to Dashboard">
-    <span class="ui-sprite ui-sm ui-arrow-left"></span>
-    <span data-i18n="player.backBtn">Kembali ke Proyek</span>
-  </button>
-            <span class="ui-sprite ui-xs ui-arrow-left"></span>
-            <span data-i18n="player.backToProjects">Back to Projects</span>
+          <button type="button" id="player-back-btn" onclick="closeGamePlayer()" class="px-3 py-1.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] hover:bg-[#f4f1ea] text-xs font-bold text-[#18181b] flex items-center gap-1.5 transition-colors cursor-pointer" title="Kembali ke Dashboard / Halaman Sebelumnya">
+            <span class="ui-sprite ui-sm ui-arrow-left"></span>
+            <span id="player-back-btn-text" data-i18n="player.backBtn">Kembali ke Dashboard</span>
           </button>
           <div class="min-w-0">
             <h3 class="text-base sm:text-lg font-bold text-[#18181b] truncate" id="player-title">Game Title</h3>
@@ -3078,16 +3082,50 @@
       document.getElementById('teacher-avatar').textContent = initials || 'T';
     }
 
-    function logoutTeacher() {
+        function logoutUser() {
       try {
         localStorage.removeItem('lotus_active_navigation');
         sessionStorage.removeItem('lotus_active_navigation');
+        localStorage.removeItem('lotus_active_teacher');
+        sessionStorage.removeItem('lotus_active_teacher');
+        localStorage.removeItem('lotus_student_profile');
+        sessionStorage.removeItem('lotus_student_profile');
+        localStorage.removeItem('lotus_remembered_login');
       } catch (e) {}
-      LotusDB.logoutTeacher();
+
+      if (window.LotusDB) {
+        LotusDB.logoutTeacher();
+        try {
+          const sb = LotusDB.getSupabaseClient();
+          if (sb && sb.auth) {
+            sb.auth.signOut().catch(() => {});
+          }
+        } catch (e) {}
+      }
+
       currentTeacher = null;
+      if (typeof window !== 'undefined') window.currentTeacher = null;
+      _activeStudentProfile = null;
+      if (typeof window !== 'undefined') window._activeStudentProfile = null;
+      lastOpenedFromView = 'home';
+      if (typeof window !== 'undefined') window.lastOpenedFromView = 'home';
+
+      closePortalUserDropdown();
       updatePortalAuthNav();
-      switchPortalTab('home');
+      renderLoginBanner();
+      renderPortalUserMenu();
+
+      try {
+        if (window.location.hash && window.location.hash !== '#tab=home') {
+          history.pushState({ tab: 'home' }, '', '#tab=home');
+        }
+      } catch (e) {}
+
+      switchPortalTab('home', false);
     }
+    window.logoutTeacher = logoutUser;
+    window.logoutPortalTeacher = logoutUser;
+
 
     function populateDashboardTemplateFilter() {
       const sel = document.getElementById('dash-filter-template');
@@ -4753,6 +4791,25 @@
       activePlayerProject = LotusDB.getProjectById(projectId);
       if (!activePlayerProject) return;
 
+      if (activePortalTab && activePortalTab !== 'player') {
+        lastOpenedFromView = activePortalTab;
+      } else if (!lastOpenedFromView || lastOpenedFromView === 'player') {
+        lastOpenedFromView = currentTeacher ? 'dashboard' : 'home';
+      }
+      activePortalTab = 'player';
+
+      const backBtnText = document.getElementById('player-back-btn-text');
+      if (backBtnText) {
+        const isEn = LotusI18n.getLang() === 'en';
+        if (lastOpenedFromView === 'community') {
+          backBtnText.textContent = isEn ? 'Back to Community' : 'Kembali ke Komunitas';
+        } else if (lastOpenedFromView === 'dashboard') {
+          backBtnText.textContent = isEn ? 'Back to Dashboard' : 'Kembali ke Dashboard';
+        } else {
+          backBtnText.textContent = isEn ? 'Back to Home' : 'Kembali ke Beranda';
+        }
+      }
+
       const meta = getTplMeta(activePlayerProject.template_type);
       const tplName = LotusI18n.getTemplateName(meta.id);
 
@@ -5056,7 +5113,14 @@
       if (iframe) iframe.src = 'about:blank';
       isPlayerGameStarted = false;
       _isPlayerQAInverted = false;
-      const returnTarget = lastOpenedFromView || (currentTeacher ? 'dashboard' : 'home');
+      let returnTarget = 'dashboard';
+      if (lastOpenedFromView && lastOpenedFromView !== 'player') {
+        returnTarget = lastOpenedFromView;
+      } else if (currentTeacher) {
+        returnTarget = 'dashboard';
+      } else {
+        returnTarget = 'home';
+      }
       switchPortalTab(returnTarget);
     }
 
@@ -6525,6 +6589,8 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       const nameEl = document.getElementById('portal-user-name');
       const ddNameEl = document.getElementById('portal-dropdown-name');
       const ddSubEl = document.getElementById('portal-dropdown-sub');
+      const dashTab = document.getElementById('nav-tab-dashboard');
+      const loginTab = document.getElementById('nav-tab-login');
       const dashLabel = document.getElementById('nav-dashboard-label');
       const dropDashLabel = document.getElementById('dropdown-dashboard-label');
       const switchTeacherBtn = document.getElementById('portal-switch-user-btn');
@@ -6534,6 +6600,8 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       if (teacher) {
         if (authBtns) authBtns.classList.add('hidden');
         if (userWrapper) userWrapper.classList.remove('hidden');
+        if (dashTab) dashTab.classList.remove('hidden');
+        if (loginTab) loginTab.classList.add('hidden');
         const initials = (typeof getTeacherInitials === 'function') ? getTeacherInitials(teacher.name) : 'GD';
         if (avatarEl) avatarEl.textContent = initials;
         if (nameEl) nameEl.textContent = teacher.name;
@@ -6554,6 +6622,8 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       } else if (student && student.name) {
         if (authBtns) authBtns.classList.add('hidden');
         if (userWrapper) userWrapper.classList.remove('hidden');
+        if (dashTab) dashTab.classList.remove('hidden');
+        if (loginTab) loginTab.classList.add('hidden');
         const initial = (student.name[0] || 'M').toUpperCase();
         if (avatarEl) avatarEl.textContent = initial;
         if (nameEl) nameEl.textContent = student.name;
@@ -6574,6 +6644,8 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       } else {
         if (authBtns) authBtns.classList.remove('hidden');
         if (userWrapper) userWrapper.classList.add('hidden');
+        if (dashTab) dashTab.classList.add('hidden');
+        if (loginTab) loginTab.classList.remove('hidden');
         if (dashLabel) dashLabel.textContent = LotusI18n.t('nav.dashboard');
         if (dropDashLabel) dropDashLabel.textContent = LotusI18n.t('nav.dashboard');
 
@@ -6699,6 +6771,10 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       const validTabs = ['home', 'login', 'community', 'dashboard', 'student-dashboard', 'studio', 'settings', 'player', 'assignment-detail'];
       const valid = validTabs.includes(tab) ? tab : 'home';
       activePortalTab = valid;
+      if (typeof window !== 'undefined') {
+        window.activePortalTab = valid;
+        window.lastOpenedFromView = lastOpenedFromView;
+      }
 
       const viewMap = {
         'home': 'view-home',
@@ -6714,14 +6790,16 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
 
       showView(viewMap[valid]);
 
-      // Update static 3 tabs styling
+      // Update static tabs styling (Home, Dashboard, Community, Login)
       const isHome = (valid === 'home');
       const isDash = (valid === 'dashboard' || valid === 'student-dashboard');
       const isComm = (valid === 'community');
+      const isLogin = (valid === 'login');
 
       const tabHome = document.getElementById('nav-tab-home');
       const tabDash = document.getElementById('nav-tab-dashboard');
       const tabComm = document.getElementById('nav-tab-community');
+      const tabLogin = document.getElementById('nav-tab-login');
 
       function setTabStyle(btn, isActive) {
         if (!btn) return;
@@ -6735,6 +6813,11 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       setTabStyle(tabHome, isHome);
       setTabStyle(tabDash, isDash);
       setTabStyle(tabComm, isComm);
+      setTabStyle(tabLogin, isLogin);
+
+      if (valid !== 'player') {
+        lastOpenedFromView = valid;
+      }
 
       updatePortalAuthNav();
 

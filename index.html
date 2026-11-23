@@ -3170,9 +3170,17 @@
             <p class="text-xs text-[#57534e]">Agenda ini akan otomatis tampil di dashboard murid yang terdaftar di kelas.</p>
           </div>
         </div>
-        <button type="button" onclick="closeWriteAgendaModal()" class="p-1.5 rounded-md bg-[#f4f1ea] hover:bg-[#e7e2d8] cursor-pointer">
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="openShareAgendaModal(_activeAgendaClassId)"
+            class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+            title="Bagikan Agenda ke WhatsApp atau Unduh Gambar">
+            <span>📢</span>
+            <span>Bagikan WA</span>
+          </button>
+          <button type="button" onclick="closeWriteAgendaModal()" class="p-1.5 rounded-md bg-[#f4f1ea] hover:bg-[#e7e2d8] cursor-pointer">
           <span class="ui-sprite ui-xs ui-close"></span>
         </button>
+        </div>
       </div>
 
       <!-- Modal Body (Scrollable) -->
@@ -3257,6 +3265,93 @@
   </div>
 
   <!-- Modal: Agenda Detail (Shared by Student & Teacher) -->
+  <!-- Modal Share Agenda (Teacher Only) -->
+  <div id="modal-share-agenda" class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center p-3 sm:p-4" onclick="closeShareAgendaModal()">
+    <div class="bg-white rounded-2xl p-5 sm:p-7 max-w-lg w-full shadow-2xl border border-[#cbd5e1] space-y-4 max-h-[92vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between border-b border-[#e2e8f0] pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-300 flex items-center justify-center text-xl shrink-0">
+            📢
+          </div>
+          <div>
+            <h3 class="text-base font-black text-[#0f172a]" id="share-modal-title">Bagikan Agenda Harian</h3>
+            <p class="text-xs text-[#334155] font-medium" id="share-modal-subtitle">Kirim ke grup WhatsApp orang tua / kelas.</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeShareAgendaModal()" class="p-1.5 rounded-md bg-[#f1f5f9] hover:bg-[#e2e8f0] cursor-pointer">
+          <span class="ui-sprite ui-xs ui-close"></span>
+        </button>
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="block text-xs font-bold text-[#334155]">Pratinjau Teks WhatsApp:</label>
+        <textarea id="share-agenda-text-preview" rows="8" readonly
+          class="w-full p-3 rounded-xl border border-[#cbd5e1] bg-[#f8fafc] text-xs font-mono font-medium text-[#0f172a] focus:outline-none"></textarea>
+      </div>
+
+      <!-- Copy feedback message -->
+      <div id="share-copy-toast" class="hidden p-2.5 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-950 font-bold text-xs flex items-center gap-2">
+        <span>✓</span>
+        <span>Teks berhasil disalin! Silakan paste (Ctrl+V) di WhatsApp.</span>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="space-y-2 pt-1">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <button type="button" onclick="copyShareAgendaText()"
+            class="py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all">
+            <span>📋</span>
+            <span>Salin Teks WA</span>
+          </button>
+          <button type="button" onclick="sendToWhatsAppDirect()"
+            class="py-2.5 px-3 rounded-xl bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all">
+            <span>💬</span>
+            <span>Buka di WhatsApp</span>
+          </button>
+        </div>
+
+        <button type="button" onclick="downloadAgendaPosterImage()"
+          class="w-full py-2.5 px-4 rounded-xl tc-gradient hover:opacity-95 text-white font-black text-xs flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-all">
+          <span>🖼️</span>
+          <span>Unduh Gambar Agenda (PNG)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Weekly Recurring Schedule (Teacher Only) -->
+  <div id="modal-weekly-schedule" class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center p-3 sm:p-4" onclick="closeWeeklyScheduleModal()">
+    <div class="bg-white rounded-2xl p-5 sm:p-7 max-w-2xl w-full shadow-2xl border border-[#cbd5e1] space-y-4 max-h-[92vh] flex flex-col" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between border-b border-[#e2e8f0] pb-3 shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-900 border border-purple-300 flex items-center justify-center text-xl shrink-0">
+            ⚙️
+          </div>
+          <div>
+            <h3 class="text-base font-black text-[#0f172a]" id="weekly-sched-class-title">Atur Jadwal Rutin Mingguan</h3>
+            <p class="text-xs text-[#334155] font-medium">Seragam &amp; buku mapel otomatis terisi sesuai hari (Senin - Jumat).</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeWeeklyScheduleModal()" class="p-1.5 rounded-md bg-[#f1f5f9] hover:bg-[#e2e8f0] cursor-pointer">
+          <span class="ui-sprite ui-xs ui-close"></span>
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto space-y-3.5 pr-1 text-xs" id="weekly-sched-days-container">
+        <!-- Rendered dynamically for 5 days -->
+      </div>
+
+      <div class="pt-2 border-t border-[#e2e8f0] flex gap-2 justify-end shrink-0">
+        <button type="button" onclick="closeWeeklyScheduleModal()" class="px-4 py-2 rounded-xl border border-[#cbd5e1] bg-white text-xs font-bold text-[#0f172a] cursor-pointer">
+          Batal
+        </button>
+        <button type="button" onclick="saveClassroomWeeklyScheduleSubmit()" class="px-5 py-2 rounded-xl tc-gradient text-white text-xs font-black cursor-pointer shadow-xs">
+          Simpan Jadwal Rutin
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div id="modal-agenda-detail" class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center p-3 sm:p-4" onclick="closeAgendaDetailModal()">
     <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl border border-[#D5E9DC] space-y-5 max-h-[92vh] overflow-y-auto" onclick="event.stopPropagation()">
       
@@ -9148,15 +9243,29 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
 
             <!-- Action Buttons -->
             <div class="pt-3 border-t border-[#eee9df] grid grid-cols-2 gap-2">
+              <button type="button" onclick="openWriteAgendaModal('${c.id}')"
+                class="py-2 px-2.5 rounded-xl bg-[#1E5E3A] hover:bg-[#166534] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                title="Tulis atau Edit Agenda Harian">
+                <span>📝</span>
+                <span>Tulis Agenda</span>
+              </button>
+              <button type="button" onclick="openShareAgendaModal('${c.id}')"
+                class="py-2 px-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                title="Bagikan Agenda ke WhatsApp atau Unduh Gambar">
+                <span>📢</span>
+                <span>Bagikan WA</span>
+              </button>
               <button type="button" onclick="openClassroomRosterModal('${c.id}')"
-                class="py-2.5 px-3 rounded-xl border border-[#d6cfc2] bg-[#fcfbf8] hover:bg-[#f4f1ea] text-[#18181b] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+                class="py-2 px-2.5 rounded-xl border border-[#d6cfc2] bg-[#fcfbf8] hover:bg-[#f4f1ea] text-[#18181b] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                title="Lihat Daftar Siswa & PIN Kelas">
                 <span>👥</span>
                 <span>Roster Murid</span>
               </button>
-              <button type="button" onclick="openWriteAgendaModal('${c.id}')"
-                class="py-2.5 px-3 rounded-xl bg-[#1E5E3A] hover:bg-[#166534] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer">
-                <span>📝</span>
-                <span>Tulis Agenda</span>
+              <button type="button" onclick="openWeeklyScheduleModal('${c.id}')"
+                class="py-2 px-2.5 rounded-xl border border-[#d6cfc2] bg-[#fcfbf8] hover:bg-[#f4f1ea] text-[#18181b] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                title="Atur Jadwal Rutin Seragam & Buku (Senin-Jumat)">
+                <span>⚙️</span>
+                <span>Jadwal Rutin</span>
               </button>
             </div>
           </div>
@@ -9376,16 +9485,37 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       let existingAgenda = null;
       if (typeof LotusDB !== 'undefined' && typeof LotusDB.getDailyAgendasByClass === 'function') {
         const list = LotusDB.getDailyAgendasByClass(classId, dateStr);
-        if (list && list.length > 0) existingAgenda = list[0];
+        if (list && list.length > 0 && !list[0].is_recurring) existingAgenda = list[0];
       }
 
       if (existingAgenda && existingAgenda.items && existingAgenda.items.length > 0) {
         titleInput.value = existingAgenda.title || titleInput.value;
         _agendaModalItems = JSON.parse(JSON.stringify(existingAgenda.items));
       } else {
+        // Auto pre-populate default recurring seragam and buku for this weekday!
         _agendaModalItems = [];
-        addAgendaModalItemWithCategory('seragam', false);
-        addAgendaModalItemWithCategory('tugas', false);
+        let recItems = [];
+        if (typeof LotusDB !== 'undefined' && typeof LotusDB.getRecurringItemsForDate === 'function') {
+          recItems = LotusDB.getRecurringItemsForDate(classId, dateStr);
+        }
+        if (recItems.length > 0) {
+          recItems.forEach(ri => {
+            _agendaModalItems.push({
+              id: 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+              type: 'pengumuman',
+              category: ri.category,
+              title: ri.category === 'seragam' ? 'Seragam' : 'Membawa Buku Mapel',
+              command: ri.command,
+              explanation: '',
+              deadline: '',
+              target_type: 'all',
+              target_student_ids: []
+            });
+          });
+        } else {
+          addAgendaModalItemWithCategory('seragam', false);
+          addAgendaModalItemWithCategory('buku', false);
+        }
       }
 
       renderAgendaModalItems();
@@ -9961,73 +10091,79 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
         return;
       }
 
-      const categoryIcons = {
-        seragam: '👔',
-        buku: '📖',
-        tugas: '📝',
-        ulangan: '🎯',
-        materi: '💡',
-        pengumuman: '📢',
-        lainnya: '⭐'
+      const categoryLabels = {
+        seragam: 'Seragam',
+        buku: 'Membawa Buku Mapel',
+        tugas: 'Tugas / PR',
+        ulangan: 'Ulangan Harian',
+        materi: 'Materi Pelajaran',
+        pengumuman: 'Pengumuman',
+        lainnya: 'Catatan Khusus'
       };
 
-      container.innerHTML = allItems.map((item) => {
-        const icon = categoryIcons[item.category] || '📌';
-        
-        let badgeClass = 'bg-slate-100 text-slate-900 border-slate-300';
-        let typeText = 'Pengumuman';
-        if (item.type === 'tugas' || item.category === 'tugas' || item.category === 'ulangan') {
-          badgeClass = 'bg-amber-100 text-amber-950 border-amber-300';
-          typeText = item.category === 'ulangan' ? '🎯 Ulangan' : '📝 Tugas';
-        } else if (item.type === 'materi' || item.category === 'materi' || item.category === 'buku') {
-          badgeClass = 'bg-purple-100 text-purple-950 border-purple-300';
-          typeText = item.category === 'buku' ? '📖 Buku' : '📚 Materi';
-        } else if (item.category === 'seragam') {
-          badgeClass = 'bg-emerald-100 text-emerald-950 border-emerald-300';
-          typeText = '👔 Seragam';
+      container.innerHTML = allItems.map((item, idx) => {
+        const catName = categoryLabels[item.category] || item.title || 'Agenda';
+        const isiText = item.command || item.title || '-';
+
+        // Time logic:
+        // "waktu selama itu masih besok dan setelah nya makan merah (kecuali pengumuman seragam dan buku mapel)
+        // waktu diisi sisa hari dan tanggal deadline"
+        let timeText = '';
+        let isRed = false;
+
+        const isSeragamOrBuku = item.category === 'seragam' || item.category === 'buku';
+
+        if (item.deadline) {
+          let countdown = '';
+          if (typeof LotusDB !== 'undefined' && typeof LotusDB.getCountdownLabel === 'function') {
+            countdown = LotusDB.getCountdownLabel(item.deadline);
+          }
+          const dParts = item.deadline.includes('T') ? item.deadline.split('T') : item.deadline.split(' ');
+          const datePart = dParts[0];
+          const timePart = dParts[1] ? dParts[1].slice(0, 5) : '';
+
+          let formattedDead = datePart;
+          try {
+            const p = datePart.split('-');
+            const dObj = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+            formattedDead = dObj.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+          } catch(e) {}
+
+          const fullDateStr = timePart ? `${formattedDead}, ${timePart}` : formattedDead;
+          timeText = countdown ? `Batas: ${countdown} (${fullDateStr})` : `Batas: ${fullDateStr}`;
+
+          // If it's a task or deadline item (not seragam/buku), mark red for active deadlines
+          if (!isSeragamOrBuku) {
+            isRed = true;
+          }
+        } else {
+          timeText = `Jadwal: Hari Ini (${dateFormatted})`;
+          isRed = false;
         }
 
-        let countdown = '';
-        let countdownClass = 'bg-slate-100 text-slate-900 border-slate-300';
-        if (item.deadline && typeof LotusDB !== 'undefined' && typeof LotusDB.getCountdownLabel === 'function') {
-          countdown = LotusDB.getCountdownLabel(item.deadline);
-          if (countdown.includes('Hari Ini')) countdownClass = 'bg-rose-100 text-rose-950 border-rose-300';
-          else if (countdown.includes('Besok')) countdownClass = 'bg-amber-100 text-amber-950 border-amber-300';
-          else if (countdown.includes('hari lagi')) countdownClass = 'bg-blue-100 text-blue-950 border-blue-300';
-        }
-
-        const titleText = item.command || item.title || 'Agenda Sekolah';
-        const subInfo = [item.classroom_name, item.teacher_name].filter(Boolean).join(' • ');
+        const hasExtras = item.file_name || item.external_link || item.project_id || item.assignment_id;
+        const extrasPills = [
+          item.file_name ? '<span class="text-[10px] font-bold text-sky-800 bg-sky-100 px-1.5 py-0.5 rounded border border-sky-300">📎 File</span>' : '',
+          item.external_link ? '<span class="text-[10px] font-bold text-purple-800 bg-purple-100 px-1.5 py-0.5 rounded border border-purple-300">🔗 Link</span>' : '',
+          (item.project_id || item.assignment_id) ? '<span class="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-300">🎮 Kerjakan</span>' : ''
+        ].filter(Boolean).join(' ');
 
         return `
           <div onclick="openAgendaDetailModal('${escapeHtml(item.id)}')"
-            class="group p-3 sm:p-3.5 rounded-xl border border-[#cbd5e1] hover:border-[#1E5E3A] bg-white hover:bg-emerald-50/40 transition-all cursor-pointer flex items-center justify-between gap-3 shadow-2xs">
+            class="group p-3 sm:p-3.5 rounded-xl border border-[#cbd5e1] hover:border-[#1E5E3A] bg-white hover:bg-emerald-50/40 transition-all cursor-pointer shadow-2xs space-y-1">
             
-            <div class="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
-              <div class="w-9 h-9 rounded-lg flex items-center justify-center text-lg shrink-0 border ${badgeClass}">
-                ${icon}
-              </div>
-              <div class="min-w-0 flex-1 space-y-0.5">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <span class="font-black text-xs sm:text-sm text-[#0f172a] group-hover:text-[#1E5E3A] transition-colors truncate">
-                    ${escapeHtml(titleText)}
-                  </span>
-                  <span class="px-2 py-0.5 rounded-md text-[10px] font-black border ${badgeClass}">
-                    ${typeText}
-                  </span>
-                  ${item.file_name ? `<span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-950 border border-blue-300 font-bold">📎 File</span>` : ''}
-                  ${item.external_link ? `<span class="text-[10px] px-1.5 py-0.5 rounded bg-purple-100 text-purple-950 border border-purple-300 font-bold">🔗 Link</span>` : ''}
-                </div>
-                <div class="text-[11px] text-[#475569] font-semibold flex items-center gap-1.5 truncate">
-                  <span>${escapeHtml(subInfo)}</span>
-                  ${item.explanation ? `<span>•</span><span class="text-[#334155] font-medium truncate max-w-[220px]">${escapeHtml(item.explanation)}</span>` : ''}
-                </div>
-              </div>
+            <div class="font-black text-xs sm:text-sm text-[#0f172a] flex items-center justify-between">
+              <span>${idx + 1}. ${escapeHtml(catName)}</span>
+              ${hasExtras ? `<div class="flex items-center gap-1">${extrasPills}</div>` : ''}
             </div>
 
-            <div class="flex items-center gap-2 shrink-0">
-              ${countdown ? `<span class="px-2.5 py-1 rounded-full text-[11px] font-black border ${countdownClass}">⏰ ${escapeHtml(countdown)}</span>` : ''}
-              <span class="w-7 h-7 rounded-lg bg-slate-100 group-hover:bg-[#1E5E3A] text-slate-700 group-hover:text-white flex items-center justify-center text-xs font-bold transition-all">➔</span>
+            <div class="text-xs sm:text-sm font-semibold text-[#1e293b] leading-relaxed">
+              ${escapeHtml(isiText)}
+            </div>
+
+            <div class="text-[11px] sm:text-xs ${isRed ? 'text-red-600 font-bold' : 'text-[#475569] font-medium'} flex items-center justify-between pt-0.5">
+              <span>${escapeHtml(timeText)}</span>
+              <span class="text-[10px] text-slate-400 group-hover:text-[#1E5E3A] font-bold transition-colors">Lihat ➔</span>
             </div>
           </div>
         `;
@@ -10057,72 +10193,61 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
         return;
       }
 
-      const categoryIcons = {
-        seragam: '👔',
-        buku: '📖',
-        tugas: '📝',
-        ulangan: '🎯',
-        materi: '💡',
-        pengumuman: '📢',
-        lainnya: '⭐'
+      const categoryLabels = {
+        seragam: 'Seragam',
+        buku: 'Membawa Buku Mapel',
+        tugas: 'Tugas / PR',
+        ulangan: 'Ulangan Harian',
+        materi: 'Materi Pelajaran',
+        pengumuman: 'Pengumuman',
+        lainnya: 'Catatan Khusus'
       };
 
-      container.innerHTML = personalItems.map(item => {
-        const icon = categoryIcons[item.category] || '🎯';
+      container.innerHTML = personalItems.map((item, idx) => {
+        const catName = categoryLabels[item.category] || item.title || 'Agenda Personal';
+        const isiText = item.command || item.title || '-';
         const countdown = item.countdown_label || 'Aktif';
 
-        let countdownColor = 'bg-blue-100 text-blue-950 border-blue-300';
-        if (countdown.includes('Hari Ini')) {
-          countdownColor = 'bg-rose-100 text-rose-950 border-rose-300';
-        } else if (countdown.includes('Besok')) {
-          countdownColor = 'bg-amber-100 text-amber-950 border-amber-300';
-        } else if (countdown.includes('Terlewat')) {
-          countdownColor = 'bg-red-200 text-red-950 border-red-400';
-        } else if (countdown.includes('Tanpa')) {
-          countdownColor = 'bg-slate-100 text-slate-900 border-slate-300';
+        const isSeragamOrBuku = item.category === 'seragam' || item.category === 'buku';
+        const isRed = !isSeragamOrBuku;
+
+        let deadlineStr = '';
+        if (item.deadline) {
+          const dParts = item.deadline.includes('T') ? item.deadline.split('T') : item.deadline.split(' ');
+          const datePart = dParts[0];
+          const timePart = dParts[1] ? dParts[1].slice(0, 5) : '';
+          try {
+            const p = datePart.split('-');
+            const dObj = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+            const formatted = dObj.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+            deadlineStr = timePart ? `${formatted}, ${timePart}` : formatted;
+          } catch(e) {
+            deadlineStr = datePart;
+          }
         }
 
-        let badgeClass = 'bg-slate-100 text-slate-900 border-slate-300';
-        if (item.type === 'tugas' || item.category === 'tugas') {
-          badgeClass = 'bg-amber-100 text-amber-950 border-amber-300';
-        } else if (item.category === 'seragam') {
-          badgeClass = 'bg-emerald-100 text-emerald-950 border-emerald-300';
-        } else if (item.category === 'buku' || item.type === 'materi') {
-          badgeClass = 'bg-purple-100 text-purple-950 border-purple-300';
-        }
+        const timeText = item.deadline
+          ? `Batas: ${countdown} (${deadlineStr})`
+          : `Batas: ${countdown}`;
 
-        const titleText = item.command || item.title || 'Agenda Personal';
-        const deadlineStr = item.deadline ? item.deadline.replace('T', ' ').slice(0, 16) : '';
+        const hasExtras = item.file_name || item.external_link || item.project_id || item.assignment_id;
 
         return `
           <div onclick="openAgendaDetailModal('${escapeHtml(item.id || item.agenda_id)}')"
-            class="group p-3 sm:p-3.5 rounded-xl border border-[#cbd5e1] hover:border-[#1E5E3A] bg-white hover:bg-emerald-50/40 transition-all cursor-pointer flex items-center justify-between gap-3 shadow-2xs">
+            class="group p-3 sm:p-3.5 rounded-xl border border-[#cbd5e1] hover:border-[#1E5E3A] bg-white hover:bg-emerald-50/40 transition-all cursor-pointer shadow-2xs space-y-1">
             
-            <div class="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
-              <div class="w-9 h-9 rounded-lg flex items-center justify-center text-lg shrink-0 border ${badgeClass}">
-                ${icon}
-              </div>
-              <div class="min-w-0 flex-1 space-y-0.5">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <span class="font-black text-xs sm:text-sm text-[#0f172a] group-hover:text-[#1E5E3A] transition-colors truncate">
-                    ${escapeHtml(titleText)}
-                  </span>
-                  <span class="px-2 py-0.5 rounded-md text-[10px] font-black border ${badgeClass}">
-                    ${item.type ? item.type.toUpperCase() : 'AGENDA'}
-                  </span>
-                </div>
-                <div class="text-[11px] text-[#475569] font-semibold flex items-center gap-1.5 truncate">
-                  <span>${escapeHtml(item.classroom_name || 'Kelas')}</span>
-                  ${deadlineStr ? `<span>•</span><span class="text-[#334155] font-bold">Batas: ${escapeHtml(deadlineStr)}</span>` : ''}
-                </div>
-              </div>
+            <div class="font-black text-xs sm:text-sm text-[#0f172a] flex items-center justify-between">
+              <span>${idx + 1}. ${escapeHtml(catName)}</span>
+              ${hasExtras ? '<span class="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-300">🎮 Kerjakan</span>' : ''}
             </div>
 
-            <div class="flex items-center gap-2 shrink-0">
-              <span class="px-2.5 py-1 rounded-full text-[11px] font-black border ${countdownColor}">
-                ⏳ ${escapeHtml(countdown)}
-              </span>
-              <span class="w-7 h-7 rounded-lg bg-slate-100 group-hover:bg-[#1E5E3A] text-slate-700 group-hover:text-white flex items-center justify-center text-xs font-bold transition-all">➔</span>
+            <div class="text-xs sm:text-sm font-semibold text-[#1e293b] leading-relaxed">
+              ${escapeHtml(isiText)}
+            </div>
+
+            <div class="text-[11px] sm:text-xs ${isRed ? 'text-red-600 font-bold' : 'text-[#475569] font-medium'} flex items-center justify-between pt-0.5">
+              <span>${escapeHtml(timeText)}</span>
+              <span class="text-[10px] text-slate-400 group-hover:text-[#1E5E3A] font-bold transition-colors">Lihat ➔</span>
             </div>
           </div>
         `;
@@ -10307,6 +10432,301 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       document.getElementById('modal-agenda-detail').classList.add('hidden');
     }
 
+
+    // =========================================================================
+    // TEACHER SHARE AGENDA & RECURRING SCHEDULE MODULE
+    // =========================================================================
+    let _shareAgendaClassId = null;
+    let _shareAgendaDate = null;
+    let _shareAgendaFormattedText = '';
+    let _weeklySchedClassId = null;
+
+    function openShareAgendaModal(classId = null, dateStr = null) {
+      if (!currentTeacher) {
+        alert('Fitur bagikan agenda hanya tersedia untuk akun Guru / Wali Kelas.');
+        return;
+      }
+      _shareAgendaClassId = classId || _activeAgendaClassId;
+      if (!_shareAgendaClassId) {
+        const classes = LotusDB.getClassroomsByTeacher(currentTeacher.id);
+        if (classes.length > 0) _shareAgendaClassId = classes[0].id;
+        else return;
+      }
+
+      _shareAgendaDate = dateStr || (document.getElementById('agenda-modal-date')?.value) || new Date().toISOString().split('T')[0];
+      const classroom = LotusDB.getClassroomById(_shareAgendaClassId);
+      if (!classroom) return;
+
+      document.getElementById('share-modal-title').textContent = `Bagikan Agenda: ${classroom.name}`;
+      document.getElementById('share-modal-subtitle').textContent = `Agenda untuk tanggal ${_shareAgendaDate}`;
+      document.getElementById('share-copy-toast').classList.add('hidden');
+
+      // Generate formatted WhatsApp text
+      _shareAgendaFormattedText = generateWhatsAppAgendaText(classroom, _shareAgendaDate);
+      document.getElementById('share-agenda-text-preview').value = _shareAgendaFormattedText;
+
+      document.getElementById('modal-share-agenda').classList.remove('hidden');
+    }
+
+    function closeShareAgendaModal() {
+      document.getElementById('modal-share-agenda').classList.add('hidden');
+      _shareAgendaClassId = null;
+    }
+
+    function generateWhatsAppAgendaText(classroom, dateStr) {
+      const d = new Date(dateStr + 'T00:00:00');
+      const dateFormatted = d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+      let agendas = LotusDB.getDailyAgendasByClass(classroom.id, dateStr);
+      let items = [];
+      if (agendas.length > 0 && agendas[0].items) {
+        items = agendas[0].items;
+      } else {
+        items = LotusDB.getRecurringItemsForDate(classroom.id, dateStr);
+      }
+
+      const categoryLabels = {
+        seragam: 'Seragam',
+        buku: 'Membawa Buku Mapel',
+        tugas: 'Tugas / PR',
+        ulangan: 'Ulangan Harian',
+        materi: 'Materi Pelajaran',
+        pengumuman: 'Pengumuman'
+      };
+
+      let text = `*AGENDA PEMBELAJARAN ${classroom.name.toUpperCase()}*
+`;
+      text += `📅 *${dateFormatted}*
+`;
+      text += `-----------------------------------------
+
+`;
+
+      if (items.length === 0) {
+        text += `Tidak ada agenda khusus pada tanggal ini.
+`;
+      } else {
+        items.forEach((item, idx) => {
+          const cat = categoryLabels[item.category] || item.title || 'Agenda';
+          const isi = item.command || item.title || '-';
+
+          let timeStr = '';
+          if (item.deadline) {
+            const countdown = LotusDB.getCountdownLabel(item.deadline);
+            timeStr = `Batas: ${countdown} (${item.deadline.replace('T', ' ').slice(0, 16)})`;
+          } else {
+            timeStr = `Jadwal: Hari Ini (${dateFormatted})`;
+          }
+
+          text += `*${idx + 1}. ${cat}*
+`;
+          text += `${isi}
+`;
+          text += `_${timeStr}_
+
+`;
+        });
+      }
+
+      text += `-----------------------------------------
+`;
+      text += `_DaAi Learning Hub — Sekolah Cinta Kasih Tzu Chi_`;
+      return text;
+    }
+
+    function copyShareAgendaText() {
+      const preview = document.getElementById('share-agenda-text-preview');
+      if (!preview) return;
+      preview.select();
+      navigator.clipboard.writeText(preview.value).then(() => {
+        const toast = document.getElementById('share-copy-toast');
+        if (toast) toast.classList.remove('hidden');
+      }).catch(() => {
+        document.execCommand('copy');
+        const toast = document.getElementById('share-copy-toast');
+        if (toast) toast.classList.remove('hidden');
+      });
+    }
+
+    function sendToWhatsAppDirect() {
+      if (!_shareAgendaFormattedText) return;
+      const url = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(_shareAgendaFormattedText);
+      window.open(url, '_blank');
+    }
+
+    function downloadAgendaPosterImage() {
+      if (!_shareAgendaClassId || !_shareAgendaDate) return;
+      const classroom = LotusDB.getClassroomById(_shareAgendaClassId);
+      if (!classroom) return;
+
+      const d = new Date(_shareAgendaDate + 'T00:00:00');
+      const dateFormatted = d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+      let agendas = LotusDB.getDailyAgendasByClass(classroom.id, _shareAgendaDate);
+      let items = (agendas.length > 0 && agendas[0].items) ? agendas[0].items : LotusDB.getRecurringItemsForDate(classroom.id, _shareAgendaDate);
+
+      // Create an HTML5 Canvas to render high resolution poster (1080 x auto)
+      const canvas = document.createElement('canvas');
+      const width = 1080;
+      const baseHeight = 360;
+      const itemHeight = 160;
+      const height = baseHeight + (items.length * itemHeight);
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+
+      // Background
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, width, height);
+
+      // Top Header Gradient Banner (#1E5E3A)
+      const grad = ctx.createLinearGradient(0, 0, width, 0);
+      grad.addColorStop(0, '#1E5E3A');
+      grad.addColorStop(1, '#2C6E49');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, 220);
+
+      // School & Title text
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 36px sans-serif';
+      ctx.fillText('SEKOLAH CINTA KASIH TZU CHI', 60, 75);
+
+      ctx.font = '900 48px sans-serif';
+      ctx.fillText('AGENDA PEMBELAJARAN', 60, 135);
+
+      ctx.font = 'bold 30px sans-serif';
+      ctx.fillStyle = '#CDE3D5';
+      ctx.fillText(classroom.name.toUpperCase() + ' • ' + dateFormatted, 60, 185);
+
+      // Items list
+      let y = 300;
+      const categoryLabels = {
+        seragam: 'Seragam',
+        buku: 'Membawa Buku Mapel',
+        tugas: 'Tugas / PR',
+        ulangan: 'Ulangan Harian',
+        materi: 'Materi Pelajaran',
+        pengumuman: 'Pengumuman'
+      };
+
+      items.forEach((item, idx) => {
+        const cat = categoryLabels[item.category] || item.title || 'Agenda';
+        const isi = item.command || item.title || '-';
+
+        let timeStr = '';
+        let isRed = false;
+        if (item.deadline) {
+          const cd = LotusDB.getCountdownLabel(item.deadline);
+          timeStr = `Batas: ${cd} (${item.deadline.replace('T', ' ').slice(0, 16)})`;
+          if (item.category !== 'seragam' && item.category !== 'buku') isRed = true;
+        } else {
+          timeStr = `Jadwal: Hari Ini (${dateFormatted})`;
+        }
+
+        // Card box
+        ctx.fillStyle = '#F8FAFC';
+        ctx.strokeStyle = '#E2E8F0';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(60, y - 45, width - 120, 135, 16);
+        ctx.fill();
+        ctx.stroke();
+
+        // 1. Jenis Agenda
+        ctx.fillStyle = '#0F172A';
+        ctx.font = 'bold 28px sans-serif';
+        ctx.fillText(`${idx + 1}. ${cat}`, 90, y);
+
+        // Isi
+        ctx.fillStyle = '#1E293B';
+        ctx.font = '500 24px sans-serif';
+        const truncatedIsi = isi.length > 70 ? isi.slice(0, 67) + '...' : isi;
+        ctx.fillText(truncatedIsi, 90, y + 40);
+
+        // Waktu
+        ctx.fillStyle = isRed ? '#DC2626' : '#475569';
+        ctx.font = isRed ? 'bold 22px sans-serif' : '500 22px sans-serif';
+        ctx.fillText(timeStr, 90, y + 75);
+
+        y += itemHeight;
+      });
+
+      // Footer
+      ctx.fillStyle = '#64748B';
+      ctx.font = '500 22px sans-serif';
+      ctx.fillText('DaAi Learning Hub — Sekolah Cinta Kasih Tzu Chi', 60, height - 40);
+
+      // Trigger download
+      const link = document.createElement('a');
+      link.download = `Agenda_${classroom.name.replace(/\s+/g, '_')}_${_shareAgendaDate}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    // Weekly Recurring Schedule Modal functions
+    function openWeeklyScheduleModal(classId) {
+      _weeklySchedClassId = classId;
+      const cls = LotusDB.getClassroomById(classId);
+      if (!cls) return;
+
+      document.getElementById('weekly-sched-class-title').textContent = `Atur Jadwal Rutin: ${cls.name}`;
+      const container = document.getElementById('weekly-sched-days-container');
+      const sched = LotusDB.getClassroomWeeklySchedule(classId);
+
+      const days = [
+        { num: 1, name: 'Senin' },
+        { num: 2, name: 'Selasa' },
+        { num: 3, name: 'Rabu' },
+        { num: 4, name: 'Kamis' },
+        { num: 5, name: 'Jumat' }
+      ];
+
+      container.innerHTML = days.map(d => {
+        const item = sched[d.num] || { seragam: '', buku: '' };
+        return `
+          <div class="p-3.5 rounded-xl border border-[#cbd5e1] bg-[#f8fafc] space-y-2">
+            <div class="font-black text-sm text-[#0f172a]">${d.name}</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[11px] font-bold text-[#334155] mb-1">Seragam ${d.name}:</label>
+                <input type="text" id="ws-seragam-${d.num}" value="${escapeHtml(item.seragam || '')}"
+                  class="w-full px-2.5 py-1.5 rounded-lg border border-[#cbd5e1] bg-white text-xs font-semibold focus:outline-none focus:border-[#1E5E3A]">
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-[#334155] mb-1">Buku Mapel ${d.name}:</label>
+                <input type="text" id="ws-buku-${d.num}" value="${escapeHtml(item.buku || '')}"
+                  class="w-full px-2.5 py-1.5 rounded-lg border border-[#cbd5e1] bg-white text-xs font-semibold focus:outline-none focus:border-[#1E5E3A]">
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('modal-weekly-schedule').classList.remove('hidden');
+    }
+
+    function closeWeeklyScheduleModal() {
+      document.getElementById('modal-weekly-schedule').classList.add('hidden');
+      _weeklySchedClassId = null;
+    }
+
+    function saveClassroomWeeklyScheduleSubmit() {
+      if (!_weeklySchedClassId) return;
+      const updated = {};
+      const dayNames = { 1: 'Senin', 2: 'Selasa', 3: 'Rabu', 4: 'Kamis', 5: 'Jumat' };
+      for (let i = 1; i <= 5; i++) {
+        updated[i] = {
+          dayName: dayNames[i],
+          seragam: (document.getElementById('ws-seragam-' + i)?.value || '').trim(),
+          buku: (document.getElementById('ws-buku-' + i)?.value || '').trim()
+        };
+      }
+      LotusDB.saveClassroomWeeklySchedule(_weeklySchedClassId, updated);
+      closeWeeklyScheduleModal();
+      alert('Jadwal rutin seragam dan buku mapel berhasil disimpan!');
+    }
+    
 </script>
 </body>
 </html>

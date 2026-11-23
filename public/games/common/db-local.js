@@ -2759,6 +2759,94 @@ class LocalDatabase {
     return this.getAllClassrooms().find(c => String(c.code || '').trim().toLowerCase() === clean) || null;
   }
 
+  getDefaultWeeklySchedule() {
+    return {
+      1: {
+        dayName: 'Senin',
+        seragam: 'Mengenakan seragam Putih-Putih lengkap dan rapi untuk upacara bendera.',
+        buku: 'Membawa buku paket Pendidikan Budi Pekerti dan Tematik.'
+      },
+      2: {
+        dayName: 'Selasa',
+        seragam: 'Mengenakan seragam Batik Cinta Kasih Tzu Chi lengkap dan rapi.',
+        buku: 'Membawa buku paket IPAS dan Bahasa Mandarin.'
+      },
+      3: {
+        dayName: 'Rabu',
+        seragam: 'Mengenakan seragam Pramuka lengkap dengan kacu dan baret.',
+        buku: 'Membawa buku paket Matematika dan PJOK.'
+      },
+      4: {
+        dayName: 'Kamis',
+        seragam: 'Mengenakan seragam Olahraga Tzu Chi.',
+        buku: 'Membawa buku paket Bahasa Indonesia dan Seni Budaya.'
+      },
+      5: {
+        dayName: 'Jumat',
+        seragam: 'Mengenakan seragam Kotak-Kotak Tzu Chi rapi.',
+        buku: 'Membawa buku Literasi, refleksi, dan celengan bambu amal.'
+      }
+    };
+  }
+
+  getClassroomWeeklySchedule(classroomId) {
+    const cls = this.getClassroomById(classroomId);
+    if (cls && cls.weekly_schedule) {
+      return cls.weekly_schedule;
+    }
+    return this.getDefaultWeeklySchedule();
+  }
+
+  saveClassroomWeeklySchedule(classroomId, weeklySchedule) {
+    const classrooms = this.getAllClassrooms();
+    const idx = classrooms.findIndex(c => c.id === classroomId);
+    if (idx >= 0) {
+      classrooms[idx].weekly_schedule = weeklySchedule;
+      this.saveAllClassrooms(classrooms);
+      return classrooms[idx];
+    }
+    return null;
+  }
+
+  getRecurringItemsForDate(classroomId, dateStr) {
+    if (!dateStr) return [];
+    try {
+      const parts = dateStr.split('-');
+      if (parts.length !== 3) return [];
+      const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      const dayOfWeek = d.getDay(); // 0=Minggu, 1=Senin, ..., 5=Jumat, 6=Sabtu
+      if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+        const schedule = this.getClassroomWeeklySchedule(classroomId);
+        const dayPlan = schedule[dayOfWeek];
+        if (dayPlan) {
+          const items = [];
+          if (dayPlan.seragam) {
+            items.push({
+              id: `rec-seragam-${classroomId}-${dateStr}`,
+              category: 'seragam',
+              type: 'pengumuman',
+              title: 'Seragam',
+              command: dayPlan.seragam,
+              is_recurring: true
+            });
+          }
+          if (dayPlan.buku) {
+            items.push({
+              id: `rec-buku-${classroomId}-${dateStr}`,
+              category: 'buku',
+              type: 'pengumuman',
+              title: 'Membawa Buku Mapel',
+              command: dayPlan.buku,
+              is_recurring: true
+            });
+          }
+          return items;
+        }
+      }
+    } catch (e) {}
+    return [];
+  }
+
   async joinClassroom(studentProfile, classCode) {
     if (!classCode) {
       return { success: false, message: 'Harap masukkan 6-digit kode kelas.' };
@@ -3032,6 +3120,23 @@ class LocalDatabase {
     if (date) {
       const dStr = String(date).split('T')[0];
       list = list.filter(a => a.date === dStr);
+      if (list.length === 0) {
+        const recItems = this.getRecurringItemsForDate(classroomId, dStr);
+        if (recItems.length > 0) {
+          const cls = this.getClassroomById(classroomId);
+          return [{
+            id: `agenda-rec-${classroomId}-${dStr}`,
+            classroom_id: classroomId,
+            classroom_name: cls ? cls.name : 'Kelas',
+            teacher_id: cls ? cls.teacher_id : 't-demo',
+            teacher_name: cls ? cls.teacher_name : 'Wali Kelas',
+            date: dStr,
+            title: `Agenda Harian Rutin (${dStr})`,
+            items: recItems,
+            is_recurring: true
+          }];
+        }
+      }
     }
     return list.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
   }

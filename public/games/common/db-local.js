@@ -1559,7 +1559,7 @@ class LocalDatabase {
     }
 
     const id = 'stu-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6);
-    const assignedClass = studentData.class || studentData.className || '5-A';
+    const assignedClass = studentData.class || studentData.className || studentData.grade || 'Umum';
     const newStudent = {
       id,
       name: cleanName,

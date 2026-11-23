@@ -188,26 +188,26 @@
   </style>
   <link rel="stylesheet" href="games/common/ui-spritesheet.css?v=2026.11.20">
 </head>
-<body class="bg-[#FAF8F5] text-[#18181b] min-h-screen flex flex-col antialiased">
+<body class="bg-[#FAF8F5] text-[#18181b] min-h-screen flex flex-col antialiased overflow-x-hidden">
 
   <!-- TOP GLOBAL NAVIGATION BAR -->
   <header class="sticky top-0 z-40 bg-white border-b border-[#e5dfd3]">
     <div class="w-full max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 py-2 md:py-0 flex items-center justify-between gap-2 md:gap-4 md:h-16">
 
       <!-- Zone 1 (Left): Brand Logo & Official Identity -->
-      <a href="index.html" class="flex items-center gap-2.5 sm:gap-3.5 shrink-0 py-1 group">
-        <img src="public/assets/Main-Logo.png" onerror="this.src='assets/Main-Logo.png'" alt="DaAi Learning Hub Logo" class="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105">
-        <div class="flex items-center gap-2">
-          <span class="font-black text-base sm:text-xl tracking-tight text-[#18181b] font-serif">大愛學海</span>
-          <span class="px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-black tracking-wide text-white bg-gradient-to-r from-[#1E5E3A] to-[#2C6E49] shadow-xs border border-emerald-700/20 inline-flex items-center gap-1.5">
+      <a href="index.html" class="flex items-center gap-2 sm:gap-3.5 shrink-0 py-1 group">
+        <img src="public/assets/Main-Logo.png" onerror="this.src='assets/Main-Logo.png'" alt="DaAi Learning Hub Logo" class="h-9 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105">
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          <span class="font-black text-sm sm:text-xl tracking-tight text-[#18181b] font-serif">大愛學海</span>
+          <span class="px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-black tracking-wide text-white bg-gradient-to-r from-[#1E5E3A] to-[#2C6E49] shadow-xs border border-emerald-700/20 inline-flex items-center gap-1 sm:gap-1.5">
             <span>DaAi Hub</span>
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
           </span>
         </div>
       </a>
 
-      <!-- Zone 2 (Center): Main Navigation Tabs (Static 4 Items, Never Shifts or Collapses) -->
-      <nav aria-label="Main navigation" class="flex items-center justify-center md:h-16 gap-1 sm:gap-2 py-1 md:py-0 overflow-visible">
+      <!-- Zone 2 (Center - Desktop Only): Main Navigation Tabs -->
+      <nav aria-label="Main navigation" class="hidden md:flex items-center justify-center md:h-16 gap-1 sm:gap-2 py-1 md:py-0 overflow-visible">
         <!-- 1. Home Tab -->
         <button type="button" id="nav-tab-home" onclick="switchPortalTab('home')"
           class="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-[#1E5E3A] bg-[#EAF5ED] border-b-2 border-[#1E5E3A]">
@@ -244,9 +244,9 @@
         </button>
       </nav>
 
-      <!-- Zone 3 (Right): Dedicated Account Slot & Language Toggle (Always on the Right) -->
-      <div class="flex items-center gap-2 sm:gap-2.5 shrink-0">
-        <!-- Logged-out buttons (Positioned neatly in account slot) -->
+      <!-- Zone 3 (Right - Desktop Only): Dedicated Account Slot & Language Toggle -->
+      <div class="hidden md:flex items-center gap-2 sm:gap-2.5 shrink-0">
+        <!-- Logged-out buttons -->
         <div id="portal-auth-buttons" class="flex items-center gap-1.5">
           <button type="button" id="nav-btn-login" onclick="switchPortalTab('login', 'login')"
             class="px-3 sm:px-3.5 py-1.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] hover:bg-[#f4f1ea] text-xs sm:text-sm font-bold text-[#18181b] flex items-center gap-1.5 transition-colors cursor-pointer">
@@ -260,7 +260,7 @@
           </button>
         </div>
 
-        <!-- Logged-in Menu (Teacher or Student) in the exact same account slot -->
+        <!-- Logged-in Menu (Teacher or Student) -->
         <div id="portal-user-menu-wrapper" class="relative hidden">
           <button type="button" id="portal-user-menu-btn" onclick="togglePortalUserDropdown(event)"
             aria-expanded="false" aria-haspopup="true"
@@ -311,7 +311,7 @@
           </div>
         </div>
 
-        <!-- Language Flag Toggle -->
+        <!-- Language Flag Toggle (Desktop) -->
         <button type="button" id="portal-lang-toggle" onclick="LotusI18n.toggleLang()" class="lang-toggle-btn" title="Switch Language (English / Bahasa Indonesia)" aria-label="Switch Language (English / Bahasa Indonesia)">
           <span class="lang-flag-chip active" data-lang-flag="en">
             <span class="ui-sprite ui-sm ui-lang-en"></span>
@@ -322,6 +322,135 @@
         </button>
       </div>
 
+      <!-- Zone 4 (Right - Mobile Only): Hamburger Toggle & Compact User Status -->
+      <div class="flex md:hidden items-center gap-1.5 sm:gap-2 shrink-0">
+        <!-- Compact Mobile User Pill (Shown if logged in) -->
+        <div id="mobile-quick-user" class="hidden items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[#1E5E3A]">
+          <span id="mobile-quick-avatar" class="w-5 h-5 rounded-full bg-[#1E5E3A] text-white font-black text-[9px] flex items-center justify-center shrink-0">GD</span>
+          <span id="mobile-quick-name" class="text-[11px] font-extrabold max-w-[65px] truncate text-[#0f172a]">Guru</span>
+        </div>
+
+        <!-- Language Flag Toggle (Mobile) -->
+        <button type="button" id="mobile-lang-toggle" onclick="LotusI18n.toggleLang()" class="p-1 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] hover:bg-[#EAF5ED] text-xs transition-colors" title="Switch Language">
+          <span class="text-sm">🌐</span>
+        </button>
+
+        <!-- Vertical Navigation Hamburger Toggle Button -->
+        <button type="button" id="btn-mobile-menu-toggle" onclick="toggleMobileNav()"
+          aria-label="Menu Navigasi" aria-expanded="false"
+          class="p-2 rounded-xl border border-[#d6cfc2] bg-[#fcfbf8] hover:bg-[#EAF5ED] text-[#1E5E3A] focus:outline-none transition-colors cursor-pointer flex items-center justify-center shadow-2xs">
+          <!-- Hamburger icon (closed state) -->
+          <svg id="icon-mobile-menu-open" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          <!-- Close X icon (open state) -->
+          <svg id="icon-mobile-menu-close" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- MOBILE VERTICAL NAVIGATION DRAWER (Collapsible) -->
+    <div id="mobile-nav-panel" class="md:hidden hidden border-t border-[#e5dfd3] bg-white shadow-xl transition-all duration-200">
+      <div class="px-3 sm:px-4 py-3 space-y-3 max-h-[85vh] overflow-y-auto">
+
+        <!-- 1. Primary Navigation Links (Vertical Rows) -->
+        <div class="space-y-1" role="menu" aria-orientation="vertical">
+          <!-- Home Tab -->
+          <button type="button" id="mobile-nav-tab-home" onclick="switchPortalTab('home'); closeMobileNav();"
+            class="w-full px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-colors cursor-pointer text-[#1E5E3A] bg-[#EAF5ED] border border-emerald-300">
+            <span class="flex items-center gap-2.5">
+              <span class="ui-sprite ui-sm ui-home"></span>
+              <span data-i18n="nav.home">Home (Beranda)</span>
+            </span>
+            <span class="text-xs opacity-60">➔</span>
+          </button>
+
+          <!-- Dashboard Tab -->
+          <button type="button" id="mobile-nav-tab-dashboard" onclick="handleDashboardNavClick(); closeMobileNav();"
+            class="w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer text-[#57534e] hover:bg-[#fcfbf8] border border-transparent">
+            <span class="flex items-center gap-2.5">
+              <span class="ui-sprite ui-sm ui-dashboard"></span>
+              <span id="mobile-nav-dashboard-label" data-i18n="nav.dashboard">Dashboard</span>
+            </span>
+            <span class="text-xs opacity-60">➔</span>
+          </button>
+
+          <!-- Community Tab -->
+          <button type="button" id="mobile-nav-tab-community" onclick="switchPortalTab('community'); closeMobileNav();"
+            class="w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer text-[#57534e] hover:bg-[#fcfbf8] border border-transparent">
+            <span class="flex items-center gap-2.5">
+              <span class="ui-sprite ui-sm ui-community"></span>
+              <span data-i18n="nav.community">Perpustakaan Komunitas</span>
+            </span>
+            <span class="text-xs opacity-60">➔</span>
+          </button>
+
+          <!-- Teaching Media Tab -->
+          <button type="button" id="mobile-nav-tab-media" onclick="switchPortalTab('media'); closeMobileNav();"
+            class="w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer text-[#57534e] hover:bg-[#fcfbf8] border border-transparent">
+            <span class="flex items-center gap-2.5">
+              <span class="text-sm">📚</span>
+              <span data-i18n="nav.teachingMedia">Media Ajar Terpadu</span>
+            </span>
+            <span class="text-xs opacity-60">➔</span>
+          </button>
+        </div>
+
+        <!-- 2. Mobile User & Auth Slot (Vertical) -->
+        <div class="pt-2 border-t border-[#eee9df]">
+          <!-- Mobile Logged Out: Login & Register -->
+          <div id="mobile-auth-logged-out" class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="switchPortalTab('login', 'login'); closeMobileNav();"
+              class="w-full py-2.5 px-3 rounded-xl border border-[#d6cfc2] bg-[#fcfbf8] hover:bg-[#f4f1ea] text-xs font-bold text-[#18181b] flex items-center justify-center gap-2 cursor-pointer shadow-2xs">
+              <span class="ui-sprite ui-sm ui-login"></span>
+              <span data-i18n="login.title">Login</span>
+            </button>
+            <button type="button" onclick="switchPortalTab('login', 'register'); closeMobileNav();"
+              class="w-full py-2.5 px-3 rounded-xl bg-[#1E5E3A] hover:bg-[#2C6E49] text-white text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-xs">
+              <span data-i18n="login.registerLink">Daftar Akun</span>
+            </button>
+          </div>
+
+          <!-- Mobile Logged In: Profile Card + Switch + Logout -->
+          <div id="mobile-auth-logged-in" class="hidden space-y-2.5">
+            <!-- User summary card -->
+            <div class="flex items-center gap-3 p-2.5 rounded-xl bg-[#f8fafc] border border-[#e2e8f0]">
+              <div id="mobile-user-avatar" class="w-9 h-9 rounded-xl bg-[#1E5E3A] text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                GD
+              </div>
+              <div class="min-w-0 flex-1">
+                <div id="mobile-user-name" class="text-xs font-bold text-[#0f172a] truncate">Guru Demo</div>
+                <div id="mobile-user-sub" class="text-[11px] text-[#64748b] truncate">Wali Kelas • Cinta Kasih Tzu Chi</div>
+              </div>
+            </div>
+
+            <!-- Quick switch & role actions -->
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" id="mobile-switch-teacher-btn" onclick="openSwitchTeacherModal(); closeMobileNav();"
+                class="w-full py-2 px-2 rounded-lg border border-[#cbd5e1] bg-white text-[11px] font-bold text-[#334155] flex items-center justify-center gap-1.5 cursor-pointer">
+                <span class="ui-sprite ui-xs ui-users"></span>
+                <span data-i18n="nav.switchTeacher">Ganti Guru</span>
+              </button>
+              <button type="button" id="mobile-student-portal-btn" onclick="switchPortalTab('student-dashboard'); closeMobileNav();"
+                class="w-full py-2 px-2 rounded-lg border border-[#cbd5e1] bg-white text-[11px] font-bold text-[#334155] flex items-center justify-center gap-1.5 cursor-pointer">
+                <span>🎒</span>
+                <span data-i18n="nav.dashboardMurid">Portal Murid</span>
+              </button>
+            </div>
+
+            <!-- Sign Out button -->
+            <button type="button" onclick="logoutUser(); closeMobileNav();"
+              class="w-full py-2.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold flex items-center justify-center gap-2 border border-rose-200 cursor-pointer transition-colors">
+              <span class="ui-sprite ui-xs ui-logout"></span>
+              <span data-i18n="login.signOut">Sign Out (Keluar)</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
     </div>
   </header>
 
@@ -7598,6 +7727,70 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
     // -------------------------------------------------------------------------
     // AUTH NAVIGATION SYNCHRONIZER (Fixed 3-Zone Support)
     // -------------------------------------------------------------------------
+    
+    // Mobile Vertical Navigation Bar Controller
+    function toggleMobileNav() {
+      const panel = document.getElementById('mobile-nav-panel');
+      const iconOpen = document.getElementById('icon-mobile-menu-open');
+      const iconClose = document.getElementById('icon-mobile-menu-close');
+      const btn = document.getElementById('btn-mobile-menu-toggle');
+      if (!panel) return;
+
+      const isHidden = panel.classList.contains('hidden');
+      if (isHidden) {
+        panel.classList.remove('hidden');
+        if (iconOpen) iconOpen.classList.add('hidden');
+        if (iconClose) iconClose.classList.remove('hidden');
+        if (btn) btn.setAttribute('aria-expanded', 'true');
+      } else {
+        panel.classList.add('hidden');
+        if (iconOpen) iconOpen.classList.remove('hidden');
+        if (iconClose) iconClose.classList.add('hidden');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+      }
+    }
+
+    function openMobileNav() {
+      const panel = document.getElementById('mobile-nav-panel');
+      const iconOpen = document.getElementById('icon-mobile-menu-open');
+      const iconClose = document.getElementById('icon-mobile-menu-close');
+      const btn = document.getElementById('btn-mobile-menu-toggle');
+      if (!panel) return;
+      panel.classList.remove('hidden');
+      if (iconOpen) iconOpen.classList.add('hidden');
+      if (iconClose) iconClose.classList.remove('hidden');
+      if (btn) btn.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeMobileNav() {
+      const panel = document.getElementById('mobile-nav-panel');
+      const iconOpen = document.getElementById('icon-mobile-menu-open');
+      const iconClose = document.getElementById('icon-mobile-menu-close');
+      const btn = document.getElementById('btn-mobile-menu-toggle');
+      if (!panel) return;
+      panel.classList.add('hidden');
+      if (iconOpen) iconOpen.classList.remove('hidden');
+      if (iconClose) iconClose.classList.add('hidden');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    }
+
+    // Auto-close mobile navigation when clicking outside or pressing Escape
+    document.addEventListener('click', function(e) {
+      const panel = document.getElementById('mobile-nav-panel');
+      const btn = document.getElementById('btn-mobile-menu-toggle');
+      if (!panel || panel.classList.contains('hidden')) return;
+      if (btn && (btn === e.target || btn.contains(e.target))) return;
+      if (!panel.contains(e.target)) {
+        closeMobileNav();
+      }
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeMobileNav();
+      }
+    });
+  
     function updatePortalAuthNav() {
       const teacher = LotusDB.getCurrentTeacherStrict();
       const studentRaw = localStorage.getItem('lotus_student_profile') || sessionStorage.getItem('lotus_student_profile');

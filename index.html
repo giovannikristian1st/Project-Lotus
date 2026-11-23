@@ -8184,6 +8184,34 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
         updatePortalAuthNav();
         switchPortalTab('dashboard');
       } else {
+        // Try authenticating as Student
+        let studentRes = null;
+        if (typeof LotusDB !== 'undefined' && typeof LotusDB.authenticateStudentAsync === 'function') {
+          studentRes = await LotusDB.authenticateStudentAsync(identifier, password, remember);
+        } else if (typeof LotusDB !== 'undefined' && typeof LotusDB.authenticateStudent === 'function') {
+          studentRes = LotusDB.authenticateStudent(identifier, password, remember);
+        }
+
+        if (studentRes && studentRes.success) {
+          errBox.classList.add('hidden');
+          try {
+            localStorage.removeItem('lotus_active_navigation');
+            sessionStorage.removeItem('lotus_active_navigation');
+            if (window.LotusDB && typeof LotusDB.logoutTeacher === 'function') {
+              LotusDB.logoutTeacher();
+            }
+          } catch (err) {}
+          currentTeacher = null;
+          if (typeof window !== 'undefined') window.currentTeacher = null;
+          _activeStudentProfile = studentRes.student;
+          if (typeof window !== 'undefined') window._activeStudentProfile = studentRes.student;
+          updateTeacherUI();
+          updatePortalAuthNav();
+          initStudentDashboard();
+          switchPortalTab('student-dashboard');
+          return;
+        }
+
         errText.textContent = res.message || LotusI18n.t('login.errWrong');
         errBox.classList.remove('hidden');
       }

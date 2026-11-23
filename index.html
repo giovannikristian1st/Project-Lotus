@@ -192,7 +192,7 @@
 
   <!-- TOP GLOBAL NAVIGATION BAR -->
   <header class="sticky top-0 z-40 bg-white border-b border-[#e5dfd3]">
-    <div class="w-full max-w-[1840px] mx-auto px-4 sm:px-8 lg:px-12 py-2 md:py-0 flex items-center justify-between gap-2 md:gap-4 md:h-16">
+    <div class="w-full max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 py-2 md:py-0 flex items-center justify-between gap-2 md:gap-4 md:h-16">
 
       <!-- Zone 1 (Left): Brand Logo & Official Identity -->
       <a href="index.html" class="flex items-center gap-2.5 sm:gap-3.5 shrink-0 py-1 group">
@@ -326,8 +326,8 @@
   </header>
 
   <!-- MAIN SPA CONTENT AREA (8 Views) -->
-  <main class="w-full max-w-[1840px] mx-auto px-4 sm:px-8 lg:px-12 py-6 flex-1 flex flex-col">
-    <section id="view-home" class="pb-16 max-w-6xl mx-auto w-full space-y-12">
+  <main class="w-full max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 py-6 flex-1 flex flex-col">
+    <section id="view-home" class="pb-16 max-w-[1720px] mx-auto w-full px-2 sm:px-4 lg:px-6 space-y-12">
 
       <!-- 1. Integrated Hero: Introducing DaAi Hub (大愛學海) -->
       <div class="pt-8 sm:pt-12 text-center space-y-5">
@@ -515,7 +515,7 @@
       </div>
 
     </section>
-    <section id="view-login" class="hidden w-full max-w-[1840px] mx-auto px-4 sm:px-8 lg:px-12 py-8 sm:py-10 space-y-6">
+    <section id="view-login" class="hidden w-full max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 py-8 sm:py-10 space-y-6">
 
       <!-- Active Teacher Session Card (Only shown if signed in) -->
       <div id="login-active-banner" class="hidden bg-[#1e242b] text-white rounded-xl border border-[#2d3642] p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -628,43 +628,92 @@
               <span id="register-error-text"></span>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <div>
-                <label for="reg-name" class="block text-xs font-bold text-[#3f3f46] mb-1" data-i18n="login.regNameLabel">Full Name</label>
-                <input type="text" id="reg-name" required data-i18n-placeholder="login.regNamePlaceholder" placeholder="e.g. Clara Wijaya, S.Pd."
-                  class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
-              </div>
-              <div>
-                <label for="reg-username" class="block text-xs font-bold text-[#3f3f46] mb-1" data-i18n="login.regUsernameLabel">Username</label>
-                <input type="text" id="reg-username" required pattern="[A-Za-z0-9_.-]+" data-i18n-placeholder="login.regUsernamePlaceholder" placeholder="e.g. clarawijaya"
-                  class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
-              </div>
-              <div class="sm:col-span-2">
-                <div class="flex items-center justify-between mb-1">
-                  <label for="reg-email" class="block text-xs font-bold text-[#3f3f46]" data-i18n="login.regEmailLabel">Teacher Email</label>
-                  <span class="text-[11px] text-[#15803d] font-semibold" data-i18n="login.regEmailNote">Wajib untuk pemulihan akun & reset password</span>
-                </div>
-                <input type="email" id="reg-email" required data-i18n-placeholder="login.regEmailPlaceholder" placeholder="clara@school.edu"
-                  class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
-              </div>
-              <div>
-                <label for="reg-subject" class="block text-xs font-bold text-[#3f3f46] mb-1" data-i18n="login.regSubjectLabel">Primary Subject</label>
-                <input type="text" id="reg-subject" value="Science / IPA"
-                  class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
-              </div>
-              <div>
-                <label for="reg-school" class="block text-xs font-bold text-[#3f3f46] mb-1" data-i18n="login.regSchoolLabel">School Name</label>
-                <input type="text" id="reg-school" value="Sekolah Cinta Kasih Tzu Chi"
-                  class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
+            <!-- Role Selector: Guru vs Murid -->
+            <div>
+              <label class="block text-xs font-bold text-[#3f3f46] mb-1.5">Pilih Peran Akun:</label>
+              <div class="grid grid-cols-2 p-1 bg-[#f4f1ea] rounded-xl border border-[#d6cfc2] gap-1">
+                <button type="button" id="reg-role-teacher-btn" onclick="setRegisterRole('teacher')"
+                  class="py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-[#1E5E3A] text-white shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                  <span>👨‍🏫 Guru</span>
+                </button>
+                <button type="button" id="reg-role-student-btn" onclick="setRegisterRole('student')"
+                  class="py-2.5 rounded-lg text-xs sm:text-sm font-semibold text-[#57534e] hover:text-[#18181b] transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                  <span>🎓 Murid</span>
+                </button>
               </div>
             </div>
 
+            <!-- Guru Specific Fields -->
+            <div id="reg-fields-teacher" class="space-y-3.5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label for="reg-name" class="block text-xs font-bold text-[#3f3f46] mb-1">Nama Lengkap Guru</label>
+                  <input type="text" id="reg-name" placeholder="e.g. Clara Wijaya, S.Pd."
+                    class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
+                </div>
+                <div>
+                  <label for="reg-username" class="block text-xs font-bold text-[#3f3f46] mb-1">Username Guru</label>
+                  <input type="text" id="reg-username" pattern="[A-Za-z0-9_.-]+" placeholder="e.g. clarawijaya"
+                    class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
+                </div>
+              </div>
+              <div>
+                <label for="reg-email" class="block text-xs font-bold text-[#3f3f46] mb-1">Email Guru</label>
+                <input type="email" id="reg-email" placeholder="clara@sekolah.sch.id"
+                  class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label for="reg-subject" class="block text-xs font-bold text-[#3f3f46] mb-1">Mata Pelajaran Diajarkan</label>
+                  <select id="reg-subject" class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                    <option value="Wali Kelas">Wali Kelas</option>
+                    <option value="IPA / Sains">IPA / Sains</option>
+                    <option value="Bahasa Mandarin">Bahasa Mandarin</option>
+                    <option value="Matematika">Matematika</option>
+                    <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                    <option value="Bahasa Inggris">Bahasa Inggris</option>
+                    <option value="Pendidikan Agama">Pendidikan Agama</option>
+                    <option value="Seni Budaya">Seni Budaya</option>
+                    <option value="PJOK">PJOK</option>
+                    <option value="Umum">Umum</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="reg-school" class="block text-xs font-bold text-[#3f3f46] mb-1">Nama Sekolah</label>
+                  <input type="text" id="reg-school" value="Sekolah Cinta Kasih Tzu Chi"
+                    class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
+                </div>
+              </div>
+            </div>
+
+            <!-- Murid Specific Fields -->
+            <div id="reg-fields-student" class="hidden space-y-3.5">
+              <div>
+                <label for="reg-student-name" class="block text-xs font-bold text-[#3f3f46] mb-1">Nama Lengkap Murid</label>
+                <input type="text" id="reg-student-name" placeholder="Contoh: Kenjiro Tan"
+                  class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1E5E3A]">
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label for="reg-student-nisn" class="block text-xs font-bold text-[#3f3f46] mb-1">NISN / Username Murid</label>
+                  <input type="text" id="reg-student-nisn" placeholder="Contoh: 50239101"
+                    class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1E5E3A]">
+                </div>
+                <div>
+                  <label for="reg-student-class" class="block text-xs font-bold text-[#3f3f46] mb-1">Kelas / Jenjang</label>
+                  <input type="text" id="reg-student-class" placeholder="Contoh: Kelas 5-A SD"
+                    class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1E5E3A]">
+                </div>
+              </div>
+            </div>
+
+            <!-- Password for both -->
             <div>
               <label for="reg-password" class="block text-xs font-bold text-[#3f3f46] mb-1" data-i18n="login.regPassLabel">Password</label>
               <div class="relative flex items-center">
                 <span class="ui-sprite ui-sm ui-lock absolute left-3"></span>
                 <input type="password" id="reg-password" required minlength="4"
-                  data-i18n-placeholder="login.passPlaceholder" placeholder="Enter password"
+                  data-i18n-placeholder="login.passPlaceholder" placeholder="Masukkan kata sandi (minimal 4 karakter)"
                   class="w-full pl-10 pr-11 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
                 <button type="button" onclick="togglePasswordVisibility('reg-password', 'reg-eye-icon')"
                   class="absolute right-2.5 p-1.5 rounded-md hover:bg-[#f4f1ea] cursor-pointer" aria-label="Toggle Password Visibility">
@@ -673,10 +722,10 @@
               </div>
             </div>
 
-            <button type="submit"
+            <button type="submit" id="reg-submit-btn"
               class="w-full py-3 rounded-lg bg-[#15803d] hover:bg-[#166534] text-white font-bold text-sm border-b-[3px] border-[#14532d] flex items-center justify-center gap-2 transition-colors cursor-pointer">
               <span class="ui-sprite ui-sm ui-plus"></span>
-              <span data-i18n="login.regSubmit">Register &amp; Enter Dashboard</span>
+              <span id="reg-submit-label">Daftar Akun Guru &amp; Masuk Dashboard</span>
             </button>
           </form>
 
@@ -694,7 +743,7 @@
 
       </div>
     </section>
-    <section id="view-community" class="hidden w-full max-w-[1840px] mx-auto px-4 sm:px-8 lg:px-12 py-8 sm:py-10 space-y-6">
+    <section id="view-community" class="hidden w-full max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 py-8 sm:py-10 space-y-6">
 
       <!-- Community Header Banner -->
       <div class="bg-[#1e242b] text-white rounded-xl border border-[#2d3642] p-6 sm:p-7 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -826,6 +875,13 @@
             <span data-i18n="dash.tabAssignments">Assignments</span>
             <span id="badge-assignments-count" class="px-1.5 py-0.5 rounded bg-[#e5dfd3] text-[#18181b] text-[11px] font-bold">0</span>
           </button>
+
+          <button type="button" id="tab-btn-classrooms" onclick="switchDashboardTab('classrooms')"
+            class="px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#f4f1ea] text-[#57534e] hover:bg-[#e7e2d8] transition-colors flex items-center gap-2 cursor-pointer">
+            <span class="text-sm">🏫</span>
+            <span>Kelas Saya</span>
+            <span id="badge-classrooms-count" class="px-1.5 py-0.5 rounded bg-[#e5dfd3] text-[#18181b] text-[11px] font-bold">0</span>
+          </button>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
@@ -905,6 +961,37 @@
 
         <div id="assignments-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Tab 4: Kelas Saya (Classrooms & Daily Agendas) -->
+      <div id="tab-content-classrooms" class="hidden space-y-5">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-[#e5dfd3] shadow-xs">
+          <div>
+            <div class="flex items-center gap-2.5">
+              <span class="text-2xl">🏫</span>
+              <h3 class="text-base sm:text-lg font-bold text-[#18181b]">Manajemen Kelas &amp; Agenda Harian</h3>
+              <span id="classrooms-header-count" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9]">0 Kelas Terdaftar</span>
+            </div>
+            <p class="text-xs text-[#57534e] mt-1 max-w-3xl">
+              Bagikan PIN 6-digit kepada siswa untuk bergabung ke kelas Anda. Pantau roster siswa terdaftar dan publikasikan agenda harian (seragam, PR, materi pelajaran, dan pengumuman).
+            </p>
+          </div>
+          <div class="flex items-center gap-2.5 shrink-0">
+            <button type="button" onclick="renderTeacherClassrooms()" class="px-3.5 py-2 rounded-xl border border-[#d6cfc2] bg-[#fcfbf8] hover:bg-[#f4f1ea] text-xs font-semibold text-[#18181b] flex items-center gap-1.5 transition-colors cursor-pointer">
+              <span class="ui-sprite ui-xs ui-refresh"></span>
+              <span>Refresh</span>
+            </button>
+            <button type="button" onclick="openCreateClassroomModal()" class="px-4 py-2.5 rounded-xl bg-[#1E5E3A] hover:bg-[#166534] text-white text-xs sm:text-sm font-bold border-b-[2px] border-[#0F3520] flex items-center gap-2 transition-all shadow-xs cursor-pointer">
+              <span>➕</span>
+              <span>Buat Kelas Baru</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Classrooms Grid -->
+        <div id="classrooms-cards-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          <!-- Rendered dynamically by JS -->
         </div>
       </div>
 
@@ -1047,7 +1134,7 @@
     </section>
 
     <!-- VIEW: DEDICATED TEACHING MEDIA (MEDIA AJAR) LIBRARY -->
-    <section id="view-teaching-media" class="hidden w-full max-w-[1840px] mx-auto px-4 sm:px-8 lg:px-12 py-8 sm:py-10 space-y-6">
+    <section id="view-teaching-media" class="hidden w-full max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 py-8 sm:py-10 space-y-6">
 
       <!-- Hero Header Banner -->
       <div class="bg-[#1e242b] text-white rounded-2xl border border-[#2d3642] p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-md">
@@ -1700,7 +1787,7 @@
     </section>
   
     <!-- VIEW 9: INTEGRATED STUDENT DASHBOARD -->
-    <section id="view-student-dashboard" class="hidden max-w-7xl w-full mx-auto space-y-6">
+    <section id="view-student-dashboard" class="hidden max-w-[1720px] w-full mx-auto px-2 sm:px-4 lg:px-6 space-y-6">
 
       <!-- AUTH GATE: SHOWN ONLY IF STUDENT PROFILE IS NOT ACTIVE -->
       <div id="student-auth-gate" class="hidden bg-white rounded-3xl border border-[#D5E9DC] p-8 sm:p-10 max-w-lg mx-auto shadow-lg text-center space-y-5 my-8">
@@ -1844,6 +1931,152 @@
 
     <!-- PIN Alert Box (Inline) -->
     <div id="pin-alert" class="hidden p-3 rounded-xl text-xs font-semibold flex items-center gap-2"></div>
+
+    <!-- ============================================================== -->
+    <!-- 2b. JOIN CLASSROOM BAR -->
+    <!-- ============================================================== -->
+    <div class="bg-white rounded-2xl border border-[#D5E9DC] p-5 sm:p-6 custom-card-shadow flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5 text-center sm:text-left">
+        <div class="w-12 h-12 rounded-2xl bg-[#EAF5ED] border border-[#BCE1C9] text-[#1E5E3A] flex items-center justify-center text-2xl shrink-0 shadow-2xs">
+          🏫
+        </div>
+        <div>
+          <h2 class="text-sm sm:text-base font-extrabold text-[#0D2B1B]">
+            Punya Kode Kelas dari Guru?
+          </h2>
+          <p class="text-xs text-[#5A6E62] mt-0.5">
+            Masukkan 6-digit kode kelas dari wali kelas atau guru mapel untuk bergabung dan melihat agenda sekolah harian.
+          </p>
+        </div>
+      </div>
+
+      <!-- Class Code Form -->
+      <form onsubmit="handleStudentJoinClass(event)" class="w-full md:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+        <div class="relative">
+          <input type="text" id="input-class-code" maxlength="6" pattern="[0-9]{6}" required placeholder="Contoh: 502101"
+            class="w-full sm:w-44 px-4 py-2.5 rounded-xl border-2 border-[#CDE3D5] focus:border-[#1E5E3A] focus:outline-none text-center font-mono font-extrabold text-base tracking-widest text-[#0D2B1B] bg-[#FBFDFB] transition-all">
+        </div>
+        <button type="submit" id="btn-class-join"
+          class="px-5 py-2.5 rounded-xl tc-gradient hover:opacity-95 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-emerald-900/15 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0">
+          <span>Gabung Kelas</span>
+          <span>➔</span>
+        </button>
+      </form>
+    </div>
+    <div id="class-join-alert" class="hidden p-3 rounded-xl text-xs font-semibold flex items-center gap-2"></div>
+
+    <!-- ============================================================== -->
+    <!-- 2c. PRIMARY AGENDA SECTION (KELAS & PERSONAL) -->
+    <!-- ============================================================== -->
+    <div class="space-y-6">
+      
+      <!-- Section 1: List Agenda Kelas (Daily Agenda with Date Navigation) -->
+      <div class="bg-white rounded-3xl border border-[#D5E9DC] p-5 sm:p-7 custom-card-shadow space-y-4">
+        
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#EAF2ED] pb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-2xl bg-[#EAF5ED] text-[#1E5E3A] flex items-center justify-center text-xl shrink-0">
+              📅
+            </div>
+            <div>
+              <h2 class="text-base sm:text-lg font-black text-[#0D2B1B]">Agenda Pembelajaran Kelas</h2>
+              <p class="text-xs text-[#5A6E62]">Jadwal seragam, buku mapel, tugas/PR, materi, dan ulangan harian.</p>
+            </div>
+          </div>
+
+          <!-- Date Navigation Bar -->
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="navigateStudentAgendaDate(-1)" class="px-3 py-1.5 rounded-xl border border-[#D5E9DC] bg-[#FAFDFB] hover:bg-[#EAF5ED] text-xs font-bold text-[#1E5E3A] transition-colors cursor-pointer flex items-center gap-1">
+              <span>◀</span>
+              <span class="hidden sm:inline">Kemarin</span>
+            </button>
+            <div class="relative flex items-center">
+              <input type="date" id="student-agenda-date-picker" onchange="changeStudentAgendaDate(this.value)"
+                class="px-3 py-1.5 rounded-xl border border-[#BCE1C9] bg-white text-xs font-extrabold text-[#0D2B1B] focus:outline-none focus:border-[#1E5E3A]">
+            </div>
+            <button type="button" onclick="setStudentAgendaDateToday()" class="px-3 py-1.5 rounded-xl bg-[#EAF5ED] hover:bg-[#D5E9DC] text-xs font-extrabold text-[#1E5E3A] transition-colors cursor-pointer">
+              Hari Ini
+            </button>
+            <button type="button" onclick="navigateStudentAgendaDate(1)" class="px-3 py-1.5 rounded-xl border border-[#D5E9DC] bg-[#FAFDFB] hover:bg-[#EAF5ED] text-xs font-bold text-[#1E5E3A] transition-colors cursor-pointer flex items-center gap-1">
+              <span class="hidden sm:inline">Besok</span>
+              <span>▶</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Selected Date Label & Class Selector Filter -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+          <div class="font-extrabold text-[#1E5E3A] flex items-center gap-2" id="student-agenda-date-display">
+            <!-- E.g. Selasa, 24 November 2026 -->
+          </div>
+          <div id="student-joined-classes-pills" class="flex flex-wrap items-center gap-1.5">
+            <!-- Joined class tags -->
+          </div>
+        </div>
+
+        <!-- Daily Agenda Items Grid / List -->
+        <div id="student-daily-agenda-items" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Rendered dynamically by JS -->
+        </div>
+      </div>
+
+      <!-- Section 2: List Agenda Personal (Aggregated Active Deadlines) -->
+      <div class="bg-gradient-to-br from-[#FAFDFB] to-[#F2F8F4] rounded-3xl border border-[#CDE3D5] p-5 sm:p-7 shadow-xs space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center text-xl shrink-0">
+              🎯
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-base sm:text-lg font-black text-[#0D2B1B]">Agenda Personal &amp; Target Mendatang</h2>
+                <span id="personal-agenda-badge" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-800 border border-amber-300">0 Agenda</span>
+              </div>
+              <p class="text-xs text-[#5A6E62]">Kompilasi deadline PR, barang yang harus dibawa, dan persiapan ulangan terdekat.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Personal Cards Grid -->
+        <div id="student-personal-agenda-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Rendered dynamically by JS -->
+        </div>
+      </div>
+
+      <!-- Section 3: Teacher Posts (Filter Tabs: Semua, Materi, Tugas, Pengumuman) -->
+      <div class="bg-white rounded-3xl border border-[#D5E9DC] p-5 sm:p-7 custom-card-shadow space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#EAF2ED] pb-3">
+          <div>
+            <h3 class="text-base font-black text-[#0D2B1B]">Publikasi &amp; Materi Guru</h3>
+            <p class="text-xs text-[#5A6E62]">Semua materi pembelajaran, kuis interaktif, dan pengumuman dari guru kelas.</p>
+          </div>
+          <!-- Filter Tabs -->
+          <div class="flex flex-wrap items-center gap-1.5 p-1 bg-[#F4F8F5] rounded-xl border border-[#D5E9DC]">
+            <button type="button" id="tab-stu-posts-all" onclick="filterStudentPosts('all')"
+              class="px-3 py-1.5 rounded-lg text-xs font-extrabold bg-[#1E5E3A] text-white shadow-2xs transition-all cursor-pointer">
+              Semua
+            </button>
+            <button type="button" id="tab-stu-posts-materi" onclick="filterStudentPosts('materi')"
+              class="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#5A6E62] hover:text-[#0D2B1B] transition-all cursor-pointer">
+              📚 Materi Pembelajaran
+            </button>
+            <button type="button" id="tab-stu-posts-tugas" onclick="filterStudentPosts('tugas')"
+              class="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#5A6E62] hover:text-[#0D2B1B] transition-all cursor-pointer">
+              📝 Tugas &amp; Kuis
+            </button>
+            <button type="button" id="tab-stu-posts-pengumuman" onclick="filterStudentPosts('pengumuman')"
+              class="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#5A6E62] hover:text-[#0D2B1B] transition-all cursor-pointer">
+              📢 Pengumuman Guru
+            </button>
+          </div>
+        </div>
+
+        <div id="student-posts-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Rendered dynamically by JS -->
+        </div>
+      </div>
+
+    </div>
 
     <!-- ============================================================== -->
     <!-- 3. TABS NAVIGATION -->
@@ -2676,6 +2909,52 @@
             </div>
           </div>
 
+          <!-- Classroom & Student Targeting Section -->
+          <div class="bg-[#F4F8F5] p-3.5 rounded-xl border border-[#CDE3D5] space-y-3">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="block font-bold text-[#143D24]">
+                  🏫 Hubungkan ke Kelas Saya (Masuk ke Agenda Kelas Otomatis):
+                </label>
+                <span class="text-[10px] text-[#1E5E3A] font-semibold">Bisa pilih lebih dari 1 kelas</span>
+              </div>
+              <div id="asg-classrooms-selector" class="space-y-1.5 max-h-36 overflow-y-auto bg-white p-2.5 rounded-lg border border-[#BCE1C9]">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+
+            <!-- Target Students Radio -->
+            <div id="asg-target-section" class="space-y-2 pt-1 border-t border-[#D5E9DC]">
+              <label class="block font-bold text-[#143D24]">Target Siswa Penerima:</label>
+              <div class="flex items-center gap-4">
+                <label class="flex items-center gap-1.5 cursor-pointer font-semibold text-[#18181b]">
+                  <input type="radio" name="asg-target-mode" value="all" checked onchange="toggleAsgTargetStudentMode('all')" class="accent-[#1E5E3A]">
+                  <span>Semua Siswa di Kelas</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer font-semibold text-[#18181b]">
+                  <input type="radio" name="asg-target-mode" value="selective" onchange="toggleAsgTargetStudentMode('selective')" class="accent-[#1E5E3A]">
+                  <span>Pilih Siswa Tertentu</span>
+                </label>
+              </div>
+
+              <!-- Selective Students Container -->
+              <div id="asg-selective-students-box" class="hidden space-y-2 pt-1">
+                <input type="text" id="asg-student-search-input" oninput="filterAsgTargetStudents()" placeholder="Cari nama siswa..."
+                  class="w-full px-2.5 py-1.5 rounded-md border border-[#d6cfc2] bg-white text-xs">
+                <div id="asg-selective-students-list" class="max-h-32 overflow-y-auto space-y-1 bg-white p-2 rounded-lg border border-[#d6cfc2]">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label for="asg-input-deadline" class="block font-bold text-[#143D24] mb-1">
+                📅 Batas Pengumpulan / Deadline Tugas:
+              </label>
+              <input type="datetime-local" id="asg-input-deadline" class="w-full px-3 py-2 rounded-lg border border-[#BCE1C9] bg-white font-medium text-xs">
+            </div>
+          </div>
+
           <div class="space-y-2 pt-1 border-t border-[#eee9df]">
             <label class="flex items-center gap-2 cursor-pointer select-none">
               <input type="checkbox" id="asg-check-shuffle-q" checked class="w-4 h-4 rounded border-[#d6cfc2] accent-[#1d4ed8]">
@@ -2748,6 +3027,305 @@
 
     </div>
   </div>
+  <!-- Modal: Buat Kelas Baru -->
+  <div id="modal-create-classroom" class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center p-4" onclick="closeCreateClassroomModal()">
+    <div class="bg-white rounded-2xl p-6 sm:p-7 max-w-lg w-full shadow-2xl border border-[#d6cfc2] space-y-4" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between border-b border-[#eee9df] pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9] flex items-center justify-center text-lg">
+            🏫
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-[#18181b]">Buat Kelas Pembelajaran Baru</h3>
+            <p class="text-xs text-[#57534e]">Kode unik 6-digit PIN akan dibuat otomatis untuk murid bergabung.</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeCreateClassroomModal()" class="p-1.5 rounded-md bg-[#f4f1ea] hover:bg-[#e7e2d8] cursor-pointer">
+          <span class="ui-sprite ui-xs ui-close"></span>
+        </button>
+      </div>
+
+      <form onsubmit="handleCreateClassroomSubmit(event)" class="space-y-4 text-xs">
+        <div>
+          <label for="new-class-name" class="block font-bold text-[#3f3f46] mb-1">Nama Kelas <span class="text-rose-500">*</span></label>
+          <input type="text" id="new-class-name" required placeholder="Contoh: Kelas 5-A SD Cinta Kasih Tzu Chi"
+            class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-semibold focus:outline-none focus:border-[#1E5E3A]">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label for="new-class-level" class="block font-bold text-[#3f3f46] mb-1">Jenjang Pendidikan</label>
+            <select id="new-class-level" class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] font-semibold text-xs focus:outline-none focus:border-[#1E5E3A]">
+              <option value="SD Kelas 1-3">SD Kelas 1-3 (Fase A-B)</option>
+              <option value="SD Kelas 4-6" selected>SD Kelas 4-6 (Fase B-C)</option>
+              <option value="SMP Kelas 7-9">SMP Kelas 7-9 (Fase D)</option>
+              <option value="SMA Kelas 10-12">SMA Kelas 10-12 (Fase E-F)</option>
+              <option value="SMK">SMK Tzu Chi</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="new-class-subject" class="block font-bold text-[#3f3f46] mb-1">Mata Pelajaran / Peran</label>
+            <select id="new-class-subject" class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] font-semibold text-xs focus:outline-none focus:border-[#1E5E3A]">
+              <option value="Wali Kelas">Wali Kelas</option>
+              <option value="IPA / Sains">IPA / Sains</option>
+              <option value="Bahasa Mandarin">Bahasa Mandarin</option>
+              <option value="Matematika">Matematika</option>
+              <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+              <option value="Bahasa Inggris">Bahasa Inggris</option>
+              <option value="Pendidikan Agama">Pendidikan Agama</option>
+              <option value="Seni Budaya">Seni Budaya</option>
+              <option value="PJOK">PJOK</option>
+              <option value="Umum">Umum</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label for="new-class-desc" class="block font-bold text-[#3f3f46] mb-1">Deskripsi / Catatan Kelas (Opsional)</label>
+          <textarea id="new-class-desc" rows="2" placeholder="Contoh: Kelas reguler tahun ajaran 2026/2027 dengan jadwal Senin - Jumat"
+            class="w-full px-3.5 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-xs font-medium focus:outline-none focus:border-[#1E5E3A]"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-[#eee9df]">
+          <button type="button" onclick="closeCreateClassroomModal()" class="px-4 py-2.5 rounded-xl border border-[#d6cfc2] bg-[#f4f1ea] hover:bg-[#e7e2d8] text-xs font-semibold text-[#18181b] cursor-pointer">
+            Batal
+          </button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#1E5E3A] hover:bg-[#166534] text-white font-bold text-xs shadow-xs transition-colors cursor-pointer flex items-center gap-1.5">
+            <span>✨</span>
+            <span>Buat Kelas Sekarang</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Roster Murid Kelas -->
+  <div id="modal-classroom-roster" class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center p-4" onclick="closeClassroomRosterModal()">
+    <div class="bg-white rounded-2xl p-6 max-w-2xl w-full shadow-2xl border border-[#d6cfc2] space-y-4 max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between border-b border-[#eee9df] pb-3 shrink-0">
+        <div>
+          <div class="flex items-center gap-2">
+            <h3 class="text-base font-bold text-[#18181b]" id="roster-class-name">Roster Murid Kelas</h3>
+            <span class="font-mono text-xs font-bold px-2 py-0.5 rounded bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9]" id="roster-class-code">PIN: 000000</span>
+          </div>
+          <p class="text-xs text-[#57534e] mt-0.5" id="roster-class-meta">Daftar siswa yang telah bergabung melalui PIN kelas</p>
+        </div>
+        <button type="button" onclick="closeClassroomRosterModal()" class="p-1.5 rounded-md bg-[#f4f1ea] hover:bg-[#e7e2d8] cursor-pointer">
+          <span class="ui-sprite ui-xs ui-close"></span>
+        </button>
+      </div>
+
+      <!-- Filter / Search bar -->
+      <div class="flex items-center gap-3 shrink-0">
+        <div class="relative flex-1">
+          <span class="ui-sprite ui-xs ui-search absolute left-3 top-2.5"></span>
+          <input type="text" id="roster-search-input" oninput="filterRosterStudents()" placeholder="Cari nama atau NISN murid..."
+            class="w-full pl-9 pr-3 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-xs font-medium focus:outline-none focus:border-[#1E5E3A]">
+        </div>
+        <div class="text-xs font-bold text-[#18181b] px-3 py-2 rounded-lg bg-[#f4f1ea] border border-[#e5dfd3] shrink-0" id="roster-count-badge">
+          0 Murid
+        </div>
+      </div>
+
+      <!-- Students List Container -->
+      <div id="roster-students-container" class="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[220px]">
+        <!-- Rendered by JS -->
+      </div>
+
+      <div class="pt-3 border-t border-[#eee9df] flex items-center justify-between shrink-0 text-xs">
+        <span class="text-[#78716c]">Tips: Berikan PIN 6-digit kepada siswa untuk langsung muncul di roster ini.</span>
+        <button type="button" onclick="closeClassroomRosterModal()" class="px-4 py-2 rounded-lg bg-[#18181b] hover:bg-[#27272a] text-white font-bold cursor-pointer">
+          Tutup Roster
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Tulis Agenda Harian Kelas -->
+  <div id="modal-write-agenda" class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center p-3 sm:p-4" onclick="closeWriteAgendaModal()">
+    <div class="bg-white rounded-2xl p-5 sm:p-7 max-w-3xl w-full shadow-2xl border border-[#d6cfc2] space-y-4 max-h-[92vh] flex flex-col" onclick="event.stopPropagation()">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-[#eee9df] pb-3 shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9] flex items-center justify-center text-xl shrink-0">
+            📝
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-base sm:text-lg font-bold text-[#18181b]" id="agenda-modal-class-title">Tulis Agenda Harian</h3>
+              <span id="agenda-modal-class-code" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9]">PIN: 000000</span>
+            </div>
+            <p class="text-xs text-[#57534e]">Agenda ini akan otomatis tampil di dashboard murid yang terdaftar di kelas.</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeWriteAgendaModal()" class="p-1.5 rounded-md bg-[#f4f1ea] hover:bg-[#e7e2d8] cursor-pointer">
+          <span class="ui-sprite ui-xs ui-close"></span>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="flex-1 overflow-y-auto space-y-4 pr-1 text-xs">
+        
+        <!-- General Agenda Settings: Date & Title -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-[#fcfbf8] p-3.5 rounded-xl border border-[#e5dfd3]">
+          <div>
+            <label for="agenda-modal-date" class="block font-bold text-[#3f3f46] mb-1">Tanggal Agenda <span class="text-rose-500">*</span></label>
+            <input type="date" id="agenda-modal-date" required onchange="handleAgendaDateChange(this.value)"
+              class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-white font-semibold text-xs focus:outline-none focus:border-[#1E5E3A]">
+          </div>
+          <div class="sm:col-span-2">
+            <label for="agenda-modal-title" class="block font-bold text-[#3f3f46] mb-1">Judul Agenda Harian <span class="text-rose-500">*</span></label>
+            <input type="text" id="agenda-modal-title" required placeholder="Contoh: Agenda Pembelajaran Selasa, 24 November"
+              class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-white font-semibold text-xs focus:outline-none focus:border-[#1E5E3A]">
+          </div>
+        </div>
+
+        <!-- Quick Add Category Preset Bar -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-[#3f3f46]">Daftar Item Agenda Sekolah:</span>
+            <span class="text-[11px] text-[#78716c]">Klik preset cepat di bawah untuk menambahkan item langsung:</span>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" onclick="addAgendaModalItemWithCategory('seragam')"
+              class="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-[11px] flex items-center gap-1 cursor-pointer">
+              <span>👔</span><span>+ Seragam</span>
+            </button>
+            <button type="button" onclick="addAgendaModalItemWithCategory('buku')"
+              class="px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 font-bold text-[11px] flex items-center gap-1 cursor-pointer">
+              <span>📖</span><span>+ Buku Mapel</span>
+            </button>
+            <button type="button" onclick="addAgendaModalItemWithCategory('tugas')"
+              class="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-bold text-[11px] flex items-center gap-1 cursor-pointer">
+              <span>📝</span><span>+ Tugas / PR</span>
+            </button>
+            <button type="button" onclick="addAgendaModalItemWithCategory('ulangan')"
+              class="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 font-bold text-[11px] flex items-center gap-1 cursor-pointer">
+              <span>🎯</span><span>+ Ulangan</span>
+            </button>
+            <button type="button" onclick="addAgendaModalItemWithCategory('materi')"
+              class="px-2.5 py-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 font-bold text-[11px] flex items-center gap-1 cursor-pointer">
+              <span>💡</span><span>+ Materi Pembelajaran</span>
+            </button>
+            <button type="button" onclick="addAgendaModalItemWithCategory('pengumuman')"
+              class="px-2.5 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200 font-bold text-[11px] flex items-center gap-1 cursor-pointer">
+              <span>📢</span><span>+ Pengumuman</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Dynamic Agenda Items Container -->
+        <div id="agenda-modal-items-container" class="space-y-4">
+          <!-- Rendered dynamically by JS -->
+        </div>
+
+        <div class="pt-2">
+          <button type="button" onclick="addAgendaModalItem()"
+            class="w-full py-2.5 border-2 border-dashed border-[#BCE1C9] hover:border-[#1E5E3A] bg-[#EAF5ED]/50 hover:bg-[#EAF5ED] text-[#1E5E3A] font-bold rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-colors">
+            <span>➕</span>
+            <span>Tambah Item Agenda Baru</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="pt-3 border-t border-[#eee9df] flex items-center justify-between shrink-0">
+        <button type="button" onclick="closeWriteAgendaModal()" class="px-4 py-2.5 rounded-xl border border-[#d6cfc2] bg-[#f4f1ea] hover:bg-[#e7e2d8] text-xs font-semibold text-[#18181b] cursor-pointer">
+          Batal
+        </button>
+        <button type="button" onclick="saveDailyAgendaSubmit()" id="btn-save-daily-agenda"
+          class="px-6 py-2.5 rounded-xl bg-[#1E5E3A] hover:bg-[#166534] text-white font-bold text-xs sm:text-sm border-b-[3px] border-[#0F3520] flex items-center gap-2 shadow-md cursor-pointer transition-all">
+          <span>💾</span>
+          <span>Simpan &amp; Publikasikan Agenda</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal: Agenda Detail (Shared by Student & Teacher) -->
+  <div id="modal-agenda-detail" class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center p-3 sm:p-4" onclick="closeAgendaDetailModal()">
+    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl border border-[#D5E9DC] space-y-5 max-h-[92vh] overflow-y-auto" onclick="event.stopPropagation()">
+      
+      <!-- Header -->
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-[#EAF5ED] border border-[#BCE1C9] text-2xl flex items-center justify-center shrink-0" id="agenda-detail-icon">
+            📝
+          </div>
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span id="agenda-detail-type-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9]">
+                Tugas
+              </span>
+              <span id="agenda-detail-category-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FAF8F5] text-[#5A6E62] border border-[#D5E9DC]">
+                Seragam
+              </span>
+            </div>
+            <h3 class="text-base sm:text-lg font-black text-[#0D2B1B] mt-1" id="agenda-detail-title">
+              Judul Agenda
+            </h3>
+          </div>
+        </div>
+        <button type="button" onclick="closeAgendaDetailModal()" class="p-1.5 rounded-xl bg-[#F4F8F5] hover:bg-[#EAF5ED] text-[#5A6E62] hover:text-[#0D2B1B] transition-colors cursor-pointer">
+          <span class="ui-sprite ui-xs ui-close"></span>
+        </button>
+      </div>
+
+      <!-- Class & Teacher Info -->
+      <div class="p-3 rounded-xl bg-[#FAFDFB] border border-[#D5E9DC] text-xs flex items-center justify-between">
+        <div>
+          <span class="text-[#5A6E62]">Kelas &amp; Guru:</span>
+          <span class="font-extrabold text-[#0D2B1B] ml-1" id="agenda-detail-class-info">Kelas 5-A SD Tzu Chi</span>
+        </div>
+        <div id="agenda-detail-deadline-pill" class="font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+          Besok
+        </div>
+      </div>
+
+      <!-- Command / Perintah Utama -->
+      <div class="space-y-1.5">
+        <div class="text-[11px] font-bold text-[#5A6E62] uppercase tracking-wider">Perintah / Instruksi Utama:</div>
+        <div class="p-3.5 rounded-2xl bg-[#EAF5ED]/60 border border-[#BCE1C9] text-xs sm:text-sm font-bold text-[#0D2B1B] leading-relaxed" id="agenda-detail-command">
+          -
+        </div>
+      </div>
+
+      <!-- Penjelasan Lengkap -->
+      <div class="space-y-1.5">
+        <div class="text-[11px] font-bold text-[#5A6E62] uppercase tracking-wider">Penjelasan Detail:</div>
+        <div class="p-3.5 rounded-2xl bg-[#FAFDFB] border border-[#EAF2ED] text-xs text-[#2C4A38] leading-relaxed whitespace-pre-line" id="agenda-detail-explanation">
+          -
+        </div>
+      </div>
+
+      <!-- Action Buttons (Download, External Link, Start Task) -->
+      <div class="space-y-2 pt-2 border-t border-[#EAF2ED]">
+        <!-- Download Attachment Button -->
+        <a id="agenda-detail-file-btn" href="#" download class="hidden w-full py-2.5 px-4 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 font-extrabold text-xs flex items-center justify-center gap-2 transition-colors">
+          <span>📥</span>
+          <span id="agenda-detail-file-label">Unduh File Lampiran</span>
+        </a>
+
+        <!-- External Link Button -->
+        <a id="agenda-detail-link-btn" href="#" target="_blank" class="hidden w-full py-2.5 px-4 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 font-extrabold text-xs flex items-center justify-center gap-2 transition-colors">
+          <span>🔗</span>
+          <span>Buka Tautan Eksternal (Google Drive / Docs / Video)</span>
+        </a>
+
+        <!-- Play Task Button -->
+        <button id="agenda-detail-play-btn" type="button" class="hidden w-full py-3 px-4 rounded-xl tc-gradient hover:opacity-95 text-white font-black text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer">
+          <span class="ui-sprite ui-sm ui-play"></span>
+          <span>Mulai Kerjakan Tugas / Kuis Game</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <div id="modal-media-picker" class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center p-4" onclick="closeMediaPickerModal()">
     <div class="bg-white rounded-xl p-5 sm:p-6 max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-[#d6cfc2] space-y-4" onclick="event.stopPropagation()">
       <!-- Modal Header -->
@@ -3213,27 +3791,39 @@
         switchPortalTab('community');
         return;
       }
-      currentActiveTab = ['projects', 'recycle', 'assignments'].includes(tab) ? tab : 'projects';
+      currentActiveTab = ['projects', 'recycle', 'assignments', 'classrooms'].includes(tab) ? tab : 'projects';
       const btnProjects = document.getElementById('tab-btn-projects');
       const btnRecycle = document.getElementById('tab-btn-recycle');
       const btnAssignments = document.getElementById('tab-btn-assignments');
+      const btnClassrooms = document.getElementById('tab-btn-classrooms');
       const btnCommunity = document.getElementById('tab-btn-community');
       const contentProjects = document.getElementById('tab-content-projects');
       const contentRecycle = document.getElementById('tab-content-recycle');
       const contentAssignments = document.getElementById('tab-content-assignments');
+      const contentClassrooms = document.getElementById('tab-content-classrooms');
       const contentCommunity = document.getElementById('tab-content-community');
 
-      btnProjects.className = currentActiveTab === 'projects'
-        ? 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#18181b] text-white transition-colors flex items-center gap-2 cursor-pointer'
-        : 'px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#f4f1ea] text-[#57534e] hover:bg-[#e7e2d8] transition-colors flex items-center gap-2 cursor-pointer';
+      if (btnProjects) {
+        btnProjects.className = currentActiveTab === 'projects'
+          ? 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#18181b] text-white transition-colors flex items-center gap-2 cursor-pointer'
+          : 'px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#f4f1ea] text-[#57534e] hover:bg-[#e7e2d8] transition-colors flex items-center gap-2 cursor-pointer';
+      }
 
-      btnRecycle.className = currentActiveTab === 'recycle'
-        ? 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#b91c1c] text-white transition-colors flex items-center gap-2 cursor-pointer'
-        : 'px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#f4f1ea] text-[#57534e] hover:bg-[#e7e2d8] transition-colors flex items-center gap-2 cursor-pointer';
+      if (btnRecycle) {
+        btnRecycle.className = currentActiveTab === 'recycle'
+          ? 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#b91c1c] text-white transition-colors flex items-center gap-2 cursor-pointer'
+          : 'px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#f4f1ea] text-[#57534e] hover:bg-[#e7e2d8] transition-colors flex items-center gap-2 cursor-pointer';
+      }
 
       if (btnAssignments) {
         btnAssignments.className = currentActiveTab === 'assignments'
           ? 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#1d4ed8] text-white transition-colors flex items-center gap-2 cursor-pointer'
+          : 'px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#f4f1ea] text-[#57534e] hover:bg-[#e7e2d8] transition-colors flex items-center gap-2 cursor-pointer';
+      }
+
+      if (btnClassrooms) {
+        btnClassrooms.className = currentActiveTab === 'classrooms'
+          ? 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#1E5E3A] text-white transition-colors flex items-center gap-2 cursor-pointer shadow-xs'
           : 'px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#f4f1ea] text-[#57534e] hover:bg-[#e7e2d8] transition-colors flex items-center gap-2 cursor-pointer';
       }
 
@@ -3243,12 +3833,16 @@
           : 'px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#f4f1ea] text-[#57534e] hover:bg-[#e7e2d8] transition-colors flex items-center gap-2 cursor-pointer';
       }
 
-      contentProjects.classList.toggle('hidden', currentActiveTab !== 'projects');
-      contentRecycle.classList.toggle('hidden', currentActiveTab !== 'recycle');
+      if (contentProjects) contentProjects.classList.toggle('hidden', currentActiveTab !== 'projects');
+      if (contentRecycle) contentRecycle.classList.toggle('hidden', currentActiveTab !== 'recycle');
       if (contentAssignments) contentAssignments.classList.toggle('hidden', currentActiveTab !== 'assignments');
+      if (contentClassrooms) contentClassrooms.classList.toggle('hidden', currentActiveTab !== 'classrooms');
       if (contentCommunity) contentCommunity.classList.toggle('hidden', currentActiveTab !== 'community');
 
       renderDashboard();
+      if (currentActiveTab === 'classrooms') {
+        renderTeacherClassrooms();
+      }
       if (currentActiveTab === 'community') {
         populateDashboardCommSubjects();
         renderDashboardCommunityCards();
@@ -3276,9 +3870,18 @@
       if (asgBadge) asgBadge.textContent = teacherAssignments.filter(a => a.status === 'active').length;
       const commBadge = document.getElementById('badge-community-count');
       if (commBadge) commBadge.textContent = allCommunity.length;
+      const clsBadge = document.getElementById('badge-classrooms-count');
+      if (clsBadge) {
+        const clsList = (typeof LotusDB !== 'undefined' && typeof LotusDB.getClassroomsByTeacher === 'function')
+          ? LotusDB.getClassroomsByTeacher(currentTeacher.id)
+          : [];
+        clsBadge.textContent = clsList.length;
+      }
 
       if (currentActiveTab === 'assignments') {
         renderAssignmentsList();
+      } else if (currentActiveTab === 'classrooms') {
+        renderTeacherClassrooms();
       } else if (currentActiveTab === 'community') {
         populateDashboardCommSubjects();
         renderDashboardCommunityCards();
@@ -5829,12 +6432,102 @@
       document.getElementById('asg-check-multiple').checked = false;
       document.getElementById('asg-check-show-answers').checked = true;
 
+      // Populate Classrooms Selector
+      populateAsgClassroomsSelector();
+
+      // Default deadline: tomorrow at 23:59
+      const deadlineInput = document.getElementById('asg-input-deadline');
+      if (deadlineInput) {
+        const tomorrow = new Date(Date.now() + 86400000);
+        tomorrow.setHours(23, 59, 0, 0);
+        deadlineInput.value = tomorrow.toISOString().slice(0, 16);
+      }
+
       document.getElementById('asg-step-confirm').classList.remove('hidden');
       document.getElementById('asg-step-settings').classList.add('hidden');
       document.getElementById('asg-step-success').classList.add('hidden');
       document.getElementById('asg-copy-feedback').classList.add('hidden');
 
       document.getElementById('modal-generate-assignment').classList.remove('hidden');
+    }
+
+    function populateAsgClassroomsSelector() {
+      const container = document.getElementById('asg-classrooms-selector');
+      if (!container) return;
+      let teacherClasses = [];
+      if (typeof LotusDB !== 'undefined' && typeof LotusDB.getClassroomsByTeacher === 'function') {
+        teacherClasses = LotusDB.getClassroomsByTeacher(currentTeacher?.id);
+        if (teacherClasses.length === 0 && typeof LotusDB.getAllClassrooms === 'function') {
+          teacherClasses = LotusDB.getAllClassrooms();
+        }
+      }
+      if (teacherClasses.length === 0) {
+        container.innerHTML = `
+          <div class="text-[11px] text-[#57534e]">Belum ada kelas. Tugas akan dibuat sebagai penugasan umum dengan link/PIN.</div>
+        `;
+        return;
+      }
+      container.innerHTML = teacherClasses.map(c => `
+        <label class="flex items-center gap-2 p-1.5 hover:bg-emerald-50 rounded-lg cursor-pointer transition-colors">
+          <input type="checkbox" name="asg-class-check" value="${c.id}" onchange="refreshAsgSelectiveStudents()" class="accent-[#1E5E3A] rounded">
+          <span class="font-bold text-xs text-[#18181b]">${escapeHtml(c.name)}</span>
+          <span class="text-[10px] font-mono font-bold bg-[#EAF5ED] text-[#1E5E3A] px-1.5 py-0.5 rounded">PIN: ${c.code}</span>
+        </label>
+      `).join('');
+      refreshAsgSelectiveStudents();
+    }
+
+    function toggleAsgTargetStudentMode(mode) {
+      const box = document.getElementById('asg-selective-students-box');
+      if (!box) return;
+      box.classList.toggle('hidden', mode !== 'selective');
+      if (mode === 'selective') refreshAsgSelectiveStudents();
+    }
+
+    function refreshAsgSelectiveStudents() {
+      const list = document.getElementById('asg-selective-students-list');
+      if (!list) return;
+      const checkedBoxes = Array.from(document.querySelectorAll('input[name="asg-class-check"]:checked'));
+      const classIds = checkedBoxes.map(b => b.value);
+
+      if (classIds.length === 0) {
+        list.innerHTML = `<div class="text-[11px] text-[#78716c] p-1">Pilih minimal satu kelas di atas untuk melihat siswa.</div>`;
+        return;
+      }
+
+      let students = [];
+      classIds.forEach(cid => {
+        if (typeof LotusDB !== 'undefined' && typeof LotusDB.getClassroomStudents === 'function') {
+          students = students.concat(LotusDB.getClassroomStudents(cid));
+        }
+      });
+
+      // Deduplicate students by id
+      const uniqueMap = new Map();
+      students.forEach(s => { if (s && s.id) uniqueMap.set(s.id, s); });
+      const uniqueStudents = Array.from(uniqueMap.values());
+
+      if (uniqueStudents.length === 0) {
+        list.innerHTML = `<div class="text-[11px] text-[#78716c] p-1">Belum ada murid yang bergabung di kelas terpilih.</div>`;
+        return;
+      }
+
+      list.innerHTML = uniqueStudents.map(s => `
+        <label class="flex items-center gap-2 p-1 hover:bg-emerald-50 rounded cursor-pointer asg-stu-item">
+          <input type="checkbox" name="asg-student-check" value="${s.id}" checked class="accent-[#1E5E3A]">
+          <span class="font-bold text-xs text-[#18181b]">${escapeHtml(s.name)}</span>
+          <span class="text-[10px] text-[#78716c]">(${escapeHtml(s.username || s.nisn || '')})</span>
+        </label>
+      `).join('');
+    }
+
+    function filterAsgTargetStudents() {
+      const q = (document.getElementById('asg-student-search-input')?.value || '').toLowerCase().trim();
+      const items = document.querySelectorAll('.asg-stu-item');
+      items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.classList.toggle('hidden', !text.includes(q));
+      });
     }
 
     function closeGenerateAssignmentModal() {
@@ -5882,6 +6575,13 @@
           shuffleAnswers
         };
 
+        const checkedClasses = Array.from(document.querySelectorAll('input[name="asg-class-check"]:checked')).map(el => el.value);
+        const isSelective = document.querySelector('input[name="asg-target-mode"]:checked')?.value === 'selective';
+        const targetStudentIds = isSelective
+          ? Array.from(document.querySelectorAll('input[name="asg-student-check"]:checked')).map(el => el.value)
+          : [];
+        const deadline = document.getElementById('asg-input-deadline')?.value || null;
+
         const newAsg = await LotusDB.createAssignment({
           projectId: selectedProjectForAssignment.id,
           teacherId: currentTeacher.id,
@@ -5889,7 +6589,10 @@
           templateType,
           rules,
           allowMultiple,
-          showAnswers
+          showAnswers,
+          deadline,
+          classroomIds: checkedClasses,
+          targetStudentIds: targetStudentIds
         });
 
         currentCreatedAssignment = newAsg;
@@ -7188,6 +7891,9 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
 
       renderStudentAssignments();
       renderStudentHistory();
+      renderStudentAgendaSection();
+      renderStudentPersonalAgenda();
+      filterStudentPosts('all');
     }
 
     function handleStudentPortalLogin(e) {
@@ -7483,36 +8189,149 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       }
     }
 
+    let _registerRole = 'teacher';
+
+    function setRegisterRole(role) {
+      _registerRole = role;
+      const teacherBtn = document.getElementById('reg-role-teacher-btn');
+      const studentBtn = document.getElementById('reg-role-student-btn');
+      const teacherFields = document.getElementById('reg-fields-teacher');
+      const studentFields = document.getElementById('reg-fields-student');
+      const submitLabel = document.getElementById('reg-submit-label');
+      const regEmail = document.getElementById('reg-email');
+
+      if (role === 'teacher') {
+        if (teacherBtn) {
+          teacherBtn.className = 'py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-[#1E5E3A] text-white shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer';
+        }
+        if (studentBtn) {
+          studentBtn.className = 'py-2.5 rounded-lg text-xs sm:text-sm font-semibold text-[#57534e] hover:text-[#18181b] transition-all flex items-center justify-center gap-1.5 cursor-pointer';
+        }
+        if (teacherFields) teacherFields.classList.remove('hidden');
+        if (studentFields) studentFields.classList.add('hidden');
+        if (regEmail) regEmail.required = true;
+        if (submitLabel) submitLabel.textContent = 'Daftar Akun Guru & Masuk Dashboard';
+      } else {
+        if (teacherBtn) {
+          teacherBtn.className = 'py-2.5 rounded-lg text-xs sm:text-sm font-semibold text-[#57534e] hover:text-[#18181b] transition-all flex items-center justify-center gap-1.5 cursor-pointer';
+        }
+        if (studentBtn) {
+          studentBtn.className = 'py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-[#1E5E3A] text-white shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer';
+        }
+        if (teacherFields) teacherFields.classList.add('hidden');
+        if (studentFields) studentFields.classList.remove('hidden');
+        if (regEmail) regEmail.required = false;
+        if (submitLabel) submitLabel.textContent = 'Daftar Akun Murid & Buka Portal';
+      }
+    }
+
     async function handleRegisterSubmit(e) {
       e.preventDefault();
-      const name = document.getElementById('reg-name').value.trim();
-      const username = document.getElementById('reg-username').value.trim();
-      const email = document.getElementById('reg-email').value.trim();
-      const subject = document.getElementById('reg-subject').value.trim();
-      const school = document.getElementById('reg-school').value.trim();
-      const password = document.getElementById('reg-password').value;
-      const remember = document.getElementById('signin-remember')?.checked !== false;
       const errBox = document.getElementById('register-error');
       const errText = document.getElementById('register-error-text');
+      const password = document.getElementById('reg-password').value;
 
-      const res = await LotusDB.registerTeacher({ name, username, email, subject, school, password }, remember);
-      if (res.success) {
-        errBox.classList.add('hidden');
-        try {
-          localStorage.removeItem('lotus_active_navigation');
-          sessionStorage.removeItem('lotus_active_navigation');
-          localStorage.removeItem('lotus_student_profile');
-          sessionStorage.removeItem('lotus_student_profile');
-        } catch (err) {}
-        _activeStudentProfile = null;
-        if (typeof window !== 'undefined') window._activeStudentProfile = null;
-        currentTeacher = LotusDB.getCurrentTeacherStrict();
-        updateTeacherUI();
-        updatePortalAuthNav();
-        switchPortalTab('dashboard');
+      if (_registerRole === 'student') {
+        const name = (document.getElementById('reg-student-name')?.value || '').trim();
+        const username = (document.getElementById('reg-student-nisn')?.value || '').trim();
+        const studentClass = (document.getElementById('reg-student-class')?.value || '').trim();
+
+        if (!name || !username || !password) {
+          if (errText) errText.textContent = 'Mohon lengkapi nama murid, NISN/username, dan kata sandi.';
+          if (errBox) errBox.classList.remove('hidden');
+          return;
+        }
+
+        let res;
+        if (typeof LotusDB !== 'undefined' && typeof LotusDB.registerStudent === 'function') {
+          res = await LotusDB.registerStudent({ name, username, class: studentClass, password });
+        } else {
+          // Robust storage fallback
+          let students = [];
+          try {
+            students = JSON.parse(localStorage.getItem('lotus_students') || '[]');
+          } catch(err) { students = []; }
+          const existing = students.find(s => s.username === username || (s.name && s.name.toLowerCase() === name.toLowerCase()));
+          if (existing) {
+            res = { success: false, message: 'NISN atau Username sudah terdaftar.' };
+          } else {
+            const newStu = {
+              id: 'stu_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+              name,
+              username,
+              class: studentClass || 'Sekolah Cinta Kasih Tzu Chi',
+              level: studentClass || 'Sekolah Cinta Kasih Tzu Chi',
+              password,
+              created_at: new Date().toISOString()
+            };
+            students.push(newStu);
+            localStorage.setItem('lotus_students', JSON.stringify(students));
+            res = { success: true, student: newStu };
+          }
+        }
+
+        if (res && res.success) {
+          if (errBox) errBox.classList.add('hidden');
+          const studentProfile = {
+            id: res.student?.id || ('stu_' + Date.now()),
+            name: res.student?.name || name,
+            username: res.student?.username || username,
+            class: res.student?.class || studentClass || 'Sekolah Cinta Kasih Tzu Chi',
+            level: studentClass || 'Sekolah Cinta Kasih Tzu Chi',
+            joined_at: new Date().toISOString()
+          };
+          try {
+            localStorage.setItem('lotus_student_profile', JSON.stringify(studentProfile));
+            sessionStorage.setItem('lotus_student_profile', JSON.stringify(studentProfile));
+            localStorage.removeItem('lotus_active_navigation');
+            sessionStorage.removeItem('lotus_active_navigation');
+          } catch(err) {}
+          _activeStudentProfile = studentProfile;
+          if (typeof window !== 'undefined') window._activeStudentProfile = studentProfile;
+
+          if (window.LotusDB && typeof LotusDB.logoutTeacher === 'function') {
+            LotusDB.logoutTeacher();
+          }
+          currentTeacher = null;
+          if (typeof window !== 'undefined') window.currentTeacher = null;
+
+          updateTeacherUI();
+          updatePortalAuthNav();
+          initStudentDashboard();
+          switchPortalTab('student-dashboard');
+          alert('Selamat datang, ' + name + '! Pendaftaran akun murid berhasil.');
+        } else {
+          if (errText) errText.textContent = res?.message || 'Gagal mendaftarkan akun murid.';
+          if (errBox) errBox.classList.remove('hidden');
+        }
       } else {
-        errText.textContent = res.message || LotusI18n.t('login.errRegFields');
-        errBox.classList.remove('hidden');
+        // Teacher registration
+        const name = document.getElementById('reg-name').value.trim();
+        const username = document.getElementById('reg-username').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const subject = document.getElementById('reg-subject').value.trim();
+        const school = document.getElementById('reg-school').value.trim();
+        const remember = document.getElementById('signin-remember')?.checked !== false;
+
+        const res = await LotusDB.registerTeacher({ name, username, email, subject, school, password }, remember);
+        if (res.success) {
+          if (errBox) errBox.classList.add('hidden');
+          try {
+            localStorage.removeItem('lotus_active_navigation');
+            sessionStorage.removeItem('lotus_active_navigation');
+            localStorage.removeItem('lotus_student_profile');
+            sessionStorage.removeItem('lotus_student_profile');
+          } catch (err) {}
+          _activeStudentProfile = null;
+          if (typeof window !== 'undefined') window._activeStudentProfile = null;
+          currentTeacher = LotusDB.getCurrentTeacherStrict();
+          updateTeacherUI();
+          updatePortalAuthNav();
+          switchPortalTab('dashboard');
+        } else {
+          if (errText) errText.textContent = res.message || LotusI18n.t('login.errRegFields');
+          if (errBox) errBox.classList.remove('hidden');
+        }
       }
     }
 
@@ -8184,6 +9003,1229 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
     // -------------------------------------------------------------------------
     
 
-  </script>
+  
+    // =========================================================================
+    // TEACHER CLASSROOM & AGENDA MANAGEMENT MODULE
+    // =========================================================================
+    let _activeRosterClassId = null;
+    let _activeAgendaClassId = null;
+    let _agendaModalItems = [];
+
+    function renderTeacherClassrooms() {
+      if (!currentTeacher) return;
+      const grid = document.getElementById('classrooms-cards-grid');
+      const badge = document.getElementById('badge-classrooms-count');
+      const headerCount = document.getElementById('classrooms-header-count');
+      if (!grid) return;
+
+      let classrooms = [];
+      if (typeof LotusDB !== 'undefined' && typeof LotusDB.getClassroomsByTeacher === 'function') {
+        classrooms = LotusDB.getClassroomsByTeacher(currentTeacher.id);
+        if (classrooms.length === 0 && typeof LotusDB.getAllClassrooms === 'function') {
+          classrooms = LotusDB.getAllClassrooms();
+        }
+      } else {
+        try {
+          classrooms = JSON.parse(localStorage.getItem('lotus_classrooms') || '[]');
+        } catch(e) { classrooms = []; }
+      }
+
+      if (badge) badge.textContent = classrooms.length;
+      if (headerCount) headerCount.textContent = `${classrooms.length} Kelas Terdaftar`;
+
+      if (classrooms.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full bg-white rounded-2xl border-2 border-dashed border-[#d6cfc2] p-10 text-center space-y-4">
+            <div class="w-16 h-16 rounded-2xl bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9] flex items-center justify-center text-3xl mx-auto">
+              🏫
+            </div>
+            <div>
+              <h4 class="text-base font-bold text-[#18181b]">Belum Ada Kelas Pembelajaran</h4>
+              <p class="text-xs text-[#57534e] max-w-md mx-auto mt-1">
+                Buat kelas pertama Anda sekarang. Anda akan mendapatkan PIN 6-digit untuk dibagikan ke siswa agar mereka dapat bergabung dan melihat agenda harian.
+              </p>
+            </div>
+            <button type="button" onclick="openCreateClassroomModal()"
+              class="px-5 py-2.5 rounded-xl bg-[#1E5E3A] hover:bg-[#166534] text-white font-bold text-xs inline-flex items-center gap-2 shadow-xs cursor-pointer">
+              <span>➕</span>
+              <span>Buat Kelas Sekarang</span>
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = classrooms.map(c => {
+        const studentCount = c.student_ids ? c.student_ids.length : 0;
+        let agendaCount = 0;
+        if (typeof LotusDB !== 'undefined' && typeof LotusDB.getDailyAgendasByClass === 'function') {
+          const agendas = LotusDB.getDailyAgendasByClass(c.id);
+          agendaCount = agendas.length;
+        }
+        return `
+          <div class="bg-white rounded-2xl border border-[#e5dfd3] hover:border-[#1E5E3A] p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-4 group">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between gap-2">
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9]">
+                  ${escapeHtml(c.subject || 'Umum')}
+                </span>
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#FAF8F5] text-[#57534e] border border-[#e5dfd3]">
+                  ${escapeHtml(c.level || 'SD')}
+                </span>
+              </div>
+
+              <div>
+                <h4 class="font-bold text-base text-[#18181b] group-hover:text-[#1E5E3A] transition-colors line-clamp-1">
+                  ${escapeHtml(c.name)}
+                </h4>
+                <p class="text-xs text-[#57534e] mt-1 line-clamp-2">
+                  ${escapeHtml(c.description || 'Kelas pembelajaran aktif Tzu Chi.')}
+                </p>
+              </div>
+
+              <!-- 6-Digit PIN Box with 1-Click Copy -->
+              <div class="bg-[#FAFDFB] border border-[#CDE3D5] rounded-xl p-3 flex items-center justify-between">
+                <div>
+                  <div class="text-[10px] uppercase font-bold tracking-wider text-[#5A6E62]">Kode Kelas (PIN Murid)</div>
+                  <div class="text-lg font-mono font-black text-[#1E5E3A] tracking-wider">${escapeHtml(c.code)}</div>
+                </div>
+                <button type="button" onclick="copyClassroomCode('${c.code}', this)"
+                  class="px-3 py-1.5 rounded-lg bg-[#EAF5ED] hover:bg-[#1E5E3A] text-[#1E5E3A] hover:text-white font-bold text-xs transition-colors flex items-center gap-1 cursor-pointer">
+                  <span>📋</span>
+                  <span>Salin PIN</span>
+                </button>
+              </div>
+
+              <div class="flex items-center justify-between text-xs font-semibold text-[#57534e] pt-1">
+                <span class="flex items-center gap-1">
+                  <span>👥</span>
+                  <span>${studentCount} Murid Terdaftar</span>
+                </span>
+                <span class="flex items-center gap-1 text-[#1E5E3A]">
+                  <span>📅</span>
+                  <span>${agendaCount} Agenda Terbit</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="pt-3 border-t border-[#eee9df] grid grid-cols-2 gap-2">
+              <button type="button" onclick="openClassroomRosterModal('${c.id}')"
+                class="py-2.5 px-3 rounded-xl border border-[#d6cfc2] bg-[#fcfbf8] hover:bg-[#f4f1ea] text-[#18181b] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+                <span>👥</span>
+                <span>Roster Murid</span>
+              </button>
+              <button type="button" onclick="openWriteAgendaModal('${c.id}')"
+                class="py-2.5 px-3 rounded-xl bg-[#1E5E3A] hover:bg-[#166534] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer">
+                <span>📝</span>
+                <span>Tulis Agenda</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function copyClassroomCode(code, btn) {
+      if (!code) return;
+      navigator.clipboard.writeText(code).then(() => {
+        if (btn) {
+          const original = btn.innerHTML;
+          btn.innerHTML = '<span>✓</span><span>Tersalin!</span>';
+          btn.classList.add('bg-emerald-600', 'text-white');
+          setTimeout(() => {
+            btn.innerHTML = original;
+            btn.classList.remove('bg-emerald-600', 'text-white');
+          }, 2000);
+        }
+      }).catch(() => {
+        prompt('Salin Kode PIN Kelas:', code);
+      });
+    }
+
+    function openCreateClassroomModal() {
+      document.getElementById('new-class-name').value = '';
+      document.getElementById('new-class-desc').value = '';
+      document.getElementById('modal-create-classroom').classList.remove('hidden');
+    }
+
+    function closeCreateClassroomModal() {
+      document.getElementById('modal-create-classroom').classList.add('hidden');
+    }
+
+    async function handleCreateClassroomSubmit(e) {
+      e.preventDefault();
+      if (!currentTeacher) return;
+      const name = document.getElementById('new-class-name').value.trim();
+      const level = document.getElementById('new-class-level').value;
+      const subject = document.getElementById('new-class-subject').value;
+      const description = document.getElementById('new-class-desc').value.trim();
+
+      if (!name) return;
+
+      let newClass;
+      if (typeof LotusDB !== 'undefined' && typeof LotusDB.createClassroom === 'function') {
+        newClass = await LotusDB.createClassroom({
+          teacherId: currentTeacher.id,
+          teacherName: currentTeacher.name,
+          name,
+          level,
+          subject,
+          description
+        });
+      } else {
+        let classes = [];
+        try {
+          classes = JSON.parse(localStorage.getItem('lotus_classrooms') || '[]');
+        } catch(err) { classes = []; }
+        const code = String(Math.floor(100000 + Math.random() * 900000));
+        newClass = {
+          id: 'cls_' + Date.now(),
+          teacher_id: currentTeacher.id,
+          teacher_name: currentTeacher.name,
+          name,
+          level,
+          subject,
+          description,
+          code,
+          created_at: new Date().toISOString(),
+          student_ids: []
+        };
+        classes.push(newClass);
+        localStorage.setItem('lotus_classrooms', JSON.stringify(classes));
+      }
+
+      closeCreateClassroomModal();
+      renderTeacherClassrooms();
+      renderDashboard();
+      alert(`Kelas "${name}" berhasil dibuat dengan Kode PIN: ${newClass.code}`);
+    }
+
+    // STUDENT ROSTER MODAL
+    let _cachedRosterStudents = [];
+
+    function openClassroomRosterModal(classId) {
+      _activeRosterClassId = classId;
+      let classroom = null;
+      let students = [];
+
+      if (typeof LotusDB !== 'undefined' && typeof LotusDB.getClassroomById === 'function') {
+        classroom = LotusDB.getClassroomById(classId);
+        students = LotusDB.getClassroomStudents(classId);
+      } else {
+        try {
+          const list = JSON.parse(localStorage.getItem('lotus_classrooms') || '[]');
+          classroom = list.find(c => c.id === classId);
+          const allStu = JSON.parse(localStorage.getItem('lotus_students') || '[]');
+          students = allStu.filter(s => classroom?.student_ids?.includes(s.id));
+        } catch(e) {}
+      }
+
+      if (!classroom) return;
+      _cachedRosterStudents = students;
+
+      document.getElementById('roster-class-name').textContent = `Roster: ${classroom.name}`;
+      document.getElementById('roster-class-code').textContent = `PIN: ${classroom.code}`;
+      document.getElementById('roster-class-meta').textContent = `${classroom.subject || 'Umum'} • ${classroom.level || 'SD'} • Guru: ${classroom.teacher_name || currentTeacher?.name}`;
+      document.getElementById('roster-search-input').value = '';
+
+      renderRosterList(students);
+      document.getElementById('modal-classroom-roster').classList.remove('hidden');
+    }
+
+    function closeClassroomRosterModal() {
+      document.getElementById('modal-classroom-roster').classList.add('hidden');
+      _activeRosterClassId = null;
+      _cachedRosterStudents = [];
+    }
+
+    function filterRosterStudents() {
+      const q = (document.getElementById('roster-search-input')?.value || '').toLowerCase().trim();
+      const filtered = _cachedRosterStudents.filter(s =>
+        (s.name && s.name.toLowerCase().includes(q)) ||
+        (s.username && s.username.toLowerCase().includes(q)) ||
+        (s.nisn && s.nisn.toLowerCase().includes(q))
+      );
+      renderRosterList(filtered);
+    }
+
+    function renderRosterList(students) {
+      const container = document.getElementById('roster-students-container');
+      const badge = document.getElementById('roster-count-badge');
+      if (!container) return;
+
+      if (badge) badge.textContent = `${students.length} Murid`;
+
+      if (students.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 bg-[#FAFDFB] rounded-xl border border-[#D5E9DC] text-center space-y-2">
+            <div class="text-3xl">👥</div>
+            <div class="font-bold text-xs text-[#18181b]">Belum ada murid yang bergabung</div>
+            <div class="text-[11px] text-[#57534e]">Bagikan 6-Digit PIN kelas kepada siswa agar mereka dapat bergabung melalui Portal Siswa.</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = students.map((s, idx) => {
+        const initials = (s.name || 'M').split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+        const joinDate = s.joined_at ? new Date(s.joined_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Aktif';
+        return `
+          <div class="p-3 bg-white rounded-xl border border-[#e5dfd3] hover:border-[#1E5E3A] flex items-center justify-between gap-3 transition-colors">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-[#EAF5ED] text-[#1E5E3A] font-bold text-xs flex items-center justify-center shrink-0 border border-[#BCE1C9]">
+                ${initials}
+              </div>
+              <div>
+                <div class="font-bold text-xs text-[#18181b]">${escapeHtml(s.name)}</div>
+                <div class="text-[11px] text-[#78716c] font-mono">NISN: ${escapeHtml(s.username || s.nisn || '-')} • ${escapeHtml(s.class || s.level || '')}</div>
+              </div>
+            </div>
+            <div class="text-right shrink-0">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                Terdaftar
+              </span>
+              <div class="text-[10px] text-[#9ca3af] mt-0.5">${joinDate}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // TULIS AGENDA HARIAN MODAL
+    function openWriteAgendaModal(classId) {
+      _activeAgendaClassId = classId;
+      let classroom = null;
+      if (typeof LotusDB !== 'undefined' && typeof LotusDB.getClassroomById === 'function') {
+        classroom = LotusDB.getClassroomById(classId);
+      } else {
+        try {
+          const list = JSON.parse(localStorage.getItem('lotus_classrooms') || '[]');
+          classroom = list.find(c => c.id === classId);
+        } catch(e) {}
+      }
+      if (!classroom) return;
+
+      document.getElementById('agenda-modal-class-title').textContent = `Tulis Agenda: ${classroom.name}`;
+      document.getElementById('agenda-modal-class-code').textContent = `PIN: ${classroom.code}`;
+
+      // Default date: today
+      const today = new Date().toISOString().split('T')[0];
+      const datePicker = document.getElementById('agenda-modal-date');
+      datePicker.value = today;
+
+      loadAgendaForClassAndDate(classId, today);
+      document.getElementById('modal-write-agenda').classList.remove('hidden');
+    }
+
+    function closeWriteAgendaModal() {
+      document.getElementById('modal-write-agenda').classList.add('hidden');
+      _activeAgendaClassId = null;
+      _agendaModalItems = [];
+    }
+
+    function handleAgendaDateChange(dateStr) {
+      if (!_activeAgendaClassId || !dateStr) return;
+      loadAgendaForClassAndDate(_activeAgendaClassId, dateStr);
+    }
+
+    function loadAgendaForClassAndDate(classId, dateStr) {
+      const titleInput = document.getElementById('agenda-modal-title');
+      const d = new Date(dateStr + 'T00:00:00');
+      const dateFormatted = d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      titleInput.value = `Agenda Pembelajaran ${dateFormatted}`;
+
+      let existingAgenda = null;
+      if (typeof LotusDB !== 'undefined' && typeof LotusDB.getDailyAgendasByClass === 'function') {
+        const list = LotusDB.getDailyAgendasByClass(classId, dateStr);
+        if (list && list.length > 0) existingAgenda = list[0];
+      }
+
+      if (existingAgenda && existingAgenda.items && existingAgenda.items.length > 0) {
+        titleInput.value = existingAgenda.title || titleInput.value;
+        _agendaModalItems = JSON.parse(JSON.stringify(existingAgenda.items));
+      } else {
+        _agendaModalItems = [];
+        addAgendaModalItemWithCategory('seragam', false);
+        addAgendaModalItemWithCategory('tugas', false);
+      }
+
+      renderAgendaModalItems();
+    }
+
+    function addAgendaModalItem(presetData = null) {
+      const newItem = presetData || {
+        id: 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        type: 'tugas',
+        category: 'tugas',
+        title: '',
+        command: '',
+        explanation: '',
+        deadline: '',
+        file_url: '',
+        file_name: '',
+        file_size: '',
+        external_link: '',
+        target_type: 'all',
+        target_student_ids: []
+      };
+      _agendaModalItems.push(newItem);
+      renderAgendaModalItems();
+    }
+
+    function addAgendaModalItemWithCategory(category, shouldRender = true) {
+      const presets = {
+        seragam: {
+          type: 'pengumuman',
+          category: 'seragam',
+          title: 'Seragam Sekolah',
+          command: 'Mengenakan seragam putih abu / batik sekolah lengkap dengan rompi dan sepatu hitam.',
+          explanation: 'Pastikan seragam rapi, bersih, dan memakai atribut lengkap Sekolah Cinta Kasih Tzu Chi.'
+        },
+        buku: {
+          type: 'materi',
+          category: 'buku',
+          title: 'Buku Mata Pelajaran yang Dibawa',
+          command: 'Membawa Buku Cetak & Buku Catatan Mapel sesuai jadwal pelajaran hari ini.',
+          explanation: 'Buku cetak tema dan modul latihan dibawa untuk kegiatan diskusi di kelas.'
+        },
+        tugas: {
+          type: 'tugas',
+          category: 'tugas',
+          title: 'Tugas Pembelajaran Mandiri',
+          command: 'Kerjakan soal latihan harian dan kumpulkan sesuai batas waktu.',
+          explanation: 'Dapat dikerjakan secara mandiri atau berdiskusi dengan pendamping belajar.'
+        },
+        ulangan: {
+          type: 'pengumuman',
+          category: 'ulangan',
+          title: 'Persiapan Penilaian / Ulangan Harian',
+          command: 'Pelajari materi bab sebelumnya untuk persiapan penilaian pemahaman konsep.',
+          explanation: 'Bawa alat tulis pensil 2B, penghapus, dan penggaris.'
+        },
+        materi: {
+          type: 'materi',
+          category: 'materi',
+          title: 'Materi Pembelajaran Baru',
+          command: 'Pelajari ringkasan materi dan eksplorasi media ajar interaktif.',
+          explanation: 'Akses materi tambahan melalui tautan eksternal atau lampiran file yang disediakan.'
+        },
+        pengumuman: {
+          type: 'pengumuman',
+          category: 'pengumuman',
+          title: 'Pengumuman Penting Wali Kelas',
+          command: 'Harap memperhatikan pengumuman kegiatan sekolah berikut.',
+          explanation: 'Sampaikan kepada orang tua / wali murid di rumah.'
+        }
+      };
+
+      const p = presets[category] || presets.tugas;
+      const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 16);
+      const item = {
+        id: 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        type: p.type,
+        category: p.category,
+        title: p.title,
+        command: p.command,
+        explanation: p.explanation,
+        deadline: p.type === 'tugas' ? tomorrow : '',
+        file_url: '',
+        file_name: '',
+        file_size: '',
+        external_link: '',
+        target_type: 'all',
+        target_student_ids: []
+      };
+
+      _agendaModalItems.push(item);
+      if (shouldRender) renderAgendaModalItems();
+    }
+
+    function removeAgendaModalItem(index) {
+      _agendaModalItems.splice(index, 1);
+      renderAgendaModalItems();
+    }
+
+    function renderAgendaModalItems() {
+      const container = document.getElementById('agenda-modal-items-container');
+      if (!container) return;
+
+      if (_agendaModalItems.length === 0) {
+        container.innerHTML = `
+          <div class="p-6 bg-[#FAFDFB] rounded-xl border border-[#D5E9DC] text-center text-xs text-[#5A6E62]">
+            Belum ada item agenda. Klik salah satu tombol preset di atas atau tambah item baru.
+          </div>
+        `;
+        return;
+      }
+
+      let classStudents = [];
+      if (_activeAgendaClassId && typeof LotusDB !== 'undefined' && typeof LotusDB.getClassroomStudents === 'function') {
+        classStudents = LotusDB.getClassroomStudents(_activeAgendaClassId);
+      }
+
+      container.innerHTML = _agendaModalItems.map((item, idx) => {
+        const isTugas = item.type === 'tugas';
+        const isMateri = item.type === 'materi';
+        const isPengumuman = item.type === 'pengumuman';
+
+        return `
+          <div class="bg-white rounded-2xl border border-[#d6cfc2] p-4 sm:p-5 space-y-3.5 shadow-2xs relative">
+            <div class="flex items-center justify-between border-b border-[#eee9df] pb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-full bg-[#18181b] text-white text-xs font-bold flex items-center justify-center shrink-0">
+                  ${idx + 1}
+                </span>
+                <span class="font-bold text-[#18181b]">Item #${idx + 1}</span>
+              </div>
+              <button type="button" onclick="removeAgendaModalItem(${idx})" class="text-rose-600 hover:text-rose-800 text-xs font-bold flex items-center gap-1 cursor-pointer">
+                <span>🗑️</span>
+                <span>Hapus Item</span>
+              </button>
+            </div>
+
+            <!-- Type Selector Tabs & Category Selector -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block font-bold text-[#3f3f46] mb-1">Tipe Agenda</label>
+                <div class="grid grid-cols-3 p-1 bg-[#f4f1ea] rounded-lg border border-[#d6cfc2] gap-1 text-center font-bold text-[11px]">
+                  <button type="button" onclick="setAgendaItemType(${idx}, 'tugas')"
+                    class="py-1.5 rounded-md cursor-pointer transition-colors ${isTugas ? 'bg-[#1E5E3A] text-white shadow-xs' : 'text-[#57534e] hover:text-[#18181b]'}">
+                    📝 Tugas
+                  </button>
+                  <button type="button" onclick="setAgendaItemType(${idx}, 'materi')"
+                    class="py-1.5 rounded-md cursor-pointer transition-colors ${isMateri ? 'bg-[#1E5E3A] text-white shadow-xs' : 'text-[#57534e] hover:text-[#18181b]'}">
+                    📚 Materi
+                  </button>
+                  <button type="button" onclick="setAgendaItemType(${idx}, 'pengumuman')"
+                    class="py-1.5 rounded-md cursor-pointer transition-colors ${isPengumuman ? 'bg-[#1E5E3A] text-white shadow-xs' : 'text-[#57534e] hover:text-[#18181b]'}">
+                    📢 Info
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label class="block font-bold text-[#3f3f46] mb-1">Kategori Agenda</label>
+                <select onchange="updateAgendaItemField(${idx}, 'category', this.value)"
+                  class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] font-semibold text-xs focus:outline-none focus:border-[#1E5E3A]">
+                  <option value="seragam" ${item.category === 'seragam' ? 'selected' : ''}>👔 Seragam Sekolah</option>
+                  <option value="buku" ${item.category === 'buku' ? 'selected' : ''}>📖 Buku Mapel</option>
+                  <option value="tugas" ${item.category === 'tugas' ? 'selected' : ''}>📝 Tugas / PR</option>
+                  <option value="ulangan" ${item.category === 'ulangan' ? 'selected' : ''}>🎯 Ulangan / Kuis</option>
+                  <option value="materi" ${item.category === 'materi' ? 'selected' : ''}>💡 Materi Pembelajaran</option>
+                  <option value="pengumuman" ${item.category === 'pengumuman' ? 'selected' : ''}>📢 Pengumuman Guru</option>
+                  <option value="lainnya" ${item.category === 'lainnya' ? 'selected' : ''}>⭐ Lainnya</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Title & Command -->
+            <div class="space-y-3">
+              <div>
+                <label class="block font-bold text-[#3f3f46] mb-1">Judul Agenda / Topik <span class="text-rose-500">*</span></label>
+                <input type="text" value="${escapeHtml(item.title || '')}" oninput="updateAgendaItemField(${idx}, 'title', this.value)"
+                  placeholder="Contoh: Seragam Batik Tzu Chi atau PR IPA Bab 3"
+                  class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] font-semibold text-xs focus:outline-none focus:border-[#1E5E3A]">
+              </div>
+
+              <div>
+                <label class="block font-bold text-[#3f3f46] mb-1">Instruksi / Perintah Inti <span class="text-rose-500">*</span></label>
+                <input type="text" value="${escapeHtml(item.command || '')}" oninput="updateAgendaItemField(${idx}, 'command', this.value)"
+                  placeholder="Contoh: Kerjakan soal 1-10 di buku latihan dan kumpulkan besok pagi"
+                  class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] font-semibold text-xs focus:outline-none focus:border-[#1E5E3A]">
+              </div>
+
+              <div>
+                <label class="block font-bold text-[#3f3f46] mb-1">Penjelasan Lengkap / Catatan Tambahan</label>
+                <textarea rows="2" oninput="updateAgendaItemField(${idx}, 'explanation', this.value)"
+                  placeholder="Contoh: Boleh menggunakan spidol warna untuk menghias diagram alur..."
+                  class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] font-medium text-xs focus:outline-none focus:border-[#1E5E3A]">${escapeHtml(item.explanation || '')}</textarea>
+              </div>
+            </div>
+
+            <!-- Deadline & External link -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#FAFDFB] p-3 rounded-xl border border-[#D5E9DC]">
+              <div>
+                <label class="block font-bold text-[#143D24] mb-1">📅 Batas Waktu / Deadline (Opsional)</label>
+                <input type="datetime-local" value="${item.deadline ? item.deadline.slice(0, 16) : ''}" onchange="updateAgendaItemField(${idx}, 'deadline', this.value)"
+                  class="w-full px-3 py-1.5 rounded-lg border border-[#BCE1C9] bg-white text-xs font-semibold">
+              </div>
+
+              <div>
+                <label class="block font-bold text-[#143D24] mb-1">🔗 Tautan Eksternal (Drive / Docs / Video)</label>
+                <input type="url" value="${escapeHtml(item.external_link || '')}" oninput="updateAgendaItemField(${idx}, 'external_link', this.value)"
+                  placeholder="https://drive.google.com/... atau YouTube"
+                  class="w-full px-3 py-1.5 rounded-lg border border-[#BCE1C9] bg-white text-xs">
+              </div>
+            </div>
+
+            <!-- File Upload Attachment -->
+            <div class="bg-[#FAFDFB] p-3 rounded-xl border border-[#D5E9DC]">
+              <label class="block font-bold text-[#143D24] mb-1">📎 Lampirkan File / Dokumen (Opsional)</label>
+              <div class="flex items-center gap-2">
+                <input type="file" onchange="handleAgendaItemFileUpload(${idx}, this.files[0])"
+                  class="text-xs text-[#57534e] file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#1E5E3A] file:text-white cursor-pointer">
+                ${item.file_name ? `<span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded">✓ ${escapeHtml(item.file_name)}</span>` : ''}
+              </div>
+            </div>
+
+            <!-- Student Targeting: All vs Selective -->
+            <div class="pt-2 border-t border-[#eee9df] space-y-2">
+              <label class="block font-bold text-[#3f3f46]">Target Siswa Penerima:</label>
+              <div class="flex items-center gap-4 text-xs">
+                <label class="flex items-center gap-1.5 cursor-pointer font-semibold">
+                  <input type="radio" name="agenda-target-${idx}" value="all" ${item.target_type !== 'selective' ? 'checked' : ''}
+                    onchange="setAgendaItemTargetType(${idx}, 'all')" class="accent-[#1E5E3A]">
+                  <span>Semua Siswa di Kelas</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer font-semibold">
+                  <input type="radio" name="agenda-target-${idx}" value="selective" ${item.target_type === 'selective' ? 'checked' : ''}
+                    onchange="setAgendaItemTargetType(${idx}, 'selective')" class="accent-[#1E5E3A]">
+                  <span>Pilih Siswa Tertentu</span>
+                </label>
+              </div>
+
+              ${item.target_type === 'selective' ? `
+                <div class="p-2.5 bg-[#FAFDFB] rounded-xl border border-[#D5E9DC] space-y-2">
+                  <input type="text" oninput="filterAgendaItemStudents(${idx}, this.value)" placeholder="Cari nama siswa target..."
+                    class="w-full px-2.5 py-1.5 rounded-lg border border-[#CDE3D5] bg-white text-xs">
+                  <div id="agenda-target-students-${idx}" class="max-h-28 overflow-y-auto space-y-1">
+                    ${classStudents.map(s => `
+                      <label class="flex items-center gap-2 text-xs p-1 hover:bg-emerald-50 rounded cursor-pointer">
+                        <input type="checkbox" value="${s.id}" ${(item.target_student_ids || []).includes(s.id) ? 'checked' : ''}
+                          onchange="toggleAgendaItemStudentTarget(${idx}, '${s.id}', this.checked)" class="accent-[#1E5E3A]">
+                        <span class="font-semibold text-[#18181b]">${escapeHtml(s.name)}</span>
+                        <span class="text-[11px] text-[#78716c]">(${escapeHtml(s.username || s.nisn || '')})</span>
+                      </label>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+
+          </div>
+        `;
+      }).join('');
+    }
+
+    function setAgendaItemType(idx, type) {
+      if (_agendaModalItems[idx]) {
+        _agendaModalItems[idx].type = type;
+        renderAgendaModalItems();
+      }
+    }
+
+    function updateAgendaItemField(idx, field, value) {
+      if (_agendaModalItems[idx]) {
+        _agendaModalItems[idx][field] = value;
+      }
+    }
+
+    function setAgendaItemTargetType(idx, targetType) {
+      if (_agendaModalItems[idx]) {
+        _agendaModalItems[idx].target_type = targetType;
+        renderAgendaModalItems();
+      }
+    }
+
+    function toggleAgendaItemStudentTarget(idx, studentId, isChecked) {
+      if (!_agendaModalItems[idx]) return;
+      if (!_agendaModalItems[idx].target_student_ids) _agendaModalItems[idx].target_student_ids = [];
+      if (isChecked) {
+        if (!_agendaModalItems[idx].target_student_ids.includes(studentId)) {
+          _agendaModalItems[idx].target_student_ids.push(studentId);
+        }
+      } else {
+        _agendaModalItems[idx].target_student_ids = _agendaModalItems[idx].target_student_ids.filter(id => id !== studentId);
+      }
+    }
+
+    function filterAgendaItemStudents(idx, query) {
+      const q = (query || '').toLowerCase().trim();
+      const box = document.getElementById(`agenda-target-students-${idx}`);
+      if (!box) return;
+      Array.from(box.querySelectorAll('label')).forEach(label => {
+        const text = label.textContent.toLowerCase();
+        label.classList.toggle('hidden', !text.includes(q));
+      });
+    }
+
+    function handleAgendaItemFileUpload(idx, file) {
+      if (!file || !_agendaModalItems[idx]) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        _agendaModalItems[idx].file_url = e.target.result;
+        _agendaModalItems[idx].file_name = file.name;
+        _agendaModalItems[idx].file_size = (file.size / 1024).toFixed(1) + ' KB';
+        renderAgendaModalItems();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function saveDailyAgendaSubmit() {
+      if (!_activeAgendaClassId) return;
+      const date = document.getElementById('agenda-modal-date').value;
+      const title = document.getElementById('agenda-modal-title').value.trim();
+
+      if (!date || !title) {
+        alert('Mohon lengkapi tanggal dan judul agenda.');
+        return;
+      }
+
+      if (_agendaModalItems.length === 0) {
+        alert('Mohon tambahkan minimal 1 item agenda.');
+        return;
+      }
+
+      const btn = document.getElementById('btn-save-daily-agenda');
+      if (btn) btn.disabled = true;
+
+      try {
+        if (typeof LotusDB !== 'undefined' && typeof LotusDB.saveDailyAgenda === 'function') {
+          await LotusDB.saveDailyAgenda({
+            classroomId: _activeAgendaClassId,
+            teacherId: currentTeacher?.id,
+            date,
+            title,
+            items: _agendaModalItems
+          });
+        } else {
+          let agendas = [];
+          try {
+            agendas = JSON.parse(localStorage.getItem('lotus_daily_agendas') || '[]');
+          } catch(err) { agendas = []; }
+          const existingIdx = agendas.findIndex(a => a.classroom_id === _activeAgendaClassId && a.date === date);
+          const savedAgenda = {
+            id: existingIdx >= 0 ? agendas[existingIdx].id : ('agenda_' + Date.now()),
+            classroom_id: _activeAgendaClassId,
+            teacher_id: currentTeacher?.id,
+            date,
+            title,
+            items: _agendaModalItems,
+            updated_at: new Date().toISOString()
+          };
+          if (existingIdx >= 0) {
+            agendas[existingIdx] = savedAgenda;
+          } else {
+            agendas.push(savedAgenda);
+          }
+          localStorage.setItem('lotus_daily_agendas', JSON.stringify(agendas));
+        }
+
+        closeWriteAgendaModal();
+        renderTeacherClassrooms();
+        if (_activeStudentProfile) {
+          renderStudentAgendaSection();
+          renderStudentPersonalAgenda();
+          filterStudentPosts('all');
+        }
+        alert('Agenda harian berhasil disimpan & dipublikasikan ke siswa!');
+      } catch (err) {
+        alert('Gagal menyimpan agenda: ' + (err.message || err));
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+
+    // =========================================================================
+    // STUDENT CLASSROOM JOIN & DAILY AGENDA MODULE
+    // =========================================================================
+    let _studentAgendaDate = new Date().toISOString().split('T')[0];
+    let _studentActiveFilter = 'all';
+
+    async function handleStudentJoinClass(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById('input-class-code');
+      const alertBox = document.getElementById('class-join-alert');
+      if (!input) return;
+
+      const code = input.value.trim();
+      if (!code || code.length !== 6) {
+        if (alertBox) {
+          alertBox.className = 'p-3 rounded-xl text-xs font-semibold flex items-center gap-2 bg-rose-50 text-rose-800 border border-rose-200';
+          alertBox.textContent = 'Mohon masukkan 6-digit kode kelas yang valid.';
+          alertBox.classList.remove('hidden');
+        }
+        return;
+      }
+
+      const btn = document.getElementById('btn-class-join');
+      if (btn) btn.disabled = true;
+
+      try {
+        let res;
+        if (typeof LotusDB !== 'undefined' && typeof LotusDB.joinClassroom === 'function') {
+          res = await LotusDB.joinClassroom(_activeStudentProfile, code);
+        } else {
+          res = { success: false, message: 'Layanan kelas belum siap.' };
+        }
+
+        if (res && res.success) {
+          if (alertBox) {
+            alertBox.className = 'p-3 rounded-xl text-xs font-semibold flex items-center gap-2 bg-emerald-50 text-emerald-800 border border-emerald-200';
+            alertBox.innerHTML = `<span>✓</span><span>Berhasil bergabung ke <strong>${escapeHtml(res.classroom?.name || 'Kelas')}</strong>!</span>`;
+            alertBox.classList.remove('hidden');
+          }
+          input.value = '';
+
+          // Update active student session with joined class
+          if (_activeStudentProfile) {
+            if (!_activeStudentProfile.joined_classes) _activeStudentProfile.joined_classes = [];
+            if (!_activeStudentProfile.joined_classes.includes(res.classroom.id)) {
+              _activeStudentProfile.joined_classes.push(res.classroom.id);
+            }
+            try {
+              localStorage.setItem('lotus_student_profile', JSON.stringify(_activeStudentProfile));
+              sessionStorage.setItem('lotus_student_profile', JSON.stringify(_activeStudentProfile));
+            } catch(e) {}
+          }
+
+          renderStudentAgendaSection();
+          renderStudentPersonalAgenda();
+          filterStudentPosts('all');
+        } else {
+          if (alertBox) {
+            alertBox.className = 'p-3 rounded-xl text-xs font-semibold flex items-center gap-2 bg-rose-50 text-rose-800 border border-rose-200';
+            alertBox.textContent = res?.message || 'Kode kelas tidak ditemukan. Silakan periksa kembali.';
+            alertBox.classList.remove('hidden');
+          }
+        }
+      } catch (err) {
+        if (alertBox) {
+          alertBox.className = 'p-3 rounded-xl text-xs font-semibold flex items-center gap-2 bg-rose-50 text-rose-800 border border-rose-200';
+          alertBox.textContent = 'Terjadi kesalahan saat bergabung ke kelas: ' + (err.message || err);
+          alertBox.classList.remove('hidden');
+        }
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function navigateStudentAgendaDate(diffDays) {
+      const cur = new Date(_studentAgendaDate + 'T00:00:00');
+      cur.setDate(cur.getDate() + diffDays);
+      _studentAgendaDate = cur.toISOString().split('T')[0];
+      const picker = document.getElementById('student-agenda-date-picker');
+      if (picker) picker.value = _studentAgendaDate;
+      renderStudentAgendaSection();
+    }
+
+    function setStudentAgendaDateToday() {
+      _studentAgendaDate = new Date().toISOString().split('T')[0];
+      const picker = document.getElementById('student-agenda-date-picker');
+      if (picker) picker.value = _studentAgendaDate;
+      renderStudentAgendaSection();
+    }
+
+    function changeStudentAgendaDate(newDate) {
+      if (!newDate) return;
+      _studentAgendaDate = newDate;
+      renderStudentAgendaSection();
+    }
+
+    function renderStudentAgendaSection() {
+      const container = document.getElementById('student-daily-agenda-items');
+      const dateDisplay = document.getElementById('student-agenda-date-display');
+      const pillsContainer = document.getElementById('student-joined-classes-pills');
+      const datePicker = document.getElementById('student-agenda-date-picker');
+      if (!container) return;
+
+      if (datePicker) datePicker.value = _studentAgendaDate;
+
+      // Format Indonesian date display
+      const d = new Date(_studentAgendaDate + 'T00:00:00');
+      const todayStr = new Date().toISOString().split('T')[0];
+      const isToday = _studentAgendaDate === todayStr;
+      const dateFormatted = d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      if (dateDisplay) {
+        dateDisplay.innerHTML = `
+          <span>📅 ${dateFormatted}</span>
+          ${isToday ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">Hari Ini</span>' : ''}
+        `;
+      }
+
+      // Get student's joined classrooms
+      let joinedClasses = [];
+      if (typeof LotusDB !== 'undefined' && typeof LotusDB.getStudentClassrooms === 'function') {
+        joinedClasses = LotusDB.getStudentClassrooms(_activeStudentProfile);
+      } else {
+        try {
+          const allCls = JSON.parse(localStorage.getItem('lotus_classrooms') || '[]');
+          joinedClasses = allCls;
+        } catch(e) {}
+      }
+
+      if (pillsContainer) {
+        if (joinedClasses.length === 0) {
+          pillsContainer.innerHTML = `<span class="text-[11px] text-[#78716c]">Belum ada kelas yang diikuti. Masukkan 6-digit PIN di atas!</span>`;
+        } else {
+          pillsContainer.innerHTML = joinedClasses.map(c => `
+            <span class="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9] flex items-center gap-1">
+              <span>🏫</span>
+              <span>${escapeHtml(c.name)}</span>
+              <span class="font-mono text-[10px] bg-white px-1.5 py-0.2 rounded text-[#1E5E3A] border border-emerald-200">${c.code}</span>
+            </span>
+          `).join('');
+        }
+      }
+
+      if (joinedClasses.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full p-8 bg-[#FAFDFB] rounded-2xl border border-[#D5E9DC] text-center space-y-3">
+            <div class="text-3xl">🏫</div>
+            <h4 class="font-bold text-sm text-[#0D2B1B]">Belum Tergabung ke Kelas Mana Pun</h4>
+            <p class="text-xs text-[#5A6E62] max-w-md mx-auto">
+              Silakan minta 6-digit kode kelas dari wali kelas atau guru mata pelajaran Anda, lalu masukkan pada formulir di atas untuk melihat agenda harian.
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      // Aggregate agenda items for this date across joined classes
+      let allItems = [];
+      joinedClasses.forEach(c => {
+        let agendas = [];
+        if (typeof LotusDB !== 'undefined' && typeof LotusDB.getDailyAgendasByClass === 'function') {
+          agendas = LotusDB.getDailyAgendasByClass(c.id, _studentAgendaDate);
+        }
+        agendas.forEach(ag => {
+          if (ag.items && Array.isArray(ag.items)) {
+            ag.items.forEach(item => {
+              // Check targeting
+              const isTargeted = item.target_type !== 'selective' ||
+                (item.target_student_ids && _activeStudentProfile && (
+                  item.target_student_ids.includes(_activeStudentProfile.id) ||
+                  item.target_student_ids.includes(_activeStudentProfile.username)
+                ));
+              if (isTargeted) {
+                allItems.push({
+                  ...item,
+                  classroom_name: c.name,
+                  teacher_name: ag.teacher_name || c.teacher_name || 'Guru Kelas',
+                  agenda_date: ag.date
+                });
+              }
+            });
+          }
+        });
+      });
+
+      if (allItems.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full p-8 bg-[#FAFDFB] rounded-2xl border border-[#D5E9DC] text-center space-y-2">
+            <div class="text-3xl">🌿</div>
+            <h4 class="font-bold text-sm text-[#0D2B1B]">Tidak Ada Agenda Khusus pada Tanggal Ini</h4>
+            <p class="text-xs text-[#5A6E62]">Gunakan tombol panah di atas untuk memeriksa agenda hari sebelumnya atau hari berikutnya.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const categoryIcons = {
+        seragam: '👔',
+        buku: '📖',
+        tugas: '📝',
+        ulangan: '🎯',
+        materi: '💡',
+        pengumuman: '📢',
+        lainnya: '⭐'
+      };
+
+      container.innerHTML = allItems.map((item, idx) => {
+        const icon = categoryIcons[item.category] || '📌';
+        const typeBadge = item.type === 'tugas'
+          ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-50 text-amber-800 border border-amber-200">📝 Tugas</span>'
+          : (item.type === 'materi'
+            ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-50 text-purple-800 border border-purple-200">📚 Materi</span>'
+            : '<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-800 border border-blue-200">📢 Pengumuman</span>');
+
+        let countdown = '';
+        if (item.deadline && typeof LotusDB !== 'undefined' && typeof LotusDB.getCountdownLabel === 'function') {
+          countdown = LotusDB.getCountdownLabel(item.deadline);
+        }
+
+        return `
+          <div class="bg-white rounded-2xl border border-[#D5E9DC] hover:border-[#1E5E3A] p-5 custom-card-shadow hover:shadow-md transition-all flex flex-col justify-between gap-4 group">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xl">${icon}</span>
+                  ${typeBadge}
+                </div>
+                ${countdown ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-800 border border-rose-200">⏰ ${escapeHtml(countdown)}</span>` : ''}
+              </div>
+
+              <div>
+                <h4 class="font-extrabold text-sm sm:text-base text-[#0D2B1B] group-hover:text-[#1E5E3A] transition-colors line-clamp-2">
+                  ${escapeHtml(item.title || item.command || 'Agenda Sekolah')}
+                </h4>
+                <div class="text-[11px] text-[#5A6E62] font-semibold mt-1">
+                  ${escapeHtml(item.classroom_name)} • ${escapeHtml(item.teacher_name)}
+                </div>
+              </div>
+
+              <div class="p-2.5 rounded-xl bg-[#FAFDFB] border border-[#EAF2ED] text-xs font-semibold text-[#18181b] line-clamp-3">
+                ${escapeHtml(item.command || item.explanation || '-')}
+              </div>
+            </div>
+
+            <button type="button" onclick="openAgendaDetailModal('${escapeHtml(item.id)}')"
+              class="w-full py-2.5 rounded-xl tc-gradient hover:opacity-95 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer">
+              <span>Lihat Detail &amp; Instruksi</span>
+              <span>➔</span>
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderStudentPersonalAgenda() {
+      const container = document.getElementById('student-personal-agenda-container');
+      const badge = document.getElementById('personal-agenda-badge');
+      if (!container) return;
+
+      let personalItems = [];
+      if (typeof LotusDB !== 'undefined' && typeof LotusDB.getStudentPersonalAgenda === 'function') {
+        personalItems = LotusDB.getStudentPersonalAgenda(_activeStudentProfile);
+      }
+
+      if (badge) badge.textContent = `${personalItems.length} Agenda Aktif`;
+
+      if (personalItems.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full p-6 bg-white rounded-2xl border border-[#D5E9DC] text-center space-y-2">
+            <div class="text-2xl">✨</div>
+            <div class="font-bold text-xs text-[#0D2B1B]">Semua Agenda Berjalan Lancar!</div>
+            <div class="text-[11px] text-[#5A6E62]">Belum ada deadline tugas atau persiapan penting dalam waktu dekat.</div>
+          </div>
+        `;
+        return;
+      }
+
+      const categoryIcons = {
+        seragam: '👔',
+        buku: '📖',
+        tugas: '📝',
+        ulangan: '🎯',
+        materi: '💡',
+        pengumuman: '📢',
+        lainnya: '⭐'
+      };
+
+      container.innerHTML = personalItems.map(item => {
+        const icon = categoryIcons[item.category] || '🎯';
+        const countdown = item.countdown_label || 'Aktif';
+        const isUrgent = countdown.includes('Hari Ini') || countdown.includes('Besok');
+        const badgeColor = isUrgent
+          ? 'bg-rose-50 text-rose-800 border-rose-200'
+          : 'bg-emerald-50 text-emerald-800 border-emerald-200';
+
+        return `
+          <div class="bg-white rounded-2xl border border-[#D5E9DC] p-4 custom-card-shadow flex flex-col justify-between gap-3 hover:border-[#1E5E3A] transition-all">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-lg">${icon}</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black border ${badgeColor}">
+                  ⏳ ${escapeHtml(countdown)}
+                </span>
+              </div>
+              <h4 class="font-black text-xs sm:text-sm text-[#0D2B1B] line-clamp-2">${escapeHtml(item.title || item.command)}</h4>
+              <p class="text-[11px] text-[#5A6E62] font-semibold">${escapeHtml(item.classroom_name)}</p>
+              <p class="text-[11px] text-[#2C4A38] bg-[#FAFDFB] p-2 rounded-lg border border-[#EAF2ED] line-clamp-2 font-medium">
+                ${escapeHtml(item.command || item.explanation || '-')}
+              </p>
+            </div>
+
+            <button type="button" onclick="openAgendaDetailModal('${escapeHtml(item.id)}')"
+              class="w-full py-2 rounded-xl bg-[#FAFDFB] hover:bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+              <span>Buka Instruksi</span>
+              <span>➔</span>
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterStudentPosts(filterType) {
+      _studentActiveFilter = filterType;
+      const tabs = ['all', 'materi', 'tugas', 'pengumuman'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-stu-posts-${t}`);
+        if (btn) {
+          if (t === filterType) {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-extrabold bg-[#1E5E3A] text-white shadow-2xs transition-all cursor-pointer';
+          } else {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-[#5A6E62] hover:text-[#0D2B1B] transition-all cursor-pointer';
+          }
+        }
+      });
+
+      const container = document.getElementById('student-posts-container');
+      if (!container) return;
+
+      let posts = [];
+      if (typeof LotusDB !== 'undefined' && typeof LotusDB.getStudentMaterialsAndAnnouncements === 'function') {
+        posts = LotusDB.getStudentMaterialsAndAnnouncements(_activeStudentProfile, filterType);
+      }
+
+      if (posts.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full p-8 bg-[#FAFDFB] rounded-2xl border border-[#D5E9DC] text-center text-xs text-[#5A6E62]">
+            Belum ada publikasi pada kategori ini.
+          </div>
+        `;
+        return;
+      }
+
+      const categoryIcons = {
+        seragam: '👔',
+        buku: '📖',
+        tugas: '📝',
+        ulangan: '🎯',
+        materi: '💡',
+        pengumuman: '📢',
+        lainnya: '⭐'
+      };
+
+      container.innerHTML = posts.map(item => {
+        const icon = categoryIcons[item.category] || '💡';
+        const typeBadge = item.type === 'tugas'
+          ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-50 text-amber-800 border border-amber-200">📝 Tugas</span>'
+          : (item.type === 'materi'
+            ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-50 text-purple-800 border border-purple-200">📚 Materi</span>'
+            : '<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-800 border border-blue-200">📢 Pengumuman</span>');
+
+        return `
+          <div class="bg-white rounded-2xl border border-[#D5E9DC] hover:border-[#1E5E3A] p-4.5 custom-card-shadow flex flex-col justify-between gap-3 group">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xl">${icon}</span>
+                ${typeBadge}
+              </div>
+              <h4 class="font-extrabold text-sm text-[#0D2B1B] group-hover:text-[#1E5E3A] transition-colors line-clamp-2">${escapeHtml(item.title || item.command)}</h4>
+              <p class="text-[11px] text-[#5A6E62] font-semibold">${escapeHtml(item.classroom_name || '')} • ${escapeHtml(item.teacher_name || '')}</p>
+              <p class="text-xs text-[#2C4A38] bg-[#FAFDFB] p-2.5 rounded-xl border border-[#EAF2ED] line-clamp-2">
+                ${escapeHtml(item.command || item.explanation || '-')}
+              </p>
+            </div>
+            <button type="button" onclick="openAgendaDetailModal('${escapeHtml(item.id)}')"
+              class="w-full py-2 rounded-xl bg-[#FAFDFB] hover:bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+              <span>Buka Materi</span>
+              <span>➔</span>
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // SHARED AGENDA DETAIL MODAL
+    function openAgendaDetailModal(itemId) {
+      let targetItem = null;
+
+      // 1. Search in cached items
+      if (_agendaModalItems) {
+        targetItem = _agendaModalItems.find(i => i.id === itemId);
+      }
+
+      // 2. Search in all daily agendas in LotusDB
+      if (!targetItem && typeof LotusDB !== 'undefined' && typeof LotusDB.getAllDailyAgendas === 'function') {
+        const allAg = LotusDB.getAllDailyAgendas();
+        for (const ag of allAg) {
+          if (ag.items && Array.isArray(ag.items)) {
+            const found = ag.items.find(i => i.id === itemId);
+            if (found) {
+              targetItem = {
+                ...found,
+                classroom_name: ag.classroom_name,
+                teacher_name: ag.teacher_name,
+                agenda_date: ag.date
+              };
+              break;
+            }
+          }
+        }
+      }
+
+      if (!targetItem) return;
+
+      const categoryIcons = {
+        seragam: '👔',
+        buku: '📖',
+        tugas: '📝',
+        ulangan: '🎯',
+        materi: '💡',
+        pengumuman: '📢',
+        lainnya: '⭐'
+      };
+
+      document.getElementById('agenda-detail-icon').textContent = categoryIcons[targetItem.category] || '📝';
+      document.getElementById('agenda-detail-title').textContent = targetItem.title || targetItem.command || 'Detail Agenda';
+      document.getElementById('agenda-detail-type-badge').textContent = targetItem.type ? targetItem.type.toUpperCase() : 'TUGAS';
+      document.getElementById('agenda-detail-category-badge').textContent = targetItem.category ? targetItem.category.toUpperCase() : 'AGENDA';
+      document.getElementById('agenda-detail-class-info').textContent = `${targetItem.classroom_name || 'Kelas Tzu Chi'} • ${targetItem.teacher_name || 'Guru'}`;
+
+      const deadlinePill = document.getElementById('agenda-detail-deadline-pill');
+      if (targetItem.deadline) {
+        let label = targetItem.deadline;
+        if (typeof LotusDB !== 'undefined' && typeof LotusDB.getCountdownLabel === 'function') {
+          label = LotusDB.getCountdownLabel(targetItem.deadline);
+        }
+        deadlinePill.textContent = `Batas: ${label}`;
+        deadlinePill.classList.remove('hidden');
+      } else {
+        deadlinePill.classList.add('hidden');
+      }
+
+      document.getElementById('agenda-detail-command').textContent = targetItem.command || '-';
+      document.getElementById('agenda-detail-explanation').textContent = targetItem.explanation || 'Tidak ada penjelasan tambahan.';
+
+      // Attachment Download Button
+      const fileBtn = document.getElementById('agenda-detail-file-btn');
+      const fileLabel = document.getElementById('agenda-detail-file-label');
+      if (targetItem.file_url) {
+        fileBtn.href = targetItem.file_url;
+        fileBtn.download = targetItem.file_name || 'lampiran_agenda';
+        if (fileLabel) fileLabel.textContent = `Unduh Lampiran: ${targetItem.file_name || 'File'} (${targetItem.file_size || ''})`;
+        fileBtn.classList.remove('hidden');
+      } else {
+        fileBtn.classList.add('hidden');
+      }
+
+      // External Link Button
+      const linkBtn = document.getElementById('agenda-detail-link-btn');
+      if (targetItem.external_link) {
+        linkBtn.href = targetItem.external_link;
+        linkBtn.classList.remove('hidden');
+      } else {
+        linkBtn.classList.add('hidden');
+      }
+
+      // Play Task Button
+      const playBtn = document.getElementById('agenda-detail-play-btn');
+      if (targetItem.project_id || targetItem.assignment_id) {
+        playBtn.onclick = function() {
+          closeAgendaDetailModal();
+          const sName = _activeStudentProfile ? _activeStudentProfile.name : '';
+          if (targetItem.project_id) {
+            openCommunityPlayer(targetItem.project_id, sName);
+          } else if (targetItem.assignment_id) {
+            window.location.href = `play.html?assign=${targetItem.assignment_id}`;
+          }
+        };
+        playBtn.classList.remove('hidden');
+      } else {
+        playBtn.classList.add('hidden');
+      }
+
+      document.getElementById('modal-agenda-detail').classList.remove('hidden');
+    }
+
+    function closeAgendaDetailModal() {
+      document.getElementById('modal-agenda-detail').classList.add('hidden');
+    }
+
+</script>
 </body>
 </html>

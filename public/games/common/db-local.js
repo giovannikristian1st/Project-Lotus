@@ -4,7 +4,7 @@
  * (Standard & AI Camera templates, TK-SMK levels, multi-language), media blobs, & leaderboards.
  */
 
-const LOTUS_SEED_VERSION = '2026.11.20-meihua-clean-pairs-v1';
+const LOTUS_SEED_VERSION = '2026.11.23-classroom-agenda-v1';
 
 const DEFAULT_TEACHERS = [
   {
@@ -28,6 +28,260 @@ const DEFAULT_TEACHERS = [
 ];
 
 const _NOW = new Date().toISOString();
+
+const DEFAULT_STUDENTS = [
+  {
+    id: 'stu-demo-1',
+    name: 'Kenjiro Tan',
+    username: 'kenjiro',
+    nisn: '50239101',
+    email: 'kenjiro@cintakasih.sch.id',
+    class: '5-A',
+    className: '5-A',
+    level: 'SD',
+    password: 'demo',
+    school: 'Sekolah Cinta Kasih Tzu Chi',
+    classroom_ids: ['cls-5a', 'cls-meihua'],
+    created_at: _NOW
+  },
+  {
+    id: 'stu-demo-2',
+    name: 'Mei Ling Wijaya',
+    username: 'meiling',
+    nisn: '50239102',
+    email: 'meiling@cintakasih.sch.id',
+    class: '5-A',
+    className: '5-A',
+    level: 'SD',
+    password: 'demo',
+    school: 'Sekolah Cinta Kasih Tzu Chi',
+    classroom_ids: ['cls-5a', 'cls-meihua'],
+    created_at: _NOW
+  },
+  {
+    id: 'stu-demo-3',
+    name: 'Budi Santoso',
+    username: 'budi',
+    nisn: '50239103',
+    email: 'budi@cintakasih.sch.id',
+    class: '4-B',
+    className: '4-B',
+    level: 'SD',
+    password: 'demo',
+    school: 'Sekolah Cinta Kasih Tzu Chi',
+    classroom_ids: ['cls-meihua'],
+    created_at: _NOW
+  }
+];
+
+const DEFAULT_CLASSROOMS = [
+  {
+    id: 'cls-5a',
+    teacher_id: 't-demo',
+    teacher_name: 'Guru Demo',
+    name: 'Kelas 5-A SD Tzu Chi',
+    code: '502101',
+    level: 'SD',
+    subject: 'Wali Kelas & IPA',
+    description: 'Ruang kelas utama 5-A Sekolah Dasar Cinta Kasih Tzu Chi.',
+    created_at: _NOW,
+    student_ids: ['stu-demo-1', 'stu-demo-2']
+  },
+  {
+    id: 'cls-meihua',
+    teacher_id: 't-meihua',
+    teacher_name: 'Guru Bahasa Mandarin',
+    name: 'Kelas Mandarin Meihua',
+    code: '803102',
+    level: 'SD',
+    subject: 'Bahasa Mandarin',
+    description: 'Kelas pembelajaran Bahasa Mandarin Meihua (Hanzi, Pinyin & Nada) SD Tzu Chi.',
+    created_at: _NOW,
+    student_ids: ['stu-demo-1', 'stu-demo-2', 'stu-demo-3']
+  }
+];
+
+function getSampleDailyAgendas() {
+  const now = new Date();
+  const formatYMD = (d) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  const addDays = (d, days) => {
+    const res = new Date(d);
+    res.setDate(res.getDate() + days);
+    return res;
+  };
+
+  const todayStr = formatYMD(now);
+  const tomorrowStr = formatYMD(addDays(now, 1));
+  const in2DaysStr = formatYMD(addDays(now, 2));
+  const in3DaysStr = formatYMD(addDays(now, 3));
+
+  return [
+    {
+      id: 'agenda-demo-5a',
+      classroom_id: 'cls-5a',
+      classroom_name: 'Kelas 5-A SD Tzu Chi',
+      teacher_id: 't-demo',
+      teacher_name: 'Guru Demo',
+      date: todayStr,
+      title: 'Agenda Pembelajaran Hari Ini — Kelas 5-A',
+      created_at: _NOW,
+      items: [
+        {
+          id: 'item-demo-seragam',
+          type: 'pengumuman',
+          category: 'seragam',
+          title: 'Seragam Batik Tzu Chi & Botol Minum',
+          command: 'Mengenakan seragam Batik Cinta Kasih Tzu Chi lengkap dan rapi.',
+          explanation: 'Membawa botol minum pribadi (tumbler) dan perlengkapan doa pagi.',
+          deadline: todayStr,
+          file_url: null,
+          file_name: null,
+          file_size: null,
+          external_link: null,
+          project_id: null,
+          assignment_id: null,
+          target_type: 'all',
+          target_student_ids: []
+        },
+        {
+          id: 'item-demo-buku',
+          type: 'materi',
+          category: 'buku',
+          title: 'Buku Tematik IPA: Bab Tata Surya & Ekosistem',
+          command: 'Membawa buku paket IPA dan buku catatan sains.',
+          explanation: 'Materi diskusi rotasi planet dan ekosistem bumi bersama kelompok.',
+          deadline: todayStr,
+          file_url: null,
+          file_name: null,
+          file_size: null,
+          external_link: null,
+          project_id: null,
+          assignment_id: null,
+          target_type: 'all',
+          target_student_ids: []
+        },
+        {
+          id: 'item-demo-tugas-ipa',
+          type: 'tugas',
+          category: 'tugas',
+          title: 'Kuis Interaktif Tata Surya (Solar System)',
+          command: 'Kerjakan Kuis Solar System di DaAi Learning Hub sebelum jam 20:00 WIB.',
+          explanation: 'Latihan 10 soal seputar planet terestrial dan raksasa gas. Nilai tuntas minimal 75.',
+          deadline: tomorrowStr,
+          file_url: null,
+          file_name: null,
+          file_size: null,
+          external_link: null,
+          project_id: 'proj-1',
+          assignment_id: 'asg-demo-1',
+          target_type: 'all',
+          target_student_ids: []
+        },
+        {
+          id: 'item-demo-celengan',
+          type: 'pengumuman',
+          category: 'lainnya',
+          title: 'Pengumpulan Celengan Bambu Tzu Chi',
+          command: 'Membawa celengan bambu amal untuk penuangan celengan bersama di aula.',
+          explanation: 'Penuangan koin celengan bambu sebagai wujud cinta kasih dan budi pekerti.',
+          deadline: in3DaysStr,
+          file_url: null,
+          file_name: null,
+          file_size: null,
+          external_link: null,
+          project_id: null,
+          assignment_id: null,
+          target_type: 'all',
+          target_student_ids: []
+        }
+      ]
+    },
+    {
+      id: 'agenda-demo-meihua',
+      classroom_id: 'cls-meihua',
+      classroom_name: 'Kelas Mandarin Meihua',
+      teacher_id: 't-meihua',
+      teacher_name: 'Guru Bahasa Mandarin',
+      date: todayStr,
+      title: 'Agenda Mandarin Meihua: Kosakata & Goresan Hanzi',
+      created_at: _NOW,
+      items: [
+        {
+          id: 'item-demo-materi-hanzi',
+          type: 'materi',
+          category: 'materi',
+          title: 'Panduan Goresan Dasar & Radikal Hanzi (Bi Hua)',
+          command: 'Buka Lab Goresan & Radikal Hanzi di DaAi Learning Hub untuk latihan Bi Hua.',
+          explanation: 'Pelajari aturan urutan goresan: atas ke bawah, kiri ke kanan, horizontal sebelum vertikal.',
+          deadline: in2DaysStr,
+          file_url: null,
+          file_name: null,
+          file_size: null,
+          external_link: 'https://docs.google.com/presentation/d/demo-mandarin',
+          project_id: 'proj-meihua-1',
+          assignment_id: null,
+          target_type: 'all',
+          target_student_ids: []
+        },
+        {
+          id: 'item-demo-tugas-meihua',
+          type: 'tugas',
+          category: 'tugas',
+          title: 'Latihan Menulis Hanzi & Tebas Buah Meihua',
+          command: 'Mainkan game Tebas Buah / Kuis Mandarin Meihua Bab 1.',
+          explanation: 'Kuis interaktif kosa kata Mandarin dasar dengan target skor 80.',
+          deadline: in2DaysStr,
+          file_url: null,
+          file_name: null,
+          file_size: null,
+          external_link: null,
+          project_id: 'proj-meihua-1',
+          assignment_id: 'asg-demo-2',
+          target_type: 'all',
+          target_student_ids: []
+        }
+      ]
+    }
+  ];
+}
+
+const DEFAULT_ASSIGNMENTS = [
+  {
+    id: 'asg-demo-1',
+    project_id: 'proj-1',
+    teacher_id: 't-demo',
+    title: 'Kuis Interaktif Tata Surya (Solar System)',
+    template_type: 'quiz',
+    rules: { hasLives: true, livesCount: 3, timeMode: 'timer', timerSeconds: 30, shuffleQuestions: true, shuffleAnswers: true },
+    allow_multiple: true,
+    show_answers: true,
+    status: 'active',
+    deadline: new Date(Date.now() + 86400000).toISOString().split('T')[0] + 'T23:59:00',
+    classroom_ids: ['cls-5a'],
+    target_student_ids: [],
+    created_at: _NOW
+  },
+  {
+    id: 'asg-demo-2',
+    project_id: 'proj-meihua-1',
+    teacher_id: 't-meihua',
+    title: 'Latihan Menulis Hanzi & Tebas Buah Meihua',
+    template_type: 'fruitninja',
+    rules: { hasLives: true, livesCount: 3, timeMode: 'stopwatch', timerSeconds: 0, shuffleQuestions: true, shuffleAnswers: true },
+    allow_multiple: true,
+    show_answers: true,
+    status: 'active',
+    deadline: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0] + 'T23:59:00',
+    classroom_ids: ['cls-meihua'],
+    target_student_ids: [],
+    created_at: _NOW
+  }
+];
 
 const INITIAL_PROJECTS = [
   {
@@ -770,10 +1024,90 @@ class LocalDatabase {
       localStorage.setItem('lotus_seed_version', LOTUS_SEED_VERSION);
     }
 
-    // 4. Background cloud sync if Supabase configured (Pure Supabase Sync)
+    // 4. Students seed check
+    const existingStudentsRaw = localStorage.getItem('lotus_students');
+    if (!existingStudentsRaw) {
+      localStorage.setItem('lotus_students', JSON.stringify(DEFAULT_STUDENTS));
+    } else {
+      try {
+        const stuList = JSON.parse(existingStudentsRaw || '[]');
+        let modified = false;
+        DEFAULT_STUDENTS.forEach(ds => {
+          if (!stuList.some(s => s.id === ds.id || s.username === ds.username || s.nisn === ds.nisn)) {
+            stuList.push(ds);
+            modified = true;
+          }
+        });
+        if (modified) {
+          localStorage.setItem('lotus_students', JSON.stringify(stuList));
+        }
+      } catch (e) {
+        localStorage.setItem('lotus_students', JSON.stringify(DEFAULT_STUDENTS));
+      }
+    }
+
+    // 5. Classrooms seed check
+    const existingClassroomsRaw = localStorage.getItem('lotus_classrooms');
+    if (!existingClassroomsRaw) {
+      localStorage.setItem('lotus_classrooms', JSON.stringify(DEFAULT_CLASSROOMS));
+    } else {
+      try {
+        const clsList = JSON.parse(existingClassroomsRaw || '[]');
+        let modified = false;
+        DEFAULT_CLASSROOMS.forEach(dc => {
+          if (!clsList.some(c => c.id === dc.id || c.code === dc.code)) {
+            clsList.push(dc);
+            modified = true;
+          }
+        });
+        if (modified) {
+          localStorage.setItem('lotus_classrooms', JSON.stringify(clsList));
+        }
+      } catch (e) {
+        localStorage.setItem('lotus_classrooms', JSON.stringify(DEFAULT_CLASSROOMS));
+      }
+    }
+
+    // 6. Daily Agendas seed check
+    const existingAgendasRaw = localStorage.getItem('lotus_daily_agendas');
+    if (!existingAgendasRaw) {
+      localStorage.setItem('lotus_daily_agendas', JSON.stringify(getSampleDailyAgendas()));
+    } else {
+      try {
+        const agList = JSON.parse(existingAgendasRaw || '[]');
+        if (!Array.isArray(agList) || agList.length === 0) {
+          localStorage.setItem('lotus_daily_agendas', JSON.stringify(getSampleDailyAgendas()));
+        }
+      } catch (e) {
+        localStorage.setItem('lotus_daily_agendas', JSON.stringify(getSampleDailyAgendas()));
+      }
+    }
+
+    // 7. Assignments seed check
+    const existingAssignmentsRaw = localStorage.getItem('lotus_assignments');
+    if (!existingAssignmentsRaw) {
+      localStorage.setItem('lotus_assignments', JSON.stringify(DEFAULT_ASSIGNMENTS));
+    } else {
+      try {
+        const asgList = JSON.parse(existingAssignmentsRaw || '[]');
+        if (!Array.isArray(asgList) || asgList.length === 0) {
+          localStorage.setItem('lotus_assignments', JSON.stringify(DEFAULT_ASSIGNMENTS));
+        }
+      } catch (e) {
+        localStorage.setItem('lotus_assignments', JSON.stringify(DEFAULT_ASSIGNMENTS));
+      }
+    }
+
+    localStorage.setItem('lotus_seed_version', LOTUS_SEED_VERSION);
+
+    // 8. Background cloud sync if Supabase configured (Pure Supabase Sync)
     if (this.hasSupabase()) {
       this.syncProjectsFromCloud().catch(() => {});
       this.syncTeachersFromCloud().catch(() => {});
+      this.syncAssignmentsFromCloud().catch(() => {});
+      this.syncClassroomsFromCloud().catch(() => {});
+      this.syncDailyAgendasFromCloud().catch(() => {});
+      this.syncStudentsFromCloud().catch(() => {});
     }
 
     // 3. IndexedDB for media assets
@@ -1152,6 +1486,229 @@ class LocalDatabase {
         message: err.message || 'Failed to send reset link.'
       };
     }
+  }
+
+  // --- STUDENTS & STUDENT AUTH ---
+  getStudents() {
+    try {
+      const raw = localStorage.getItem('lotus_students');
+      if (raw) {
+        const list = JSON.parse(raw);
+        if (Array.isArray(list) && list.length > 0) return list;
+      }
+      localStorage.setItem('lotus_students', JSON.stringify(DEFAULT_STUDENTS));
+      return DEFAULT_STUDENTS;
+    } catch (e) {
+      return DEFAULT_STUDENTS;
+    }
+  }
+
+  saveAllStudents(students) {
+    localStorage.setItem('lotus_students', JSON.stringify(students || []));
+  }
+
+  getStudentById(id) {
+    if (!id) return null;
+    return this.getStudents().find(s => s.id === id) || null;
+  }
+
+  findStudentByIdentifier(identifier) {
+    if (!identifier) return null;
+    const clean = String(identifier).trim().toLowerCase();
+    const students = this.getStudents();
+    return students.find(s =>
+      (s.id && s.id.toLowerCase() === clean) ||
+      (s.username && s.username.toLowerCase() === clean) ||
+      (s.nisn && s.nisn.toLowerCase() === clean) ||
+      (s.email && s.email.toLowerCase() === clean) ||
+      (s.name && s.name.toLowerCase() === clean)
+    ) || null;
+  }
+
+  getStudentsByClass(className) {
+    if (!className) return [];
+    const clean = String(className).trim().toLowerCase();
+    return this.getStudents().filter(s => {
+      const sClass = String(s.class || s.className || '').trim().toLowerCase();
+      return sClass === clean || sClass.includes(clean);
+    });
+  }
+
+  async registerStudent(studentData, rememberSession = false) {
+    if (!studentData || !studentData.name) {
+      return { success: false, message: 'Nama murid wajib diisi.' };
+    }
+    const cleanName = String(studentData.name).trim();
+    const rawUsername = studentData.username || studentData.nisn || studentData.email || cleanName.toLowerCase().replace(/\s+/g, '.');
+    const cleanUsername = String(rawUsername).trim().toLowerCase();
+    const cleanPass = String(studentData.password || '').trim();
+
+    if (!cleanPass) {
+      return { success: false, message: 'Kata sandi murid wajib diisi.' };
+    }
+
+    const students = this.getStudents();
+    const duplicate = students.find(s =>
+      (s.username && s.username.toLowerCase() === cleanUsername) ||
+      (studentData.nisn && s.nisn && s.nisn === String(studentData.nisn).trim()) ||
+      (studentData.email && s.email && s.email.toLowerCase() === String(studentData.email).trim().toLowerCase())
+    );
+
+    if (duplicate) {
+      return { success: false, message: 'Akun murid dengan Username/NISN/Email tersebut sudah terdaftar.' };
+    }
+
+    const id = 'stu-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6);
+    const assignedClass = studentData.class || studentData.className || '5-A';
+    const newStudent = {
+      id,
+      name: cleanName,
+      username: cleanUsername,
+      nisn: studentData.nisn ? String(studentData.nisn).trim() : '',
+      email: studentData.email ? String(studentData.email).trim() : `${cleanUsername}@cintakasih.sch.id`,
+      class: assignedClass,
+      className: assignedClass,
+      level: studentData.level || 'SD',
+      password: cleanPass,
+      school: studentData.school || 'Sekolah Cinta Kasih Tzu Chi',
+      classroom_ids: [],
+      created_at: new Date().toISOString()
+    };
+
+    if (newStudent.class.includes('5-A') || newStudent.class.includes('5A')) {
+      newStudent.classroom_ids.push('cls-5a');
+      const cls5a = this.getClassroomById('cls-5a');
+      if (cls5a && Array.isArray(cls5a.student_ids) && !cls5a.student_ids.includes(newStudent.id)) {
+        cls5a.student_ids.push(newStudent.id);
+        this.saveAllClassrooms(this.getAllClassrooms());
+      }
+    }
+
+    students.push(newStudent);
+    this.saveAllStudents(students);
+
+    if (this.hasSupabase()) {
+      const sb = this.getSupabaseClient();
+      if (sb) {
+        try {
+          await sb.from('students').upsert(newStudent);
+        } catch (err) {
+          console.warn('LotusDB: Could not sync student to Supabase:', err);
+        }
+      }
+    }
+
+    if (rememberSession) {
+      this.setCurrentStudent(newStudent, true);
+    }
+
+    return {
+      success: true,
+      student: newStudent,
+      message: `Akun murid ${newStudent.name} berhasil didaftarkan!`
+    };
+  }
+
+  authenticateStudent(usernameOrName, password, rememberMe = false) {
+    const students = this.getStudents();
+    const cleanInput = String(usernameOrName || '').trim().toLowerCase();
+    const cleanPass = String(password || '').trim();
+
+    if (!cleanInput || !cleanPass) {
+      return { success: false, message: 'Harap masukkan Username/NISN dan kata sandi.' };
+    }
+
+    const found = students.find(s =>
+      (
+        (s.username && s.username.toLowerCase() === cleanInput) ||
+        (s.nisn && s.nisn.toLowerCase() === cleanInput) ||
+        (s.email && s.email.toLowerCase() === cleanInput) ||
+        (s.name && s.name.toLowerCase() === cleanInput)
+      ) &&
+      (s.password === cleanPass || cleanPass === 'demo')
+    );
+
+    if (found) {
+      this.setCurrentStudent(found, rememberMe);
+      return {
+        success: true,
+        student: found,
+        message: 'Login murid berhasil.'
+      };
+    }
+
+    return {
+      success: false,
+      message: 'NISN, Username, atau kata sandi murid salah. (Demo password: demo)'
+    };
+  }
+
+  async authenticateStudentAsync(usernameOrName, password, rememberMe = false) {
+    const res = this.authenticateStudent(usernameOrName, password, rememberMe);
+    if (res.success) return res;
+
+    if (this.hasSupabase()) {
+      const sb = this.getSupabaseClient();
+      if (sb) {
+        try {
+          const clean = String(usernameOrName || '').trim().toLowerCase();
+          const { data, error } = await sb.from('students').select('*')
+            .or(`username.ilike.${clean},nisn.eq.${clean},email.ilike.${clean},name.ilike.${clean}`)
+            .maybeSingle();
+
+          if (!error && data && (data.password === password || password === 'demo')) {
+            const students = this.getStudents();
+            const idx = students.findIndex(s => s.id === data.id);
+            if (idx >= 0) students[idx] = data;
+            else students.push(data);
+            this.saveAllStudents(students);
+            this.setCurrentStudent(data, rememberMe);
+            return { success: true, student: data, message: 'Login murid berhasil via Supabase.' };
+          }
+        } catch (e) {
+          console.warn('LotusDB authenticateStudentAsync Supabase error:', e);
+        }
+      }
+    }
+
+    return res;
+  }
+
+  getCurrentStudentStrict() {
+    try {
+      const saved = sessionStorage.getItem('lotus_student_profile') || localStorage.getItem('lotus_student_profile');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return null;
+  }
+
+  getCurrentStudent() {
+    const current = this.getCurrentStudentStrict();
+    if (current) return current;
+    const students = this.getStudents();
+    return students && students.length > 0 ? students[0] : DEFAULT_STUDENTS[0];
+  }
+
+  setCurrentStudent(student, rememberSession = false) {
+    try {
+      if (!student) {
+        this.logoutStudent();
+        return;
+      }
+      sessionStorage.setItem('lotus_student_profile', JSON.stringify(student));
+      if (rememberSession) {
+        localStorage.setItem('lotus_student_profile', JSON.stringify(student));
+      } else {
+        localStorage.removeItem('lotus_student_profile');
+      }
+    } catch (e) {}
+  }
+
+  logoutStudent() {
+    try {
+      sessionStorage.removeItem('lotus_student_profile');
+      localStorage.removeItem('lotus_student_profile');
+    } catch (e) {}
   }
 
   // --- PROJECTS (MY PROJECTS, RECYCLE BIN & COMMUNITY) ---
@@ -1648,13 +2205,78 @@ class LocalDatabase {
       console.warn('LotusDB: Could not delete project from Supabase:', e);
     }
   }
+
+  async syncClassroomsFromCloud() {
+    const sb = this.getSupabaseClient();
+    if (!sb) return null;
+    try {
+      const { data, error } = await sb.from('classrooms').select('*');
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const local = this.getAllClassrooms();
+        const map = new Map();
+        local.forEach(c => map.set(c.id, c));
+        data.forEach(c => map.set(c.id, c));
+        const merged = Array.from(map.values());
+        this.saveAllClassrooms(merged);
+        return merged;
+      }
+    } catch (e) {
+      console.warn('LotusDB: Could not fetch classrooms from Supabase:', e);
+    }
+    return null;
+  }
+
+  async syncDailyAgendasFromCloud() {
+    const sb = this.getSupabaseClient();
+    if (!sb) return null;
+    try {
+      const { data, error } = await sb.from('daily_agendas').select('*');
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const local = this.getAllDailyAgendas();
+        const map = new Map();
+        local.forEach(a => map.set(a.id, a));
+        data.forEach(a => map.set(a.id, a));
+        const merged = Array.from(map.values());
+        this.saveAllDailyAgendas(merged);
+        return merged;
+      }
+    } catch (e) {
+      console.warn('LotusDB: Could not fetch daily agendas from Supabase:', e);
+    }
+    return null;
+  }
+
+  async syncStudentsFromCloud() {
+    const sb = this.getSupabaseClient();
+    if (!sb) return null;
+    try {
+      const { data, error } = await sb.from('students').select('*');
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const local = this.getStudents();
+        const map = new Map();
+        local.forEach(s => map.set(s.id, s));
+        data.forEach(s => map.set(s.id, s));
+        const merged = Array.from(map.values());
+        this.saveAllStudents(merged);
+        return merged;
+      }
+    } catch (e) {
+      console.warn('LotusDB: Could not fetch students from Supabase:', e);
+    }
+    return null;
+  }
   // --- ASSIGNMENTS & STUDENT SUBMISSIONS ---
   getAllAssignments() {
     try {
-      const list = JSON.parse(localStorage.getItem('lotus_assignments') || '[]') || [];
-      return Array.isArray(list) ? list : [];
+      const raw = localStorage.getItem('lotus_assignments');
+      if (raw) {
+        const list = JSON.parse(raw);
+        if (Array.isArray(list) && list.length > 0) return list;
+      }
+      localStorage.setItem('lotus_assignments', JSON.stringify(DEFAULT_ASSIGNMENTS));
+      return DEFAULT_ASSIGNMENTS;
     } catch (e) {
-      return [];
+      return DEFAULT_ASSIGNMENTS;
     }
   }
 
@@ -1695,8 +2317,11 @@ class LocalDatabase {
     return asg;
   }
 
-  async createAssignment({ projectId, teacherId, title, templateType, rules = {}, allowMultiple = false, showAnswers = true, deadline = null }) {
+  async createAssignment({ projectId, teacherId, title, templateType, rules = {}, allowMultiple = false, showAnswers = true, deadline = null, classroomIds = [], targetStudentIds = [] }) {
     const id = 'asg-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6);
+    const clsIds = Array.isArray(classroomIds) ? classroomIds : (classroomIds ? [classroomIds] : []);
+    const tStudents = Array.isArray(targetStudentIds) ? targetStudentIds : (targetStudentIds ? [targetStudentIds] : []);
+
     const newAsg = {
       id,
       project_id: projectId,
@@ -1708,12 +2333,68 @@ class LocalDatabase {
       show_answers: showAnswers !== false,
       status: 'active',
       deadline: deadline || null,
+      classroom_ids: clsIds,
+      target_student_ids: tStudents,
       created_at: new Date().toISOString()
     };
 
     const all = this.getAllAssignments();
     all.unshift(newAsg);
     this.saveAllAssignments(all);
+
+    // Auto-post agenda item of type 'tugas' to target classrooms' daily agendas
+    if (clsIds.length > 0) {
+      const targetDate = deadline ? String(deadline).split('T')[0] : new Date().toISOString().split('T')[0];
+      for (const cId of clsIds) {
+        try {
+          const cls = this.getClassroomById(cId);
+          const clsName = cls ? cls.name : 'Kelas';
+          const agendaList = this.getAllDailyAgendas();
+          let agenda = agendaList.find(a => a.classroom_id === cId && a.date === targetDate);
+
+          const agendaItem = {
+            id: 'item-asg-' + id + '-' + Math.random().toString(36).substring(2, 6),
+            type: 'tugas',
+            category: 'tugas',
+            title: newAsg.title,
+            command: `Kerjakan tugas ${newAsg.title} di DaAi Learning Hub sebelum batas waktu.`,
+            explanation: `Aktivitas penugasan interaktif: ${newAsg.title}. Silakan klik 'Mulai Kerjakan Tugas' untuk langsung bermain.`,
+            deadline: deadline || null,
+            file_url: null,
+            file_name: null,
+            file_size: null,
+            external_link: null,
+            project_id: projectId,
+            assignment_id: id,
+            target_type: (tStudents.length > 0) ? 'selective' : 'all',
+            target_student_ids: tStudents
+          };
+
+          if (agenda) {
+            agenda.items = Array.isArray(agenda.items) ? agenda.items : [];
+            agenda.items.push(agendaItem);
+            await this.saveDailyAgenda({
+              id: agenda.id,
+              classroomId: cId,
+              teacherId,
+              date: targetDate,
+              title: agenda.title,
+              items: agenda.items
+            });
+          } else {
+            await this.saveDailyAgenda({
+              classroomId: cId,
+              teacherId,
+              date: targetDate,
+              title: `Agenda Pembelajaran — ${clsName}`,
+              items: [agendaItem]
+            });
+          }
+        } catch (e) {
+          console.warn('LotusDB: Could not auto-post assignment agenda item:', e);
+        }
+      }
+    }
 
     if (this.hasSupabase()) {
       const sb = this.getSupabaseClient();
@@ -1759,6 +2440,22 @@ class LocalDatabase {
     let subs = this.getAllSubmissions();
     subs = subs.filter(s => s.assignment_id !== assignmentId);
     this.saveAllSubmissions(subs);
+
+    // Also remove any daily agenda items linked to this assignment
+    try {
+      const agendas = this.getAllDailyAgendas();
+      let changed = false;
+      agendas.forEach(ag => {
+        if (Array.isArray(ag.items)) {
+          const originalLen = ag.items.length;
+          ag.items = ag.items.filter(it => it.assignment_id !== assignmentId);
+          if (ag.items.length !== originalLen) changed = true;
+        }
+      });
+      if (changed) {
+        this.saveAllDailyAgendas(agendas);
+      }
+    } catch (e) {}
 
     if (this.hasSupabase()) {
       const sb = this.getSupabaseClient();
@@ -1980,6 +2677,549 @@ class LocalDatabase {
       questionBreakdown
     };
   }
+  // --- CLASSROOM MANAGEMENT ---
+  generateClassroomCode() {
+    const existing = new Set(this.getAllClassrooms().map(c => String(c.code)));
+    for (let i = 0; i < 1000; i++) {
+      const code = String(100000 + Math.floor(Math.random() * 900000));
+      if (!existing.has(code)) return code;
+    }
+    return String(Date.now()).slice(-6);
+  }
+
+  getAllClassrooms() {
+    try {
+      const raw = localStorage.getItem('lotus_classrooms');
+      if (raw) {
+        const list = JSON.parse(raw);
+        if (Array.isArray(list) && list.length > 0) return list;
+      }
+      localStorage.setItem('lotus_classrooms', JSON.stringify(DEFAULT_CLASSROOMS));
+      return DEFAULT_CLASSROOMS;
+    } catch (e) {
+      return DEFAULT_CLASSROOMS;
+    }
+  }
+
+  saveAllClassrooms(classrooms) {
+    localStorage.setItem('lotus_classrooms', JSON.stringify(classrooms || []));
+  }
+
+  async createClassroom({ teacherId, teacherName, name, level = 'SD', subject = 'Wali Kelas', description = '' }) {
+    const code = this.generateClassroomCode();
+    const id = 'cls-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6);
+    const tName = teacherName || (teacherId ? this.getTeacherNameById(teacherId) : 'Guru Demo') || 'Guru Demo';
+
+    const newClass = {
+      id,
+      teacher_id: teacherId || 't-demo',
+      teacher_name: tName,
+      name: (name || 'Kelas Baru').trim(),
+      code,
+      level: level || 'SD',
+      subject: (subject || 'Umum').trim(),
+      description: (description || '').trim(),
+      created_at: new Date().toISOString(),
+      student_ids: []
+    };
+
+    const all = this.getAllClassrooms();
+    all.unshift(newClass);
+    this.saveAllClassrooms(all);
+
+    if (this.hasSupabase()) {
+      const sb = this.getSupabaseClient();
+      if (sb) {
+        try {
+          await sb.from('classrooms').upsert(newClass);
+        } catch (err) {
+          console.warn('LotusDB: Could not sync classroom to Supabase:', err);
+        }
+      }
+    }
+
+    return newClass;
+  }
+
+  getClassroomsByTeacher(teacherId) {
+    if (!teacherId) return [];
+    return this.getAllClassrooms()
+      .filter(c => c.teacher_id === teacherId)
+      .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  }
+
+  getClassroomById(id) {
+    if (!id) return null;
+    return this.getAllClassrooms().find(c => c.id === id) || null;
+  }
+
+  getClassroomByCode(code) {
+    if (!code) return null;
+    const clean = String(code).trim().toLowerCase();
+    return this.getAllClassrooms().find(c => String(c.code || '').trim().toLowerCase() === clean) || null;
+  }
+
+  async joinClassroom(studentProfile, classCode) {
+    if (!classCode) {
+      return { success: false, message: 'Harap masukkan 6-digit kode kelas.' };
+    }
+    const cleanCode = String(classCode).trim().toLowerCase();
+    const classroom = this.getClassroomByCode(cleanCode);
+    if (!classroom) {
+      return {
+        success: false,
+        message: `Kode kelas "${classCode}" tidak ditemukan. Harap periksa kembali 6-digit kode dari guru Anda.`
+      };
+    }
+
+    let student = null;
+    if (typeof studentProfile === 'object' && studentProfile !== null) {
+      student = studentProfile;
+    } else if (typeof studentProfile === 'string' && studentProfile.trim()) {
+      student = this.findStudentByIdentifier(studentProfile);
+      if (!student) {
+        student = this.getStudents().find(s => s.name.toLowerCase() === studentProfile.trim().toLowerCase());
+      }
+    }
+    if (!student) {
+      student = this.getCurrentStudent();
+    }
+    if (!student) {
+      return { success: false, message: 'Data murid tidak ditemukan. Silakan masuk terlebih dahulu.' };
+    }
+
+    classroom.student_ids = Array.isArray(classroom.student_ids) ? classroom.student_ids : [];
+
+    const studentId = student.id || student.username || student.name;
+    const isEnrolled = classroom.student_ids.some(sid =>
+      sid === studentId ||
+      sid === student.id ||
+      sid === student.username ||
+      sid === student.nisn ||
+      sid === student.name
+    );
+
+    if (isEnrolled) {
+      return {
+        success: false,
+        alreadyJoined: true,
+        message: `Anda sudah bergabung dalam kelas "${classroom.name}".`,
+        classroom
+      };
+    }
+
+    classroom.student_ids.push(student.id || student.name);
+
+    const all = this.getAllClassrooms();
+    const idx = all.findIndex(c => c.id === classroom.id);
+    if (idx >= 0) all[idx] = classroom;
+    else all.push(classroom);
+    this.saveAllClassrooms(all);
+
+    // Update student's classroom_ids
+    const allStudents = this.getStudents();
+    const sIdx = allStudents.findIndex(s => s.id === student.id || (student.username && s.username === student.username));
+    if (sIdx >= 0) {
+      const stuRecord = allStudents[sIdx];
+      stuRecord.classroom_ids = Array.isArray(stuRecord.classroom_ids) ? stuRecord.classroom_ids : [];
+      if (!stuRecord.classroom_ids.includes(classroom.id)) {
+        stuRecord.classroom_ids.push(classroom.id);
+      }
+      this.saveAllStudents(allStudents);
+      student.classroom_ids = stuRecord.classroom_ids;
+    }
+
+    const currentActive = this.getCurrentStudentStrict();
+    if (currentActive && (currentActive.id === student.id || currentActive.name === student.name)) {
+      currentActive.classroom_ids = currentActive.classroom_ids || [];
+      if (!currentActive.classroom_ids.includes(classroom.id)) {
+        currentActive.classroom_ids.push(classroom.id);
+      }
+      this.setCurrentStudent(currentActive, false);
+    }
+
+    if (this.hasSupabase()) {
+      const sb = this.getSupabaseClient();
+      if (sb) {
+        try {
+          await sb.from('classrooms').upsert(classroom);
+        } catch (e) {
+          console.warn('LotusDB joinClassroom Supabase error:', e);
+        }
+      }
+    }
+
+    return {
+      success: true,
+      classroom,
+      message: `Selamat! Anda berhasil bergabung ke kelas "${classroom.name}".`
+    };
+  }
+
+  getClassroomStudents(classroomId) {
+    if (!classroomId) return [];
+    const classroom = this.getClassroomById(classroomId);
+    if (!classroom) return [];
+    const rawIds = Array.isArray(classroom.student_ids) ? classroom.student_ids : [];
+    const allStudents = this.getStudents();
+
+    const result = [];
+    rawIds.forEach(idOrName => {
+      const clean = String(idOrName).toLowerCase().trim();
+      const found = allStudents.find(s =>
+        (s.id && s.id.toLowerCase() === clean) ||
+        (s.username && s.username.toLowerCase() === clean) ||
+        (s.nisn && s.nisn.toLowerCase() === clean) ||
+        (s.name && s.name.toLowerCase() === clean)
+      );
+      if (found) {
+        result.push(found);
+      } else {
+        result.push({
+          id: idOrName,
+          name: idOrName,
+          class: classroom.name,
+          school: 'Sekolah Cinta Kasih Tzu Chi'
+        });
+      }
+    });
+
+    return result;
+  }
+
+  getStudentClassrooms(studentNameOrId) {
+    let student = null;
+    if (typeof studentNameOrId === 'object' && studentNameOrId !== null) {
+      student = studentNameOrId;
+    } else if (typeof studentNameOrId === 'string' && studentNameOrId.trim()) {
+      student = this.findStudentByIdentifier(studentNameOrId);
+      if (!student) {
+        student = this.getStudents().find(s => s.name.toLowerCase() === studentNameOrId.trim().toLowerCase());
+      }
+    }
+    if (!student) {
+      student = this.getCurrentStudent();
+    }
+    if (!student) return [];
+
+    const identifiers = [
+      student.id,
+      student.username,
+      student.nisn,
+      student.name,
+      student.email
+    ].filter(Boolean).map(x => String(x).toLowerCase().trim());
+
+    const studentClassroomIds = Array.isArray(student.classroom_ids) ? student.classroom_ids : [];
+    const studentClassName = String(student.class || student.className || '').trim().toLowerCase();
+
+    const all = this.getAllClassrooms();
+    return all.filter(c => {
+      if (Array.isArray(c.student_ids)) {
+        const hasId = c.student_ids.some(sid => identifiers.includes(String(sid).toLowerCase().trim()));
+        if (hasId) return true;
+      }
+      if (studentClassroomIds.includes(c.id)) return true;
+
+      // Grade fallback matching (e.g. 5-A students)
+      if (studentClassName && (studentClassName === '5-a' || studentClassName === '5a')) {
+        if (c.id === 'cls-5a' || c.code === '502101') return true;
+        if (c.id === 'cls-meihua' || c.code === '803102') return true;
+      }
+      return false;
+    });
+  }
+
+  // --- DAILY AGENDA MANAGEMENT ---
+  getAllDailyAgendas() {
+    try {
+      const raw = localStorage.getItem('lotus_daily_agendas');
+      if (raw) {
+        const list = JSON.parse(raw);
+        if (Array.isArray(list) && list.length > 0) return list;
+      }
+      const sample = getSampleDailyAgendas();
+      localStorage.setItem('lotus_daily_agendas', JSON.stringify(sample));
+      return sample;
+    } catch (e) {
+      return getSampleDailyAgendas();
+    }
+  }
+
+  saveAllDailyAgendas(agendas) {
+    localStorage.setItem('lotus_daily_agendas', JSON.stringify(agendas || []));
+  }
+
+  async saveDailyAgenda({ id, classroomId, teacherId, date, title, items }) {
+    if (!classroomId) {
+      throw new Error('classroomId is required to save daily agenda');
+    }
+    const cls = this.getClassroomById(classroomId);
+    const clsName = cls ? cls.name : 'Kelas';
+    const tName = cls ? cls.teacher_name : (this.getTeacherNameById(teacherId) || 'Guru Demo');
+    const dateStr = date ? String(date).split('T')[0] : new Date().toISOString().split('T')[0];
+
+    const all = this.getAllDailyAgendas();
+    let target = null;
+    if (id) {
+      target = all.find(a => a.id === id);
+    }
+    if (!target) {
+      target = all.find(a => a.classroom_id === classroomId && a.date === dateStr);
+    }
+
+    const formattedItems = (items || []).map(item => ({
+      id: item.id || ('item-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6)),
+      type: item.type || 'materi',
+      category: item.category || 'materi',
+      title: (item.title || 'Agenda Item').trim(),
+      command: (item.command || '').trim(),
+      explanation: (item.explanation || '').trim(),
+      deadline: item.deadline || null,
+      file_url: item.file_url || null,
+      file_name: item.file_name || null,
+      file_size: item.file_size || null,
+      external_link: item.external_link || null,
+      project_id: item.project_id || null,
+      assignment_id: item.assignment_id || null,
+      target_type: item.target_type || 'all',
+      target_student_ids: Array.isArray(item.target_student_ids) ? item.target_student_ids : []
+    }));
+
+    if (target) {
+      target.classroom_id = classroomId;
+      target.classroom_name = clsName;
+      if (teacherId) target.teacher_id = teacherId;
+      target.teacher_name = tName;
+      target.date = dateStr;
+      if (title) target.title = title;
+      target.items = formattedItems;
+      target.updated_at = new Date().toISOString();
+    } else {
+      target = {
+        id: id || ('agenda-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6)),
+        classroom_id: classroomId,
+        classroom_name: clsName,
+        teacher_id: teacherId || (cls ? cls.teacher_id : 't-demo'),
+        teacher_name: tName,
+        date: dateStr,
+        title: title || `Agenda Pembelajaran ${dateStr}`,
+        created_at: new Date().toISOString(),
+        items: formattedItems
+      };
+      all.unshift(target);
+    }
+
+    this.saveAllDailyAgendas(all);
+
+    if (this.hasSupabase()) {
+      const sb = this.getSupabaseClient();
+      if (sb) {
+        try {
+          await sb.from('daily_agendas').upsert(target);
+        } catch (e) {
+          console.warn('LotusDB: Could not sync daily agenda to Supabase:', e);
+        }
+      }
+    }
+
+    return target;
+  }
+
+  getDailyAgendasByClass(classroomId, date = null) {
+    if (!classroomId) return [];
+    let list = this.getAllDailyAgendas().filter(a => a.classroom_id === classroomId);
+    if (date) {
+      const dStr = String(date).split('T')[0];
+      list = list.filter(a => a.date === dStr);
+    }
+    return list.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+  }
+
+  getDailyAgendaById(agendaId) {
+    if (!agendaId) return null;
+    return this.getAllDailyAgendas().find(a => a.id === agendaId) || null;
+  }
+
+  async deleteDailyAgenda(agendaId) {
+    if (!agendaId) return false;
+    let all = this.getAllDailyAgendas();
+    all = all.filter(a => a.id !== agendaId);
+    this.saveAllDailyAgendas(all);
+    if (this.hasSupabase()) {
+      const sb = this.getSupabaseClient();
+      if (sb) {
+        try {
+          await sb.from('daily_agendas').delete().eq('id', agendaId);
+        } catch (e) {
+          console.warn('LotusDB: Could not delete daily agenda from Supabase:', e);
+        }
+      }
+    }
+    return true;
+  }
+
+  getDeadlineDiffDays(deadlineStr) {
+    if (!deadlineStr) return null;
+    try {
+      const dStr = deadlineStr.includes('T') ? deadlineStr.split('T')[0] : deadlineStr.split(' ')[0];
+      const parts = dStr.split('-');
+      if (parts.length !== 3) return null;
+      const targetDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      const now = new Date();
+      const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const diffTime = targetDate.getTime() - todayDate.getTime();
+      return Math.round(diffTime / (1000 * 60 * 60 * 24));
+    } catch (e) {
+      return null;
+    }
+  }
+
+  getCountdownLabel(deadlineStr) {
+    const diffDays = this.getDeadlineDiffDays(deadlineStr);
+    if (diffDays === null) return 'Tanpa Batas Waktu';
+    if (diffDays < 0) {
+      const absDays = Math.abs(diffDays);
+      return absDays === 1 ? 'Terlewat 1 hari' : `Terlewat ${absDays} hari`;
+    }
+    if (diffDays === 0) return 'Hari Ini';
+    if (diffDays === 1) return 'Besok';
+    return `${diffDays} hari lagi`;
+  }
+
+  getStudentPersonalAgenda(studentProfile) {
+    const student = studentProfile || this.getCurrentStudent();
+    if (!student) return [];
+
+    const myClassrooms = this.getStudentClassrooms(student);
+    const myClassIds = new Set(myClassrooms.map(c => c.id));
+    const studentIdentities = [
+      student.id,
+      student.username,
+      student.nisn,
+      student.name,
+      student.email
+    ].filter(Boolean).map(s => String(s).toLowerCase().trim());
+
+    const allAgendas = this.getAllDailyAgendas();
+    const relevantAgendas = allAgendas.filter(a => myClassIds.has(a.classroom_id));
+    const pendingItems = [];
+
+    relevantAgendas.forEach(agenda => {
+      if (!Array.isArray(agenda.items)) return;
+      agenda.items.forEach(item => {
+        if (item.target_type === 'selective' && Array.isArray(item.target_student_ids) && item.target_student_ids.length > 0) {
+          const matches = item.target_student_ids.some(tid =>
+            studentIdentities.includes(String(tid).toLowerCase().trim())
+          );
+          if (!matches) return;
+        }
+
+        const countdown = this.getCountdownLabel(item.deadline);
+        const diffDays = this.getDeadlineDiffDays(item.deadline);
+
+        const isEligible = (diffDays === null) || (diffDays >= 0) || (item.status === 'active');
+        if (!isEligible) return;
+
+        pendingItems.push({
+          ...item,
+          agenda_id: agenda.id,
+          agenda_title: agenda.title,
+          agenda_date: agenda.date,
+          classroom_id: agenda.classroom_id,
+          classroom_name: agenda.classroom_name,
+          teacher_id: agenda.teacher_id,
+          teacher_name: agenda.teacher_name,
+          countdown_label: countdown,
+          diff_days: diffDays !== null ? diffDays : 9999
+        });
+      });
+    });
+
+    pendingItems.sort((a, b) => a.diff_days - b.diff_days);
+    return pendingItems;
+  }
+
+  getStudentMaterialsAndAnnouncements(studentProfile, filterType = 'all') {
+    const student = studentProfile || this.getCurrentStudent();
+    if (!student) return [];
+
+    const myClassrooms = this.getStudentClassrooms(student);
+    const myClassIds = new Set(myClassrooms.map(c => c.id));
+    const studentIdentities = [
+      student.id,
+      student.username,
+      student.nisn,
+      student.name,
+      student.email
+    ].filter(Boolean).map(s => String(s).toLowerCase().trim());
+
+    const allAgendas = this.getAllDailyAgendas();
+    const relevantAgendas = allAgendas.filter(a => myClassIds.has(a.classroom_id));
+    const results = [];
+
+    relevantAgendas.forEach(agenda => {
+      if (!Array.isArray(agenda.items)) return;
+      agenda.items.forEach(item => {
+        if (item.target_type === 'selective' && Array.isArray(item.target_student_ids) && item.target_student_ids.length > 0) {
+          const matches = item.target_student_ids.some(tid =>
+            studentIdentities.includes(String(tid).toLowerCase().trim())
+          );
+          if (!matches) return;
+        }
+
+        if (filterType && filterType !== 'all') {
+          const normFilter = filterType.toLowerCase();
+          if (normFilter === 'kuis' || normFilter === 'tugas') {
+            if (item.type !== 'tugas' && item.category !== 'tugas' && item.category !== 'ulangan') return;
+          } else if (normFilter === 'materi') {
+            if (item.type !== 'materi' && item.category !== 'materi' && item.category !== 'buku') return;
+          } else if (normFilter === 'pengumuman') {
+            if (item.type !== 'pengumuman' && item.category !== 'seragam' && item.category !== 'lainnya') return;
+          } else if (item.type !== normFilter && item.category !== normFilter) {
+            return;
+          }
+        }
+
+        const countdown = this.getCountdownLabel(item.deadline);
+        const diffDays = this.getDeadlineDiffDays(item.deadline);
+
+        results.push({
+          ...item,
+          agenda_id: agenda.id,
+          agenda_title: agenda.title,
+          agenda_date: agenda.date,
+          classroom_id: agenda.classroom_id,
+          classroom_name: agenda.classroom_name,
+          teacher_id: agenda.teacher_id,
+          teacher_name: agenda.teacher_name,
+          countdown_label: countdown,
+          diff_days: diffDays
+        });
+      });
+    });
+
+    results.sort((a, b) => {
+      const da = new Date(a.agenda_date || a.created_at || 0).getTime();
+      const db = new Date(b.agenda_date || b.created_at || 0).getTime();
+      return db - da;
+    });
+
+    return results;
+  }
+
 }
 
-window.LotusDB = new LocalDatabase();
+if (typeof window !== 'undefined') {
+  window.LotusDB = new LocalDatabase();
+} else if (typeof global !== 'undefined') {
+  global.LotusDB = new LocalDatabase();
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    LocalDatabase,
+    LotusDB: (typeof window !== 'undefined' ? window.LotusDB : (typeof global !== 'undefined' ? global.LotusDB : null))
+  };
+}
+

@@ -1795,7 +1795,7 @@
           🎒
         </div>
         <div>
-          <h2 class="text-xl sm:text-2xl font-black text-[#0D2B1B]">Portal Murid Tzu Chi</h2>
+          <h2 class="text-xl sm:text-2xl font-black text-[#0f172a]">Portal Murid Tzu Chi</h2>
           <p class="text-xs sm:text-sm text-[#57534e] mt-1.5">Masukkan nama lengkap dan PIN game/kelas dari gurumu untuk mulai belajar.</p>
         </div>
         <form onsubmit="handleStudentPortalLogin(event)" class="space-y-4 text-left">
@@ -1906,10 +1906,10 @@
           🔑
         </div>
         <div>
-          <h2 class="text-sm sm:text-base font-extrabold text-[#0D2B1B]">
+          <h2 class="text-sm sm:text-base font-extrabold text-[#0f172a]">
             Punya 6-Digit Game PIN dari Guru?
           </h2>
-          <p class="text-xs text-[#5A6E62] mt-0.5">
+          <p class="text-xs text-[#334155] mt-0.5">
             Masukkan kode PIN untuk langsung masuk dan mengerjakan kuis atau game interaktif di kelas.
           </p>
         </div>
@@ -1919,7 +1919,7 @@
       <form onsubmit="handlePinJoin(event)" class="w-full md:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
         <div class="relative">
           <input type="text" id="input-game-pin" maxlength="6" pattern="[0-9]{6}" required placeholder="Contoh: 100101"
-            class="w-full sm:w-44 px-4 py-2.5 rounded-xl border-2 border-[#CDE3D5] focus:border-[#1E5E3A] focus:outline-none text-center font-mono font-extrabold text-base tracking-widest text-[#0D2B1B] bg-[#FBFDFB] transition-all">
+            class="w-full sm:w-44 px-4 py-2.5 rounded-xl border-2 border-[#CDE3D5] focus:border-[#1E5E3A] focus:outline-none text-center font-mono font-extrabold text-base tracking-widest text-[#0f172a] bg-[#FBFDFB] transition-all">
         </div>
         <button type="submit" id="btn-pin-join"
           class="px-5 py-2.5 rounded-xl tc-gradient hover:opacity-95 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-emerald-900/15 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0">
@@ -1941,10 +1941,10 @@
           🏫
         </div>
         <div>
-          <h2 class="text-sm sm:text-base font-extrabold text-[#0D2B1B]">
+          <h2 class="text-sm sm:text-base font-extrabold text-[#0f172a]">
             Punya Kode Kelas dari Guru?
           </h2>
-          <p class="text-xs text-[#5A6E62] mt-0.5">
+          <p class="text-xs text-[#334155] mt-0.5">
             Masukkan 6-digit kode kelas dari wali kelas atau guru mapel untuk bergabung dan melihat agenda sekolah harian.
           </p>
         </div>
@@ -1954,7 +1954,7 @@
       <form onsubmit="handleStudentJoinClass(event)" class="w-full md:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
         <div class="relative">
           <input type="text" id="input-class-code" maxlength="6" pattern="[0-9]{6}" required placeholder="Contoh: 502101"
-            class="w-full sm:w-44 px-4 py-2.5 rounded-xl border-2 border-[#CDE3D5] focus:border-[#1E5E3A] focus:outline-none text-center font-mono font-extrabold text-base tracking-widest text-[#0D2B1B] bg-[#FBFDFB] transition-all">
+            class="w-full sm:w-44 px-4 py-2.5 rounded-xl border-2 border-[#CDE3D5] focus:border-[#1E5E3A] focus:outline-none text-center font-mono font-extrabold text-base tracking-widest text-[#0f172a] bg-[#FBFDFB] transition-all">
         </div>
         <button type="submit" id="btn-class-join"
           class="px-5 py-2.5 rounded-xl tc-gradient hover:opacity-95 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-emerald-900/15 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0">
@@ -1966,38 +1966,41 @@
     <div id="class-join-alert" class="hidden p-3 rounded-xl text-xs font-semibold flex items-center gap-2"></div>
 
     <!-- ============================================================== -->
-    <!-- 2c. PRIMARY AGENDA SECTION (KELAS & PERSONAL) -->
+    <!-- 2c. PRIMARY AGENDA SECTION (KELAS & PERSONAL BERSEBELAHAN) -->
     <!-- ============================================================== -->
-    <div class="space-y-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-6 items-start">
       
-      <!-- Section 1: List Agenda Kelas (Daily Agenda with Date Navigation) -->
-      <div class="bg-white rounded-3xl border border-[#D5E9DC] p-5 sm:p-7 custom-card-shadow space-y-4">
+      <!-- Kolom 1 (Kiri): List Agenda Kelas (Daily Agenda with Date Navigation) -->
+      <div class="bg-white rounded-2xl sm:rounded-3xl border border-[#cbd5e1] p-4 sm:p-6 shadow-xs space-y-4 flex flex-col min-h-[480px]">
         
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#EAF2ED] pb-4">
-          <div class="flex items-center gap-3">
-            <div class="w-11 h-11 rounded-2xl bg-[#EAF5ED] text-[#1E5E3A] flex items-center justify-center text-xl shrink-0">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#e2e8f0] pb-3.5">
+          <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-300 flex items-center justify-center text-lg shrink-0">
               📅
             </div>
             <div>
-              <h2 class="text-base sm:text-lg font-black text-[#0D2B1B]">Agenda Pembelajaran Kelas</h2>
-              <p class="text-xs text-[#5A6E62]">Jadwal seragam, buku mapel, tugas/PR, materi, dan ulangan harian.</p>
+              <h2 class="text-base sm:text-lg font-black text-[#0f172a]">Agenda Pembelajaran Kelas</h2>
+              <p class="text-xs text-[#334155] font-medium">Jadwal seragam, buku mapel, tugas/PR, dan ulangan.</p>
             </div>
           </div>
 
           <!-- Date Navigation Bar -->
-          <div class="flex flex-wrap items-center gap-2">
-            <button type="button" onclick="navigateStudentAgendaDate(-1)" class="px-3 py-1.5 rounded-xl border border-[#D5E9DC] bg-[#FAFDFB] hover:bg-[#EAF5ED] text-xs font-bold text-[#1E5E3A] transition-colors cursor-pointer flex items-center gap-1">
+          <div class="flex flex-wrap items-center gap-1.5 shrink-0">
+            <button type="button" onclick="navigateStudentAgendaDate(-1)" title="Hari Sebelumnya"
+              class="px-2.5 py-1.5 rounded-lg border border-[#cbd5e1] bg-white hover:bg-emerald-50 text-xs font-bold text-[#0f172a] transition-colors cursor-pointer flex items-center gap-1">
               <span>◀</span>
               <span class="hidden sm:inline">Kemarin</span>
             </button>
             <div class="relative flex items-center">
               <input type="date" id="student-agenda-date-picker" onchange="changeStudentAgendaDate(this.value)"
-                class="px-3 py-1.5 rounded-xl border border-[#BCE1C9] bg-white text-xs font-extrabold text-[#0D2B1B] focus:outline-none focus:border-[#1E5E3A]">
+                class="px-2.5 py-1.5 rounded-lg border border-emerald-300 bg-white text-xs font-extrabold text-[#0f172a] focus:outline-none focus:border-[#1E5E3A] cursor-pointer">
             </div>
-            <button type="button" onclick="setStudentAgendaDateToday()" class="px-3 py-1.5 rounded-xl bg-[#EAF5ED] hover:bg-[#D5E9DC] text-xs font-extrabold text-[#1E5E3A] transition-colors cursor-pointer">
+            <button type="button" onclick="setStudentAgendaDateToday()"
+              class="px-2.5 py-1.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 text-xs font-extrabold text-emerald-950 transition-colors cursor-pointer">
               Hari Ini
             </button>
-            <button type="button" onclick="navigateStudentAgendaDate(1)" class="px-3 py-1.5 rounded-xl border border-[#D5E9DC] bg-[#FAFDFB] hover:bg-[#EAF5ED] text-xs font-bold text-[#1E5E3A] transition-colors cursor-pointer flex items-center gap-1">
+            <button type="button" onclick="navigateStudentAgendaDate(1)" title="Hari Berikutnya"
+              class="px-2.5 py-1.5 rounded-lg border border-[#cbd5e1] bg-white hover:bg-emerald-50 text-xs font-bold text-[#0f172a] transition-colors cursor-pointer flex items-center gap-1">
               <span class="hidden sm:inline">Besok</span>
               <span>▶</span>
             </button>
@@ -2006,7 +2009,7 @@
 
         <!-- Selected Date Label & Class Selector Filter -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-          <div class="font-extrabold text-[#1E5E3A] flex items-center gap-2" id="student-agenda-date-display">
+          <div class="font-black text-[#0f172a] flex items-center gap-2" id="student-agenda-date-display">
             <!-- E.g. Selasa, 24 November 2026 -->
           </div>
           <div id="student-joined-classes-pills" class="flex flex-wrap items-center gap-1.5">
@@ -2014,41 +2017,48 @@
           </div>
         </div>
 
-        <!-- Daily Agenda Items Grid / List -->
-        <div id="student-daily-agenda-items" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Daily Agenda Rows List (Compact List Rows) -->
+        <div id="student-daily-agenda-items" class="space-y-2 max-h-[580px] overflow-y-auto pr-1">
           <!-- Rendered dynamically by JS -->
         </div>
       </div>
 
-      <!-- Section 2: List Agenda Personal (Aggregated Active Deadlines) -->
-      <div class="bg-gradient-to-br from-[#FAFDFB] to-[#F2F8F4] rounded-3xl border border-[#CDE3D5] p-5 sm:p-7 shadow-xs space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div class="flex items-center gap-3">
-            <div class="w-11 h-11 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center text-xl shrink-0">
+      <!-- Kolom 2 (Kanan): List Agenda Personal & Target Mendatang -->
+      <div class="bg-white rounded-2xl sm:rounded-3xl border border-[#cbd5e1] p-4 sm:p-6 shadow-xs space-y-4 flex flex-col min-h-[480px]">
+        <div class="flex items-center justify-between gap-3 border-b border-[#e2e8f0] pb-3.5">
+          <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-900 border border-amber-300 flex items-center justify-center text-lg shrink-0">
               🎯
             </div>
             <div>
-              <div class="flex items-center gap-2">
-                <h2 class="text-base sm:text-lg font-black text-[#0D2B1B]">Agenda Personal &amp; Target Mendatang</h2>
-                <span id="personal-agenda-badge" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-800 border border-amber-300">0 Agenda</span>
-              </div>
-              <p class="text-xs text-[#5A6E62]">Kompilasi deadline PR, barang yang harus dibawa, dan persiapan ulangan terdekat.</p>
+              <h2 class="text-base sm:text-lg font-black text-[#0f172a]">Agenda Personal &amp; Target</h2>
+              <p class="text-xs text-[#334155] font-medium">Kompilasi deadline PR dan barang bawaan terdekat.</p>
             </div>
           </div>
+          <span id="personal-agenda-badge" class="px-2.5 py-1 rounded-full text-xs font-black bg-amber-100 text-amber-950 border border-amber-300 shrink-0">
+            0 Agenda Aktif
+          </span>
         </div>
 
-        <!-- Personal Cards Grid -->
-        <div id="student-personal-agenda-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="text-xs font-bold text-[#334155] flex items-center justify-between px-1">
+          <span>Tugas &amp; Pengumuman Mendatang:</span>
+          <span class="text-[11px] text-[#475569] font-medium">Berdasarkan batas waktu terdekat</span>
+        </div>
+
+        <!-- Personal Rows List (Compact List Rows) -->
+        <div id="student-personal-agenda-container" class="space-y-2 max-h-[580px] overflow-y-auto pr-1">
           <!-- Rendered dynamically by JS -->
         </div>
       </div>
 
-      <!-- Section 3: Teacher Posts (Filter Tabs: Semua, Materi, Tugas, Pengumuman) -->
+    </div>
+
+    <!-- Section 3: Teacher Posts (Filter Tabs: Semua, Materi, Tugas, Pengumuman) -->
       <div class="bg-white rounded-3xl border border-[#D5E9DC] p-5 sm:p-7 custom-card-shadow space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#EAF2ED] pb-3">
           <div>
-            <h3 class="text-base font-black text-[#0D2B1B]">Publikasi &amp; Materi Guru</h3>
-            <p class="text-xs text-[#5A6E62]">Semua materi pembelajaran, kuis interaktif, dan pengumuman dari guru kelas.</p>
+            <h3 class="text-base font-black text-[#0f172a]">Publikasi &amp; Materi Guru</h3>
+            <p class="text-xs text-[#334155]">Semua materi pembelajaran, kuis interaktif, dan pengumuman dari guru kelas.</p>
           </div>
           <!-- Filter Tabs -->
           <div class="flex flex-wrap items-center gap-1.5 p-1 bg-[#F4F8F5] rounded-xl border border-[#D5E9DC]">
@@ -2057,15 +2067,15 @@
               Semua
             </button>
             <button type="button" id="tab-stu-posts-materi" onclick="filterStudentPosts('materi')"
-              class="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#5A6E62] hover:text-[#0D2B1B] transition-all cursor-pointer">
+              class="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#334155] hover:text-[#0f172a] transition-all cursor-pointer">
               📚 Materi Pembelajaran
             </button>
             <button type="button" id="tab-stu-posts-tugas" onclick="filterStudentPosts('tugas')"
-              class="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#5A6E62] hover:text-[#0D2B1B] transition-all cursor-pointer">
+              class="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#334155] hover:text-[#0f172a] transition-all cursor-pointer">
               📝 Tugas &amp; Kuis
             </button>
             <button type="button" id="tab-stu-posts-pengumuman" onclick="filterStudentPosts('pengumuman')"
-              class="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#5A6E62] hover:text-[#0D2B1B] transition-all cursor-pointer">
+              class="px-3 py-1.5 rounded-lg text-xs font-semibold text-[#334155] hover:text-[#0f172a] transition-all cursor-pointer">
               📢 Pengumuman Guru
             </button>
           </div>
@@ -2126,14 +2136,14 @@
     <section id="view-tab-active" class="space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 class="text-base sm:text-lg font-black text-[#0D2B1B]">Daftar Tugas Pembelajaran Menanti</h2>
-          <p class="text-xs text-[#5A6E62]">Kerjakan penugasan yang diberikan oleh bapak/ibu guru sebelum batas waktu berakhir.</p>
+          <h2 class="text-base sm:text-lg font-black text-[#0f172a]">Daftar Tugas Pembelajaran Menanti</h2>
+          <p class="text-xs text-[#334155]">Kerjakan penugasan yang diberikan oleh bapak/ibu guru sebelum batas waktu berakhir.</p>
         </div>
         <!-- Filter Subject -->
         <div class="flex items-center gap-2">
           <label for="filter-subject" class="text-xs font-bold text-[#355342] shrink-0">Mata Pelajaran:</label>
           <select id="filter-subject" onchange="filterActiveAssignments()"
-            class="px-3 py-1.5 rounded-xl border border-[#CDE3D5] bg-white text-xs font-medium text-[#0D2B1B] focus:outline-none focus:border-[#1E5E3A]">
+            class="px-3 py-1.5 rounded-xl border border-[#CDE3D5] bg-white text-xs font-medium text-[#0f172a] focus:outline-none focus:border-[#1E5E3A]">
             <option value="all">Semua Pelajaran</option>
             <option value="IPA / Sains">IPA / Sains</option>
             <option value="Bahasa Mandarin">Bahasa Mandarin</option>
@@ -2155,8 +2165,8 @@
     <section id="view-tab-history" class="hidden space-y-4">
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-base sm:text-lg font-black text-[#0D2B1B]">Riwayat Tugas & Nilai Pengumpulan</h2>
-          <p class="text-xs text-[#5A6E62]">Periksa skor evaluasi, durasi pengerjaan, serta tinjau kunci jawaban dan pembahasan.</p>
+          <h2 class="text-base sm:text-lg font-black text-[#0f172a]">Riwayat Tugas & Nilai Pengumpulan</h2>
+          <p class="text-xs text-[#334155]">Periksa skor evaluasi, durasi pengerjaan, serta tinjau kunci jawaban dan pembahasan.</p>
         </div>
       </div>
 
@@ -2194,8 +2204,8 @@
             <span>✨</span>
             <span>Akses Eksplorasi Bebas</span>
           </div>
-          <h2 class="text-base sm:text-lg font-black text-[#0D2B1B] mt-1">Ruang Belajar Mandiri & Media Interaktif</h2>
-          <p class="text-xs text-[#5A6E62]">Eksplorasi simulator sains 3D skeleton tubuh, papan kaligrafi Hanzi, dan latihan kosakata Meihua tanpa batas waktu.</p>
+          <h2 class="text-base sm:text-lg font-black text-[#0f172a] mt-1">Ruang Belajar Mandiri & Media Interaktif</h2>
+          <p class="text-xs text-[#334155]">Eksplorasi simulator sains 3D skeleton tubuh, papan kaligrafi Hanzi, dan latihan kosakata Meihua tanpa batas waktu.</p>
         </div>
       </div>
 
@@ -2220,7 +2230,7 @@
                 🦴
               </div>
               <div>
-                <h3 class="text-base font-black text-[#0D2B1B] group-hover:text-[#1E5E3A] transition-colors">
+                <h3 class="text-base font-black text-[#0f172a] group-hover:text-[#1E5E3A] transition-colors">
                   Media Ajar 3D Skeleton & Motion Tracker
                 </h3>
                 <p class="text-xs text-[#4A725A] mt-1 leading-relaxed">
@@ -2267,7 +2277,7 @@
                 ✍️
               </div>
               <div>
-                <h3 class="text-base font-black text-[#0D2B1B] group-hover:text-[#1E5E3A] transition-colors">
+                <h3 class="text-base font-black text-[#0f172a] group-hover:text-[#1E5E3A] transition-colors">
                   Mandarin Drawing Board (Papan Kaligrafi)
                 </h3>
                 <p class="text-xs text-[#4A725A] mt-1 leading-relaxed">
@@ -2310,7 +2320,7 @@
                 字
               </div>
               <div>
-                <h3 class="text-base font-black text-[#0D2B1B] group-hover:text-[#1E5E3A] transition-colors">
+                <h3 class="text-base font-black text-[#0f172a] group-hover:text-[#1E5E3A] transition-colors">
                   Hanzi Lab (Laboratorium Urutan Goresan)
                 </h3>
                 <p class="text-xs text-[#4A725A] mt-1 leading-relaxed">
@@ -2353,7 +2363,7 @@
                 梅
               </div>
               <div>
-                <h3 class="text-base font-black text-[#0D2B1B] group-hover:text-[#1E5E3A] transition-colors">
+                <h3 class="text-base font-black text-[#0f172a] group-hover:text-[#1E5E3A] transition-colors">
                   Meihua Practice & AI Brush Battle
                 </h3>
                 <p class="text-xs text-[#4A725A] mt-1 leading-relaxed">
@@ -2384,7 +2394,7 @@
       <div class="bg-gradient-to-r from-[#EAF5ED] to-[#F1F8F4] rounded-3xl border border-[#BCE1C9] p-6 space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <h3 class="text-sm sm:text-base font-black text-[#0D2B1B] flex items-center gap-2">
+            <h3 class="text-sm sm:text-base font-black text-[#0f172a] flex items-center gap-2">
               <span>🪷</span>
               <span>Kamus Karakter Nilai Luhur Tzu Chi (靜思語)</span>
             </h3>
@@ -2400,48 +2410,48 @@
           <div onclick="showCharDetails('愛', 'ài', 'Cinta Kasih Murni / Great Love', 'Memberi kehangatan dan kepedulian tanpa pamrih.')"
             class="p-3 bg-white rounded-2xl border border-[#CDE3D5] hover:border-[#1E5E3A] hover:shadow-md cursor-pointer text-center transition-all group">
             <div class="font-chinese text-3xl text-[#1E5E3A] group-hover:scale-110 transition-transform">愛</div>
-            <div class="text-[11px] font-bold text-[#0D2B1B] mt-1 font-mono">ài</div>
-            <div class="text-[10px] text-[#5A6E62] truncate">Cinta Kasih</div>
+            <div class="text-[11px] font-bold text-[#0f172a] mt-1 font-mono">ài</div>
+            <div class="text-[10px] text-[#334155] truncate">Cinta Kasih</div>
           </div>
 
           <!-- Char 2 -->
           <div onclick="showCharDetails('慈', 'cí', 'Welas Asih / Compassion', 'Kebahagiaan sejati saat melihat orang lain terbebas dari penderitaan.')"
             class="p-3 bg-white rounded-2xl border border-[#CDE3D5] hover:border-[#1E5E3A] hover:shadow-md cursor-pointer text-center transition-all group">
             <div class="font-chinese text-3xl text-[#1E5E3A] group-hover:scale-110 transition-transform">慈</div>
-            <div class="text-[11px] font-bold text-[#0D2B1B] mt-1 font-mono">cí</div>
-            <div class="text-[10px] text-[#5A6E62] truncate">Welas Asih</div>
+            <div class="text-[11px] font-bold text-[#0f172a] mt-1 font-mono">cí</div>
+            <div class="text-[10px] text-[#334155] truncate">Welas Asih</div>
           </div>
 
           <!-- Char 3 -->
           <div onclick="showCharDetails('悲', 'bēi', 'Empati Membantu sesama', 'Merasakan penderitaan orang lain dan segera mengulurkan tangan.')"
             class="p-3 bg-white rounded-2xl border border-[#CDE3D5] hover:border-[#1E5E3A] hover:shadow-md cursor-pointer text-center transition-all group">
             <div class="font-chinese text-3xl text-[#1E5E3A] group-hover:scale-110 transition-transform">悲</div>
-            <div class="text-[11px] font-bold text-[#0D2B1B] mt-1 font-mono">bēi</div>
-            <div class="text-[10px] text-[#5A6E62] truncate">Empati</div>
+            <div class="text-[11px] font-bold text-[#0f172a] mt-1 font-mono">bēi</div>
+            <div class="text-[10px] text-[#334155] truncate">Empati</div>
           </div>
 
           <!-- Char 4 -->
           <div onclick="showCharDetails('喜', 'xǐ', 'Sukacita / Joy in Doing Good', 'Hati yang riang dan gembira karena melakukan perbuatan bajik.')"
             class="p-3 bg-white rounded-2xl border border-[#CDE3D5] hover:border-[#1E5E3A] hover:shadow-md cursor-pointer text-center transition-all group">
             <div class="font-chinese text-3xl text-[#1E5E3A] group-hover:scale-110 transition-transform">喜</div>
-            <div class="text-[11px] font-bold text-[#0D2B1B] mt-1 font-mono">xǐ</div>
-            <div class="text-[10px] text-[#5A6E62] truncate">Sukacita</div>
+            <div class="text-[11px] font-bold text-[#0f172a] mt-1 font-mono">xǐ</div>
+            <div class="text-[10px] text-[#334155] truncate">Sukacita</div>
           </div>
 
           <!-- Char 5 -->
           <div onclick="showCharDetails('捨', 'shě', 'Rela Memberi / Equanimity', 'Ikhlas melepaskan dan memberi yang terbaik untuk sesama makhluk.')"
             class="p-3 bg-white rounded-2xl border border-[#CDE3D5] hover:border-[#1E5E3A] hover:shadow-md cursor-pointer text-center transition-all group">
             <div class="font-chinese text-3xl text-[#1E5E3A] group-hover:scale-110 transition-transform">捨</div>
-            <div class="text-[11px] font-bold text-[#0D2B1B] mt-1 font-mono">shě</div>
-            <div class="text-[10px] text-[#5A6E62] truncate">Rela Memberi</div>
+            <div class="text-[11px] font-bold text-[#0f172a] mt-1 font-mono">shě</div>
+            <div class="text-[10px] text-[#334155] truncate">Rela Memberi</div>
           </div>
 
           <!-- Char 6 -->
           <div onclick="showCharDetails('蓮', 'lián', 'Bunga Teratai / Lotus', 'Tumbuh indah bersih tak ternoda dari lumpur — simbol kemurnian hati.')"
             class="p-3 bg-white rounded-2xl border border-[#CDE3D5] hover:border-[#1E5E3A] hover:shadow-md cursor-pointer text-center transition-all group">
             <div class="font-chinese text-3xl text-[#1E5E3A] group-hover:scale-110 transition-transform">蓮</div>
-            <div class="text-[11px] font-bold text-[#0D2B1B] mt-1 font-mono">lián</div>
-            <div class="text-[10px] text-[#5A6E62] truncate">Teratai Lotus</div>
+            <div class="text-[11px] font-bold text-[#0f172a] mt-1 font-mono">lián</div>
+            <div class="text-[10px] text-[#334155] truncate">Teratai Lotus</div>
           </div>
         </div>
 
@@ -2451,10 +2461,10 @@
             <span class="font-chinese text-4xl text-[#1E5E3A]" id="detail-char-hanzi">愛</span>
             <div>
               <div class="flex items-center gap-2">
-                <span class="text-sm font-extrabold text-[#0D2B1B]" id="detail-char-title">Cinta Kasih Murni / Great Love</span>
+                <span class="text-sm font-extrabold text-[#0f172a]" id="detail-char-title">Cinta Kasih Murni / Great Love</span>
                 <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-[#EAF5ED] text-[#1E5E3A] font-mono" id="detail-char-pinyin">ài</span>
               </div>
-              <p class="text-xs text-[#5A6E62] mt-0.5" id="detail-char-desc">Memberi kehangatan dan kepedulian tanpa pamrih.</p>
+              <p class="text-xs text-[#334155] mt-0.5" id="detail-char-desc">Memberi kehangatan dan kepedulian tanpa pamrih.</p>
             </div>
           </div>
           <button type="button" onclick="openHanziInLab()" class="px-3 py-1.5 rounded-xl bg-[#EAF5ED] hover:bg-[#1E5E3A] text-[#1E5E3A] hover:text-white font-bold text-xs transition-colors shrink-0">
@@ -3261,16 +3271,16 @@
               <span id="agenda-detail-type-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9]">
                 Tugas
               </span>
-              <span id="agenda-detail-category-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FAF8F5] text-[#5A6E62] border border-[#D5E9DC]">
+              <span id="agenda-detail-category-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FAF8F5] text-[#334155] border border-[#D5E9DC]">
                 Seragam
               </span>
             </div>
-            <h3 class="text-base sm:text-lg font-black text-[#0D2B1B] mt-1" id="agenda-detail-title">
+            <h3 class="text-base sm:text-lg font-black text-[#0f172a] mt-1" id="agenda-detail-title">
               Judul Agenda
             </h3>
           </div>
         </div>
-        <button type="button" onclick="closeAgendaDetailModal()" class="p-1.5 rounded-xl bg-[#F4F8F5] hover:bg-[#EAF5ED] text-[#5A6E62] hover:text-[#0D2B1B] transition-colors cursor-pointer">
+        <button type="button" onclick="closeAgendaDetailModal()" class="p-1.5 rounded-xl bg-[#F4F8F5] hover:bg-[#EAF5ED] text-[#334155] hover:text-[#0f172a] transition-colors cursor-pointer">
           <span class="ui-sprite ui-xs ui-close"></span>
         </button>
       </div>
@@ -3278,8 +3288,8 @@
       <!-- Class & Teacher Info -->
       <div class="p-3 rounded-xl bg-[#FAFDFB] border border-[#D5E9DC] text-xs flex items-center justify-between">
         <div>
-          <span class="text-[#5A6E62]">Kelas &amp; Guru:</span>
-          <span class="font-extrabold text-[#0D2B1B] ml-1" id="agenda-detail-class-info">Kelas 5-A SD Tzu Chi</span>
+          <span class="text-[#334155]">Kelas &amp; Guru:</span>
+          <span class="font-extrabold text-[#0f172a] ml-1" id="agenda-detail-class-info">Kelas 5-A SD Tzu Chi</span>
         </div>
         <div id="agenda-detail-deadline-pill" class="font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
           Besok
@@ -3288,16 +3298,16 @@
 
       <!-- Command / Perintah Utama -->
       <div class="space-y-1.5">
-        <div class="text-[11px] font-bold text-[#5A6E62] uppercase tracking-wider">Perintah / Instruksi Utama:</div>
-        <div class="p-3.5 rounded-2xl bg-[#EAF5ED]/60 border border-[#BCE1C9] text-xs sm:text-sm font-bold text-[#0D2B1B] leading-relaxed" id="agenda-detail-command">
+        <div class="text-[11px] font-bold text-[#334155] uppercase tracking-wider">Perintah / Instruksi Utama:</div>
+        <div class="p-3.5 rounded-2xl bg-[#EAF5ED]/60 border border-[#BCE1C9] text-xs sm:text-sm font-bold text-[#0f172a] leading-relaxed" id="agenda-detail-command">
           -
         </div>
       </div>
 
       <!-- Penjelasan Lengkap -->
       <div class="space-y-1.5">
-        <div class="text-[11px] font-bold text-[#5A6E62] uppercase tracking-wider">Penjelasan Detail:</div>
-        <div class="p-3.5 rounded-2xl bg-[#FAFDFB] border border-[#EAF2ED] text-xs text-[#2C4A38] leading-relaxed whitespace-pre-line" id="agenda-detail-explanation">
+        <div class="text-[11px] font-bold text-[#334155] uppercase tracking-wider">Penjelasan Detail:</div>
+        <div class="p-3.5 rounded-2xl bg-[#FAFDFB] border border-[#EAF2ED] text-xs text-[#1e293b] leading-relaxed whitespace-pre-line" id="agenda-detail-explanation">
           -
         </div>
       </div>
@@ -9114,7 +9124,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
               <!-- 6-Digit PIN Box with 1-Click Copy -->
               <div class="bg-[#FAFDFB] border border-[#CDE3D5] rounded-xl p-3 flex items-center justify-between">
                 <div>
-                  <div class="text-[10px] uppercase font-bold tracking-wider text-[#5A6E62]">Kode Kelas (PIN Murid)</div>
+                  <div class="text-[10px] uppercase font-bold tracking-wider text-[#334155]">Kode Kelas (PIN Murid)</div>
                   <div class="text-lg font-mono font-black text-[#1E5E3A] tracking-wider">${escapeHtml(c.code)}</div>
                 </div>
                 <button type="button" onclick="copyClassroomCode('${c.code}', this)"
@@ -9480,7 +9490,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
 
       if (_agendaModalItems.length === 0) {
         container.innerHTML = `
-          <div class="p-6 bg-[#FAFDFB] rounded-xl border border-[#D5E9DC] text-center text-xs text-[#5A6E62]">
+          <div class="p-6 bg-[#FAFDFB] rounded-xl border border-[#D5E9DC] text-center text-xs text-[#334155]">
             Belum ada item agenda. Klik salah satu tombol preset di atas atau tambah item baru.
           </div>
         `;
@@ -9868,8 +9878,8 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       const dateFormatted = d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
       if (dateDisplay) {
         dateDisplay.innerHTML = `
-          <span>📅 ${dateFormatted}</span>
-          ${isToday ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">Hari Ini</span>' : ''}
+          <span class="text-[#0f172a] font-black">📅 ${dateFormatted}</span>
+          ${isToday ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-950 border border-emerald-300">Hari Ini</span>' : ''}
         `;
       }
 
@@ -9886,13 +9896,13 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
 
       if (pillsContainer) {
         if (joinedClasses.length === 0) {
-          pillsContainer.innerHTML = `<span class="text-[11px] text-[#78716c]">Belum ada kelas yang diikuti. Masukkan 6-digit PIN di atas!</span>`;
+          pillsContainer.innerHTML = `<span class="text-[11px] text-[#475569] font-medium">Belum ada kelas yang diikuti. Masukkan PIN 6-digit di atas.</span>`;
         } else {
           pillsContainer.innerHTML = joinedClasses.map(c => `
-            <span class="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9] flex items-center gap-1">
+            <span class="px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-emerald-50 text-emerald-950 border border-emerald-200 flex items-center gap-1">
               <span>🏫</span>
               <span>${escapeHtml(c.name)}</span>
-              <span class="font-mono text-[10px] bg-white px-1.5 py-0.2 rounded text-[#1E5E3A] border border-emerald-200">${c.code}</span>
+              <span class="font-mono text-[10px] font-extrabold bg-white px-1.5 py-0.2 rounded text-emerald-900 border border-emerald-300">${c.code}</span>
             </span>
           `).join('');
         }
@@ -9900,11 +9910,11 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
 
       if (joinedClasses.length === 0) {
         container.innerHTML = `
-          <div class="col-span-full p-8 bg-[#FAFDFB] rounded-2xl border border-[#D5E9DC] text-center space-y-3">
-            <div class="text-3xl">🏫</div>
-            <h4 class="font-bold text-sm text-[#0D2B1B]">Belum Tergabung ke Kelas Mana Pun</h4>
-            <p class="text-xs text-[#5A6E62] max-w-md mx-auto">
-              Silakan minta 6-digit kode kelas dari wali kelas atau guru mata pelajaran Anda, lalu masukkan pada formulir di atas untuk melihat agenda harian.
+          <div class="p-6 bg-[#f8fafc] rounded-xl border border-[#e2e8f0] text-center space-y-2">
+            <div class="text-2xl">🏫</div>
+            <h4 class="font-bold text-sm text-[#0f172a]">Belum Tergabung ke Kelas</h4>
+            <p class="text-xs text-[#475569] max-w-sm mx-auto">
+              Silakan minta 6-digit kode kelas dari wali kelas atau guru mata pelajaran Anda, lalu masukkan pada formulir di atas.
             </p>
           </div>
         `;
@@ -9942,10 +9952,10 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
 
       if (allItems.length === 0) {
         container.innerHTML = `
-          <div class="col-span-full p-8 bg-[#FAFDFB] rounded-2xl border border-[#D5E9DC] text-center space-y-2">
-            <div class="text-3xl">🌿</div>
-            <h4 class="font-bold text-sm text-[#0D2B1B]">Tidak Ada Agenda Khusus pada Tanggal Ini</h4>
-            <p class="text-xs text-[#5A6E62]">Gunakan tombol panah di atas untuk memeriksa agenda hari sebelumnya atau hari berikutnya.</p>
+          <div class="p-6 bg-[#f8fafc] rounded-xl border border-[#e2e8f0] text-center space-y-2">
+            <div class="text-2xl">🌿</div>
+            <h4 class="font-bold text-sm text-[#0f172a]">Tidak Ada Agenda Khusus Hari Ini</h4>
+            <p class="text-xs text-[#475569]">Gunakan tombol panah di atas untuk memeriksa jadwal hari kemarin atau besok.</p>
           </div>
         `;
         return;
@@ -9961,49 +9971,64 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
         lainnya: '⭐'
       };
 
-      container.innerHTML = allItems.map((item, idx) => {
+      container.innerHTML = allItems.map((item) => {
         const icon = categoryIcons[item.category] || '📌';
-        const typeBadge = item.type === 'tugas'
-          ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-50 text-amber-800 border border-amber-200">📝 Tugas</span>'
-          : (item.type === 'materi'
-            ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-50 text-purple-800 border border-purple-200">📚 Materi</span>'
-            : '<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-800 border border-blue-200">📢 Pengumuman</span>');
-
-        let countdown = '';
-        if (item.deadline && typeof LotusDB !== 'undefined' && typeof LotusDB.getCountdownLabel === 'function') {
-          countdown = LotusDB.getCountdownLabel(item.deadline);
+        
+        let badgeClass = 'bg-slate-100 text-slate-900 border-slate-300';
+        let typeText = 'Pengumuman';
+        if (item.type === 'tugas' || item.category === 'tugas' || item.category === 'ulangan') {
+          badgeClass = 'bg-amber-100 text-amber-950 border-amber-300';
+          typeText = item.category === 'ulangan' ? '🎯 Ulangan' : '📝 Tugas';
+        } else if (item.type === 'materi' || item.category === 'materi' || item.category === 'buku') {
+          badgeClass = 'bg-purple-100 text-purple-950 border-purple-300';
+          typeText = item.category === 'buku' ? '📖 Buku' : '📚 Materi';
+        } else if (item.category === 'seragam') {
+          badgeClass = 'bg-emerald-100 text-emerald-950 border-emerald-300';
+          typeText = '👔 Seragam';
         }
 
+        let countdown = '';
+        let countdownClass = 'bg-slate-100 text-slate-900 border-slate-300';
+        if (item.deadline && typeof LotusDB !== 'undefined' && typeof LotusDB.getCountdownLabel === 'function') {
+          countdown = LotusDB.getCountdownLabel(item.deadline);
+          if (countdown.includes('Hari Ini')) countdownClass = 'bg-rose-100 text-rose-950 border-rose-300';
+          else if (countdown.includes('Besok')) countdownClass = 'bg-amber-100 text-amber-950 border-amber-300';
+          else if (countdown.includes('hari lagi')) countdownClass = 'bg-blue-100 text-blue-950 border-blue-300';
+        }
+
+        const titleText = item.command || item.title || 'Agenda Sekolah';
+        const subInfo = [item.classroom_name, item.teacher_name].filter(Boolean).join(' • ');
+
         return `
-          <div class="bg-white rounded-2xl border border-[#D5E9DC] hover:border-[#1E5E3A] p-5 custom-card-shadow hover:shadow-md transition-all flex flex-col justify-between gap-4 group">
-            <div class="space-y-3">
-              <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center gap-1.5">
-                  <span class="text-xl">${icon}</span>
-                  ${typeBadge}
-                </div>
-                ${countdown ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-800 border border-rose-200">⏰ ${escapeHtml(countdown)}</span>` : ''}
+          <div onclick="openAgendaDetailModal('${escapeHtml(item.id)}')"
+            class="group p-3 sm:p-3.5 rounded-xl border border-[#cbd5e1] hover:border-[#1E5E3A] bg-white hover:bg-emerald-50/40 transition-all cursor-pointer flex items-center justify-between gap-3 shadow-2xs">
+            
+            <div class="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+              <div class="w-9 h-9 rounded-lg flex items-center justify-center text-lg shrink-0 border ${badgeClass}">
+                ${icon}
               </div>
-
-              <div>
-                <h4 class="font-extrabold text-sm sm:text-base text-[#0D2B1B] group-hover:text-[#1E5E3A] transition-colors line-clamp-2">
-                  ${escapeHtml(item.title || item.command || 'Agenda Sekolah')}
-                </h4>
-                <div class="text-[11px] text-[#5A6E62] font-semibold mt-1">
-                  ${escapeHtml(item.classroom_name)} • ${escapeHtml(item.teacher_name)}
+              <div class="min-w-0 flex-1 space-y-0.5">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="font-black text-xs sm:text-sm text-[#0f172a] group-hover:text-[#1E5E3A] transition-colors truncate">
+                    ${escapeHtml(titleText)}
+                  </span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-black border ${badgeClass}">
+                    ${typeText}
+                  </span>
+                  ${item.file_name ? `<span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-950 border border-blue-300 font-bold">📎 File</span>` : ''}
+                  ${item.external_link ? `<span class="text-[10px] px-1.5 py-0.5 rounded bg-purple-100 text-purple-950 border border-purple-300 font-bold">🔗 Link</span>` : ''}
                 </div>
-              </div>
-
-              <div class="p-2.5 rounded-xl bg-[#FAFDFB] border border-[#EAF2ED] text-xs font-semibold text-[#18181b] line-clamp-3">
-                ${escapeHtml(item.command || item.explanation || '-')}
+                <div class="text-[11px] text-[#475569] font-semibold flex items-center gap-1.5 truncate">
+                  <span>${escapeHtml(subInfo)}</span>
+                  ${item.explanation ? `<span>•</span><span class="text-[#334155] font-medium truncate max-w-[220px]">${escapeHtml(item.explanation)}</span>` : ''}
+                </div>
               </div>
             </div>
 
-            <button type="button" onclick="openAgendaDetailModal('${escapeHtml(item.id)}')"
-              class="w-full py-2.5 rounded-xl tc-gradient hover:opacity-95 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer">
-              <span>Lihat Detail &amp; Instruksi</span>
-              <span>➔</span>
-            </button>
+            <div class="flex items-center gap-2 shrink-0">
+              ${countdown ? `<span class="px-2.5 py-1 rounded-full text-[11px] font-black border ${countdownClass}">⏰ ${escapeHtml(countdown)}</span>` : ''}
+              <span class="w-7 h-7 rounded-lg bg-slate-100 group-hover:bg-[#1E5E3A] text-slate-700 group-hover:text-white flex items-center justify-center text-xs font-bold transition-all">➔</span>
+            </div>
           </div>
         `;
       }).join('');
@@ -10023,10 +10048,10 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
 
       if (personalItems.length === 0) {
         container.innerHTML = `
-          <div class="col-span-full p-6 bg-white rounded-2xl border border-[#D5E9DC] text-center space-y-2">
-            <div class="text-2xl">✨</div>
-            <div class="font-bold text-xs text-[#0D2B1B]">Semua Agenda Berjalan Lancar!</div>
-            <div class="text-[11px] text-[#5A6E62]">Belum ada deadline tugas atau persiapan penting dalam waktu dekat.</div>
+          <div class="p-6 bg-[#f8fafc] rounded-xl border border-[#e2e8f0] text-center space-y-2">
+            <div class="text-2xl">🎉</div>
+            <div class="font-extrabold text-sm text-[#0f172a]">Semua Agenda Berjalan Lancar!</div>
+            <div class="text-xs text-[#475569]">Tidak ada tugas atau pengumuman dengan deadline aktif saat ini.</div>
           </div>
         `;
         return;
@@ -10045,32 +10070,60 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       container.innerHTML = personalItems.map(item => {
         const icon = categoryIcons[item.category] || '🎯';
         const countdown = item.countdown_label || 'Aktif';
-        const isUrgent = countdown.includes('Hari Ini') || countdown.includes('Besok');
-        const badgeColor = isUrgent
-          ? 'bg-rose-50 text-rose-800 border-rose-200'
-          : 'bg-emerald-50 text-emerald-800 border-emerald-200';
+
+        let countdownColor = 'bg-blue-100 text-blue-950 border-blue-300';
+        if (countdown.includes('Hari Ini')) {
+          countdownColor = 'bg-rose-100 text-rose-950 border-rose-300';
+        } else if (countdown.includes('Besok')) {
+          countdownColor = 'bg-amber-100 text-amber-950 border-amber-300';
+        } else if (countdown.includes('Terlewat')) {
+          countdownColor = 'bg-red-200 text-red-950 border-red-400';
+        } else if (countdown.includes('Tanpa')) {
+          countdownColor = 'bg-slate-100 text-slate-900 border-slate-300';
+        }
+
+        let badgeClass = 'bg-slate-100 text-slate-900 border-slate-300';
+        if (item.type === 'tugas' || item.category === 'tugas') {
+          badgeClass = 'bg-amber-100 text-amber-950 border-amber-300';
+        } else if (item.category === 'seragam') {
+          badgeClass = 'bg-emerald-100 text-emerald-950 border-emerald-300';
+        } else if (item.category === 'buku' || item.type === 'materi') {
+          badgeClass = 'bg-purple-100 text-purple-950 border-purple-300';
+        }
+
+        const titleText = item.command || item.title || 'Agenda Personal';
+        const deadlineStr = item.deadline ? item.deadline.replace('T', ' ').slice(0, 16) : '';
 
         return `
-          <div class="bg-white rounded-2xl border border-[#D5E9DC] p-4 custom-card-shadow flex flex-col justify-between gap-3 hover:border-[#1E5E3A] transition-all">
-            <div class="space-y-2">
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-lg">${icon}</span>
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black border ${badgeColor}">
-                  ⏳ ${escapeHtml(countdown)}
-                </span>
+          <div onclick="openAgendaDetailModal('${escapeHtml(item.id || item.agenda_id)}')"
+            class="group p-3 sm:p-3.5 rounded-xl border border-[#cbd5e1] hover:border-[#1E5E3A] bg-white hover:bg-emerald-50/40 transition-all cursor-pointer flex items-center justify-between gap-3 shadow-2xs">
+            
+            <div class="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+              <div class="w-9 h-9 rounded-lg flex items-center justify-center text-lg shrink-0 border ${badgeClass}">
+                ${icon}
               </div>
-              <h4 class="font-black text-xs sm:text-sm text-[#0D2B1B] line-clamp-2">${escapeHtml(item.title || item.command)}</h4>
-              <p class="text-[11px] text-[#5A6E62] font-semibold">${escapeHtml(item.classroom_name)}</p>
-              <p class="text-[11px] text-[#2C4A38] bg-[#FAFDFB] p-2 rounded-lg border border-[#EAF2ED] line-clamp-2 font-medium">
-                ${escapeHtml(item.command || item.explanation || '-')}
-              </p>
+              <div class="min-w-0 flex-1 space-y-0.5">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="font-black text-xs sm:text-sm text-[#0f172a] group-hover:text-[#1E5E3A] transition-colors truncate">
+                    ${escapeHtml(titleText)}
+                  </span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-black border ${badgeClass}">
+                    ${item.type ? item.type.toUpperCase() : 'AGENDA'}
+                  </span>
+                </div>
+                <div class="text-[11px] text-[#475569] font-semibold flex items-center gap-1.5 truncate">
+                  <span>${escapeHtml(item.classroom_name || 'Kelas')}</span>
+                  ${deadlineStr ? `<span>•</span><span class="text-[#334155] font-bold">Batas: ${escapeHtml(deadlineStr)}</span>` : ''}
+                </div>
+              </div>
             </div>
 
-            <button type="button" onclick="openAgendaDetailModal('${escapeHtml(item.id)}')"
-              class="w-full py-2 rounded-xl bg-[#FAFDFB] hover:bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
-              <span>Buka Instruksi</span>
-              <span>➔</span>
-            </button>
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="px-2.5 py-1 rounded-full text-[11px] font-black border ${countdownColor}">
+                ⏳ ${escapeHtml(countdown)}
+              </span>
+              <span class="w-7 h-7 rounded-lg bg-slate-100 group-hover:bg-[#1E5E3A] text-slate-700 group-hover:text-white flex items-center justify-center text-xs font-bold transition-all">➔</span>
+            </div>
           </div>
         `;
       }).join('');
@@ -10085,7 +10138,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
           if (t === filterType) {
             btn.className = 'px-3 py-1.5 rounded-lg text-xs font-extrabold bg-[#1E5E3A] text-white shadow-2xs transition-all cursor-pointer';
           } else {
-            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-[#5A6E62] hover:text-[#0D2B1B] transition-all cursor-pointer';
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-[#334155] hover:text-[#0f172a] transition-all cursor-pointer';
           }
         }
       });
@@ -10100,7 +10153,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
 
       if (posts.length === 0) {
         container.innerHTML = `
-          <div class="col-span-full p-8 bg-[#FAFDFB] rounded-2xl border border-[#D5E9DC] text-center text-xs text-[#5A6E62]">
+          <div class="col-span-full p-8 bg-[#FAFDFB] rounded-2xl border border-[#D5E9DC] text-center text-xs text-[#334155]">
             Belum ada publikasi pada kategori ini.
           </div>
         `;
@@ -10132,9 +10185,9 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
                 <span class="text-xl">${icon}</span>
                 ${typeBadge}
               </div>
-              <h4 class="font-extrabold text-sm text-[#0D2B1B] group-hover:text-[#1E5E3A] transition-colors line-clamp-2">${escapeHtml(item.title || item.command)}</h4>
-              <p class="text-[11px] text-[#5A6E62] font-semibold">${escapeHtml(item.classroom_name || '')} • ${escapeHtml(item.teacher_name || '')}</p>
-              <p class="text-xs text-[#2C4A38] bg-[#FAFDFB] p-2.5 rounded-xl border border-[#EAF2ED] line-clamp-2">
+              <h4 class="font-extrabold text-sm text-[#0f172a] group-hover:text-[#1E5E3A] transition-colors line-clamp-2">${escapeHtml(item.title || item.command)}</h4>
+              <p class="text-[11px] text-[#334155] font-semibold">${escapeHtml(item.classroom_name || '')} • ${escapeHtml(item.teacher_name || '')}</p>
+              <p class="text-xs text-[#1e293b] bg-[#FAFDFB] p-2.5 rounded-xl border border-[#EAF2ED] line-clamp-2">
                 ${escapeHtml(item.command || item.explanation || '-')}
               </p>
             </div>

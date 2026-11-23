@@ -229,66 +229,12 @@
           <span data-i18n="nav.community" class="truncate">Komunitas</span>
         </button>
 
-        <!-- 4. Media Ajar Dropdown (Combines Science & Mandarin) -->
-        <div class="relative flex items-center">
-          <button type="button" id="nav-media-btn" onclick="toggleMediaAjarDropdown(event)"
-            class="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] focus:outline-none flex items-center gap-1.5 transition-colors cursor-pointer"
-            aria-haspopup="true" aria-expanded="false">
-            <span class="text-sm">📚</span>
-            <span data-i18n="nav.teachingMedia" class="truncate">Media Ajar</span>
-            <svg id="nav-media-chevron" class="w-3.5 h-3.5 text-[#57534e] transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </button>
-
-          <!-- Dropdown Menu with Category Headers -->
-          <div id="nav-media-menu" class="hidden absolute left-0 top-full mt-1.5 w-80 bg-white rounded-xl border border-[#d6cfc2] shadow-[0_12px_32px_rgba(0,0,0,0.15)] py-2 px-1.5 space-y-1 z-50">
-            <!-- IPA / Sains Header -->
-            <div class="px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-[#1E5E3A] bg-[#EAF5ED] rounded-md flex items-center gap-1.5">
-              <span>🔬</span>
-              <span data-i18n="media.science">IPA / Sains</span>
-            </div>
-            <a href="tools/human-skeleton-3d/index.html" target="_blank" onclick="closeMediaAjarDropdown()" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#fcfbf8] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
-              <span class="w-8 h-8 rounded-lg bg-emerald-50 text-[#1E5E3A] flex items-center justify-center font-bold text-base shrink-0 border border-emerald-200">🦴</span>
-              <div>
-                <div class="font-bold text-[#18181b]" data-i18n="media.skeletonTitle">Anatomi Rangka Manusia 3D</div>
-                <div class="text-[10px] text-[#78716c] font-normal" data-i18n="media.skeletonDesc">Model 3D Interaktif Rangka Tubuh</div>
-              </div>
-            </a>
-
-            <!-- Bahasa Mandarin Header -->
-            <div class="px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-[#9a3412] bg-[#ffedd5] rounded-md flex items-center gap-1.5 mt-2">
-              <span>🏮</span>
-              <span data-i18n="media.mandarin">Bahasa Mandarin</span>
-            </div>
-            <a href="tools/mandarin/drawing.html" target="_blank" onclick="closeMediaAjarDropdown()" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#fcfbf8] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
-              <span class="w-8 h-8 rounded-lg bg-orange-50 text-[#ea580c] flex items-center justify-center font-bold text-base shrink-0 border border-orange-200">✍️</span>
-              <div>
-                <div class="font-bold text-[#18181b]" data-i18n="media.drawingTitle">Papan Tulis Hanzi</div>
-                <div class="text-[10px] text-[#78716c] font-normal" data-i18n="media.drawingDesc">Latihan Tulis Bebas & Grid Tianzige</div>
-              </div>
-            </a>
-            <a href="tools/mandarin/strokes.html" target="_blank" onclick="closeMediaAjarDropdown()" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#fcfbf8] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
-              <span class="w-8 h-8 rounded-lg bg-orange-50 text-[#ea580c] flex items-center justify-center font-bold text-base shrink-0 border border-orange-200">📖</span>
-              <div>
-                <div class="font-bold text-[#18181b]" data-i18n="media.strokesTitle">Lab Goresan & Radikal</div>
-                <div class="text-[10px] text-[#78716c] font-normal" data-i18n="media.strokesDesc">Animasi Urutan Goresan & Radikal</div>
-              </div>
-            </a>
-            <a href="games/builderbattle.html" target="_blank" onclick="closeMediaAjarDropdown()" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#fcfbf8] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
-              <span class="w-8 h-8 rounded-lg bg-orange-50 text-[#ea580c] flex items-center justify-center font-bold text-base shrink-0 border border-orange-200">🏰</span>
-              <div>
-                <div class="font-bold text-[#18181b]" data-i18n="media.builderBattleTitle">Builder Battle (2P)</div>
-                <div class="text-[10px] text-[#78716c] font-normal" data-i18n="media.builderBattleDesc">Adu Cepat Bangun Karakter Hanzi Meihua</div>
-              </div>
-            </a>
-            <a href="games/brushmaster.html" target="_blank" onclick="closeMediaAjarDropdown()" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#fcfbf8] text-xs font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors">
-              <span class="w-8 h-8 rounded-lg bg-orange-50 text-[#ea580c] flex items-center justify-center font-bold text-base shrink-0 border border-orange-200">🖌️</span>
-              <div>
-                <div class="font-bold text-[#18181b]" data-i18n="media.brushMasterTitle">Brush Master Kaligrafi</div>
-                <div class="text-[10px] text-[#78716c] font-normal" data-i18n="media.brushMasterDesc">Latihan Kaligrafi & Goresan Kuas Interaktif</div>
-              </div>
-            </a>
-          </div>
-        </div>
+        <!-- 4. Teaching Media Tab (Dedicated Full Page) -->
+        <button type="button" id="nav-tab-media" onclick="switchPortalTab('media')"
+          class="px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-colors cursor-pointer text-[#57534e] hover:text-[#1E5E3A] hover:bg-[#EAF5ED] border-b-2 border-transparent">
+          <span class="text-sm">📚</span>
+          <span data-i18n="nav.teachingMedia" class="truncate">Media Ajar</span>
+        </button>
 
         <!-- 5. Login Tab (Shown in navigation bar when NOT logged in) -->
         <button type="button" id="nav-tab-login" onclick="switchPortalTab('login')"
@@ -1099,6 +1045,79 @@
         </div>
       </div>
     </section>
+
+    <!-- VIEW: DEDICATED TEACHING MEDIA (MEDIA AJAR) LIBRARY -->
+    <section id="view-teaching-media" class="hidden w-full max-w-[1840px] mx-auto px-4 sm:px-8 lg:px-12 py-8 sm:py-10 space-y-6">
+
+      <!-- Hero Header Banner -->
+      <div class="bg-[#1e242b] text-white rounded-2xl border border-[#2d3642] p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-md">
+        <div class="space-y-2 max-w-3xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-700/60 text-emerald-400 text-xs font-bold tracking-wide">
+            <span>📚</span>
+            <span>MEDIA PEMBELAJARAN INTERAKTIF</span>
+          </div>
+          <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight" data-i18n="media.pageTitle">
+            Perpustakaan Media Ajar Interaktif
+          </h1>
+          <p class="text-xs sm:text-sm text-[#cbd5e1] leading-relaxed" data-i18n="media.pageSubtitle">
+            Jelajahi simulator 3D interaktif, laboratorium visual, papan kaligrafi Hanzi, dan media AI motion untuk pembelajaran kreatif di kelas.
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
+          <div class="bg-white/10 backdrop-blur-xs border border-white/15 rounded-xl px-4 py-2.5 text-center">
+            <div class="text-[10px] uppercase font-bold text-emerald-300">Total Media</div>
+            <div class="text-xl font-black text-white" id="media-stat-count">7 Media</div>
+          </div>
+          <div class="bg-white/10 backdrop-blur-xs border border-white/15 rounded-xl px-4 py-2.5 text-center">
+            <div class="text-[10px] uppercase font-bold text-amber-300">Format</div>
+            <div class="text-xl font-black text-white">3D · AI · 2P</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Bar: Category Tabs & Real-Time Search -->
+      <div class="bg-white rounded-2xl border border-[#e5dfd3] p-4 sm:p-5 shadow-xs space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <!-- Category Filter Tabs -->
+          <div class="flex items-center gap-1.5 p-1 rounded-xl bg-[#f4f1ea] border border-[#d6cfc2] shrink-0">
+            <button type="button" id="media-tab-all" onclick="filterTeachingMediaCategory('all')"
+              class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer bg-white text-[#1E5E3A] shadow-xs">
+              <span data-i18n="media.filterAll">Semua Media</span>
+            </button>
+            <button type="button" id="media-tab-science" onclick="filterTeachingMediaCategory('science')"
+              class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer text-[#57534e] hover:text-[#18181b]">
+              <span>🔬</span>
+              <span data-i18n="media.filterScience">IPA & Sains</span>
+            </button>
+            <button type="button" id="media-tab-mandarin" onclick="filterTeachingMediaCategory('mandarin')"
+              class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer text-[#57534e] hover:text-[#18181b]">
+              <span>🏮</span>
+              <span data-i18n="media.filterMandarin">Bahasa Mandarin</span>
+            </button>
+          </div>
+
+          <!-- Real-Time Search Box -->
+          <div class="relative flex-1 max-w-md">
+            <input type="text" id="media-search-input" oninput="handleTeachingMediaSearch()" placeholder="Cari media ajar, topik, atau kata kunci..."
+              class="w-full pl-9 pr-4 py-2 rounded-xl border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-xs sm:text-sm text-[#18181b] focus:outline-none focus:border-[#1E5E3A]">
+            <span class="absolute left-3 top-2.5 text-xs text-[#78716c]">🔍</span>
+          </div>
+        </div>
+
+        <!-- Result Info Header -->
+        <div class="flex items-center justify-between text-xs text-[#78716c] pt-2 border-t border-[#eee9df]">
+          <span id="media-result-count">Menampilkan 7 media ajar</span>
+          <span class="text-[11px] font-medium text-[#1E5E3A] bg-[#EAF5ED] px-2 py-0.5 rounded-md">✓ Siap Digunakan Tanpa Instalasi</span>
+        </div>
+      </div>
+
+      <!-- Media Cards Grid (Dynamic JS Rendered) -->
+      <div id="teaching-media-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Rendered by renderTeachingMediaCards() -->
+      </div>
+
+    </section>
+
     <section id="view-question-studio" class="hidden space-y-6">
 
       <!-- Studio Header -->
@@ -3178,7 +3197,7 @@
     // -------------------------------------------------------------------------
     function showView(viewId) {
       const allViews = [
-        'view-home', 'view-login', 'view-community',
+        'view-home', 'view-login', 'view-community', 'view-teaching-media',
         'view-dashboard', 'view-student-dashboard',
         'view-assignment-detail', 'view-question-studio', 'view-edit-activity', 'view-game-player'
       ];
@@ -6517,46 +6536,239 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       currentTeacher = LotusDB.getCurrentTeacherStrict(); updateTeacherUI(); updatePortalAuthNav(); switchPortalTab('dashboard');
     }
 
-        // -------------------------------------------------------------------------
-    // DYNAMIC MEDIA AJAR DROPDOWN
     // -------------------------------------------------------------------------
-    function toggleMediaAjarDropdown(e) {
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
+    // TEACHING MEDIA (MEDIA AJAR) CATALOG & FILTER SYSTEM
+    // -------------------------------------------------------------------------
+    const TEACHING_MEDIA_CONFIG = [
+      {
+        id: 'human-skeleton-3d',
+        category: 'science',
+        categoryLabel: 'IPA / Sains',
+        title: 'Anatomi Rangka Manusia 3D',
+        titleEn: 'Human Skeleton 3D Anatomy',
+        desc: 'Model 3D interaktif anatomi tulang manusia dengan isolasi organ, rotasi 360°, dan evaluasi kuis rangka.',
+        descEn: 'Interactive 3D human skeleton anatomy with bone isolation, 360° rotation, and skeletal quizzes.',
+        url: 'tools/human-skeleton-3d/index.html',
+        icon: '🦴',
+        iconBg: 'bg-emerald-50 text-[#1E5E3A] border-emerald-200',
+        badgeClass: 'bg-[#EAF5ED] text-[#1E5E3A] border-[#BCE1C9]',
+        badgeText: '🔬 3D Simulator',
+        tags: ['3D Anatomy', 'Isolasi Tulang', 'Kuis Rangka']
+      },
+      {
+        id: 'ai-slicer-science',
+        category: 'science',
+        categoryLabel: 'IPA / Sains',
+        title: 'AI Motion Hand Slicer Sains',
+        titleEn: 'AI Motion Hand Slicer Science',
+        desc: 'Simulator tebas buah edukasi menggunakan gesture kamera tangan untuk belajar taksonomi, ekosistem, dan tata surya.',
+        descEn: 'Educational motion slicer using webcam hand gestures to learn taxonomy, ecosystems, and space science.',
+        url: 'games/ai-slicer.html',
+        icon: '🖐️',
+        iconBg: 'bg-sky-50 text-sky-700 border-sky-200',
+        badgeClass: 'bg-[#e0f2fe] text-[#0369a1] border-[#bae6fd]',
+        badgeText: '📹 AI Camera',
+        tags: ['Hand Tracking', 'Ekosistem', 'Webcam AI']
+      },
+      {
+        id: 'mandarin-drawing',
+        category: 'mandarin',
+        categoryLabel: 'Bahasa Mandarin',
+        title: 'Papan Tulis Kaligrafi Hanzi',
+        titleEn: 'Hanzi Drawing Board',
+        desc: 'Papan tulis digital interaktif dengan kisi Tian Zi Ge (田字格), berbagai ketebalan kuas tinta, dan fitur simpan karya.',
+        descEn: 'Interactive digital canvas with Tian Zi Ge grids, multi-thickness ink brushes, and artwork export.',
+        url: 'tools/mandarin/drawing.html',
+        icon: '✍️',
+        iconBg: 'bg-amber-50 text-amber-800 border-amber-200',
+        badgeClass: 'bg-amber-50 text-amber-800 border-amber-200',
+        badgeText: '田 Tianzige Grid',
+        tags: ['Papan Tulis', 'Kuas Tinta', 'Simpan Gambar']
+      },
+      {
+        id: 'mandarin-strokes',
+        category: 'mandarin',
+        categoryLabel: 'Bahasa Mandarin',
+        title: 'Lab Goresan & Radikal Hanzi',
+        titleEn: 'Stroke & Radical Lab',
+        desc: 'Animasi urutan goresan stroke-order Hanzi resmi, dekonstruksi radikal pembentuk kata, dan audio pelafalan pinyin.',
+        descEn: 'Animated stroke orders, character radical decomposition, and native pinyin pronunciation audio.',
+        url: 'tools/mandarin/strokes.html',
+        icon: '📖',
+        iconBg: 'bg-rose-50 text-rose-700 border-rose-200',
+        badgeClass: 'bg-rose-50 text-rose-700 border-rose-200',
+        badgeText: '🏮 Stroke Order',
+        tags: ['Animasi Goresan', 'Radikal Kata', 'Audio Pinyin']
+      },
+      {
+        id: 'builder-battle',
+        category: 'mandarin',
+        categoryLabel: 'Bahasa Mandarin',
+        title: 'Builder Battle Hanzi (2P)',
+        titleEn: 'Builder Battle 2-Player',
+        desc: 'Adu cepat 2 pemain merakit karakter Hanzi dari radikal balok bangunan berdasarkan kurikulum Meihua.',
+        descEn: '2-Player competitive battle building Hanzi characters from radical building blocks.',
+        url: 'games/builderbattle.html',
+        icon: '🏰',
+        iconBg: 'bg-orange-50 text-[#ea580c] border-orange-200',
+        badgeClass: 'bg-orange-50 text-[#ea580c] border-orange-200',
+        badgeText: '⚔️ 2-Pemain',
+        tags: ['Game 2P', 'Balok Hanzi', 'Meihua 1-6']
+      },
+      {
+        id: 'brush-master',
+        category: 'mandarin',
+        categoryLabel: 'Bahasa Mandarin',
+        title: 'Brush Master Kaligrafi',
+        titleEn: 'Brush Master Calligraphy',
+        desc: 'Latihan goresan kuas kaligrafi tradisional interaktif dengan panduan garis bentuk dan kontrol tekanan kuas.',
+        descEn: 'Traditional brush calligraphy practice with guided stroke paths and brush pressure dynamics.',
+        url: 'games/brushmaster.html',
+        icon: '🖌️',
+        iconBg: 'bg-purple-50 text-purple-700 border-purple-200',
+        badgeClass: 'bg-purple-50 text-purple-700 border-purple-200',
+        badgeText: '🎨 Kuas Dinamis',
+        tags: ['Kaligrafi Kuas', 'Panduan Goresan', 'Seni Budaya']
+      },
+      {
+        id: 'hanzi-battle-ai',
+        category: 'mandarin',
+        categoryLabel: 'Bahasa Mandarin',
+        title: 'AI Kaligrafi Udara 2-Pemain',
+        titleEn: 'Air-Calligraphy AI Battle (2P)',
+        desc: 'Lomba menulis Hanzi di udara untuk 2 pemain menggunakan deteksi gestur kamera tanpa menyentuh keyboard.',
+        descEn: '2-Player air-writing Hanzi challenge using webcam fingertip tracking and dual-zone detection.',
+        url: 'games/hanzi-battle.html',
+        icon: '梅',
+        iconBg: 'bg-pink-50 text-pink-700 border-pink-200',
+        badgeClass: 'bg-pink-50 text-pink-700 border-pink-200',
+        badgeText: '✨ Air-Gesture AI',
+        tags: ['Camera Gesture', '2P Split Screen', 'Meihua Vocab']
       }
-      const menu = document.getElementById('nav-media-menu');
-      const chevron = document.getElementById('nav-media-chevron');
-      const btn = document.getElementById('nav-media-btn');
-      if (!menu) return;
-      const isHidden = menu.classList.contains('hidden');
-      if (isHidden) {
-        menu.classList.remove('hidden');
-        if (chevron) chevron.style.transform = 'rotate(180deg)';
-        if (btn) btn.setAttribute('aria-expanded', 'true');
-      } else {
-        closeMediaAjarDropdown();
-      }
+    ];
+
+    let _activeTeachingMediaCategory = 'all';
+    let _activeTeachingMediaSearch = '';
+
+    function filterTeachingMediaCategory(cat) {
+      _activeTeachingMediaCategory = cat || 'all';
+      const tabAll = document.getElementById('media-tab-all');
+      const tabSci = document.getElementById('media-tab-science');
+      const tabMan = document.getElementById('media-tab-mandarin');
+      
+      const activeClass = 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer bg-white text-[#1E5E3A] shadow-xs';
+      const inactiveClass = 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer text-[#57534e] hover:text-[#18181b]';
+
+      if (tabAll) tabAll.className = (_activeTeachingMediaCategory === 'all') ? activeClass : inactiveClass;
+      if (tabSci) tabSci.className = (_activeTeachingMediaCategory === 'science') ? activeClass : inactiveClass;
+      if (tabMan) tabMan.className = (_activeTeachingMediaCategory === 'mandarin') ? activeClass : inactiveClass;
+
+      renderTeachingMediaCards();
     }
 
-    function closeMediaAjarDropdown() {
-      const menu = document.getElementById('nav-media-menu');
-      const chevron = document.getElementById('nav-media-chevron');
-      const btn = document.getElementById('nav-media-btn');
-      if (menu) menu.classList.add('hidden');
-      if (chevron) chevron.style.transform = 'rotate(0deg)';
-      if (btn) btn.setAttribute('aria-expanded', 'false');
+    function handleTeachingMediaSearch() {
+      const input = document.getElementById('media-search-input');
+      _activeTeachingMediaSearch = input ? input.value.trim().toLowerCase() : '';
+      renderTeachingMediaCards();
     }
 
-    document.addEventListener('click', (e) => {
-      const menu = document.getElementById('nav-media-menu');
-      const btn = document.getElementById('nav-media-btn');
-      if (menu && !menu.classList.contains('hidden')) {
-        if (!menu.contains(e.target) && (!btn || !btn.contains(e.target))) {
-          closeMediaAjarDropdown();
+    function renderTeachingMediaCards() {
+      const grid = document.getElementById('teaching-media-grid');
+      const countEl = document.getElementById('media-result-count');
+      const statCountEl = document.getElementById('media-stat-count');
+      if (!grid) return;
+
+      const isEn = (typeof LotusI18n !== 'undefined' && LotusI18n.getLang() === 'en');
+      let filtered = TEACHING_MEDIA_CONFIG.filter(item => {
+        if (_activeTeachingMediaCategory !== 'all' && item.category !== _activeTeachingMediaCategory) {
+          return false;
         }
+        if (_activeTeachingMediaSearch) {
+          const title = (isEn ? item.titleEn : item.title).toLowerCase();
+          const desc = (isEn ? item.descEn : item.desc).toLowerCase();
+          const tags = item.tags.join(' ').toLowerCase();
+          return title.includes(_activeTeachingMediaSearch) || desc.includes(_activeTeachingMediaSearch) || tags.includes(_activeTeachingMediaSearch);
+        }
+        return true;
+      });
+
+      if (statCountEl) {
+        statCountEl.textContent = TEACHING_MEDIA_CONFIG.length + ' Media';
       }
-    });
+      if (countEl) {
+        countEl.textContent = isEn
+          ? ('Showing ' + filtered.length + ' of ' + TEACHING_MEDIA_CONFIG.length + ' interactive media')
+          : ('Menampilkan ' + filtered.length + ' dari ' + TEACHING_MEDIA_CONFIG.length + ' media ajar interaktif');
+      }
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-16 text-center space-y-3 bg-white rounded-2xl border border-[#d6cfc2]">
+            <div class="text-4xl">🔍</div>
+            <h4 class="text-base font-bold text-[#18181b]">${isEn ? 'No teaching media found' : 'Media ajar tidak ditemukan'}</h4>
+            <p class="text-xs text-[#78716c]">${isEn ? 'Try adjusting your search keywords or filter category.' : 'Coba gunakan kata kunci lain atau reset filter kategori.'}</p>
+            <button type="button" onclick="document.getElementById('media-search-input').value=''; filterTeachingMediaCategory('all');" class="px-4 py-2 rounded-lg bg-[#EAF5ED] text-[#1E5E3A] text-xs font-bold hover:bg-[#d5e9dc] transition-colors cursor-pointer">
+              ${isEn ? 'Reset Filters' : 'Reset Filter'}
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      const openLabel = isEn ? 'Launch Media' : 'Buka Media Ajar';
+
+      grid.innerHTML = filtered.map(item => {
+        const title = isEn ? item.titleEn : item.title;
+        const desc = isEn ? item.descEn : item.desc;
+        const catLabel = isEn
+          ? (item.category === 'science' ? 'Science' : 'Mandarin')
+          : item.categoryLabel;
+
+        return `
+          <div class="bg-white rounded-2xl border border-[#d6cfc2] hover:border-[#1E5E3A] p-6 shadow-xs hover:shadow-lg transition-all flex flex-col justify-between gap-5 group">
+            <div class="space-y-4">
+              <div class="flex items-center justify-between gap-2">
+                <span class="px-2.5 py-1 rounded-md text-[11px] font-bold ${item.badgeClass} border flex items-center gap-1.5">
+                  ${item.badgeText}
+                </span>
+                <span class="text-[11px] font-semibold text-[#57534e] bg-[#fcfbf8] border border-[#e5dfd3] px-2 py-0.5 rounded">
+                  ${catLabel}
+                </span>
+              </div>
+
+              <div class="flex items-start gap-4">
+                <div class="w-14 h-14 rounded-2xl ${item.iconBg} border flex items-center justify-center text-3xl shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                  ${item.icon}
+                </div>
+                <div>
+                  <h3 class="text-base sm:text-lg font-bold text-[#18181b] group-hover:text-[#1E5E3A] transition-colors line-clamp-2">
+                    ${escapeHtml(title)}
+                  </h3>
+                  <p class="text-xs text-[#57534e] mt-1 line-clamp-3 leading-relaxed">
+                    ${escapeHtml(desc)}
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap gap-1.5 pt-1">
+                ${item.tags.map(t => `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-[#f4f1ea] text-[#57534e]">${escapeHtml(t)}</span>`).join('')}
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-[#eee9df]">
+              <a href="${item.url}" target="_blank"
+                class="w-full py-2.5 px-4 rounded-xl tc-gradient hover:opacity-95 text-white font-bold text-xs sm:text-sm shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer">
+                <span>${escapeHtml(openLabel)}</span>
+                <span>➔</span>
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleMediaAjarDropdown() { switchPortalTab('media'); }
+    function closeMediaAjarDropdown() {}
 
     // -------------------------------------------------------------------------
     // DYNAMIC DASHBOARD NAVIGATION ROUTER
@@ -6769,7 +6981,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
         tab = 'dashboard';
       }
 
-      const validTabs = ['home', 'login', 'community', 'dashboard', 'student-dashboard', 'studio', 'settings', 'player', 'assignment-detail'];
+      const validTabs = ['home', 'login', 'community', 'dashboard', 'student-dashboard', 'studio', 'settings', 'player', 'assignment-detail', 'media'];
       const valid = validTabs.includes(tab) ? tab : 'home';
       activePortalTab = valid;
       if (typeof window !== 'undefined') {
@@ -6781,6 +6993,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
         'home': 'view-home',
         'login': 'view-login',
         'community': 'view-community',
+        'media': 'view-teaching-media',
         'dashboard': 'view-dashboard',
         'student-dashboard': 'view-student-dashboard',
         'studio': 'view-question-studio',
@@ -6795,11 +7008,13 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       const isHome = (valid === 'home');
       const isDash = (valid === 'dashboard' || valid === 'student-dashboard');
       const isComm = (valid === 'community');
+      const isMedia = (valid === 'media');
       const isLogin = (valid === 'login');
 
       const tabHome = document.getElementById('nav-tab-home');
       const tabDash = document.getElementById('nav-tab-dashboard');
       const tabComm = document.getElementById('nav-tab-community');
+      const tabMedia = document.getElementById('nav-tab-media');
       const tabLogin = document.getElementById('nav-tab-login');
 
       function setTabStyle(btn, isActive) {
@@ -6814,6 +7029,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       setTabStyle(tabHome, isHome);
       setTabStyle(tabDash, isDash);
       setTabStyle(tabComm, isComm);
+      setTabStyle(tabMedia, isMedia);
       setTabStyle(tabLogin, isLogin);
 
       if (valid !== 'player') {
@@ -6838,6 +7054,8 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       } else if (valid === 'community') {
         populateSubjectFilterOptions();
         renderCommunityCards();
+      } else if (valid === 'media') {
+        renderTeachingMediaCards();
       } else if (valid === 'login') {
         renderLoginBanner();
         renderDemoTeachersList();
@@ -7904,6 +8122,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       renderDemoTeachersList();
       populateSubjectFilterOptions();
       renderCommunityCards();
+      if (activePortalTab === 'media') renderTeachingMediaCards();
     });
 
     // Master Application Bootstrapping

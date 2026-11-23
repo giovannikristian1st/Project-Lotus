@@ -589,7 +589,7 @@
             <span class="ui-sprite ui-sm ui-dashboard"></span>
             <span data-i18n="login.goDashboard">Open My Dashboard</span>
           </a>
-          <button type="button" onclick="logoutPortalTeacher()" class="px-4 py-2 rounded-lg bg-[#2d3642] hover:bg-[#3a4452] text-white font-semibold text-xs sm:text-sm inline-flex items-center gap-1.5 transition-colors cursor-pointer">
+          <button type="button" onclick="logoutUser()" class="px-4 py-2 rounded-lg bg-[#2d3642] hover:bg-[#3a4452] text-white font-semibold text-xs sm:text-sm inline-flex items-center gap-1.5 transition-colors cursor-pointer">
             <span class="ui-sprite ui-sm ui-logout"></span>
             <span data-i18n="login.signOut">Sign Out</span>
           </button>
@@ -1682,7 +1682,50 @@
   
     <!-- VIEW 9: INTEGRATED STUDENT DASHBOARD -->
     <section id="view-student-dashboard" class="hidden max-w-7xl w-full mx-auto space-y-6">
-      
+
+      <!-- AUTH GATE: SHOWN ONLY IF STUDENT PROFILE IS NOT ACTIVE -->
+      <div id="student-auth-gate" class="hidden bg-white rounded-3xl border border-[#D5E9DC] p-8 sm:p-10 max-w-lg mx-auto shadow-lg text-center space-y-5 my-8">
+        <div class="w-16 h-16 rounded-2xl bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9] mx-auto flex items-center justify-center text-3xl shadow-sm">
+          🎒
+        </div>
+        <div>
+          <h2 class="text-xl sm:text-2xl font-black text-[#0D2B1B]">Portal Murid Tzu Chi</h2>
+          <p class="text-xs sm:text-sm text-[#57534e] mt-1.5">Masukkan nama lengkap dan PIN game/kelas dari gurumu untuk mulai belajar.</p>
+        </div>
+        <form onsubmit="handleStudentPortalLogin(event)" class="space-y-4 text-left">
+          <div>
+            <label for="stu-gate-name" class="block text-xs font-bold text-[#18181b] mb-1">Nama Lengkap Siswa <span class="text-rose-500">*</span></label>
+            <input type="text" id="stu-gate-name" required placeholder="Contoh: Kenjiro Tan"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-[#d6cfc2] focus:border-[#1E5E3A] focus:outline-none text-sm font-semibold text-[#18181b] bg-[#fcfbf8]">
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label for="stu-gate-class" class="block text-xs font-bold text-[#18181b] mb-1">Kelas / Jenjang</label>
+              <input type="text" id="stu-gate-class" placeholder="Contoh: Kelas 5-A SD"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-[#d6cfc2] focus:border-[#1E5E3A] focus:outline-none text-sm font-medium text-[#18181b] bg-[#fcfbf8]">
+            </div>
+            <div>
+              <label for="stu-gate-pin" class="block text-xs font-bold text-[#18181b] mb-1">PIN Game (Opsional)</label>
+              <input type="text" id="stu-gate-pin" maxlength="6" placeholder="Contoh: 100101"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-[#d6cfc2] focus:border-[#1E5E3A] focus:outline-none text-sm font-mono font-bold text-[#18181b] bg-[#fcfbf8]">
+            </div>
+          </div>
+          <div id="stu-gate-error" class="hidden text-xs text-rose-700 bg-rose-50 border border-rose-200 p-2.5 rounded-lg font-medium"></div>
+          <button type="submit"
+            class="w-full py-3 rounded-xl tc-gradient text-white font-extrabold text-sm shadow-md hover:opacity-95 transition-all cursor-pointer flex items-center justify-center gap-2">
+            <span>Masuk ke Portal Siswa</span>
+            <span>➔</span>
+          </button>
+        </form>
+        <div class="pt-2 border-t border-[#e5dfd3]">
+          <button type="button" onclick="switchPortalTab('home')" class="text-xs text-[#78716c] hover:text-[#1E5E3A] font-semibold transition-colors">
+            ← Kembali ke Beranda
+          </button>
+        </div>
+      </div>
+
+      <!-- MAIN STUDENT CONTENT: SHOWN WHEN STUDENT PROFILE EXISTS -->
+      <div id="student-main-content" class="space-y-6">
 
     <!-- ============================================================== -->
     <!-- 1. STUDENT PROFILE HERO BANNER -->
@@ -2170,7 +2213,8 @@
 
     </section>
 
-  
+      </div><!-- /#student-main-content -->
+
     </section>
 
   </main>
@@ -3030,47 +3074,10 @@
     });
 
     // -------------------------------------------------------------------------
-    // BOOT & STRICT AUTH GUARD
-    // -------------------------------------------------------------------------
-    document.addEventListener('DOMContentLoaded', () => {
-      currentTeacher = LotusDB.getCurrentTeacherStrict();
-      LotusI18n.applyDomTranslations(document);
-      syncDashI18nFallbacks();
-      updateTeacherUI();
-      updatePortalAuthNav();
-      populateDashboardTemplateFilter();
-      initMediaUploadDropzone();
-
-      const hash = window.location.hash || '';
-      let initialTab = 'home';
-      if (hash.includes('tab=dashboard')) {
-        initialTab = currentTeacher ? 'dashboard' : 'login';
-      } else if (hash.includes('tab=community')) {
-        initialTab = 'community';
-      } else if (hash.includes('tab=login')) {
-        initialTab = 'login';
-      } else if (hash.includes('tab=studio')) {
-        initialTab = currentTeacher ? 'studio' : 'login';
-      } else if (currentTeacher) {
-        initialTab = 'dashboard';
-      }
-      
-      switchPortalTab(initialTab, false);
-
-      if (window.LotusDB && LotusDB.hasSupabase()) {
-        Promise.all([
-          LotusDB.syncProjectsFromCloud(),
-          LotusDB.syncAssignmentsFromCloud()
-        ]).then(() => {
-          if (activePortalTab === 'dashboard') renderDashboard();
-          if (activePortalTab === 'community') renderCommunityCards();
-        }).catch(() => {});
-      }
-    });
-
+    // BOOT & STRICT AUTH GUARD (Master initialization is in initLotusApp)
     window.addEventListener('hashchange', () => {
       if (suppressHashChangeNav) return;
-      if (currentTeacher) restoreSavedNavigation();
+      syncTabFromLocation();
     });
 
     function updateTeacherUI() {
@@ -3093,7 +3100,7 @@
       document.getElementById('teacher-avatar').textContent = initials || 'T';
     }
 
-        function logoutUser() {
+    function logoutUser() {
       try {
         localStorage.removeItem('lotus_active_navigation');
         sessionStorage.removeItem('lotus_active_navigation');
@@ -3101,11 +3108,22 @@
         sessionStorage.removeItem('lotus_active_teacher');
         localStorage.removeItem('lotus_student_profile');
         sessionStorage.removeItem('lotus_student_profile');
-        localStorage.removeItem('lotus_remembered_login');
+        // NOTE: Keep lotus_remembered_login so username/password autofill stays in form,
+        // but active session is completely cleared to Guest (Tamu).
+
+        // Clear Supabase cached token from localStorage to prevent auto-login
+        Object.keys(localStorage).forEach(k => {
+          if (k.startsWith('sb-') || k.includes('supabase.auth.token')) {
+            localStorage.removeItem(k);
+          }
+        });
       } catch (e) {}
 
       if (window.LotusDB) {
         LotusDB.logoutTeacher();
+        if (typeof LotusDB.clearAllActiveSessions === 'function') {
+          LotusDB.clearAllActiveSessions();
+        }
         try {
           const sb = LotusDB.getSupabaseClient();
           if (sb && sb.auth) {
@@ -3124,7 +3142,6 @@
       closePortalUserDropdown();
       updatePortalAuthNav();
       renderLoginBanner();
-      renderPortalUserMenu();
 
       try {
         if (window.location.hash && window.location.hash !== '#tab=home') {
@@ -3134,6 +3151,7 @@
 
       switchPortalTab('home', false);
     }
+    window.logoutUser = logoutUser;
     window.logoutTeacher = logoutUser;
     window.logoutPortalTeacher = logoutUser;
 
@@ -6459,35 +6477,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
     }
 
     function renderPortalUserMenu() {
-      const teacher = LotusDB.getCurrentTeacherStrict();
-      const wrapper = document.getElementById('portal-user-menu-wrapper');
-      if (!wrapper) return;
-
-      if (!teacher) {
-        wrapper.classList.add('hidden');
-        closePortalUserDropdown();
-        return;
-      }
-
-      wrapper.classList.remove('hidden');
-      const initials = getTeacherInitials(teacher.name);
-      const sub = [teacher.subject, teacher.school].filter(Boolean).join(' • ');
-
-      const avatarEl = document.getElementById('portal-user-avatar');
-      const nameEl = document.getElementById('portal-user-name');
-      const ddNameEl = document.getElementById('portal-dropdown-name');
-      const ddSubEl = document.getElementById('portal-dropdown-sub');
-      const menuBtn = document.getElementById('portal-user-menu-btn');
-
-      if (avatarEl) avatarEl.textContent = initials;
-      if (nameEl) nameEl.textContent = teacher.name;
-      if (ddNameEl) ddNameEl.textContent = teacher.name;
-      if (ddSubEl) ddSubEl.textContent = sub || teacher.email || '';
-      if (menuBtn) {
-        const menuLabel = LotusI18n.t('login.userMenuLabel');
-        menuBtn.setAttribute('aria-label', `${menuLabel}: ${teacher.name}`);
-        menuBtn.setAttribute('title', teacher.name);
-      }
+      updatePortalAuthNav();
     }
 
     document.addEventListener('click', (e) => {
@@ -6882,9 +6872,9 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
     }
 
     // -------------------------------------------------------------------------
-    // HOME PIN JOIN HANDLER
+    // HOME PIN JOIN HANDLER (Single Active Role: Student)
     // -------------------------------------------------------------------------
-    function handleHomePinJoin(e) {
+    async function handleHomePinJoin(e) {
       if (e) e.preventDefault();
       const pinInput = document.getElementById('home-pin-input');
       const nameInput = document.getElementById('home-student-name');
@@ -6895,16 +6885,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       const name = nameInput.value.trim();
       if (!pin || !name) {
         if (errBox) {
-          errBox.textContent = 'Mohon masukkan PIN Game dan Nama Siswa lengkap.';
-          errBox.classList.remove('hidden');
-        }
-        return;
-      }
-
-      const proj = LotusDB.findProjectByPin(pin);
-      if (!proj) {
-        if (errBox) {
-          errBox.textContent = 'PIN Game ' + pin + ' tidak ditemukan atau belum aktif.';
+          errBox.textContent = 'Mohon masukkan PIN Game (6 digit) dan Nama Siswa lengkap.';
           errBox.classList.remove('hidden');
         }
         return;
@@ -6912,15 +6893,39 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
 
       if (errBox) errBox.classList.add('hidden');
 
+      let proj = LotusDB.findProjectByPin(pin);
+      if (!proj && window.LotusDB && LotusDB.hasSupabase()) {
+        try { await LotusDB.syncProjectsFromCloud(); } catch (err) {}
+        proj = LotusDB.findProjectByPin(pin);
+      }
+
+      if (!proj) {
+        if (errBox) {
+          errBox.textContent = LotusI18n.t('comm.pinNotFound', { pin });
+          errBox.classList.remove('hidden');
+        }
+        return;
+      }
+
+      // Single active role: clear any teacher session!
+      if (window.LotusDB) LotusDB.logoutTeacher();
+      currentTeacher = null;
+      if (typeof window !== 'undefined') window.currentTeacher = null;
+
       const studentProfile = {
         name: name,
-        class: proj.level ? 'Kelas ' + proj.level : 'SD Tzu Chi',
-        last_pin: pin,
+        class: proj.level ? 'Jenjang ' + proj.level : 'Sekolah Cinta Kasih Tzu Chi',
+        joined_pin: pin,
         joined_at: new Date().toISOString()
       };
-      localStorage.setItem('lotus_student_profile', JSON.stringify(studentProfile));
-      updatePortalAuthNav();
+      try {
+        localStorage.setItem('lotus_student_profile', JSON.stringify(studentProfile));
+        sessionStorage.setItem('lotus_student_profile', JSON.stringify(studentProfile));
+      } catch (err) {}
+      _activeStudentProfile = studentProfile;
+      if (typeof window !== 'undefined') window._activeStudentProfile = studentProfile;
 
+      updatePortalAuthNav();
       openCommunityPlayer(proj.id, name);
     }
 
@@ -6933,27 +6938,110 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
     function initStudentDashboard() {
       try {
         const raw = localStorage.getItem('lotus_student_profile') || sessionStorage.getItem('lotus_student_profile');
-        if (raw) {
-          _activeStudentProfile = JSON.parse(raw);
-        } else {
-          _activeStudentProfile = {
-            name: 'Budi Santoso',
-            class: 'Kelas 5-A SD Tzu Chi',
-            joined_at: new Date().toISOString()
-          };
-          localStorage.setItem('lotus_student_profile', JSON.stringify(_activeStudentProfile));
-        }
+        _activeStudentProfile = raw ? JSON.parse(raw) : null;
       } catch (e) {
-        _activeStudentProfile = { name: 'Murid Tzu Chi', class: 'SD' };
+        _activeStudentProfile = null;
       }
 
-      const nameEl = document.getElementById('stu-hero-name');
-      const subEl = document.getElementById('stu-hero-sub');
-      if (nameEl) nameEl.textContent = _activeStudentProfile.name;
-      if (subEl) subEl.textContent = _activeStudentProfile.class || 'Sekolah Cinta Kasih Tzu Chi';
+      const authGate = document.getElementById('student-auth-gate');
+      const mainContent = document.getElementById('student-main-content');
+
+      if (!_activeStudentProfile || !_activeStudentProfile.name) {
+        if (authGate) authGate.classList.remove('hidden');
+        if (mainContent) mainContent.classList.add('hidden');
+        return;
+      }
+
+      if (authGate) authGate.classList.add('hidden');
+      if (mainContent) mainContent.classList.remove('hidden');
+
+      const name = _activeStudentProfile.name;
+      const initials = name.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || 'M';
+      const className = _activeStudentProfile.class || 'Sekolah Cinta Kasih Tzu Chi';
+
+      const avatarEl = document.getElementById('hero-avatar');
+      if (avatarEl) avatarEl.textContent = initials;
+      const greetEl = document.getElementById('hero-student-greeting');
+      if (greetEl) greetEl.textContent = 'Halo, ' + name + '! 🌟';
+      const levelEl = document.getElementById('hero-badge-level');
+      if (levelEl) levelEl.textContent = className;
+      const nisnEl = document.getElementById('hero-badge-nisn');
+      if (nisnEl) nisnEl.textContent = _activeStudentProfile.joined_pin ? 'PIN: ' + _activeStudentProfile.joined_pin : 'Siswa Aktif';
 
       renderStudentAssignments();
       renderStudentHistory();
+    }
+
+    function handleStudentPortalLogin(e) {
+      if (e) e.preventDefault();
+      const nameInput = document.getElementById('stu-gate-name');
+      const classInput = document.getElementById('stu-gate-class');
+      const pinInput = document.getElementById('stu-gate-pin');
+      const errBox = document.getElementById('stu-gate-error');
+      if (!nameInput) return;
+
+      const name = nameInput.value.trim();
+      const className = classInput ? classInput.value.trim() : '';
+      const pin = pinInput ? pinInput.value.trim() : '';
+
+      if (!name) {
+        if (errBox) {
+          errBox.textContent = 'Mohon masukkan nama lengkap siswa.';
+          errBox.classList.remove('hidden');
+        }
+        return;
+      }
+
+      // Single active role: clear teacher
+      if (window.LotusDB) LotusDB.logoutTeacher();
+      currentTeacher = null;
+      if (typeof window !== 'undefined') window.currentTeacher = null;
+
+      const studentProfile = {
+        name: name,
+        class: className || 'Sekolah Cinta Kasih Tzu Chi',
+        joined_pin: pin,
+        joined_at: new Date().toISOString()
+      };
+
+      try {
+        localStorage.setItem('lotus_student_profile', JSON.stringify(studentProfile));
+        sessionStorage.setItem('lotus_student_profile', JSON.stringify(studentProfile));
+      } catch (err) {}
+      _activeStudentProfile = studentProfile;
+      if (typeof window !== 'undefined') window._activeStudentProfile = studentProfile;
+
+      updatePortalAuthNav();
+      initStudentDashboard();
+
+      if (pin) {
+        let proj = LotusDB.findProjectByPin(pin);
+        if (proj) {
+          openCommunityPlayer(proj.id, name);
+        }
+      }
+    }
+
+    function handlePinJoin(e) {
+      if (e) e.preventDefault();
+      const pinInput = document.getElementById('input-game-pin');
+      const alertBox = document.getElementById('pin-alert');
+      if (!pinInput) return;
+      const pin = pinInput.value.trim();
+      if (!pin) return;
+
+      let proj = LotusDB.findProjectByPin(pin);
+      if (proj) {
+        if (alertBox) alertBox.classList.add('hidden');
+        const sName = _activeStudentProfile ? _activeStudentProfile.name : '';
+        openCommunityPlayer(proj.id, sName);
+      } else {
+        if (alertBox) {
+          alertBox.className = 'p-3 rounded-xl text-xs font-semibold flex items-center gap-2 bg-rose-50 text-rose-700 border border-rose-200';
+          alertBox.textContent = 'PIN Game ' + pin + ' tidak ditemukan atau belum aktif.';
+          alertBox.classList.remove('hidden');
+        }
+      }
     }
 
     function renderStudentAssignments() {
@@ -7158,12 +7246,19 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       const res = await LotusDB.authenticateTeacherAsync(identifier, password, remember);
       if (res.success) {
         errBox.classList.add('hidden');
-        // Clear active navigation to guarantee landing directly on Projects Dashboard
+        // Single Active Role: clear student profile and active navigation
         try {
           localStorage.removeItem('lotus_active_navigation');
           sessionStorage.removeItem('lotus_active_navigation');
+          localStorage.removeItem('lotus_student_profile');
+          sessionStorage.removeItem('lotus_student_profile');
         } catch (err) {}
-        currentTeacher = LotusDB.getCurrentTeacherStrict(); updateTeacherUI(); updatePortalAuthNav(); switchPortalTab('dashboard');
+        _activeStudentProfile = null;
+        if (typeof window !== 'undefined') window._activeStudentProfile = null;
+        currentTeacher = LotusDB.getCurrentTeacherStrict();
+        updateTeacherUI();
+        updatePortalAuthNav();
+        switchPortalTab('dashboard');
       } else {
         errText.textContent = res.message || LotusI18n.t('login.errWrong');
         errBox.classList.remove('hidden');
@@ -7188,8 +7283,15 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
         try {
           localStorage.removeItem('lotus_active_navigation');
           sessionStorage.removeItem('lotus_active_navigation');
+          localStorage.removeItem('lotus_student_profile');
+          sessionStorage.removeItem('lotus_student_profile');
         } catch (err) {}
-        currentTeacher = LotusDB.getCurrentTeacherStrict(); updateTeacherUI(); updatePortalAuthNav(); switchPortalTab('dashboard');
+        _activeStudentProfile = null;
+        if (typeof window !== 'undefined') window._activeStudentProfile = null;
+        currentTeacher = LotusDB.getCurrentTeacherStrict();
+        updateTeacherUI();
+        updatePortalAuthNav();
+        switchPortalTab('dashboard');
       } else {
         errText.textContent = res.message || LotusI18n.t('login.errRegFields');
         errBox.classList.remove('hidden');
@@ -7197,16 +7299,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
     }
 
     function logoutPortalTeacher() {
-      try {
-        localStorage.removeItem('lotus_active_navigation');
-        sessionStorage.removeItem('lotus_active_navigation');
-      } catch (e) {}
-      LotusDB.logoutTeacher();
-      closePortalUserDropdown();
-      updatePortalAuthNav();
-      renderLoginBanner();
-      renderPortalUserMenu();
-      switchPortalTab('home');
+      logoutUser();
     }
 
     function quickLoginTeacher(teacherId) {
@@ -7217,8 +7310,15 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       try {
         localStorage.removeItem('lotus_active_navigation');
         sessionStorage.removeItem('lotus_active_navigation');
+        localStorage.removeItem('lotus_student_profile');
+        sessionStorage.removeItem('lotus_student_profile');
       } catch (e) {}
-      currentTeacher = LotusDB.getCurrentTeacherStrict(); updateTeacherUI(); updatePortalAuthNav(); switchPortalTab('dashboard');
+      _activeStudentProfile = null;
+      if (typeof window !== 'undefined') window._activeStudentProfile = null;
+      currentTeacher = LotusDB.getCurrentTeacherStrict();
+      updateTeacherUI();
+      updatePortalAuthNav();
+      switchPortalTab('dashboard');
     }
 
     // Admin Control Panel Modal (admin / admin)
@@ -7515,6 +7615,16 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
     async function checkSupabaseAuthSession() {
       const sb = LotusDB.getSupabaseClient();
       if (!sb) return;
+      const hash = window.location.hash || '';
+      const search = window.location.search || '';
+      const isOAuthRedirect = hash.includes('access_token=') || hash.includes('refresh_token=') || search.includes('code=');
+      const hasActiveTeacher = Boolean(LotusDB.getCurrentTeacherStrict());
+
+      // Only evaluate Supabase session on explicit OAuth callback or when already active
+      if (!isOAuthRedirect && !hasActiveTeacher) {
+        return;
+      }
+
       try {
         const { data: { session } } = await sb.auth.getSession();
         if (session && session.user) {
@@ -7605,33 +7715,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       if (box) box.classList.add('hidden');
     }
 
-    async function handleHomePinJoin(e) {
-      e.preventDefault();
-      const pinEl = document.getElementById('home-pin-input');
-      const nameEl = document.getElementById('home-student-name');
-      const errEl = document.getElementById('home-pin-error');
-      const pin = pinEl ? pinEl.value.trim() : '';
-      const studentName = nameEl ? nameEl.value.trim() : '';
-      if (!pin) return;
-
-      if (errEl) errEl.classList.add('hidden');
-
-      let proj = LotusDB.findProjectByPin(pin);
-      if (!proj && window.LotusDB && LotusDB.hasSupabase()) {
-        try { await LotusDB.syncProjectsFromCloud(); } catch (err) {}
-        proj = LotusDB.findProjectByPin(pin);
-      }
-
-      if (!proj) {
-        if (errEl) {
-          errEl.textContent = LotusI18n.t('comm.pinNotFound', { pin });
-          errEl.classList.remove('hidden');
-        }
-        return;
-      }
-
-      openCommunityPlayer(proj.id, studentName);
-    }
+    // (Home PIN join handled by master handleHomePinJoin above)
 
     function renderCommunityCards() {
       const grid = document.getElementById('comm-cards-grid');
@@ -7822,36 +7906,61 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       renderCommunityCards();
     });
 
-    // Initialize Portal
-    document.addEventListener('DOMContentLoaded', () => {
+    // Master Application Bootstrapping
+    function initLotusApp() {
+      // 1. Strict single active role determination
+      currentTeacher = LotusDB.getCurrentTeacherStrict();
+      if (typeof window !== 'undefined') window.currentTeacher = currentTeacher;
+      try {
+        const rawStu = localStorage.getItem('lotus_student_profile') || sessionStorage.getItem('lotus_student_profile');
+        _activeStudentProfile = rawStu ? JSON.parse(rawStu) : null;
+      } catch (e) {
+        _activeStudentProfile = null;
+      }
+      if (typeof window !== 'undefined') window._activeStudentProfile = _activeStudentProfile;
+
+      // 2. Translations & UI widgets initialization
       LotusI18n.applyDomTranslations(document);
-      checkSupabaseAuthSession();
-      renderPortalUserMenu();
+      syncDashI18nFallbacks();
+      updateTeacherUI();
+      updatePortalAuthNav();
+      populateDashboardTemplateFilter();
+      initMediaUploadDropzone();
       renderHomeMarquee();
       applyRememberedCredentials();
       renderLoginBanner();
       renderDemoTeachersList();
       populateSubjectFilterOptions();
-      syncTabFromLocation();
-      window.addEventListener('hashchange', syncTabFromLocation);
 
-      // Auto-pull fresh data from Supabase Cloud on boot
+      // 3. OAuth callback check
+      checkSupabaseAuthSession();
+
+      // 4. Initial route synchronization
+      syncTabFromLocation();
+
+      // 5. Cloud background sync
       if (window.LotusDB && LotusDB.hasSupabase()) {
-        LotusDB.syncProjectsFromCloud().then(() => {
+        Promise.all([
+          LotusDB.syncProjectsFromCloud(),
+          LotusDB.syncAssignmentsFromCloud()
+        ]).then(() => {
           populateSubjectFilterOptions();
-          renderCommunityCards();
+          if (activePortalTab === 'dashboard') renderDashboard();
+          if (activePortalTab === 'community') renderCommunityCards();
         }).catch(() => {});
         LotusDB.syncTeachersFromCloud().catch(() => {});
       }
 
-      // Update Bottom-Left Release / Cloud Status Badge
+      // 6. Release / cloud badge update
       const vBadge = document.getElementById('version-badge-text');
       if (vBadge) {
         const v = window.LOTUS_SUPABASE_CONFIG ? window.LOTUS_SUPABASE_CONFIG.version : '2026.11.17';
         const mode = (window.LotusDB && LotusDB.hasSupabase()) ? 'Cloud' : 'Local';
-        vBadge.textContent = `v${v} • ${mode}`;
+        vBadge.textContent = 'v' + v + ' • ' + mode;
       }
-    });
+    }
+
+    document.addEventListener('DOMContentLoaded', initLotusApp);
 
     // -------------------------------------------------------------------------
     

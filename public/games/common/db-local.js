@@ -867,6 +867,17 @@ class LocalDatabase {
     localStorage.removeItem('lotus_active_teacher');
   }
 
+  clearAllActiveSessions() {
+    try {
+      sessionStorage.removeItem('lotus_active_teacher');
+      localStorage.removeItem('lotus_active_teacher');
+      sessionStorage.removeItem('lotus_student_profile');
+      localStorage.removeItem('lotus_student_profile');
+      sessionStorage.removeItem('lotus_active_navigation');
+      localStorage.removeItem('lotus_active_navigation');
+    } catch (e) {}
+  }
+
   authenticateTeacher(emailOrName, password, rememberMe = false) {
     const teachers = this.getTeachers();
     const cleanInput = (emailOrName || '').trim().toLowerCase();

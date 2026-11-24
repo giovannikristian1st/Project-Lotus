@@ -993,7 +993,11 @@ function bmShowWinner() {
 function bmRestart() {
   GameAudio.playClick();
   window._bmWinnerAnim = { winner: 0, wt: 0, active: false };
-  bmShowScreen('setup');
+  if (typeof _customBmQuestions !== 'undefined' && _customBmQuestions && _customBmQuestions.length > 0) {
+    bmStartGame();
+  } else {
+    bmShowScreen('setup');
+  }
 }
 
 // ── Misc ─────────────────────────────────────────────────────────────

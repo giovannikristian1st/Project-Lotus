@@ -1741,7 +1741,11 @@ function playAgain() {
   document.getElementById('scoreSaveBtn').textContent = 'Save';
   document.getElementById('scoreSaveBtn').disabled = false;
   document.getElementById('teamNameInput').disabled = false;
-  showScreen('setupScreen');
+  if (state.customQuestions && state.customQuestions.length > 0) {
+    startGame();
+  } else {
+    showScreen('setupScreen');
+  }
 }
 
 function confirmExit() {
@@ -1752,7 +1756,11 @@ function confirmExit() {
   if (state.p1.speedInterval) clearInterval(state.p1.speedInterval);
   if (state.p2.speedInterval) clearInterval(state.p2.speedInterval);
   if (animFrameId) { cancelAnimationFrame(animFrameId); animFrameId = null; }
-  showScreen('setupScreen');
+  if (state.customQuestions && state.customQuestions.length > 0) {
+    safeExitGame();
+  } else {
+    showScreen('setupScreen');
+  }
 }
 
 /* LotusGameBridge Integration */

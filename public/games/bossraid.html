@@ -416,6 +416,23 @@ function safeExitGame() {
 window.safeExitGame = safeExitGame;
 </script>
 
+
+  <script>
+    (function() {
+      function checkEmbeddedHubNav() {
+        if (window.location.search.includes('embedded=1') || (window.parent && window.parent !== window)) {
+          var btn = document.getElementById('btnNavBack');
+          if (btn) btn.style.display = 'none';
+        }
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', checkEmbeddedHubNav);
+      } else {
+        checkEmbeddedHubNav();
+      }
+    })();
+  </script>
+
 </head>
 <body>
 
@@ -598,7 +615,7 @@ window.safeExitGame = safeExitGame;
 
       <div style="display:flex; gap:16px; margin-top:10px;">
         <button class="btn-start-raid" onclick="startBossRaid()">🔄 MAIN LAGI</button>
-        <button class="btn-quick" style="padding:14px 36px; font-size:1.1rem;" onclick="showScreen('screenSetup')">⚙️ SETTING BAB</button>
+        <button class="btn-quick" id="btnBossRaidSetup" style="padding:14px 36px; font-size:1.1rem;" onclick="handleBossRaidSetupBtn()">⚙️ SETTING BAB</button>
         <button class="btn-quick" style="padding:14px 36px; font-size:1.1rem;" onclick="safeExitGame()">🏠 MENU HUB</button>
       </div>
     </div>
@@ -960,14 +977,24 @@ function showScreen(screenId) {
 
   const backBtn = document.getElementById('btnNavBack');
   if (backBtn) {
-    if (screenId === 'screenSetup') backBtn.innerHTML = '◀ HUB';
+    if (screenId === 'screenSetup' || (_customRaidQuestions && _customRaidQuestions.length > 0)) backBtn.innerHTML = '◀ HUB';
     else backBtn.innerHTML = '⚙️ SETTING';
+  }
+}
+
+function handleBossRaidSetupBtn() {
+  if (_customRaidQuestions && _customRaidQuestions.length > 0) {
+    safeExitGame();
+  } else {
+    showScreen('screenSetup');
   }
 }
 
 function handleNavBack() {
   const active = document.querySelector('.br-screen.active');
   if (active && active.id === 'screenSetup') {
+    safeExitGame();
+  } else if (_customRaidQuestions && _customRaidQuestions.length > 0) {
     safeExitGame();
   } else {
     showScreen('screenSetup');

@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Hanzi Drop Puzzle // 汉字拼拼乐</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&family=Noto+Serif+SC:wght@700;900&family=Orbitron:wght@600;700;800;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Databases -->
+  <script src="hanzicomponents.js"></script>
+  <script src="meihuadb.js"></script>
+  <script src="dict.js"></script>
+  
+  <style>
+    :root {
+      --bg-dark: #060a14;
+      --bg-card: rgba(12, 20, 38, 0.92);
+      --cyan: #00f0ff;
+      --cyan-glow: rgba(0, 240, 255, 0.5);
+      --magenta: #ff007f;
+      --magenta-glow: rgba(255, 0, 127, 0.5);
+      --purple: #a855f7;
+      --purple-glow: rgba(168, 85, 247, 0.5);
+      --green: #00ff9d;
+      --green-glow: rgba(0, 255, 157, 0.5);
+      --yellow: #ffe600;
+      --yellow-glow: rgba(255, 230, 0, 0.5);
+      --red: #ff2a55;
+      --border-cyan: rgba(0, 240, 255, 0.35);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      width: 100vw; height: 100vh; overflow: hidden; background: #03060c;
+      font-family: 'Outfit', 'Noto Sans SC', sans-serif; color: var(--text-main);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ══════════════════════════════════════
+       1920×1080 CENTERED VIEWPORT SCENE
+    ══════════════════════════════════════ */
+    #sceneContainer {
+      position: absolute;
+      width: 1920px; height: 1080px;
+      transform-origin: top left;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      background: radial-gradient(circle at 50% 30%, #101c38 0%, #060a14 100%);
+      box-shadow: 0 0 80px rgba(0, 0, 0, 0.9);
+    }
+
+    /* Cyber Ambient Background */
+    .cyber-grid-bg {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0.15;
+      background-image: 
+        linear-gradient(rgba(0, 240, 255, 0.4) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.4) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .cyber-scanlines {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0.25;
+      background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0, 0, 0, 0.4) 3px, rgba(0, 0, 0, 0.4) 6px);
+    }
+
+    /* ── TOP NAV ── */
+    .cyber-nav {
+      height: 72px; padding: 0 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: relative; z-index: 100; flex-shrink: 0;
+      background: rgba(8, 14, 28, 0.88);
+      border-bottom: 1px solid var(--border-cyan);
+      backdrop-filter: blur(12px);
+    }
+    .nav-left { display: flex; align-items: center; gap: 20px; }
+    .cyber-btn-back {
+      background: rgba(0, 240, 255, 0.1); border: 1px solid var(--cyan);
+      color: var(--cyan); padding: 8px 24px; border-radius: 12px;
+      font-family: 'Orbitron', sans-serif; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;
+      white-space: nowrap;
+    }
+    .cyber-btn-back:hover {
+      background: var(--cyan); color: #000;
+      box-shadow: 0 0 16px var(--cyan-glow);
+    }
+    .nav-title {
+      font-family: 'Orbitron', sans-serif; font-size: 1.6rem; font-weight: 900;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, #00f0ff, #d946ef, #ffe600);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+    }
+    .cyber-audio-panel {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(0, 0, 0, 0.55); border: 1px solid var(--border-cyan);
+      border-radius: 14px; padding: 6px 16px;
+    }
+    .bgm-tag { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 800; color: var(--cyan); }
+    .nav-sound-btn {
+      background: transparent; border: none; font-size: 1.3rem; cursor: pointer;
+      filter: drop-shadow(0 0 6px var(--cyan-glow));
+    }
+    .vol-slider-wrap { display: flex; align-items: center; gap: 8px; }
+    .vol-slider { width: 100px; accent-color: var(--cyan); cursor: pointer; }
+    .vol-val-label { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 800; color: #fff; min-width: 36px; }
+
+    /* ── SCREEN WRAPPER ── */
+    .hd-screen {
+      position: absolute; top: 72px; bottom: 0; left: 0; right: 0;
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      padding: 30px 40px; z-index: 10;
+      animation: hdScreenIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .hd-screen.active { display: flex; }
+    @keyframes hdScreenIn {
+      from { opacity: 0; transform: scale(0.98) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* ══════════════════════════════════════
+       SCREEN 1: SETUP
+    ══════════════════════════════════════ */
+    .setup-card {
+      width: 1400px; background: var(--bg-card);
+      border: 1.5px solid var(--border-cyan); border-radius: 28px;
+      box-shadow: 0 0 50px rgba(0, 240, 255, 0.15);
+      padding: 36px 44px; display: flex; flex-direction: column; gap: 24px;
+      backdrop-filter: blur(20px);
+    }
+    .setup-header h1 {
+      font-family: 'Orbitron', sans-serif; font-size: 1.9rem; font-weight: 900;
+      color: #fff; letter-spacing: 1.5px;
+    }
+    .setup-header p { font-size: 1.1rem; color: var(--text-muted); margin-top: 4px; }
+
+    .setup-section-title {
+      font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 800;
+      color: var(--cyan); margin-bottom: 10px; display: flex; align-items: center; gap: 10px;
+    }
+
+    .setup-grid-pills { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .setup-pill-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px; padding: 16px 20px;
+      cursor: pointer; transition: all 0.2s;
+      display: flex; flex-direction: column; gap: 4px; text-align: left;
+    }
+    .setup-pill-btn:hover { background: rgba(0, 240, 255, 0.12); border-color: var(--cyan); transform: translateY(-2px); }
+    .setup-pill-btn.active {
+      background: rgba(0, 240, 255, 0.2); border-color: var(--cyan);
+      box-shadow: 0 0 20px var(--cyan-glow);
+    }
+    .pill-title { font-family: 'Orbitron', sans-serif; font-size: 1.15rem; font-weight: 800; color: #fff; }
+    .pill-sub { font-size: 0.95rem; color: var(--text-muted); }
+
+    /* Mode Selection Cards */
+    .mode-select-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .mode-card-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 2px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px; padding: 20px 22px;
+      cursor: pointer; transition: all 0.2s;
+      display: flex; flex-direction: column; gap: 8px; text-align: left;
+    }
+    .mode-card-btn:hover {
+      background: rgba(168, 85, 247, 0.12); border-color: var(--purple);
+      transform: translateY(-3px);
+    }
+    .mode-card-btn.active {
+      background: rgba(168, 85, 247, 0.22); border-color: var(--purple);
+      box-shadow: 0 0 26px var(--purple-glow);
+    }
+    .mode-icon { font-size: 2.2rem; margin-bottom: 2px; }
+    .mode-name { font-family: 'Orbitron', sans-serif; font-size: 1.25rem; font-weight: 800; color: #fff; }
+    .mode-desc { font-size: 0.95rem; color: var(--text-muted); line-height: 1.45; }
+
+    .count-pills-row { display: flex; gap: 14px; }
+    .count-pill {
+      background: rgba(255, 255, 255, 0.05); border: 1.5px solid rgba(255, 255, 255, 0.15);
+      border-radius: 14px; padding: 10px 24px;
+      font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 800; color: #fff;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .count-pill:hover { background: rgba(0, 240, 255, 0.1); border-color: var(--cyan); }
+    .count-pill.active { background: var(--cyan); color: #000; box-shadow: 0 0 16px var(--cyan-glow); }
+
+    .setup-bottom-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .setup-summary-text { font-size: 1.15rem; color: #cbd5e1; }
+    .setup-summary-text strong { color: var(--cyan); }
+    .btn-start-crafting {
+      background: linear-gradient(135deg, #00f0ff, #a855f7);
+      border: none; border-radius: 18px; padding: 16px 48px;
+      font-family: 'Orbitron', sans-serif; font-size: 1.4rem; font-weight: 900;
+      color: #fff; cursor: pointer; box-shadow: 0 0 28px rgba(0, 240, 255, 0.6);
+      transition: all 0.2s;
+    }
+    .btn-start-crafting:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 0 40px rgba(168, 85, 247, 0.8);
+    }
+
+    /* ══════════════════════════════════════
+       SHARED ARENA HUD
+    ══════════════════════════════════════ */
+    .arena-hud {
+      display: grid; grid-template-columns: 1fr 1.2fr 1fr; align-items: center;
+      background: var(--bg-card); border: 1.5px solid var(--border-cyan);
+      border-radius: 20px; padding: 14px 36px; width: 1400px;
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.1);
+    }
+    .hud-progress-wrap { display: flex; flex-direction: column; gap: 4px; }
+    .hud-label { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); }
+    .hud-val { font-family: 'Orbitron', sans-serif; font-size: 1.35rem; font-weight: 900; color: var(--cyan); }
+
+    .hud-timer-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .hud-timer-track {
+      width: 320px; height: 10px; background: rgba(0, 0, 0, 0.6);
+      border-radius: 6px; overflow: hidden; border: 1px solid rgba(255, 230, 0, 0.4);
+    }
+    .hud-timer-fill {
+      height: 100%; width: 100%; background: var(--yellow);
+      box-shadow: 0 0 10px var(--yellow-glow);
+      transition: width 0.1s linear;
+    }
+    .hud-timer-num { font-family: 'Orbitron', sans-serif; font-size: 1.25rem; font-weight: 900; color: var(--yellow); }
+
+    .hud-score-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+    .hud-score-num { font-family: 'Orbitron', sans-serif; font-size: 2.1rem; font-weight: 900; color: var(--green); text-shadow: 0 0 14px var(--green-glow); }
+    .hud-streak-badge {
+      display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 0, 127, 0.2);
+      border: 1px solid var(--magenta); padding: 3px 12px; border-radius: 12px;
+      font-family: 'Orbitron', sans-serif; font-size: 0.9rem; font-weight: 800; color: #ff66b2;
+      opacity: 0; transform: scale(0.8); transition: all 0.2s;
+    }
+    .hud-streak-badge.active { opacity: 1; transform: scale(1); }
+
+    /* ══════════════════════════════════════
+       MODE 1: PUZZLE CRAFTING ARENA
+    ══════════════════════════════════════ */
+    .craft-arena {
+      width: 1400px; height: 860px; display: flex; flex-direction: column;
+      gap: 20px; position: relative;
+    }
+    .blueprint-workbench {
+      flex: 1; min-height: 420px; background: var(--bg-card);
+      border: 2px solid var(--purple); border-radius: 26px;
+      box-shadow: 0 0 40px rgba(168, 85, 247, 0.25);
+      display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+      padding: 24px 36px; position: relative; overflow: hidden;
+    }
+    .blueprint-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+    .blueprint-mode-tag {
+      font-family: 'Orbitron', sans-serif; font-size: 0.95rem; font-weight: 800;
+      color: var(--purple); background: rgba(168, 85, 247, 0.15);
+      padding: 6px 18px; border-radius: 10px; border: 1px solid var(--purple);
+    }
+    .blueprint-structure-badge {
+      font-family: 'Orbitron', sans-serif; font-size: 0.95rem; font-weight: 800;
+      color: var(--cyan); background: rgba(0, 240, 255, 0.12);
+      padding: 6px 18px; border-radius: 10px; border: 1px solid var(--cyan);
+    }
+    .clue-pinyin {
+      font-size: 2.6rem; font-weight: 800; color: var(--yellow);
+      letter-spacing: 2px; text-shadow: 0 0 16px var(--yellow-glow);
+    }
+    .clue-meaning { font-size: 2.0rem; font-weight: 700; color: #fff; }
+
+    .fusion-pedestal-wrap {
+      display: flex; align-items: center; justify-content: center;
+      gap: 24px; position: relative; min-height: 180px; width: 100%;
+    }
+    .slots-layout-lr { display: flex; align-items: center; gap: 24px; }
+    .slots-layout-tb { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .slots-layout-tri { display: flex; align-items: center; gap: 18px; }
+    .slots-layout-enc { display: flex; align-items: center; gap: 20px; }
+
+    .blueprint-slot {
+      width: 150px; height: 150px; background: rgba(0, 0, 0, 0.6);
+      border: 3px dashed var(--cyan); border-radius: 24px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s; position: relative;
+    }
+    .blueprint-slot.filled {
+      border-style: solid; border-color: var(--cyan);
+      background: rgba(0, 240, 255, 0.18); box-shadow: 0 0 24px var(--cyan-glow);
+    }
+    .slot-label {
+      font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 800;
+      color: var(--cyan); opacity: 0.7; margin-bottom: 2px;
+    }
+    .slot-char {
+      font-family: 'Noto Serif SC', serif; font-size: 5.2rem; font-weight: 900;
+      color: #fff; text-shadow: 0 0 24px rgba(0, 240, 255, 0.8); line-height: 1;
+    }
+
+    .components-tray-box {
+      background: var(--bg-card); border: 1.5px solid var(--border-cyan);
+      border-radius: 24px; padding: 18px 32px; display: flex; flex-direction: column; gap: 12px;
+    }
+    .tray-header {
+      font-family: 'Orbitron', sans-serif; font-size: 1rem; font-weight: 800;
+      color: var(--cyan); display: flex; justify-content: space-between; align-items: center;
+    }
+    .chips-row { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+    .comp-chip-btn {
+      width: 110px; height: 110px; background: rgba(18, 28, 54, 0.95);
+      border: 2px solid rgba(0, 240, 255, 0.3); border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Noto Serif SC', serif; font-size: 4.2rem; font-weight: 900;
+      color: #fff; cursor: pointer; transition: all 0.15s;
+    }
+    .comp-chip-btn:hover {
+      transform: translateY(-6px) scale(1.05);
+      border-color: var(--cyan); box-shadow: 0 0 26px var(--cyan-glow);
+      background: rgba(28, 44, 82, 0.98);
+    }
+    .comp-chip-btn.used { opacity: 0.2; pointer-events: none; transform: scale(0.9); }
+
+    /* Grand Fusion Display */
+    .fusion-final-display {
+      position: absolute; inset: 0; display: none;
+      flex-direction: column; align-items: center; justify-content: center;
+      background: rgba(10, 18, 36, 0.96); border-radius: 24px; z-index: 50;
+      animation: fusionPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .fusion-final-display.active { display: flex; }
+    @keyframes fusionPop { 0% { transform: scale(0.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    .fusion-final-char {
+      font-family: 'Noto Serif SC', serif; font-size: 10rem; font-weight: 900;
+      background: linear-gradient(135deg, #ffe600, #ff007f, #00f0ff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 35px rgba(255, 230, 0, 0.8)); line-height: 1.1;
+    }
+    .fusion-pedagogy-badge {
+      font-size: 1.7rem; font-weight: 800; color: #fff;
+      background: rgba(0, 240, 255, 0.15); border: 1.5px solid var(--cyan);
+      border-radius: 20px; padding: 10px 32px; margin-top: 14px;
+      box-shadow: 0 0 24px var(--cyan-glow);
+    }
+
+    /* ══════════════════════════════════════
+       MODE 2: ARCADE DROP ARENA
+    ══════════════════════════════════════ */
+    .arcade-arena {
+      width: 1400px; height: 860px; display: flex; flex-direction: column;
+      gap: 16px; position: relative;
+    }
+    .arcade-field {
+      flex: 1; background: var(--bg-card); border: 2px solid var(--cyan);
+      border-radius: 26px; box-shadow: 0 0 40px rgba(0, 240, 255, 0.2);
+      position: relative; overflow: hidden; display: flex; flex-direction: column;
+    }
+    .arcade-target-banner {
+      height: 90px; background: rgba(0, 0, 0, 0.6); border-bottom: 1.5px solid var(--border-cyan);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 36px;
+    }
+    .arcade-target-title { font-family: 'Orbitron', sans-serif; font-size: 1.3rem; font-weight: 800; color: var(--cyan); }
+    .arcade-target-char-box {
+      display: flex; align-items: center; gap: 16px;
+      background: rgba(0, 240, 255, 0.15); padding: 6px 20px; border-radius: 16px; border: 1px solid var(--cyan);
+    }
+    .arcade-target-hanzi { font-family: 'Noto Serif SC', serif; font-size: 2.8rem; font-weight: 900; color: var(--yellow); }
+    .arcade-target-needed { font-size: 1.2rem; color: #fff; font-weight: 700; }
+
+    .arcade-lanes-container {
+      flex: 1; position: relative; width: 100%; overflow: hidden;
+    }
+    .arcade-lane-line {
+      position: absolute; top: 0; bottom: 0; width: 1px;
+      background: rgba(0, 240, 255, 0.1); pointer-events: none;
+    }
+    .arcade-danger-line {
+      position: absolute; bottom: 40px; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, transparent, var(--red), transparent);
+      box-shadow: 0 0 16px var(--red); pointer-events: none;
+    }
+
+    /* Falling Component Bubble */
+    .falling-bubble {
+      position: absolute; width: 100px; height: 100px; border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #2a3d6e, #0c1630);
+      border: 2.5px solid var(--cyan); box-shadow: 0 0 20px var(--cyan-glow);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Noto Serif SC', serif; font-size: 3.8rem; font-weight: 900;
+      color: #fff; cursor: pointer; transition: transform 0.1s;
+    }
+    .falling-bubble:hover { transform: scale(1.15); border-color: var(--yellow); box-shadow: 0 0 28px var(--yellow-glow); }
+    .falling-bubble:active { transform: scale(0.95); }
+
+    /* ══════════════════════════════════════
+       MODE 3: RADICAL CHAIN ARENA
+    ══════════════════════════════════════ */
+    .chain-arena {
+      width: 1400px; height: 860px; display: flex; flex-direction: column;
+      gap: 16px; position: relative;
+    }
+    .chain-field {
+      flex: 1; height: 770px; background: var(--bg-card); border: 2px solid var(--green);
+      border-radius: 26px; box-shadow: 0 0 40px var(--green-glow);
+      position: relative; overflow: hidden;
+    }
+    .chain-center-orb {
+      position: absolute; left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      width: 200px; height: 200px; border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #00ff9d, #064e3b);
+      border: 4px solid #fff; box-shadow: 0 0 50px var(--green-glow);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 20; animation: orbPulse 2s infinite alternate;
+    }
+    @keyframes orbPulse {
+      0% { transform: translate(-50%, -50%) scale(0.97); box-shadow: 0 0 40px var(--green-glow); }
+      100% { transform: translate(-50%, -50%) scale(1.03); box-shadow: 0 0 70px var(--green-glow); }
+    }
+    .chain-center-char {
+      font-family: 'Noto Serif SC', serif; font-size: 5.8rem; font-weight: 900;
+      color: #000; line-height: 1;
+    }
+    .chain-center-sub { font-family: 'Orbitron', sans-serif; font-size: 0.9rem; font-weight: 900; color: #000; margin-top: 2px; }
+
+    .chain-satellite-node {
+      position: absolute; width: 110px; height: 110px; border-radius: 22px;
+      background: rgba(18, 30, 58, 0.95); border: 2px solid rgba(0, 255, 157, 0.35);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); z-index: 10;
+    }
+    .chain-satellite-node:hover {
+      transform: scale(1.15); border-color: var(--cyan);
+      box-shadow: 0 0 30px var(--cyan-glow); background: rgba(28, 48, 92, 0.98);
+    }
+    .chain-satellite-node.connected {
+      border-color: var(--green); background: rgba(0, 255, 157, 0.25);
+      box-shadow: 0 0 35px var(--green-glow); transform: scale(1.08); pointer-events: none;
+    }
+    .sat-char { font-family: 'Noto Serif SC', serif; font-size: 3.6rem; font-weight: 900; color: #fff; line-height: 1; }
+    .sat-fused { font-size: 0.9rem; font-weight: 800; color: var(--yellow); margin-top: 2px; }
+
+    /* ══════════════════════════════════════
+       SCREEN 5: RESULTS SCREEN
+    ══════════════════════════════════════ */
+    .results-card {
+      width: 1200px; background: var(--bg-card);
+      border: 2px solid var(--cyan); border-radius: 32px;
+      box-shadow: 0 0 60px rgba(0, 240, 255, 0.25);
+      padding: 44px 50px; display: flex; flex-direction: column; align-items: center; gap: 28px;
+    }
+    .res-title {
+      font-family: 'Orbitron', sans-serif; font-size: 3rem; font-weight: 900;
+      background: linear-gradient(90deg, #00f0ff, #00ff9d, #ffe600);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-top: 4px;
+    }
+    .res-center { display: flex; align-items: center; justify-content: center; gap: 50px; width: 100%; }
+    .res-rank-img { width: 190px; height: 190px; object-fit: contain; filter: drop-shadow(0 0 30px var(--yellow-glow)); }
+    .res-stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; flex: 1; }
+    .res-stat-box { background: rgba(0, 0, 0, 0.55); border: 1px solid var(--border-cyan); border-radius: 18px; padding: 18px 24px; }
+    .res-stat-label { font-family: 'Orbitron', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--text-muted); }
+    .res-stat-val { font-family: 'Orbitron', sans-serif; font-size: 2.2rem; font-weight: 900; color: #fff; margin-top: 4px; }
+    .res-actions-row { display: flex; gap: 20px; width: 100%; justify-content: center; }
+    .res-btn {
+      padding: 16px 36px; border-radius: 16px; font-family: 'Orbitron', sans-serif;
+      font-size: 1.2rem; font-weight: 800; cursor: pointer; transition: all 0.2s;
+    }
+    .res-btn.primary { background: linear-gradient(135deg, #00f0ff, #00ff9d); border: none; color: #000; box-shadow: 0 0 24px var(--cyan-glow); }
+    .res-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 0 36px var(--green-glow); }
+    .res-btn.secondary { background: rgba(255, 255, 255, 0.08); border: 1px solid var(--cyan); color: var(--cyan); }
+    .res-btn.secondary:hover { background: rgba(0, 240, 255, 0.15); }
+
+    /* Flying Score Animation */
+    .flying-score {
+      position: absolute; pointer-events: none; z-index: 999;
+      font-family: 'Orbitron', sans-serif; font-size: 2.4rem; font-weight: 900;
+      animation: flyUpAndFade 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    @keyframes flyUpAndFade {
+      0% { opacity: 0; transform: translateY(0) scale(0.8); }
+      20% { opacity: 1; transform: translateY(-20px) scale(1.2); }
+      100% { opacity: 0; transform: translateY(-80px) scale(1); }
+    }
+  </style>
+</head>
+<body>
+
+<div id="sceneContainer">
+  <div class="cyber-grid-bg"></div>
+  <div class="cyber-scanlines"></div>
+
+  <!-- TOP NAV -->
+  <nav class="cyber-nav">
+    <div class="nav-left">
+      <button class="cyber-btn-back" id="btnNavBack" onclick="handleNavBack()">◀ HUB</button>
+      <div class="nav-title">HANZI DROP PUZZLE // 汉字拼拼乐</div>
+    </div>
+    <div class="nav-right">
+      <div class="cyber-audio-panel">
+        <span class="bgm-tag">🎵 BGM</span>
+        <button class="nav-sound-btn" id="btnAudioToggle" onclick="GameAudio.toggleMute()" title="Mute / Unmute">🔊</button>
+        <div class="vol-slider-wrap">
+          <input type="range" min="0" max="100" value="65" class="vol-slider" id="volSlider" oninput="GameAudio.handleSliderChange(this.value)" title="Volume Slider">
+          <span class="vol-val-label" id="volValLabel">65%</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 1: SETUP
+  ══════════════════════════════════════ -->
+  <div class="hd-screen active" id="screenSetup">
+    <div class="setup-card">
+      <div class="setup-header">
+        <h1>// SELECT CURRICULUM & PUZZLE MODE</h1>
+        <p>Pilih kurikulum Meihua dan mode perakitan komponen karakter Mandarin</p>
+      </div>
+
+      <!-- Curriculum Pills -->
+      <div>
+        <div class="setup-section-title">📚 PILIH BUKU / TINGKAT</div>
+        <div class="setup-grid-pills">
+          <button class="setup-pill-btn active" id="bookBtn_all" onclick="selectSetupBook('all')">
+            <span class="pill-title">🌐 ALL BUKU (1–3)</span>
+            <span class="pill-sub" id="count_all">68 Karakter</span>
+          </button>
+          <button class="setup-pill-btn" id="bookBtn_1" onclick="selectSetupBook(1)">
+            <span class="pill-title">🌸 MEIHUA BUKU 1</span>
+            <span class="pill-sub" id="count_1">31 Karakter</span>
+          </button>
+          <button class="setup-pill-btn" id="bookBtn_2" onclick="selectSetupBook(2)">
+            <span class="pill-title">🌸 MEIHUA BUKU 2</span>
+            <span class="pill-sub" id="count_2">21 Karakter</span>
+          </button>
+          <button class="setup-pill-btn" id="bookBtn_3" onclick="selectSetupBook(3)">
+            <span class="pill-title">🌸 MEIHUA BUKU 3</span>
+            <span class="pill-sub" id="count_3">16 Karakter</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Game Mode Selection -->
+      <div>
+        <div class="setup-section-title">🕹️ PILIH MODE PERMAINAN</div>
+        <div class="mode-select-grid">
+          <div class="mode-card-btn active" id="modeBtn_crafting" onclick="selectGameMode('crafting')">
+            <div class="mode-icon">🧩</div>
+            <div class="mode-name">1. Blueprint Crafting</div>
+            <div class="mode-desc">Rangkai komponen ke slot blueprint (Kiri-Kanan, Atas-Bawah, dsb.) dengan panduan pinyin & arti.</div>
+          </div>
+          <div class="mode-card-btn" id="modeBtn_arcade" onclick="selectGameMode('arcade')">
+            <div class="mode-icon">🕹️</div>
+            <div class="mode-name">2. Arcade Falling Drop</div>
+            <div class="mode-desc">Balok komponen melayang jatuh secara real-time! Tangkap komponen yang tepat sebelum garis bahaya.</div>
+          </div>
+          <div class="mode-card-btn" id="modeBtn_chain" onclick="selectGameMode('chain')">
+            <div class="mode-icon">🔗</div>
+            <div class="mode-name">3. Radical Chain Match</div>
+            <div class="mode-desc">Sambungkan radikal pusat (misal: 氵, 亻, 口) ke semua pasangannya di orbit luar!</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stage Count Selector -->
+      <div>
+        <div class="setup-section-title">🎯 JUMLAH PUZZLE</div>
+        <div class="count-pills-row">
+          <button class="count-pill active" id="cntBtn_10" onclick="selectPuzzleCount(10)">10 Soal</button>
+          <button class="count-pill" id="cntBtn_15" onclick="selectPuzzleCount(15)">15 Soal</button>
+          <button class="count-pill" id="cntBtn_20" onclick="selectPuzzleCount(20)">20 Soal</button>
+          <button class="count-pill" id="cntBtn_all" onclick="selectPuzzleCount('all')">Semua (Max)</button>
+        </div>
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="setup-bottom-bar">
+        <div class="setup-summary-text" id="setupSummaryLabel">
+          Selected: <strong>All Buku (1–3)</strong> · <strong>10 Puzzles</strong> · <strong>Blueprint Crafting</strong>
+        </div>
+        <button class="btn-start-crafting" onclick="startHanziPuzzleQuest()">
+          🚀 MULAI BERMAIN ▶
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 2: MODE 1 - BLUEPRINT CRAFTING
+  ══════════════════════════════════════ -->
+  <div class="hd-screen" id="screenCrafting">
+    <div class="craft-arena">
+      <!-- HUD -->
+      <div class="arena-hud">
+        <div class="hud-progress-wrap">
+          <div class="hud-label">PUZZLE PROGRESS</div>
+          <div class="hud-val" id="hudProgressVal">1 / 10</div>
+        </div>
+        <div class="hud-timer-wrap">
+          <div class="hud-timer-num" id="hudTimerNum">15.0s</div>
+          <div class="hud-timer-track">
+            <div class="hud-timer-fill" id="hudTimerFill"></div>
+          </div>
+        </div>
+        <div class="hud-score-wrap">
+          <div class="hud-score-num" id="hudScoreVal">0</div>
+          <div class="hud-streak-badge" id="hudStreakBadge">🔥 2 COMBO</div>
+        </div>
+      </div>
+
+      <!-- Blueprint Workbench -->
+      <div class="blueprint-workbench">
+        <div class="blueprint-header">
+          <span class="blueprint-mode-tag">🧩 MODE 1: BLUEPRINT CRAFTING</span>
+          <span class="blueprint-structure-badge" id="bpStructureBadge">STRUKTUR: KIRI - KANAN (⿰)</span>
+        </div>
+
+        <div style="text-align:center;">
+          <div class="clue-pinyin" id="bpCluePinyin">míng</div>
+          <div class="clue-meaning" id="bpClueMeaning">Terang / Bright</div>
+        </div>
+
+        <!-- Dynamic Slots Area -->
+        <div class="fusion-pedestal-wrap" id="slotsContainer"></div>
+
+        <!-- Grand Fusion Success Overlay -->
+        <div class="fusion-final-display" id="fusionFinalDisplay">
+          <div class="fusion-final-char" id="finalFusedChar">明</div>
+          <div class="fusion-pedagogy-badge" id="finalPedagogyBadge">日 (Matahari) + 月 (Bulan) = 明 (Terang)</div>
+        </div>
+      </div>
+
+      <!-- Components Tray -->
+      <div class="components-tray-box">
+        <div class="tray-header">
+          <span>📦 RADICAL & COMPONENT TRAY (KLIK ATAU TAP UNTUK MEMASANG)</span>
+          <span style="color:var(--yellow); font-size:0.9rem;">Klik komponen untuk mengisi slot blueprint</span>
+        </div>
+        <div class="chips-row" id="componentsTrayRow"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 3: MODE 2 - ARCADE FALLING DROP
+  ══════════════════════════════════════ -->
+  <div class="hd-screen" id="screenArcade">
+    <div class="arcade-arena">
+      <!-- HUD -->
+      <div class="arena-hud">
+        <div class="hud-progress-wrap">
+          <div class="hud-label">ARCADE STAGE</div>
+          <div class="hud-val" id="arcadeProgressVal">1 / 10</div>
+        </div>
+        <div class="hud-timer-wrap">
+          <div class="hud-timer-num" id="arcadeTimerNum">20.0s</div>
+          <div class="hud-timer-track">
+            <div class="hud-timer-fill" id="arcadeTimerFill"></div>
+          </div>
+        </div>
+        <div class="hud-score-wrap">
+          <div class="hud-score-num" id="arcadeScoreVal">0</div>
+          <div class="hud-streak-badge" id="arcadeStreakBadge">🔥 2 COMBO</div>
+        </div>
+      </div>
+
+      <!-- Falling Arena Field -->
+      <div class="arcade-field" id="arcadeField">
+        <div class="arcade-target-banner">
+          <span class="arcade-target-title">🎯 TARGET FUSION REACTOR:</span>
+          <div class="arcade-target-char-box">
+            <span class="arcade-target-hanzi" id="arcadeTargetHanzi">明</span>
+            <span class="arcade-target-needed" id="arcadeTargetNeeded">Butuh: [ 日 ] + [ 月 ]</span>
+          </div>
+        </div>
+
+        <div class="arcade-lanes-container" id="arcadeLanesContainer">
+          <div class="arcade-danger-line"></div>
+        </div>
+
+        <!-- Fusion Overlay for Arcade -->
+        <div class="fusion-final-display" id="arcadeFusionOverlay">
+          <div class="fusion-final-char" id="arcadeFinalChar">明</div>
+          <div class="fusion-pedagogy-badge" id="arcadeFinalPedagogy">FUSION SUCCESS! +250 PTS</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 4: MODE 3 - RADICAL CHAIN MATCH
+  ══════════════════════════════════════ -->
+  <div class="hd-screen" id="screenChain">
+    <div class="chain-arena">
+      <!-- HUD -->
+      <div class="arena-hud">
+        <div class="hud-progress-wrap">
+          <div class="hud-label">RADICAL MATRIX</div>
+          <div class="hud-val" id="chainProgressVal">1 / 10</div>
+        </div>
+        <div class="hud-timer-wrap">
+          <div class="hud-timer-num" id="chainTimerNum">25.0s</div>
+          <div class="hud-timer-track">
+            <div class="hud-timer-fill" id="chainTimerFill"></div>
+          </div>
+        </div>
+        <div class="hud-score-wrap">
+          <div class="hud-score-num" id="chainScoreVal">0</div>
+          <div class="hud-streak-badge" id="chainStreakBadge">🔥 2 COMBO</div>
+        </div>
+      </div>
+
+      <!-- Constellation Chain Field -->
+      <div class="chain-field" id="chainField">
+        <svg id="chainSvgLayer" style="position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:5;">
+          <ellipse cx="700" cy="385" rx="420" ry="230" fill="none" stroke="rgba(0, 255, 157, 0.22)" stroke-width="2.5" stroke-dasharray="8 8" />
+        </svg>
+
+        <div class="chain-center-orb">
+          <div class="chain-center-char" id="chainCenterChar">氵</div>
+          <div class="chain-center-sub" id="chainCenterSub">RADIKAL AIR</div>
+        </div>
+
+        <div id="chainSatellitesContainer"></div>
+
+        <!-- Fusion Overlay for Chain -->
+        <div class="fusion-final-display" id="chainFusionOverlay">
+          <div class="fusion-final-char" id="chainFinalChar">✨</div>
+          <div class="fusion-pedagogy-badge" id="chainFinalPedagogy">CHAIN MATRIX COMPLETED! +400 PTS</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 5: RESULTS SCREEN
+  ══════════════════════════════════════ -->
+  <div class="hd-screen" id="screenResults">
+    <div class="results-card">
+      <div class="res-header">
+        <div style="font-family:'Orbitron', sans-serif; font-size:1.1rem; color:var(--cyan); letter-spacing:2px;">MISSION DEBRIEF // SUMMARY</div>
+        <div class="res-title">ALCHEMY QUEST COMPLETED</div>
+      </div>
+
+      <div class="res-center">
+        <img src="icons/cyber/rank_s.png" class="res-rank-img" id="resRankImg" alt="Rank S+">
+
+        <div class="res-stats-grid">
+          <div class="res-stat-box">
+            <div class="res-stat-label">TOTAL SCORE</div>
+            <div class="res-stat-val" style="color:var(--green);" id="resFinalScore">0</div>
+          </div>
+          <div class="res-stat-box">
+            <div class="res-stat-label">ACCURACY</div>
+            <div class="res-stat-val" style="color:var(--yellow);" id="resAccuracy">0%</div>
+          </div>
+          <div class="res-stat-box">
+            <div class="res-stat-label">PERFECT FUSIONS</div>
+            <div class="res-stat-val" id="resCorrectCount">0 / 0</div>
+          </div>
+          <div class="res-stat-box">
+            <div class="res-stat-label">MAX COMBO STREAK</div>
+            <div class="res-stat-val" id="resMaxStreak">0🔥</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="res-actions-row">
+        <button class="res-btn primary" onclick="startHanziPuzzleQuest()">🔄 MAIN LAGI</button>
+        <button class="res-btn secondary" onclick="showScreen('screenSetup')">⚙️ SETTING GAME</button>
+        <button class="res-btn secondary" onclick="safeExitGame()">🏠 MENU HUB</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /#sceneContainer -->
+
+<script>
+/* ══════════════════════════════════════
+   1. PROCEDURAL AUDIO & WEB SPEECH ENGINE
+══════════════════════════════════════ */
+const GameAudio = {
+  ctx: null,
+  masterGain: null,
+  bgmGain: null,
+  sfxGain: null,
+  isMuted: false,
+  volume: 0.65,
+  bgmTimer: null,
+  bgmStep: 0,
+
+  init() {
+    if (this.ctx) return;
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    this.ctx = new AudioContext();
+
+    this.masterGain = this.ctx.createGain();
+    this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
+    this.masterGain.connect(this.ctx.destination);
+
+    this.sfxGain = this.ctx.createGain();
+    this.sfxGain.gain.setValueAtTime(0.9, this.ctx.currentTime);
+    this.sfxGain.connect(this.masterGain);
+
+    this.bgmGain = this.ctx.createGain();
+    this.bgmGain.gain.setValueAtTime(0.28, this.ctx.currentTime);
+    this.bgmGain.connect(this.masterGain);
+
+    this.startBgmLoop();
+  },
+
+  handleSliderChange(val) {
+    this.volume = val / 100;
+    document.getElementById('volValLabel').textContent = Math.round(val) + '%';
+    if (!this.ctx) this.init();
+    if (this.masterGain && !this.isMuted) {
+      this.masterGain.gain.setTargetAtTime(this.volume, this.ctx.currentTime, 0.05);
+    }
+  },
+
+  toggleMute() {
+    this.isMuted = !this.isMuted;
+    const btn = document.getElementById('btnAudioToggle');
+    if (btn) btn.textContent = this.isMuted ? '🔇' : '🔊';
+    if (!this.ctx) this.init();
+    if (this.masterGain) {
+      this.masterGain.gain.setTargetAtTime(this.isMuted ? 0 : this.volume, this.ctx.currentTime, 0.05);
+    }
+  },
+
+  playSnap() {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(520, now);
+    osc.frequency.exponentialRampToValueAtTime(1080, now + 0.08);
+    gain.gain.setValueAtTime(0.45, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.09);
+  },
+
+  playFusionChime() {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    const freqs = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+    freqs.forEach((f, idx) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(f, now + idx * 0.06);
+      gain.gain.setValueAtTime(0.35, now + idx * 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.5);
+      osc.connect(gain);
+      gain.connect(this.sfxGain);
+      osc.start(now + idx * 0.06);
+      osc.stop(now + idx * 0.06 + 0.5);
+    });
+  },
+
+  playWrong() {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(160, now);
+    osc.frequency.linearRampToValueAtTime(110, now + 0.25);
+    gain.gain.setValueAtTime(0.4, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.25);
+  },
+
+  speakHanzi(text) {
+    if (!('speechSynthesis' in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'zh-CN';
+      u.rate = 0.85;
+      window.speechSynthesis.speak(u);
+    } catch(e) {}
+  },
+
+  startBgmLoop() {
+    const scale = [146.83, 174.61, 220.00, 261.63, 293.66]; // D Minor Pentatonic
+    setInterval(() => {
+      if (!this.ctx || this.isMuted) return;
+      this.bgmStep++;
+      const now = this.ctx.currentTime;
+      if (this.bgmStep % 2 === 0) {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const note = scale[Math.floor(Math.random() * scale.length)];
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(note * (Math.random() > 0.5 ? 2 : 1), now);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        osc.connect(gain);
+        gain.connect(this.bgmGain);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      }
+    }, 240);
+  }
+};
+
+window.addEventListener('pointerdown', () => GameAudio.init(), { once: true });
+
+/* ══════════════════════════════════════
+   2. APP STATE & CENTERED SCALING
+══════════════════════════════════════ */
+let _selectedBook = 'all';
+let _selectedMode = 'crafting'; // 'crafting' | 'arcade' | 'chain'
+let _selectedCount = 10;
+
+let _questList = [];
+let _currentQuestIndex = 0;
+let _currentScore = 0;
+let _currentStreak = 0;
+let _maxStreak = 0;
+let _correctFusions = 0;
+
+let _timerInterval = null;
+let _timeRemaining = 15.0;
+
+function _scaleScene() {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const s = Math.min(vw / 1920, vh / 1080);
+  const container = document.getElementById('sceneContainer');
+  if (container) {
+    container.style.transform = `scale(${s})`;
+    container.style.left = `${(vw - 1920 * s) / 2}px`;
+    container.style.top = `${(vh - 1080 * s) / 2}px`;
+  }
+}
+window.addEventListener('resize', _scaleScene);
+_scaleScene();
+
+function showScreen(screenId) {
+  document.querySelectorAll('.hd-screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(screenId);
+  if (el) el.classList.add('active');
+
+  const backBtn = document.getElementById('btnNavBack');
+  if (backBtn) {
+    if (screenId === 'screenSetup') {
+      backBtn.innerHTML = '◀ HUB';
+      backBtn.title = 'Kembali ke Menu Hub';
+    } else {
+      backBtn.innerHTML = '⚙️ SETTING GAME';
+      backBtn.title = 'Kembali ke Pengaturan Game';
+    }
+  }
+}
+
+function safeExitGame() {
+  try {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: 'EXIT_GAME' }, '*');
+      return;
+    }
+  } catch (e) {}
+  try {
+    if (window.top && window.top !== window) {
+      window.top.location.href = '../index.html';
+      return;
+    }
+  } catch (e) {}
+  window.location.href = '../index.html';
+}
+
+function handleNavBack() {
+  GameAudio.playSnap();
+  const activeScreen = document.querySelector('.hd-screen.active');
+  const screenId = activeScreen ? activeScreen.id : '';
+
+  if (screenId === 'screenSetup') {
+    safeExitGame();
+  } else {
+    clearInterval(_timerInterval);
+    if (_arcadeSpawnTimer) clearInterval(_arcadeSpawnTimer);
+    if (_arcadeAnimId) cancelAnimationFrame(_arcadeAnimId);
+    showScreen('screenSetup');
+  }
+}
+
+function selectSetupBook(book) {
+  GameAudio.playSnap();
+  _selectedBook = book;
+  document.querySelectorAll('.setup-pill-btn').forEach(b => b.classList.remove('active'));
+  const target = document.getElementById('bookBtn_' + book);
+  if (target) target.classList.add('active');
+  updateSetupSummary();
+}
+
+function selectGameMode(mode) {
+  GameAudio.playSnap();
+  _selectedMode = mode;
+  document.querySelectorAll('.mode-card-btn').forEach(b => b.classList.remove('active'));
+  const target = document.getElementById('modeBtn_' + mode);
+  if (target) target.classList.add('active');
+  updateSetupSummary();
+}
+
+function selectPuzzleCount(cnt) {
+  GameAudio.playSnap();
+  _selectedCount = cnt;
+  document.querySelectorAll('.count-pill').forEach(b => b.classList.remove('active'));
+  const target = document.getElementById('cntBtn_' + cnt);
+  if (target) target.classList.add('active');
+  updateSetupSummary();
+}
+
+function updateSetupSummary() {
+  const bookLabels = { 'all': 'All Buku (1–3)', 1: 'Meihua Buku 1', 2: 'Meihua Buku 2', 3: 'Meihua Buku 3' };
+  const modeLabels = { 'crafting': 'Blueprint Crafting', 'arcade': 'Arcade Falling Drop', 'chain': 'Radical Chain Match' };
+  const countLabel = _selectedCount === 'all' ? 'Semua Soal' : `${_selectedCount} Puzzles`;
+
+  const lbl = document.getElementById('setupSummaryLabel');
+  if (lbl) {
+    lbl.innerHTML = `Selected: <strong>${bookLabels[_selectedBook] || _selectedBook}</strong> · <strong>${countLabel}</strong> · <strong>${modeLabels[_selectedMode] || _selectedMode}</strong>`;
+  }
+}
+
+function startHanziPuzzleQuest() {
+  GameAudio.playSnap();
+  let pool = getHanziComponentsByBook(_selectedBook);
+  if (!pool || pool.length === 0) pool = HANZI_COMPONENTS_DB;
+
+  const shuffled = [...pool];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  const count = _selectedCount === 'all' ? shuffled.length : Math.min(Number(_selectedCount), shuffled.length);
+  _questList = shuffled.slice(0, count);
+
+  _currentQuestIndex = 0;
+  _currentScore = 0;
+  _currentStreak = 0;
+  _maxStreak = 0;
+  _correctFusions = 0;
+
+  if (_selectedMode === 'crafting') {
+    showScreen('screenCrafting');
+    loadCraftingStage(0);
+  } else if (_selectedMode === 'arcade') {
+    showScreen('screenArcade');
+    loadArcadeStage(0);
+  } else if (_selectedMode === 'chain') {
+    showScreen('screenChain');
+    loadChainStage(0);
+  }
+}
+
+/* ══════════════════════════════════════
+   3. MODE 1: BLUEPRINT CRAFTING
+══════════════════════════════════════ */
+let _currentCraftSlots = [];
+
+function loadCraftingStage(idx) {
+  _currentQuestIndex = idx;
+  const puzzle = _questList[idx];
+  if (!puzzle) { finishHanziQuest(); return; }
+
+  document.getElementById('hudProgressVal').textContent = `${idx + 1} / ${_questList.length}`;
+  document.getElementById('hudScoreVal').textContent = _currentScore;
+  updateStreakBadge('hudStreakBadge');
+
+  document.getElementById('fusionFinalDisplay').classList.remove('active');
+  document.getElementById('bpCluePinyin').textContent = puzzle.pinyin;
+  document.getElementById('bpClueMeaning').textContent = puzzle.meaning;
+
+  const structMap = {
+    'lr': 'STRUKTUR: KIRI - KANAN (⿰)',
+    'tb': 'STRUKTUR: ATAS - BAWAH (⿱)',
+    'enc': 'STRUKTUR: LUAR - DALAM (⿴)',
+    'tri': 'STRUKTUR: 3 BAGIAN (⿲)'
+  };
+  document.getElementById('bpStructureBadge').textContent = structMap[puzzle.structure] || 'STRUKTUR GABUNGAN';
+
+  const container = document.getElementById('slotsContainer');
+  container.innerHTML = '';
+  _currentCraftSlots = [];
+
+  const layoutWrap = document.createElement('div');
+  layoutWrap.className = `slots-layout-${puzzle.structure || 'lr'}`;
+
+  const slotLabelsMap = {
+    'lr': ['KIRI', 'KANAN'],
+    'tb': ['ATAS', 'BAWAH'],
+    'enc': ['LUAR', 'DALAM'],
+    'tri': ['BAG 1', 'BAG 2', 'BAG 3']
+  };
+  const labels = slotLabelsMap[puzzle.structure] || ['BAG 1', 'BAG 2'];
+
+  puzzle.parts.forEach((expected, sIdx) => {
+    const slotEl = document.createElement('div');
+    slotEl.className = 'blueprint-slot';
+    slotEl.innerHTML = `
+      <span class="slot-label">${labels[sIdx] || `SLOT ${sIdx+1}`}</span>
+      <span class="slot-char" id="cSlotChar_${sIdx}"></span>
+    `;
+    slotEl.onclick = () => handleCraftSlotClick(sIdx);
+
+    _currentCraftSlots.push({
+      slotIndex: sIdx,
+      expected: expected,
+      current: null
+    });
+
+    layoutWrap.appendChild(slotEl);
+  });
+  container.appendChild(layoutWrap);
+
+  // Chips
+  const tray = document.getElementById('componentsTrayRow');
+  tray.innerHTML = '';
+  const correct = [...puzzle.parts];
+  const distractors = [...(puzzle.distractors || ['木', '口', '日'])].slice(0, 3);
+  const allChips = [...correct, ...distractors];
+  for (let i = allChips.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [allChips[i], allChips[j]] = [allChips[j], allChips[i]];
+  }
+
+  allChips.forEach((char, cIdx) => {
+    const btn = document.createElement('button');
+    btn.className = 'comp-chip-btn';
+    btn.id = 'chipBtn_' + cIdx;
+    btn.textContent = char;
+    btn.onclick = () => handleCraftChipClick(char, btn);
+    tray.appendChild(btn);
+  });
+
+  startGenericTimer('hudTimerFill', 'hudTimerNum', 15.0, () => {
+    handleCraftingTimeout(puzzle);
+  });
+}
+
+function handleCraftChipClick(char, btn) {
+  const empty = _currentCraftSlots.find(s => s.current === null);
+  if (!empty) return;
+
+  GameAudio.playSnap();
+  empty.current = char;
+  btn.classList.add('used');
+
+  const charEl = document.getElementById('cSlotChar_' + empty.slotIndex);
+  if (charEl) charEl.textContent = char;
+  const slotEl = charEl ? charEl.parentElement : null;
+  if (slotEl) slotEl.classList.add('filled');
+
+  if (_currentCraftSlots.every(s => s.current !== null)) {
+    evaluateCrafting();
+  }
+}
+
+function handleCraftSlotClick(sIdx) {
+  const slot = _currentCraftSlots[sIdx];
+  if (!slot || slot.current === null) return;
+
+  GameAudio.playSnap();
+  const removed = slot.current;
+  slot.current = null;
+
+  const charEl = document.getElementById('cSlotChar_' + sIdx);
+  if (charEl) charEl.textContent = '';
+  const slotEl = charEl ? charEl.parentElement : null;
+  if (slotEl) slotEl.classList.remove('filled');
+
+  const used = document.querySelectorAll('.comp-chip-btn.used');
+  for (let u of used) {
+    if (u.textContent === removed) {
+      u.classList.remove('used');
+      break;
+    }
+  }
+}
+
+function evaluateCrafting() {
+  const puzzle = _questList[_currentQuestIndex];
+  const isCorrect = _currentCraftSlots.every(s => s.current === s.expected);
+
+  if (isCorrect) {
+    clearInterval(_timerInterval);
+    GameAudio.playFusionChime();
+    GameAudio.speakHanzi(puzzle.hanzi);
+
+    _correctFusions++;
+    _currentStreak++;
+    if (_currentStreak > _maxStreak) _maxStreak = _currentStreak;
+    updateStreakBadge('hudStreakBadge');
+
+    const earned = 100 + Math.round(_timeRemaining * 10) + Math.min(_currentStreak * 20, 100);
+    _currentScore += earned;
+    document.getElementById('hudScoreVal').textContent = _currentScore;
+
+    showFlyingScore(`+${earned} FUSION!`, document.getElementById('slotsContainer'), '#00ff9d');
+
+    const finalCharEl = document.getElementById('finalFusedChar');
+    const pedagogyEl = document.getElementById('finalPedagogyBadge');
+    finalCharEl.textContent = puzzle.hanzi;
+    pedagogyEl.textContent = puzzle.pedagogy || `${puzzle.parts.join(' + ')} = ${puzzle.hanzi}`;
+    document.getElementById('fusionFinalDisplay').classList.add('active');
+
+    setTimeout(() => {
+      loadCraftingStage(_currentQuestIndex + 1);
+    }, 2400);
+  } else {
+    GameAudio.playWrong();
+    _currentStreak = 0;
+    updateStreakBadge('hudStreakBadge');
+    showFlyingScore(`KOMBINASI BELUM TEPAT`, document.getElementById('slotsContainer'), '#ff2a55');
+
+    setTimeout(() => {
+      _currentCraftSlots.forEach(s => {
+        s.current = null;
+        const charEl = document.getElementById('cSlotChar_' + s.slotIndex);
+        if (charEl) charEl.textContent = '';
+        const slotEl = charEl ? charEl.parentElement : null;
+        if (slotEl) slotEl.classList.remove('filled');
+      });
+      document.querySelectorAll('.comp-chip-btn.used').forEach(c => c.classList.remove('used'));
+    }, 450);
+  }
+}
+
+function handleCraftingTimeout(puzzle) {
+  GameAudio.playWrong();
+  _currentStreak = 0;
+  updateStreakBadge('hudStreakBadge');
+  showFlyingScore(`WAKTU HABIS!`, document.getElementById('slotsContainer'), '#ff007f');
+
+  document.getElementById('finalFusedChar').textContent = puzzle.hanzi;
+  document.getElementById('finalPedagogyBadge').textContent = `JAWABAN: ${puzzle.pedagogy || puzzle.parts.join(' + ')}`;
+  document.getElementById('fusionFinalDisplay').classList.add('active');
+
+  setTimeout(() => {
+    loadCraftingStage(_currentQuestIndex + 1);
+  }, 2600);
+}
+
+/* ══════════════════════════════════════
+   4. MODE 2: ARCADE FALLING DROP
+══════════════════════════════════════ */
+let _arcadeActiveBubbles = [];
+let _arcadeNeededParts = [];
+let _arcadeCaughtParts = [];
+let _arcadeSpawnTimer = null;
+let _arcadeAnimId = null;
+
+function loadArcadeStage(idx) {
+  _currentQuestIndex = idx;
+  const puzzle = _questList[idx];
+  if (!puzzle) { finishHanziQuest(); return; }
+
+  document.getElementById('arcadeProgressVal').textContent = `${idx + 1} / ${_questList.length}`;
+  document.getElementById('arcadeScoreVal').textContent = _currentScore;
+  updateStreakBadge('arcadeStreakBadge');
+
+  document.getElementById('arcadeFusionOverlay').classList.remove('active');
+  document.getElementById('arcadeTargetHanzi').textContent = puzzle.hanzi;
+  
+  _arcadeNeededParts = [...puzzle.parts];
+  _arcadeCaughtParts = [];
+  updateArcadeNeededText();
+
+  // Clear existing bubbles
+  const container = document.getElementById('arcadeLanesContainer');
+  container.querySelectorAll('.falling-bubble').forEach(b => b.remove());
+  _arcadeActiveBubbles = [];
+
+  // Start real-time falling spawner & physics
+  startArcadeLoop(puzzle);
+
+  startGenericTimer('arcadeTimerFill', 'arcadeTimerNum', 22.0, () => {
+    handleArcadeTimeout(puzzle);
+  });
+}
+
+function updateArcadeNeededText() {
+  const puzzle = _questList[_currentQuestIndex];
+  const remaining = _arcadeNeededParts.filter((p, i) => !_arcadeCaughtParts.includes(p) || _arcadeNeededParts.indexOf(p) !== i);
+  const text = _arcadeNeededParts.map(p => {
+    return _arcadeCaughtParts.includes(p) ? `[ ✓ ${p} ]` : `[ ${p} ]`;
+  }).join(' + ');
+
+  document.getElementById('arcadeTargetNeeded').textContent = `Target: ${text} (${puzzle.meaning})`;
+}
+
+function startArcadeLoop(puzzle) {
+  if (_arcadeSpawnTimer) clearInterval(_arcadeSpawnTimer);
+  if (_arcadeAnimId) cancelAnimationFrame(_arcadeAnimId);
+
+  const container = document.getElementById('arcadeLanesContainer');
+  const pool = [...puzzle.parts, ...(puzzle.distractors || ['木', '日', '口', '女', '氵'])];
+
+  // Spawn a bubble every 1.1s
+  _arcadeSpawnTimer = setInterval(() => {
+    const char = pool[Math.floor(Math.random() * pool.length)];
+    const bubble = document.createElement('div');
+    bubble.className = 'falling-bubble';
+    bubble.textContent = char;
+
+    const laneWidth = 1380 / 5;
+    const lane = Math.floor(Math.random() * 5);
+    const posX = lane * laneWidth + 30;
+
+    bubble.style.left = posX + 'px';
+    bubble.style.top = '-110px';
+
+    const bubbleObj = {
+      dom: bubble,
+      char: char,
+      y: -110,
+      speed: 1.8 + Math.random() * 0.8
+    };
+
+    bubble.onclick = () => handleArcadeBubbleClick(bubbleObj);
+
+    container.appendChild(bubble);
+    _arcadeActiveBubbles.push(bubbleObj);
+  }, 1100);
+
+  // Physics animation tick
+  function tick() {
+    for (let i = _arcadeActiveBubbles.length - 1; i >= 0; i--) {
+      const b = _arcadeActiveBubbles[i];
+      b.y += b.speed;
+      b.dom.style.top = b.y + 'px';
+
+      // Reached bottom
+      if (b.y > 600) {
+        b.dom.remove();
+        _arcadeActiveBubbles.splice(i, 1);
+      }
+    }
+    _arcadeAnimId = requestAnimationFrame(tick);
+  }
+  _arcadeAnimId = requestAnimationFrame(tick);
+}
+
+function handleArcadeBubbleClick(bubbleObj) {
+  const puzzle = _questList[_currentQuestIndex];
+  const char = bubbleObj.char;
+
+  if (_arcadeNeededParts.includes(char) && !_arcadeCaughtParts.includes(char)) {
+    // CORRECT COMPONENT CAUGHT
+    GameAudio.playSnap();
+    _arcadeCaughtParts.push(char);
+    bubbleObj.dom.style.transform = 'scale(1.4)';
+    bubbleObj.dom.style.opacity = '0';
+    setTimeout(() => bubbleObj.dom.remove(), 150);
+
+    const idx = _arcadeActiveBubbles.indexOf(bubbleObj);
+    if (idx !== -1) _arcadeActiveBubbles.splice(idx, 1);
+
+    updateArcadeNeededText();
+
+    // Check if full character is gathered
+    if (_arcadeCaughtParts.length === _arcadeNeededParts.length) {
+      clearInterval(_arcadeSpawnTimer);
+      cancelAnimationFrame(_arcadeAnimId);
+      clearInterval(_timerInterval);
+
+      GameAudio.playFusionChime();
+      GameAudio.speakHanzi(puzzle.hanzi);
+
+      _correctFusions++;
+      _currentStreak++;
+      if (_currentStreak > _maxStreak) _maxStreak = _currentStreak;
+      updateStreakBadge('arcadeStreakBadge');
+
+      const earned = 150 + Math.round(_timeRemaining * 10);
+      _currentScore += earned;
+      document.getElementById('arcadeScoreVal').textContent = _currentScore;
+
+      showFlyingScore(`+${earned} ARCADE FUSION!`, document.getElementById('arcadeField'), '#00ff9d');
+
+      document.getElementById('arcadeFinalChar').textContent = puzzle.hanzi;
+      document.getElementById('arcadeFinalPedagogy').textContent = `🎉 SUPERNOVA FUSION: ${puzzle.pedagogy || puzzle.hanzi}`;
+      document.getElementById('arcadeFusionOverlay').classList.add('active');
+
+      setTimeout(() => {
+        loadArcadeStage(_currentQuestIndex + 1);
+      }, 2400);
+    }
+  } else {
+    // WRONG COMPONENT
+    GameAudio.playWrong();
+    _currentStreak = 0;
+    updateStreakBadge('arcadeStreakBadge');
+    showFlyingScore(`BUKAN KOMPONEN TARGET`, bubbleObj.dom, '#ff2a55');
+  }
+}
+
+function handleArcadeTimeout(puzzle) {
+  clearInterval(_arcadeSpawnTimer);
+  cancelAnimationFrame(_arcadeAnimId);
+  GameAudio.playWrong();
+  _currentStreak = 0;
+  updateStreakBadge('arcadeStreakBadge');
+
+  document.getElementById('arcadeFinalChar').textContent = puzzle.hanzi;
+  document.getElementById('arcadeFinalPedagogy').textContent = `WAKTU HABIS! JAWABAN: ${puzzle.parts.join(' + ')}`;
+  document.getElementById('arcadeFusionOverlay').classList.add('active');
+
+  setTimeout(() => {
+    loadArcadeStage(_currentQuestIndex + 1);
+  }, 2600);
+}
+
+/* ══════════════════════════════════════
+   5. MODE 3: RADICAL CHAIN MATCH
+══════════════════════════════════════ */
+const RADICAL_CHAIN_SETS = [
+  {
+    radical: '氵', name: 'RADIKAL AIR (氵)',
+    matches: [
+      { char: '每', fused: '海', name: 'Laut' },
+      { char: '工', fused: '江', name: 'Sungai' },
+      { char: '可', fused: '河', name: 'Sungai' },
+      { char: '古', fused: '湖', name: 'Danau' }
+    ],
+    distractors: ['火', '木', '鸟', '门']
+  },
+  {
+    radical: '亻', name: 'RADIKAL ORANG (亻)',
+    matches: [
+      { char: '木', fused: '休', name: 'Istirahat' },
+      { char: '也', fused: '他', name: 'Dia' },
+      { char: '门', fused: '们', name: 'Jamak' },
+      { char: '尔', fused: '你', name: 'Kamu' }
+    ],
+    distractors: ['日', '田', '父', '车']
+  },
+  {
+    radical: '口', name: 'RADIKAL MULUT (口)',
+    matches: [
+      { char: '乞', fused: '吃', name: 'Makan' },
+      { char: '曷', fused: '喝', name: 'Minum' },
+      { char: '昌', fused: '唱', name: 'Nyanyi' },
+      { char: '十', fused: '叶', name: 'Daun' }
+    ],
+    distractors: ['水', '手', '月', '女']
+  },
+  {
+    radical: '女', name: 'RADIKAL WANITA (女)',
+    matches: [
+      { char: '子', fused: '好', name: 'Baik' },
+      { char: '马', fused: '妈', name: 'Ibu' },
+      { char: '且', fused: '姐', name: 'Kakak Pr' },
+      { char: '未', fused: '妹', name: 'Adik Pr' }
+    ],
+    distractors: ['牛', '父', '力', '木']
+  }
+];
+
+let _currentChainSet = null;
+let _connectedChainCount = 0;
+
+function loadChainStage(idx) {
+  _currentQuestIndex = idx;
+  const setIndex = idx % RADICAL_CHAIN_SETS.length;
+  _currentChainSet = RADICAL_CHAIN_SETS[setIndex];
+
+  document.getElementById('chainProgressVal').textContent = `${idx + 1} / ${_questList.length}`;
+  document.getElementById('chainScoreVal').textContent = _currentScore;
+  updateStreakBadge('chainStreakBadge');
+
+  document.getElementById('chainFusionOverlay').classList.remove('active');
+  document.getElementById('chainCenterChar').textContent = _currentChainSet.radical;
+  document.getElementById('chainCenterSub').textContent = _currentChainSet.name;
+
+  _connectedChainCount = 0;
+
+  // Reset SVG layer with orbital dashed ellipse
+  const svgLayer = document.getElementById('chainSvgLayer');
+  if (svgLayer) {
+    svgLayer.innerHTML = '<ellipse cx="700" cy="385" rx="420" ry="230" fill="none" stroke="rgba(0, 255, 157, 0.22)" stroke-width="2.5" stroke-dasharray="8 8" />';
+  }
+
+  // Build Orbiting Satellites
+  const container = document.getElementById('chainSatellitesContainer');
+  container.innerHTML = '';
+
+  const satellites = [
+    ..._currentChainSet.matches.map(m => ({ char: m.char, isMatch: true, fused: m.fused, name: m.name })),
+    ..._currentChainSet.distractors.map(d => ({ char: d, isMatch: false }))
+  ];
+
+  // Shuffle Satellites
+  for (let i = satellites.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [satellites[i], satellites[j]] = [satellites[j], satellites[i]];
+  }
+
+  const radiusX = 420;
+  const radiusY = 230;
+  const centerX = 700;
+  const centerY = 385;
+
+  satellites.forEach((sat, sIdx) => {
+    const angle = (sIdx / satellites.length) * 2 * Math.PI - (Math.PI / 2);
+    const nodeCenterX = centerX + Math.cos(angle) * radiusX;
+    const nodeCenterY = centerY + Math.sin(angle) * radiusY;
+
+    const node = document.createElement('div');
+    node.className = 'chain-satellite-node';
+    node.style.left = (nodeCenterX - 55) + 'px';
+    node.style.top = (nodeCenterY - 55) + 'px';
+    node.dataset.cx = nodeCenterX;
+    node.dataset.cy = nodeCenterY;
+    node.innerHTML = `
+      <span class="sat-char" id="satChar_${sIdx}">${sat.char}</span>
+      <span class="sat-fused" id="satFused_${sIdx}"></span>
+    `;
+
+    node.onclick = () => handleChainNodeClick(sat, node, sIdx);
+    container.appendChild(node);
+  });
+
+  startGenericTimer('chainTimerFill', 'chainTimerNum', 25.0, () => {
+    handleChainTimeout();
+  });
+}
+
+function handleChainNodeClick(sat, node, sIdx) {
+  if (sat.isMatch) {
+    // CORRECT CHAIN CONNECTION
+    GameAudio.playFusionChime();
+    GameAudio.speakHanzi(sat.fused);
+    node.classList.add('connected');
+
+    document.getElementById('satChar_' + sIdx).textContent = sat.fused;
+    document.getElementById('satFused_' + sIdx).textContent = `✓ ${sat.name}`;
+
+    // Draw glowing laser connection line to center
+    const svgLayer = document.getElementById('chainSvgLayer');
+    if (svgLayer && node.dataset.cx) {
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', '700');
+      line.setAttribute('y1', '385');
+      line.setAttribute('x2', node.dataset.cx);
+      line.setAttribute('y2', node.dataset.cy);
+      line.setAttribute('stroke', '#00ff9d');
+      line.setAttribute('stroke-width', '4');
+      line.setAttribute('stroke-linecap', 'round');
+      line.setAttribute('style', 'filter: drop-shadow(0 0 12px rgba(0, 255, 157, 0.9));');
+      svgLayer.appendChild(line);
+    }
+
+    _connectedChainCount++;
+    _currentStreak++;
+    if (_currentStreak > _maxStreak) _maxStreak = _currentStreak;
+    updateStreakBadge('chainStreakBadge');
+
+    const earned = 100 + _currentStreak * 15;
+    _currentScore += earned;
+    document.getElementById('chainScoreVal').textContent = _currentScore;
+
+    showFlyingScore(`+${earned} CHAIN!`, node, '#00ff9d');
+
+    // All matches found
+    if (_connectedChainCount === _currentChainSet.matches.length) {
+      clearInterval(_timerInterval);
+      _correctFusions++;
+
+      setTimeout(() => {
+        GameAudio.playFusionChime();
+        document.getElementById('chainFinalChar').textContent = _currentChainSet.radical;
+        document.getElementById('chainFinalPedagogy').textContent = `🌟 RADICAL MATRIX COMPLETED! +300 BONUS PTS`;
+        document.getElementById('chainFusionOverlay').classList.add('active');
+
+        _currentScore += 300;
+        document.getElementById('chainScoreVal').textContent = _currentScore;
+
+        setTimeout(() => {
+          if (_currentQuestIndex + 1 >= _questList.length) {
+            finishHanziQuest();
+          } else {
+            loadChainStage(_currentQuestIndex + 1);
+          }
+        }, 2600);
+      }, 500);
+    }
+  } else {
+    // WRONG
+    GameAudio.playWrong();
+    _currentStreak = 0;
+    updateStreakBadge('chainStreakBadge');
+    showFlyingScore(`TIDAK BISA DIGABUNG`, node, '#ff2a55');
+  }
+}
+
+function handleChainTimeout() {
+  GameAudio.playWrong();
+  _currentStreak = 0;
+  updateStreakBadge('chainStreakBadge');
+
+  document.getElementById('chainFinalChar').textContent = _currentChainSet.radical;
+  document.getElementById('chainFinalPedagogy').textContent = `WAKTU HABIS! COBA LAGI TAHAP BERIKUTNYA`;
+  document.getElementById('chainFusionOverlay').classList.add('active');
+
+  setTimeout(() => {
+    if (_currentQuestIndex + 1 >= _questList.length) {
+      finishHanziQuest();
+    } else {
+      loadChainStage(_currentQuestIndex + 1);
+    }
+  }, 2600);
+}
+
+/* ══════════════════════════════════════
+   6. SHARED UTILITIES & RESULTS DEBRIEF
+══════════════════════════════════════ */
+function startGenericTimer(fillId, numId, duration, onTimeout) {
+  clearInterval(_timerInterval);
+  _timeRemaining = duration;
+  const fill = document.getElementById(fillId);
+  const num = document.getElementById(numId);
+  if (fill) fill.style.width = '100%';
+  if (num) num.textContent = duration.toFixed(1) + 's';
+
+  _timerInterval = setInterval(() => {
+    _timeRemaining -= 0.1;
+    if (_timeRemaining <= 0) {
+      _timeRemaining = 0;
+      clearInterval(_timerInterval);
+      if (onTimeout) onTimeout();
+    }
+    const pct = Math.max(0, (_timeRemaining / duration) * 100);
+    if (fill) fill.style.width = pct + '%';
+    if (num) num.textContent = _timeRemaining.toFixed(1) + 's';
+  }, 100);
+}
+
+function updateStreakBadge(badgeId) {
+  const badge = document.getElementById(badgeId);
+  if (!badge) return;
+  if (_currentStreak >= 2) {
+    badge.textContent = `🔥 ${_currentStreak} COMBO`;
+    badge.classList.add('active');
+  } else {
+    badge.classList.remove('active');
+  }
+}
+
+function showFlyingScore(txt, anchorEl, color = '#00f0ff') {
+  if (!anchorEl) return;
+  const rect = anchorEl.getBoundingClientRect();
+  const floatEl = document.createElement('div');
+  floatEl.className = 'flying-score';
+  floatEl.style.left = (rect.left + rect.width / 2 - 80) + 'px';
+  floatEl.style.top = (rect.top + rect.height / 2) + 'px';
+  floatEl.style.color = color;
+  floatEl.textContent = txt;
+  document.body.appendChild(floatEl);
+  setTimeout(() => floatEl.remove(), 1250);
+}
+
+function finishHanziQuest() {
+  clearInterval(_timerInterval);
+  if (_arcadeSpawnTimer) clearInterval(_arcadeSpawnTimer);
+  if (_arcadeAnimId) cancelAnimationFrame(_arcadeAnimId);
+
+  showScreen('screenResults');
+  GameAudio.playFusionChime();
+
+  const total = _questList.length;
+  const accuracy = total > 0 ? Math.round((_correctFusions / total) * 100) : 0;
+
+  document.getElementById('resFinalScore').textContent = _currentScore;
+  document.getElementById('resAccuracy').textContent = accuracy + '%';
+  document.getElementById('resCorrectCount').textContent = `${_correctFusions} / ${total}`;
+  document.getElementById('resMaxStreak').textContent = `${_maxStreak}🔥`;
+
+  const rankImg = document.getElementById('resRankImg');
+  if (accuracy >= 90) rankImg.src = 'icons/cyber/rank_s.png';
+  else if (accuracy >= 75) rankImg.src = 'icons/cyber/rank_a.png';
+  else if (accuracy >= 60) rankImg.src = 'icons/cyber/rank_b.png';
+  else rankImg.src = 'icons/cyber/rank_c.png';
+}
+
+/* Initialize counts on load */
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('count_all').textContent = `${HANZI_COMPONENTS_DB.length} Karakter`;
+  document.getElementById('count_1').textContent = `${getHanziComponentsByBook(1).length} Karakter`;
+  document.getElementById('count_2').textContent = `${getHanziComponentsByBook(2).length} Karakter`;
+  document.getElementById('count_3').textContent = `${getHanziComponentsByBook(3).length} Karakter`;
+  updateSetupSummary();
+  _scaleScene();
+});
+</script>
+</body>
+</html>

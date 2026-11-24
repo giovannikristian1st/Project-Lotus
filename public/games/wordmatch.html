@@ -726,6 +726,23 @@ function safeExitGame() {
 window.safeExitGame = safeExitGame;
 </script>
 
+
+  <script>
+    (function() {
+      function checkEmbeddedHubNav() {
+        if (window.location.search.includes('embedded=1') || (window.parent && window.parent !== window)) {
+          var btn = document.getElementById('btnNavBack');
+          if (btn) btn.style.display = 'none';
+        }
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', checkEmbeddedHubNav);
+      } else {
+        checkEmbeddedHubNav();
+      }
+    })();
+  </script>
+
 </head>
 <body>
 
@@ -1031,7 +1048,7 @@ window.safeExitGame = safeExitGame;
 
       <div class="res-actions-row">
         <button class="res-btn primary" onclick="startQuizQuest()">🔄 REPLAY MISSION</button>
-        <button class="res-btn secondary" onclick="showScreen('screenSetup')">⚙️ SETUP & LEVELS</button>
+        <button class="res-btn secondary" id="btnWordMatchSetup" onclick="handleWordMatchSetupBtn()">⚙️ SETUP & LEVELS</button>
         <button class="res-btn secondary" onclick="safeExitGame()">🏠 BACK TO HUB</button>
       </div>
     </div>
@@ -2636,13 +2653,21 @@ function finishQuizQuest() {
   }
 }
 
+function handleWordMatchSetupBtn() {
+  if (_customWmQuestions && _customWmQuestions.length > 0) {
+    safeExitGame();
+  } else {
+    showScreen('screenSetup');
+  }
+}
+
 function handleNavBack() {
   GameAudio.playLaserBeep();
   const currentScreen = document.querySelector('.wm-screen.active');
   const screenId = currentScreen ? currentScreen.id : '';
 
-  if (screenId === 'screenSetup') {
-    // Already on Setup screen -> exit to main Hub (index.html)
+  if (screenId === 'screenSetup' || (_customWmQuestions && _customWmQuestions.length > 0)) {
+    // Already on Setup screen or playing custom activity -> exit to main Hub (index.html)
     safeExitGame();
   } else {
     // In Quiz, Minigame, or Results -> Return to Game Setting!
@@ -2659,7 +2684,7 @@ function showScreen(screenId) {
   // Dynamically update Top Nav Back Button
   const backBtn = document.getElementById('btnNavBack');
   if (backBtn) {
-    if (screenId === 'screenSetup') {
+    if (screenId === 'screenSetup' || (_customWmQuestions && _customWmQuestions.length > 0)) {
       backBtn.innerHTML = '◀ HUB';
       backBtn.title = 'Kembali ke Menu Hub Utama';
     } else {

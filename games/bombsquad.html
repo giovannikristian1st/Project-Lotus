@@ -602,7 +602,7 @@ function showScreen(screenId) {
 
   const backBtn = document.getElementById('btnNavBack');
   if (backBtn) {
-    if (screenId === 'screenSetup') backBtn.innerHTML = '◀ HUB';
+    if (screenId === 'screenSetup' || (_customBombQuestions && _customBombQuestions.length > 0)) backBtn.innerHTML = '◀ HUB';
     else backBtn.innerHTML = '⚙️ SETTING BAB';
   }
 }
@@ -610,6 +610,8 @@ function showScreen(screenId) {
 function handleNavBack() {
   const active = document.querySelector('.bs-screen.active');
   if (active && active.id === 'screenSetup') {
+    safeExitGame();
+  } else if (_customBombQuestions && _customBombQuestions.length > 0) {
     safeExitGame();
   } else {
     clearInterval(_bombTimerInterval);
@@ -779,6 +781,14 @@ function loadBombStage(idx) {
       const totalScore = _teams.reduce((sum, t) => sum + (t.score || 0), 0);
       const maxScore = _bombQuestions.length * 200;
       window.GameBridge.finishGame(totalScore, maxScore, _teams.map(t => ({ team: t.name, score: t.score })), 'Bomb Squad');
+    }
+    if (_customBombQuestions && _customBombQuestions.length > 0) {
+      if (confirm('SELURUH MISI PENJINAKAN BOM SELESAI!\n\nKlik OK untuk main lagi dengan set soal ini, atau Batal untuk keluar.')) {
+        startBombSquadGame();
+      } else {
+        safeExitGame();
+      }
+      return;
     }
     alert('SELURUH MISI PENJINAKAN BOM SELESAI!');
     showScreen('screenSetup');

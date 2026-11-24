@@ -3771,8 +3771,18 @@ function btlStartBattle(heroKey, enemyKey) {
   _wbInit(heroKey, enemyKey);
 }
 
-/* Restart → back to mode select */
-function btlRestart() { btlOpen(); }
+/* Restart → back to mode select or replay */
+function btlRestart() {
+  var popup = document.getElementById('wbEndPopup');
+  if (popup) popup.classList.remove('open');
+  if (Array.isArray(_customWordDb) && _customWordDb.length > 0) {
+    var p1Key = _hsSelectedHero[0] || 'hero1';
+    var p2Key = _hsSelectedHero[1] || 'hero2';
+    btlStartBattle(p1Key, p2Key);
+  } else {
+    btlOpen();
+  }
+}
 
 /* Close / exit */
 function btlClose() {

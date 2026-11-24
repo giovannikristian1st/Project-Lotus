@@ -1320,6 +1320,11 @@
               <span>🏮</span>
               <span data-i18n="media.filterMandarin">Bahasa Mandarin</span>
             </button>
+            <button type="button" id="media-tab-ifp" onclick="filterTeachingMediaCategory('ifp-mandarin')"
+              class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer text-[#57534e] hover:text-[#18181b]">
+              <span>🎮</span>
+              <span data-i18n="media.filterIfpMandarin">Game IFP Mandarin</span>
+            </button>
           </div>
 
           <!-- Real-Time Search Box -->
@@ -1721,7 +1726,7 @@
 
             <!-- Real Game Iframe (Supports AI Camera games!) -->
             <button type="button" id="player-exit-fullscreen-btn" onclick="togglePlayerFullscreen()"
-              class="hidden absolute top-3 right-3 z-50 px-3.5 py-1.5 rounded-lg bg-black/75 hover:bg-black/90 text-white font-bold text-xs shadow-lg backdrop-blur flex items-center gap-1.5 border border-white/20 transition-all cursor-pointer">
+              class="hidden absolute top-2.5 left-1/2 -translate-x-1/2 z-50 px-4 py-1.5 rounded-full bg-black/80 hover:bg-black text-white font-semibold text-xs shadow-2xl backdrop-blur flex items-center gap-1.5 border border-white/30 transition-all cursor-pointer select-none hover:scale-105 active:scale-95">
               <span class="ui-sprite ui-xs ui-fullscreen"></span>
               <span data-i18n="player.exitFullscreen">Keluar Fullscreen</span>
             </button>
@@ -7591,6 +7596,186 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
         badgeClass: 'bg-pink-50 text-pink-700 border-pink-200',
         badgeText: '✨ Air-Gesture AI',
         tags: ['Camera Gesture', '2P Split Screen', 'Meihua Vocab']
+      },
+      {
+        id: 'ifp-bombsquad',
+        category: 'ifp-mandarin',
+        categoryLabel: 'Game IFP Mandarin',
+        title: 'Bomb Squad Hanzi (Penjinak Bom)',
+        titleEn: 'Hanzi Bomb Squad Defuser',
+        desc: 'Misi regu penjinak bom Meihua: tebak arti & pinyin karakter sebelum hitungan mundur meledak.',
+        descEn: 'Co-op bomb defusal mission: identify Hanzi meanings and pinyin before the countdown runs out.',
+        url: 'games/bombsquad.html',
+        icon: '💣',
+        iconBg: 'bg-rose-50 text-rose-700 border-rose-200',
+        badgeClass: 'bg-rose-50 text-rose-700 border-rose-200',
+        badgeText: '⏱️ Multi-Tim',
+        tags: ['Meihua 1-6', 'Penjinak Bom', 'Multiplayer']
+      },
+      {
+        id: 'ifp-bossbattle',
+        category: 'ifp-mandarin',
+        categoryLabel: 'Game IFP Mandarin',
+        title: 'Boss Battle RPG (2P Arena)',
+        titleEn: 'Meihua Boss Battle 2P',
+        desc: 'Pertarungan arena RPG 2-pemain melawan monster Meihua dengan serangan berbasis ketepatan kosakata.',
+        descEn: '2-Player turn-based RPG battle defeating monsters with fast Hanzi vocabulary attacks.',
+        url: 'games/bossbattle.html',
+        icon: '⚔️',
+        iconBg: 'bg-amber-50 text-amber-800 border-amber-200',
+        badgeClass: 'bg-amber-50 text-amber-800 border-amber-200',
+        badgeText: '🛡️ Arena 2P',
+        tags: ['Battle RPG', '2 Pemain', 'Meihua Vocab']
+      },
+      {
+        id: 'ifp-bossraid',
+        category: 'ifp-mandarin',
+        categoryLabel: 'Game IFP Mandarin',
+        title: 'Meihua Boss Raid (4P Co-op)',
+        titleEn: 'Meihua Boss Raid 4P Co-op',
+        desc: 'Pertarungan raid kolaboratif hingga 4 pemain mengombinasikan kekuatan untuk mengalahkan Raja Meihua.',
+        descEn: '4-Player cooperative raid battle combining combo attacks to take down giant Meihua bosses.',
+        url: 'games/bossraid.html',
+        icon: '🐉',
+        iconBg: 'bg-purple-50 text-purple-700 border-purple-200',
+        badgeClass: 'bg-purple-50 text-purple-700 border-purple-200',
+        badgeText: '👑 4P Co-op',
+        tags: ['Boss Raid', 'Multi-Pemain', 'Kombo Serangan']
+      },
+      {
+        id: 'ifp-tug',
+        category: 'ifp-mandarin',
+        categoryLabel: 'Game IFP Mandarin',
+        title: 'Tug of War Hanzi (Tarik Tambang 2P)',
+        titleEn: 'Hanzi Tug of War 2P',
+        desc: 'Lomba tarik tambang 2 regu interaktif dengan answering duel kosakata Meihua untuk menarik tali ke garis menang.',
+        descEn: '2-Player interactive tug of war duel pulling the rope through rapid vocabulary answers.',
+        url: 'games/tug.html',
+        icon: '🚩',
+        iconBg: 'bg-emerald-50 text-[#1E5E3A] border-emerald-200',
+        badgeClass: 'bg-[#EAF5ED] text-[#1E5E3A] border-[#BCE1C9]',
+        badgeText: '🏆 2P Duel',
+        tags: ['Tarik Tambang', 'Dual Control', 'Meihua 1-6']
+      },
+      {
+        id: 'ifp-fliptile',
+        category: 'ifp-mandarin',
+        categoryLabel: 'Game IFP Mandarin',
+        title: 'Flip Tile Memori Hanzi (2P)',
+        titleEn: 'Hanzi Memory Flip Tile 2P',
+        desc: 'Pertandingan memori membuka pasangan kartu Hanzi, pinyin, dan arti dengan ubin emas bernilai tinggi.',
+        descEn: '2-Player memory card matching battle pairing Hanzi with pinyin and definitions with bonus gold tiles.',
+        url: 'games/fliptile.html',
+        icon: '🎴',
+        iconBg: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+        badgeClass: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+        badgeText: '🧠 Memori 2P',
+        tags: ['Memory Card', 'Pasangan Hanzi', 'Kartu Emas']
+      },
+      {
+        id: 'ifp-wordmatch',
+        category: 'ifp-mandarin',
+        categoryLabel: 'Game IFP Mandarin',
+        title: 'Word Match Cyber Quest',
+        titleEn: 'Word Match Cyber Quest',
+        desc: 'Misi cyber mencocokkan kata Hanzi, permainan acak huruf (shuffle), dan menyusun struktur kalimat Meihua.',
+        descEn: 'Cyber quest matching Hanzi, character shuffling minigames, and sentence restructuring.',
+        url: 'games/wordmatch.html',
+        icon: '🧩',
+        iconBg: 'bg-cyan-50 text-cyan-800 border-cyan-200',
+        badgeClass: 'bg-cyan-50 text-cyan-800 border-cyan-200',
+        badgeText: '🚀 Cyber Quest',
+        tags: ['Susun Kata', 'Shuffle', 'Kuis Meihua']
+      },
+      {
+        id: 'ifp-jeopardy',
+        category: 'ifp-mandarin',
+        categoryLabel: 'Game IFP Mandarin',
+        title: 'Cyber Jeopardy Meihua (Multi-Tim)',
+        titleEn: 'Cyber Jeopardy Meihua Multi-Team',
+        desc: 'Papan kuis Jeopardy antar kelompok di kelas dengan kategori topik, poin bertingkat, dan timer interaktif.',
+        descEn: 'Multi-team classroom Jeopardy board featuring graded point categories and interactive question modals.',
+        url: 'games/jeopardy.html',
+        icon: '📊',
+        iconBg: 'bg-blue-50 text-blue-700 border-blue-200',
+        badgeClass: 'bg-blue-50 text-blue-700 border-blue-200',
+        badgeText: '👥 Multi-Tim',
+        tags: ['Jeopardy', 'Kelas Interaktif', 'Poin Bertingkat']
+      },
+      {
+        id: 'ifp-drawing',
+        category: 'ifp-mandarin',
+        categoryLabel: 'Game IFP Mandarin',
+        title: 'Tianzige Drawing Board Meihua',
+        titleEn: 'Meihua Tianzige Drawing Board',
+        desc: 'Papan kanvas digital Tian Zi Ge Meihua dengan kuas kaligrafi, palet warna, dan mode coretan bebas.',
+        descEn: 'Digital Tian Zi Ge canvas for Meihua calligraphy with dynamic ink brushes and export features.',
+        url: 'games/drawing.html',
+        icon: '✍️',
+        iconBg: 'bg-amber-50 text-amber-800 border-amber-200',
+        badgeClass: 'bg-amber-50 text-amber-800 border-amber-200',
+        badgeText: '田 Tianzige',
+        tags: ['Papan Tulis', 'Kuas Kaligrafi', 'Kanvas Meihua']
+      },
+      {
+        id: 'ifp-strokes',
+        category: 'ifp-mandarin',
+        categoryLabel: 'Game IFP Mandarin',
+        title: 'Meihua Stroke Lab & Radicals',
+        titleEn: 'Meihua Stroke Lab & Radicals',
+        desc: 'Eksplorasi animasi goresan karakter Meihua Buku 1-6 langkah demi langkah, struktur radikal, dan audio pinyin.',
+        descEn: 'Step-by-step stroke animation for Meihua Books 1-6, radical structures, and audio pronunciation.',
+        url: 'games/strokes.html',
+        icon: '📖',
+        iconBg: 'bg-rose-50 text-rose-700 border-rose-200',
+        badgeClass: 'bg-rose-50 text-rose-700 border-rose-200',
+        badgeText: '🏮 Stroke Lab',
+        tags: ['Urutan Goresan', 'Radikal', 'Audio Pelafalan']
+      },
+      {
+        id: 'ifp-builderbattle',
+        category: 'ifp-mandarin',
+        categoryLabel: 'Game IFP Mandarin',
+        title: 'Meihua Builder Battle (2P)',
+        titleEn: 'Meihua Builder Battle 2P',
+        desc: 'Pertarungan 2 pemain menyusun radikal balok bangunan menjadi karakter Hanzi Meihua dengan animasi duel.',
+        descEn: '2-Player battle assembling radical blocks into complete Meihua characters with duel animations.',
+        url: 'games/builderbattle.html',
+        icon: '🏰',
+        iconBg: 'bg-orange-50 text-[#ea580c] border-orange-200',
+        badgeClass: 'bg-orange-50 text-[#ea580c] border-orange-200',
+        badgeText: '⚔️ 2-Pemain',
+        tags: ['Rakit Hanzi', '2 Pemain', 'Meihua 1-6']
+      },
+      {
+        id: 'ifp-brushmaster',
+        category: 'ifp-mandarin',
+        categoryLabel: 'Game IFP Mandarin',
+        title: 'Meihua Brush Master Kaligrafi',
+        titleEn: 'Meihua Brush Master Calligraphy',
+        desc: 'Simulator kuas kaligrafi interaktif dengan panduan goresan karakter Meihua dan akurasi tracing kuas.',
+        descEn: 'Interactive brush calligraphy simulator with stroke guidelines and real-time brush tracing accuracy.',
+        url: 'games/brushmaster.html',
+        icon: '🖌️',
+        iconBg: 'bg-purple-50 text-purple-700 border-purple-200',
+        badgeClass: 'bg-purple-50 text-purple-700 border-purple-200',
+        badgeText: '🎨 Kuas Kaligrafi',
+        tags: ['Kaligrafi Meihua', 'Tracing Kuas', 'Seni Tradisional']
+      },
+      {
+        id: 'ifp-hanzidrop',
+        category: 'ifp-mandarin',
+        categoryLabel: 'Game IFP Mandarin',
+        title: 'Hanzi Drop Arcade & Puzzle',
+        titleEn: 'Hanzi Drop Arcade & Puzzle',
+        desc: 'Game arkade menjatuhkan komponen radikal untuk membentuk karakter Hanzi utuh sebelum arena penuh.',
+        descEn: 'Fast-paced arcade game dropping radical components to assemble full Hanzi characters.',
+        url: 'games/hanzidrop.html',
+        icon: '⚡',
+        iconBg: 'bg-teal-50 text-teal-700 border-teal-200',
+        badgeClass: 'bg-teal-50 text-teal-700 border-teal-200',
+        badgeText: '🕹️ Arkade Hanzi',
+        tags: ['Arkade', 'Radikal Balok', 'Meihua 1-6']
       }
     ];
 
@@ -7602,6 +7787,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       const tabAll = document.getElementById('media-tab-all');
       const tabSci = document.getElementById('media-tab-science');
       const tabMan = document.getElementById('media-tab-mandarin');
+      const tabIfp = document.getElementById('media-tab-ifp');
       
       const activeClass = 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer bg-white text-[#1E5E3A] shadow-xs';
       const inactiveClass = 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer text-[#57534e] hover:text-[#18181b]';
@@ -7609,6 +7795,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       if (tabAll) tabAll.className = (_activeTeachingMediaCategory === 'all') ? activeClass : inactiveClass;
       if (tabSci) tabSci.className = (_activeTeachingMediaCategory === 'science') ? activeClass : inactiveClass;
       if (tabMan) tabMan.className = (_activeTeachingMediaCategory === 'mandarin') ? activeClass : inactiveClass;
+      if (tabIfp) tabIfp.className = (_activeTeachingMediaCategory === 'ifp-mandarin') ? activeClass : inactiveClass;
 
       renderTeachingMediaCards();
     }
@@ -7668,7 +7855,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
         const title = isEn ? item.titleEn : item.title;
         const desc = isEn ? item.descEn : item.desc;
         const catLabel = isEn
-          ? (item.category === 'science' ? 'Science' : 'Mandarin')
+          ? (item.category === 'science' ? 'Science' : item.category === 'ifp-mandarin' ? 'IFP Mandarin Game' : 'Mandarin')
           : item.categoryLabel;
 
         return `
@@ -10317,13 +10504,10 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
         lainnya: 'Catatan Khusus'
       };
 
-      container.innerHTML = allItems.map((item, idx) => {
+      const tableRows = allItems.map((item, idx) => {
         const catName = categoryLabels[item.category] || item.title || 'Agenda';
         const isiText = item.command || item.title || '-';
 
-        // Time logic:
-        // "waktu selama itu masih besok dan setelah nya makan merah (kecuali pengumuman seragam dan buku mapel)
-        // waktu diisi sisa hari dan tanggal deadline"
         let timeText = '';
         let isRed = false;
 
@@ -10346,44 +10530,72 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
           } catch(e) {}
 
           const fullDateStr = timePart ? `${formattedDead}, ${timePart}` : formattedDead;
-          timeText = countdown ? `Batas: ${countdown} (${fullDateStr})` : `Batas: ${fullDateStr}`;
+          timeText = countdown ? `${countdown} (${fullDateStr})` : fullDateStr;
 
-          // If it's a task or deadline item (not seragam/buku), mark red for active deadlines
           if (!isSeragamOrBuku) {
             isRed = true;
           }
         } else {
-          timeText = `Jadwal: Hari Ini (${dateFormatted})`;
+          timeText = `Hari Ini (${dateFormatted})`;
           isRed = false;
         }
 
         const hasExtras = item.file_name || item.external_link || item.project_id || item.assignment_id;
         const extrasPills = [
-          item.file_name ? '<span class="text-[10px] font-bold text-[#334155] bg-slate-100 px-1.5 py-0.5 rounded border border-slate-300">📎 File</span>' : '',
-          item.external_link ? '<span class="text-[10px] font-bold text-[#334155] bg-slate-100 px-1.5 py-0.5 rounded border border-slate-300">🔗 Link</span>' : '',
+          item.file_name ? '<span class="text-[10px] font-bold text-[#334155] bg-slate-100 px-1 py-0.5 rounded border border-slate-300">📎 File</span>' : '',
+          item.external_link ? '<span class="text-[10px] font-bold text-[#334155] bg-slate-100 px-1 py-0.5 rounded border border-slate-300">🔗 Link</span>' : '',
           (item.project_id || item.assignment_id) ? '<span class="text-[10px] font-bold text-[#1E5E3A] bg-[#EAF5ED] px-1.5 py-0.5 rounded border border-[#BCE1C9]">🎮 Kerjakan</span>' : ''
         ].filter(Boolean).join(' ');
 
         return `
-          <div onclick="openAgendaDetailModal('${escapeHtml(item.id)}')"
-            class="group p-3 sm:p-3.5 rounded-xl border border-[#cbd5e1] hover:border-[#1E5E3A] bg-white hover:bg-emerald-50/40 transition-all cursor-pointer shadow-2xs space-y-1">
-            
-            <div class="font-black text-xs sm:text-sm text-[#0f172a] flex items-center justify-between">
-              <span>${idx + 1}. ${escapeHtml(catName)}</span>
-              ${hasExtras ? `<div class="flex items-center gap-1">${extrasPills}</div>` : ''}
-            </div>
-
-            <div class="text-xs sm:text-sm font-semibold text-[#1e293b] leading-relaxed">
-              ${escapeHtml(isiText)}
-            </div>
-
-            <div class="text-[11px] sm:text-xs ${isRed ? 'text-red-600 font-bold' : 'text-[#475569] font-medium'} flex items-center justify-between pt-0.5">
-              <span>${escapeHtml(timeText)}</span>
-              <span class="text-[10px] text-slate-400 group-hover:text-[#1E5E3A] font-bold transition-colors">Lihat ➔</span>
-            </div>
-          </div>
+          <tr onclick="openAgendaDetailModal('${escapeHtml(item.id)}')"
+            class="hover:bg-emerald-50/50 cursor-pointer border-b border-[#e2e8f0] transition-colors group">
+            <td class="py-2.5 px-2.5 text-center font-bold text-[#0f172a] align-top text-xs w-10">
+              ${idx + 1}.
+            </td>
+            <td class="py-2.5 px-3 align-top w-28 sm:w-36">
+              <div class="font-extrabold text-xs text-[#0f172a] flex flex-col gap-1">
+                <span>${escapeHtml(catName)}</span>
+                ${hasExtras ? `<div class="flex items-center gap-1 flex-wrap">${extrasPills}</div>` : ''}
+              </div>
+            </td>
+            <td class="py-2.5 px-3 align-top">
+              <div class="font-semibold text-xs sm:text-sm text-[#1e293b] leading-relaxed">
+                ${escapeHtml(isiText)}
+              </div>
+            </td>
+            <td class="py-2.5 px-3 align-top text-right w-36 sm:w-48">
+              <div class="text-[11px] sm:text-xs ${isRed ? 'text-rose-600 font-extrabold' : 'text-[#475569] font-medium'} leading-tight">
+                ${escapeHtml(timeText)}
+              </div>
+            </td>
+            <td class="py-2.5 px-2.5 text-center align-top w-14">
+              <span class="inline-block px-2 py-1 rounded bg-[#EAF5ED] group-hover:bg-[#d5e9dc] text-[#1E5E3A] font-bold text-[11px] transition-colors">
+                Lihat
+              </span>
+            </td>
+          </tr>
         `;
       }).join('');
+
+      container.innerHTML = `
+        <div class="overflow-x-auto rounded-xl border border-[#cbd5e1] bg-white shadow-2xs">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-[#f8fafc] text-[#334155] font-black text-[11px] border-b border-[#cbd5e1] uppercase tracking-wider">
+                <th class="py-2.5 px-2.5 text-center w-10">No</th>
+                <th class="py-2.5 px-3 w-28 sm:w-36">Jenis Agenda</th>
+                <th class="py-2.5 px-3">Isi Agenda / Perintah</th>
+                <th class="py-2.5 px-3 text-right w-36 sm:w-48">Waktu / Batas</th>
+                <th class="py-2.5 px-2.5 text-center w-14">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#e2e8f0]">
+              ${tableRows}
+            </tbody>
+          </table>
+        </div>
+      `;
     }
 
     function renderStudentPersonalAgenda() {
@@ -10419,7 +10631,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
         lainnya: 'Catatan Khusus'
       };
 
-      container.innerHTML = personalItems.map((item, idx) => {
+      const tableRows = personalItems.map((item, idx) => {
         const catName = categoryLabels[item.category] || item.title || 'Agenda Personal';
         const isiText = item.command || item.title || '-';
         const countdown = item.countdown_label || 'Aktif';
@@ -10443,31 +10655,60 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
         }
 
         const timeText = item.deadline
-          ? `Batas: ${countdown} (${deadlineStr})`
-          : `Batas: ${countdown}`;
+          ? `${countdown} (${deadlineStr})`
+          : countdown;
 
         const hasExtras = item.file_name || item.external_link || item.project_id || item.assignment_id;
 
         return `
-          <div onclick="openAgendaDetailModal('${escapeHtml(item.id || item.agenda_id)}')"
-            class="group p-3 sm:p-3.5 rounded-xl border border-[#cbd5e1] hover:border-[#1E5E3A] bg-white hover:bg-emerald-50/40 transition-all cursor-pointer shadow-2xs space-y-1">
-            
-            <div class="font-black text-xs sm:text-sm text-[#0f172a] flex items-center justify-between">
-              <span>${idx + 1}. ${escapeHtml(catName)}</span>
-              ${hasExtras ? '<span class="text-[10px] font-bold text-[#1E5E3A] bg-[#EAF5ED] px-1.5 py-0.5 rounded border border-[#BCE1C9]">🎮 Kerjakan</span>' : ''}
-            </div>
-
-            <div class="text-xs sm:text-sm font-semibold text-[#1e293b] leading-relaxed">
-              ${escapeHtml(isiText)}
-            </div>
-
-            <div class="text-[11px] sm:text-xs ${isRed ? 'text-red-600 font-bold' : 'text-[#475569] font-medium'} flex items-center justify-between pt-0.5">
-              <span>${escapeHtml(timeText)}</span>
-              <span class="text-[10px] text-slate-400 group-hover:text-[#1E5E3A] font-bold transition-colors">Lihat ➔</span>
-            </div>
-          </div>
+          <tr onclick="openAgendaDetailModal('${escapeHtml(item.id || item.agenda_id)}')"
+            class="hover:bg-emerald-50/50 cursor-pointer border-b border-[#e2e8f0] transition-colors group">
+            <td class="py-2.5 px-2.5 text-center font-bold text-[#0f172a] align-top text-xs w-10">
+              ${idx + 1}.
+            </td>
+            <td class="py-2.5 px-3 align-top w-28 sm:w-36">
+              <div class="font-extrabold text-xs text-[#0f172a] flex flex-col gap-1">
+                <span>${escapeHtml(catName)}</span>
+                ${hasExtras ? '<span class="text-[10px] font-bold text-[#1E5E3A] bg-[#EAF5ED] px-1.5 py-0.5 rounded border border-[#BCE1C9]">🎮 Kerjakan</span>' : ''}
+              </div>
+            </td>
+            <td class="py-2.5 px-3 align-top">
+              <div class="font-semibold text-xs sm:text-sm text-[#1e293b] leading-relaxed">
+                ${escapeHtml(isiText)}
+              </div>
+            </td>
+            <td class="py-2.5 px-3 align-top text-right w-36 sm:w-48">
+              <div class="text-[11px] sm:text-xs ${isRed ? 'text-rose-600 font-extrabold' : 'text-[#475569] font-medium'} leading-tight">
+                ${escapeHtml(timeText)}
+              </div>
+            </td>
+            <td class="py-2.5 px-2.5 text-center align-top w-14">
+              <span class="inline-block px-2 py-1 rounded bg-[#EAF5ED] group-hover:bg-[#d5e9dc] text-[#1E5E3A] font-bold text-[11px] transition-colors">
+                Lihat
+              </span>
+            </td>
+          </tr>
         `;
       }).join('');
+
+      container.innerHTML = `
+        <div class="overflow-x-auto rounded-xl border border-[#cbd5e1] bg-white shadow-2xs">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-[#f8fafc] text-[#334155] font-black text-[11px] border-b border-[#cbd5e1] uppercase tracking-wider">
+                <th class="py-2.5 px-2.5 text-center w-10">No</th>
+                <th class="py-2.5 px-3 w-28 sm:w-36">Jenis Agenda</th>
+                <th class="py-2.5 px-3">Isi Agenda / Tugas</th>
+                <th class="py-2.5 px-3 text-right w-36 sm:w-48">Waktu / Batas</th>
+                <th class="py-2.5 px-2.5 text-center w-14">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#e2e8f0]">
+              ${tableRows}
+            </tbody>
+          </table>
+        </div>
+      `;
     }
 
     function filterStudentPosts(filterType) {

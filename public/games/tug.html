@@ -1507,11 +1507,15 @@ function tugStart() {
 function tugRestart() {
   GameAudio.playClick();
   GameAudio.stopBGM();
-  /* Go back to level select so player can pick a (possibly different) level */
   var ws = document.getElementById('tugWinScreen');
   if (ws) ws.classList.remove('open');
-  var sel = document.getElementById('tugLevelSelect');
-  if (sel) sel.classList.add('open');
+  if (typeof _customQuestions !== 'undefined' && Array.isArray(_customQuestions) && _customQuestions.length > 0) {
+    GameAudio.startBGM();
+    _tugInitGame();
+  } else {
+    var sel = document.getElementById('tugLevelSelect');
+    if (sel) sel.classList.add('open');
+  }
 }
 
 function tugClose() {

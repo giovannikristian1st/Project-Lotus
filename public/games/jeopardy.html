@@ -564,7 +564,7 @@ function showScreen(screenId) {
 
   const backBtn = document.getElementById('btnNavBack');
   if (backBtn) {
-    if (screenId === 'screenSetup') backBtn.innerHTML = '◀ HUB';
+    if (screenId === 'screenSetup' || (typeof _customJpQuestions !== 'undefined' && _customJpQuestions && _customJpQuestions.length > 0)) backBtn.innerHTML = '◀ HUB';
     else backBtn.innerHTML = '⚙️ SETTING BAB';
   }
 }
@@ -572,6 +572,8 @@ function showScreen(screenId) {
 function handleNavBack() {
   const active = document.querySelector('.jp-screen.active');
   if (active && active.id === 'screenSetup') {
+    safeExitGame();
+  } else if (typeof _customJpQuestions !== 'undefined' && _customJpQuestions && _customJpQuestions.length > 0) {
     safeExitGame();
   } else {
     showScreen('screenSetup');
@@ -892,6 +894,15 @@ function closeModal() {
       const totalScore = _teams.reduce((s, t) => s + (t.score || 0), 0);
       const maxScore = totalTiles * 300;
       window.GameBridge.finishGame(totalScore, maxScore, _teams.map(t => ({ team: t.name, score: t.score })), 'Cyber Jeopardy');
+    }
+    if (typeof _customJpQuestions !== 'undefined' && _customJpQuestions && _customJpQuestions.length > 0) {
+      setTimeout(() => {
+        if (confirm('SELURUH SOAL JEOPARDY SELESAI!\n\nKlik OK untuk main lagi dengan set soal ini, atau Batal untuk keluar.')) {
+          startJeopardyGame();
+        } else {
+          safeExitGame();
+        }
+      }, 500);
     }
   }
 }

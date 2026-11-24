@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>大愛學海 — DaAi Learning Hub | Sekolah Cinta Kasih Tzu Chi</title>
   <link rel="icon" type="image/png" href="public/assets/Main-Logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -185,6 +185,16 @@
       display: flex !important;
     }
 
+  
+    /* Prevent mobile zoom-out and horizontal page wobbling */
+    html, body {
+      overflow-x: hidden !important;
+      max-width: 100vw !important;
+      touch-action: manipulation !important;
+      -webkit-text-size-adjust: 100% !important;
+      -ms-text-size-adjust: 100% !important;
+      overscroll-behavior-x: none !important;
+    }
   </style>
   <link rel="stylesheet" href="games/common/ui-spritesheet.css?v=2026.11.20">
 </head>
@@ -542,7 +552,7 @@
       </div>
 
       <!-- 3. Student PIN Direct Join Box -->
-      <div class="max-w-xl mx-auto w-full bg-[#18181b] text-white rounded-2xl p-6 sm:p-7 shadow-lg space-y-4">
+      <div class="max-w-xl mx-auto w-full bg-gradient-to-br from-[#1E5E3A] via-[#245e3c] to-[#143D24] text-white rounded-2xl p-6 sm:p-7 shadow-lg border border-emerald-800/40 space-y-4">
         <div class="flex items-center gap-2 border-b border-white/10 pb-3">
           <span class="text-lg">🎮</span>
           <div>
@@ -647,7 +657,7 @@
     <section id="view-login" class="hidden w-full max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 py-8 sm:py-10 space-y-6">
 
       <!-- Active Teacher Session Card (Only shown if signed in) -->
-      <div id="login-active-banner" class="hidden bg-[#1e242b] text-white rounded-xl border border-[#2d3642] p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div id="login-active-banner" class="hidden bg-[#EAF5ED] text-[#0f172a] rounded-xl border border-[#BCE1C9] p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
         <div class="flex items-center gap-3.5">
           <div id="banner-teacher-avatar" class="w-11 h-11 rounded-lg bg-[#2563eb] border border-[#60a5fa]/40 flex items-center justify-center font-bold text-base shrink-0">
             BP
@@ -688,7 +698,7 @@
           <!-- Sub-Tabs: Sign In / Create Account -->
           <div class="grid grid-cols-2 p-1 bg-[#f4f1ea] rounded-lg border border-[#e5dfd3]">
             <button type="button" id="auth-tab-signin" onclick="switchAuthSubTab('signin')"
-              class="py-2 rounded-md text-xs sm:text-sm font-bold bg-white text-[#1d4ed8] shadow-2xs transition-colors cursor-pointer" data-i18n="login.tabSignIn">
+              class="py-2 rounded-md text-xs sm:text-sm font-bold bg-white text-[#1E5E3A] shadow-2xs transition-colors cursor-pointer" data-i18n="login.tabSignIn">
               Sign In
             </button>
             <button type="button" id="auth-tab-register" onclick="switchAuthSubTab('register')"
@@ -711,7 +721,7 @@
                 <input type="text" id="signin-identifier" required autocomplete="username"
                   data-i18n-placeholder="login.emailPlaceholder"
                   placeholder="e.g. budi.prasetyo@sekolah.sch.id"
-                  class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
+                  class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1E5E3A]">
               </div>
             </div>
 
@@ -722,7 +732,7 @@
                 <input type="password" id="signin-password" required autocomplete="current-password"
                   data-i18n-placeholder="login.passPlaceholder"
                   placeholder="Enter password"
-                  class="w-full pl-10 pr-11 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
+                  class="w-full pl-10 pr-11 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1E5E3A]">
                 <button type="button" onclick="togglePasswordVisibility('signin-password', 'signin-eye-icon')"
                   class="absolute right-2.5 p-1.5 rounded-md hover:bg-[#f4f1ea] transition-colors cursor-pointer" aria-label="Toggle Password Visibility">
                   <span id="signin-eye-icon" class="ui-sprite ui-sm ui-eye"></span>
@@ -733,18 +743,18 @@
             <!-- Remember Password & Forgot Credential Links -->
             <div class="flex items-center justify-between pt-0.5 text-xs">
               <label class="inline-flex items-center gap-2 cursor-pointer select-none">
-                <input type="checkbox" id="signin-remember" class="w-4 h-4 rounded border-[#c9c1b2] accent-[#1d4ed8] cursor-pointer">
+                <input type="checkbox" id="signin-remember" class="w-4 h-4 rounded border-[#c9c1b2] accent-[#1E5E3A] cursor-pointer">
                 <span class="text-xs sm:text-sm font-semibold text-[#3f3f46]" data-i18n="login.rememberLabel">Remember Password</span>
               </label>
               <div class="flex items-center gap-1.5 sm:gap-2">
-                <button type="button" onclick="openForgotModal('username')" class="text-[#78716c] hover:text-[#1d4ed8] hover:underline cursor-pointer transition-colors" data-i18n="login.forgotUsernameLink">Lupa Username?</button>
+                <button type="button" onclick="openForgotModal('username')" class="text-[#78716c] hover:text-[#1E5E3A] hover:underline cursor-pointer transition-colors" data-i18n="login.forgotUsernameLink">Lupa Username?</button>
                 <span class="text-[#d6cfc2]">•</span>
-                <button type="button" onclick="openForgotModal('password')" class="text-[#1d4ed8] font-bold hover:underline cursor-pointer transition-colors" data-i18n="login.forgotPasswordLink">Lupa Password?</button>
+                <button type="button" onclick="openForgotModal('password')" class="text-[#1E5E3A] font-bold hover:underline cursor-pointer transition-colors" data-i18n="login.forgotPasswordLink">Lupa Password?</button>
               </div>
             </div>
 
             <button type="submit"
-              class="w-full py-3 rounded-lg bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-sm border-b-[3px] border-[#1e3a8a] flex items-center justify-center gap-2 transition-colors cursor-pointer mt-2">
+              class="w-full py-3 rounded-xl bg-[#1E5E3A] hover:bg-[#164E30] text-white font-bold text-sm border-b-[3px] border-[#0F3520] flex items-center justify-center gap-2 transition-colors cursor-pointer mt-2 shadow-xs">
               <span class="ui-sprite ui-sm ui-dashboard"></span>
               <span data-i18n="login.btnSignIn">Sign In to Dashboard</span>
             </button>
@@ -778,23 +788,23 @@
                 <div>
                   <label for="reg-name" class="block text-xs font-bold text-[#3f3f46] mb-1">Nama Lengkap Guru</label>
                   <input type="text" id="reg-name" placeholder="e.g. Clara Wijaya, S.Pd."
-                    class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
+                    class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1E5E3A]">
                 </div>
                 <div>
                   <label for="reg-username" class="block text-xs font-bold text-[#3f3f46] mb-1">Username Guru</label>
                   <input type="text" id="reg-username" pattern="[A-Za-z0-9_.-]+" placeholder="e.g. clarawijaya"
-                    class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
+                    class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1E5E3A]">
                 </div>
               </div>
               <div>
                 <label for="reg-email" class="block text-xs font-bold text-[#3f3f46] mb-1">Email Guru</label>
                 <input type="email" id="reg-email" placeholder="clara@sekolah.sch.id"
-                  class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
+                  class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1E5E3A]">
               </div>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
                   <label for="reg-subject" class="block text-xs font-bold text-[#3f3f46] mb-1">Mata Pelajaran Diajarkan</label>
-                  <select id="reg-subject" class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                  <select id="reg-subject" class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-semibold text-[#18181b] focus:outline-none focus:border-[#1E5E3A]">
                     <option value="Wali Kelas">Wali Kelas</option>
                     <option value="IPA / Sains">IPA / Sains</option>
                     <option value="Bahasa Mandarin">Bahasa Mandarin</option>
@@ -810,7 +820,7 @@
                 <div>
                   <label for="reg-school" class="block text-xs font-bold text-[#3f3f46] mb-1">Nama Sekolah</label>
                   <input type="text" id="reg-school" value="Sekolah Cinta Kasih Tzu Chi"
-                    class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
+                    class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1E5E3A]">
                 </div>
               </div>
             </div>
@@ -843,7 +853,7 @@
                 <span class="ui-sprite ui-sm ui-lock absolute left-3"></span>
                 <input type="password" id="reg-password" required minlength="4"
                   data-i18n-placeholder="login.passPlaceholder" placeholder="Masukkan kata sandi (minimal 4 karakter)"
-                  class="w-full pl-10 pr-11 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
+                  class="w-full pl-10 pr-11 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1E5E3A]">
                 <button type="button" onclick="togglePasswordVisibility('reg-password', 'reg-eye-icon')"
                   class="absolute right-2.5 p-1.5 rounded-md hover:bg-[#f4f1ea] cursor-pointer" aria-label="Toggle Password Visibility">
                   <span id="reg-eye-icon" class="ui-sprite ui-sm ui-eye"></span>
@@ -860,7 +870,7 @@
 
           <div class="mt-4 pt-4 border-t border-[#eee9df] text-center space-y-1.5 text-xs text-[#57534e]">
             <div class="font-bold text-[#18181b]">Portal Terpadu DaAi Hub:</div>
-            <div class="flex flex-wrap items-center justify-center gap-2 font-bold text-[#1d4ed8]">
+            <div class="flex flex-wrap items-center justify-center gap-2 font-bold text-[#1E5E3A]">
               <a href="login.html" class="hover:underline">🔐 Halaman Masuk (login.html)</a>
               <span>•</span>
               <a href="register.html" class="hover:underline">📝 Daftar Guru / Murid (register.html)</a>
@@ -875,7 +885,7 @@
     <section id="view-community" class="hidden w-full max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 py-8 sm:py-10 space-y-6">
 
       <!-- Community Header Banner -->
-      <div class="bg-[#1e242b] text-white rounded-xl border border-[#2d3642] p-6 sm:p-7 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div class="bg-gradient-to-r from-[#164E30] via-[#1E5E3A] to-[#2C6E49] text-white rounded-xl border border-emerald-700/40 p-6 sm:p-7 flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-sm">
         <div class="space-y-1.5 max-w-4xl">
           <h2 class="text-2xl sm:text-3xl font-bold tracking-tight" data-i18n="comm.title">
             Community Activities Library
@@ -908,7 +918,7 @@
               <span class="ui-sprite ui-sm ui-search absolute left-3"></span>
               <input type="text" id="comm-filter-search" oninput="renderCommunityCards()"
                 data-i18n-placeholder="comm.searchPlaceholder" placeholder="Search title, topic, or teacher..."
-                class="w-full pl-9 pr-3 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-xs sm:text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
+                class="w-full pl-9 pr-3 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-xs sm:text-sm font-medium focus:outline-none focus:border-[#1E5E3A]">
             </div>
           </div>
 
@@ -919,7 +929,7 @@
               <span data-i18n="comm.filterLevel">Level</span>
             </label>
             <select id="comm-filter-level" onchange="renderCommunityCards()"
-              class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-white text-xs sm:text-sm font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+              class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-white text-xs sm:text-sm font-semibold text-[#18181b] focus:outline-none focus:border-[#1E5E3A]">
               <option value="all" data-i18n="level.all">All Levels</option>
               <option value="TK" data-i18n="level.TK">Kindergarten (TK)</option>
               <option value="SD" data-i18n="level.SD">Elementary (SD)</option>
@@ -936,7 +946,7 @@
               <span data-i18n="comm.filterSubject">Subject</span>
             </label>
             <select id="comm-filter-subject" onchange="renderCommunityCards()"
-              class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-white text-xs sm:text-sm font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+              class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-white text-xs sm:text-sm font-semibold text-[#18181b] focus:outline-none focus:border-[#1E5E3A]">
               <option value="all" data-i18n="subject.all">All Subjects</option>
             </select>
           </div>
@@ -948,7 +958,7 @@
               <span data-i18n="comm.filterLang">Language</span>
             </label>
             <select id="comm-filter-lang" onchange="renderCommunityCards()"
-              class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-white text-xs sm:text-sm font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+              class="w-full px-3 py-2 rounded-lg border border-[#d6cfc2] bg-white text-xs sm:text-sm font-semibold text-[#18181b] focus:outline-none focus:border-[#1E5E3A]">
               <option value="all" data-i18n="langTag.all">All Languages</option>
               <option value="en" data-i18n="langTag.en">English</option>
               <option value="id" data-i18n="langTag.id">Indonesian</option>
@@ -985,7 +995,7 @@
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-[#e5dfd3]">
         <div class="flex flex-wrap items-center gap-2">
           <button type="button" id="tab-btn-projects" onclick="switchDashboardTab('projects')"
-            class="px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#18181b] text-white transition-colors flex items-center gap-2 cursor-pointer">
+            class="px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#1E5E3A] text-white shadow-xs transition-colors flex items-center gap-2 cursor-pointer">
             <span class="ui-sprite ui-sm ui-folder"></span>
             <span data-i18n="dash.myProjects">My Projects</span>
             <span id="badge-projects-count" class="px-1.5 py-0.5 rounded bg-white/15 text-white text-[11px] font-bold">0</span>
@@ -1021,7 +1031,7 @@
           </button>
 
           <button type="button" id="dash-new-btn" onclick="openQuestionStudio()"
-            class="px-5 py-2.5 bg-[#15803d] hover:bg-[#166534] text-white font-bold text-xs sm:text-sm rounded-lg border-b-[3px] border-[#14532d] flex items-center justify-center gap-2 transition-colors cursor-pointer">
+            class="px-5 py-2.5 bg-[#1E5E3A] hover:bg-[#164E30] text-white font-bold text-xs sm:text-sm rounded-xl border-b-[3px] border-[#0F3520] flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs">
             <span class="ui-sprite ui-sm ui-plus"></span>
             <span data-i18n="dash.newActivity">New Activity</span>
           </button>
@@ -1041,10 +1051,10 @@
               <span class="ui-sprite ui-xs ui-search absolute left-3"></span>
               <input type="text" id="dash-search-input" oninput="renderDashboard()"
                 data-i18n-placeholder="dash.searchPlaceholder" placeholder="Search my activities..."
-                class="w-full sm:w-56 pl-9 pr-3 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-xs font-medium focus:outline-none focus:border-[#1d4ed8]">
+                class="w-full sm:w-56 pl-9 pr-3 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-xs font-medium focus:outline-none focus:border-[#1E5E3A]">
             </div>
             <select id="dash-filter-template" onchange="renderDashboard()"
-              class="px-3 py-2 rounded-lg border border-[#d6cfc2] bg-white text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+              class="px-3 py-2 rounded-lg border border-[#d6cfc2] bg-white text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1E5E3A]">
               <!-- Populated by JS -->
             </select>
           </div>
@@ -1223,7 +1233,7 @@
           </div>
           <div class="bg-white p-4 rounded-xl border border-[#e5dfd3]">
             <div class="text-[11px] font-bold text-[#78716c] uppercase">Rata-Rata Nilai</div>
-            <div id="stat-avg-score" class="text-2xl font-black text-[#1d4ed8] mt-1">0%</div>
+            <div id="stat-avg-score" class="text-2xl font-black text-[#1E5E3A] mt-1">0%</div>
           </div>
           <div class="bg-white p-4 rounded-xl border border-[#e5dfd3]">
             <div class="text-[11px] font-bold text-[#78716c] uppercase">Nilai Tertinggi / Terendah</div>
@@ -1266,7 +1276,7 @@
     <section id="view-teaching-media" class="hidden w-full max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 py-8 sm:py-10 space-y-6">
 
       <!-- Hero Header Banner -->
-      <div class="bg-[#1e242b] text-white rounded-2xl border border-[#2d3642] p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-md">
+      <div class="bg-gradient-to-r from-[#164E30] via-[#1E5E3A] to-[#2C6E49] text-white rounded-2xl border border-emerald-700/40 p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-md">
         <div class="space-y-2 max-w-3xl">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-700/60 text-emerald-400 text-xs font-bold tracking-wide">
             <span>📚</span>
@@ -1351,7 +1361,7 @@
         </div>
 
         <button type="button" onclick="saveQuestionsAndProceed()"
-          class="px-5 py-2.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-xs sm:text-sm rounded-lg border-b-2 border-[#1e3a8a] flex items-center gap-2 cursor-pointer">
+          class="px-5 py-2.5 bg-[#1E5E3A] hover:bg-[#164E30] text-white font-bold text-xs sm:text-sm rounded-xl border-b-2 border-[#0F3520] flex items-center gap-2 cursor-pointer shadow-xs">
           <span data-i18n="dash.saveProceed">Next: Activity Settings</span>
           <span class="ui-sprite ui-sm ui-arrow-right"></span>
         </button>
@@ -1473,7 +1483,7 @@
               <span>Tukar Soal & Jawaban</span>
             </button>
             <button type="button" id="studio-excel-export-btn" onclick="exportProjectQuestionsExcel()"
-              class="px-3.5 py-2 bg-[#eff6ff] hover:bg-[#dbeafe] border border-[#bfdbfe] text-[#1d4ed8] font-bold text-xs rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer">
+              class="px-3.5 py-2 bg-[#EAF5ED] hover:bg-[#d5ebd9] border border-[#bce1c9] text-[#1E5E3A] font-bold text-xs rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer">
               <span class="ui-sprite ui-xs ui-download"></span>
               <span data-i18n="studio.excelExport">Export Excel</span>
             </button>
@@ -1493,7 +1503,7 @@
       <!-- Bottom Studio Bar -->
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-xl border border-[#e5dfd3]">
         <button type="button" onclick="addNewQuestionCard()"
-          class="w-full sm:w-auto px-5 py-2.5 border-2 border-dashed border-[#1d4ed8] text-[#1d4ed8] font-bold text-sm rounded-lg hover:bg-[#eff6ff] transition-colors flex items-center justify-center gap-2 cursor-pointer">
+          class="w-full sm:w-auto px-5 py-2.5 border-2 border-dashed border-[#1E5E3A] text-[#1E5E3A] font-bold text-sm rounded-xl hover:bg-[#EAF5ED] transition-colors flex items-center justify-center gap-2 cursor-pointer">
           <span class="ui-sprite ui-sm ui-plus"></span>
           <span data-i18n="studio.addQuestion">+ Add Question</span>
         </button>
@@ -1504,7 +1514,7 @@
             Cancel
           </button>
           <button type="button" onclick="saveQuestionsAndProceed()"
-            class="px-6 py-2.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-xs sm:text-sm rounded-lg border-b-2 border-[#1e3a8a] flex items-center gap-2 cursor-pointer">
+            class="px-6 py-2.5 bg-[#1E5E3A] hover:bg-[#164E30] text-white font-bold text-xs sm:text-sm rounded-lg border-b-2 border-[#0F3520] flex items-center gap-2 cursor-pointer">
             <span data-i18n="dash.saveProceed">Next: Activity Settings</span>
             <span class="ui-sprite ui-sm ui-arrow-right"></span>
           </button>
@@ -1571,15 +1581,15 @@
             </div>
             <div class="space-y-1.5 text-xs font-medium text-[#3f3f46]">
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="rule-lives" value="3" checked onchange="handleLivesChange(true, 3)" class="accent-[#1d4ed8]">
+                <input type="radio" name="rule-lives" value="3" checked onchange="handleLivesChange(true, 3)" class="accent-[#1E5E3A]">
                 <span data-i18n="dash.lives3">3 Hearts (Standard)</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="rule-lives" value="5" onchange="handleLivesChange(true, 5)" class="accent-[#1d4ed8]">
+                <input type="radio" name="rule-lives" value="5" onchange="handleLivesChange(true, 5)" class="accent-[#1E5E3A]">
                 <span data-i18n="dash.lives5">5 Hearts (Relaxed)</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="rule-lives" value="0" onchange="handleLivesChange(false, 0)" class="accent-[#1d4ed8]">
+                <input type="radio" name="rule-lives" value="0" onchange="handleLivesChange(false, 0)" class="accent-[#1E5E3A]">
                 <span data-i18n="dash.lives0">Unlimited Lives</span>
               </label>
             </div>
@@ -1592,15 +1602,15 @@
             </div>
             <div class="space-y-1.5 text-xs font-medium text-[#3f3f46]">
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="rule-time" value="timer" checked onchange="handleTimeModeChange('timer')" class="accent-[#1d4ed8]">
+                <input type="radio" name="rule-time" value="timer" checked onchange="handleTimeModeChange('timer')" class="accent-[#1E5E3A]">
                 <span data-i18n="editAct.timerTimer">Countdown Timer</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="rule-time" value="stopwatch" onchange="handleTimeModeChange('stopwatch')" class="accent-[#1d4ed8]">
+                <input type="radio" name="rule-time" value="stopwatch" onchange="handleTimeModeChange('stopwatch')" class="accent-[#1E5E3A]">
                 <span data-i18n="editAct.timerStopwatch">Stopwatch (No Limit)</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="rule-time" value="none" onchange="handleTimeModeChange('none')" class="accent-[#1d4ed8]">
+                <input type="radio" name="rule-time" value="none" onchange="handleTimeModeChange('none')" class="accent-[#1E5E3A]">
                 <span data-i18n="editAct.timerNone">Relaxed (No Timer)</span>
               </label>
             </div>
@@ -1613,11 +1623,11 @@
             </div>
             <div class="space-y-2 text-xs font-medium text-[#3f3f46] pt-1">
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" id="rule-shuffle-q" checked class="w-4 h-4 rounded accent-[#1d4ed8]">
+                <input type="checkbox" id="rule-shuffle-q" checked class="w-4 h-4 rounded accent-[#1E5E3A]">
                 <span data-i18n="editAct.shuffleQ">Shuffle Questions</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" id="rule-shuffle-a" checked class="w-4 h-4 rounded accent-[#1d4ed8]">
+                <input type="checkbox" id="rule-shuffle-a" checked class="w-4 h-4 rounded accent-[#1E5E3A]">
                 <span data-i18n="editAct.shuffleA">Shuffle Answer Choices</span>
               </label>
             </div>
@@ -1671,7 +1681,7 @@
           </button>
 
           <button type="button" onclick="editCurrentActiveProject()"
-            class="px-3 py-2 bg-[#eff6ff] hover:bg-[#dbeafe] border border-[#bfdbfe] text-[#1d4ed8] font-semibold text-xs rounded-lg flex items-center gap-1.5 cursor-pointer">
+            class="px-3 py-2 bg-[#EAF5ED] hover:bg-[#d5ebd9] border border-[#bce1c9] text-[#1E5E3A] font-semibold text-xs rounded-lg flex items-center gap-1.5 cursor-pointer">
             <span class="ui-sprite ui-xs ui-sliders"></span>
             <span data-i18n="player.editSettings">Edit Settings</span>
           </button>
@@ -1693,7 +1703,7 @@
             </button>
 
             <!-- Play Splash Screen -->
-            <div id="player-splash-screen" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#1e242b] p-6 text-center space-y-5">
+            <div id="player-splash-screen" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-gradient-to-b from-[#143D24] via-[#1E5E3A] to-[#14261C] p-6 text-center space-y-5">
               <div class="w-16 h-16 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center">
                 <span id="splash-icon" class="ui-sprite ui-xl ui-gamepad"></span>
               </div>
@@ -1736,7 +1746,7 @@
                 aria-expanded="false" aria-controls="player-settings-body"
                 class="w-full px-5 py-3.5 flex flex-wrap items-center justify-between gap-3 text-left hover:bg-[#fcfbf8] transition-colors cursor-pointer">
                 <div class="flex items-center gap-3 min-w-0">
-                  <div class="w-9 h-9 rounded-lg bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-center shrink-0">
+                  <div class="w-9 h-9 rounded-lg bg-[#EAF5ED] border border-[#bce1c9] flex items-center justify-center shrink-0">
                     <span class="ui-sprite ui-sm ui-sliders"></span>
                   </div>
                   <div class="min-w-0">
@@ -1773,7 +1783,7 @@
                   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
                       <label for="ps-lives-select" class="block text-[11px] font-bold text-[#3f3f46] mb-1" data-i18n="editAct.livesLabel">Lives Limit</label>
-                      <select id="ps-lives-select" class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                      <select id="ps-lives-select" class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1E5E3A]">
                         <option value="1" id="ps-opt-lives1">1 Heart</option>
                         <option value="3" data-i18n="dash.lives3">3 Hearts (Standard)</option>
                         <option value="5" data-i18n="dash.lives5">5 Hearts (Relaxed)</option>
@@ -1783,7 +1793,7 @@
 
                     <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
                       <label for="ps-time-mode" class="block text-[11px] font-bold text-[#3f3f46] mb-1" data-i18n="editAct.timerLabel">Time Mode</label>
-                      <select id="ps-time-mode" onchange="onPlayerTimeModeChange()" class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                      <select id="ps-time-mode" onchange="onPlayerTimeModeChange()" class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1E5E3A]">
                         <option value="timer" data-i18n="editAct.timerTimer">Countdown Timer</option>
                         <option value="stopwatch" data-i18n="editAct.timerStopwatch">Stopwatch (No Limit)</option>
                         <option value="none" data-i18n="editAct.timerNone">Relaxed (No Timer)</option>
@@ -1793,16 +1803,16 @@
                     <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
                       <label for="ps-timer-seconds" class="block text-[11px] font-bold text-[#3f3f46] mb-1" data-i18n="editAct.secondsLabel">Seconds per Question</label>
                       <input type="number" id="ps-timer-seconds" min="5" max="300" step="5" value="30"
-                        class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                        class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1E5E3A]">
                     </div>
 
                     <div class="bg-white p-3 rounded-lg border border-[#e5dfd3] flex flex-col justify-center gap-2 text-xs font-semibold text-[#18181b]">
                       <label class="inline-flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" id="ps-shuffle-q" checked class="w-4 h-4 rounded accent-[#1d4ed8]">
+                        <input type="checkbox" id="ps-shuffle-q" checked class="w-4 h-4 rounded accent-[#1E5E3A]">
                         <span data-i18n="editAct.shuffleQ">Shuffle Questions</span>
                       </label>
                       <label class="inline-flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" id="ps-shuffle-a" checked class="w-4 h-4 rounded accent-[#1d4ed8]">
+                        <input type="checkbox" id="ps-shuffle-a" checked class="w-4 h-4 rounded accent-[#1E5E3A]">
                         <span data-i18n="editAct.shuffleA">Shuffle Answer Choices</span>
                       </label>
                     </div>
@@ -1860,7 +1870,7 @@
               <span data-i18n="player.switchModeHeader">Switch Game</span>
             </h4>
             <button type="button" onclick="openAllGamesModal()"
-              class="text-[11px] px-2 py-0.5 rounded font-semibold bg-[#eff6ff] hover:bg-[#dbeafe] text-[#1d4ed8] border border-[#bfdbfe] transition-colors cursor-pointer" data-i18n="player.moreGames">
+              class="text-[11px] px-2 py-0.5 rounded font-semibold bg-[#EAF5ED] hover:bg-[#d5ebd9] text-[#1E5E3A] border border-[#bce1c9] transition-colors cursor-pointer" data-i18n="player.moreGames">
               All 15 Games
             </button>
           </div>
@@ -1870,7 +1880,7 @@
           </div>
 
           <button type="button" onclick="openAllGamesModal()"
-            class="w-full py-2 px-3 rounded-lg border border-dashed border-[#c9c1b2] hover:border-[#1d4ed8] bg-[#fcfbf8] hover:bg-[#eff6ff] text-[#18181b] hover:text-[#1d4ed8] transition-colors flex items-center justify-between gap-2 text-xs font-bold cursor-pointer">
+            class="w-full py-2 px-3 rounded-lg border border-dashed border-[#c9c1b2] hover:border-[#1E5E3A] bg-[#fcfbf8] hover:bg-[#EAF5ED] text-[#18181b] hover:text-[#1E5E3A] transition-colors flex items-center justify-between gap-2 text-xs font-bold cursor-pointer">
             <span class="flex items-center gap-2">
               <span class="ui-sprite ui-sm ui-dashboard"></span>
               <span data-i18n="player.moreGames">All 15 Games</span>
@@ -2156,7 +2166,7 @@
       <div class="bg-white rounded-2xl sm:rounded-3xl border border-[#cbd5e1] p-4 sm:p-6 shadow-xs space-y-4 flex flex-col min-h-[480px]">
         <div class="flex items-center justify-between gap-3 border-b border-[#e2e8f0] pb-3.5">
           <div class="flex items-center gap-2.5">
-            <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-900 border border-amber-300 flex items-center justify-center text-lg shrink-0">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#1E5E3A] border border-[#BCE1C9] flex items-center justify-center text-lg shrink-0">
               🎯
             </div>
             <div>
@@ -2164,7 +2174,7 @@
               <p class="text-xs text-[#334155] font-medium">Kompilasi deadline PR dan barang bawaan terdekat.</p>
             </div>
           </div>
-          <span id="personal-agenda-badge" class="px-2.5 py-1 rounded-full text-xs font-black bg-amber-100 text-amber-950 border border-amber-300 shrink-0">
+          <span id="personal-agenda-badge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-[#EAF5ED] text-[#1E5E3A] border border-[#BCE1C9] shrink-0">
             0 Agenda Aktif
           </span>
         </div>
@@ -2630,11 +2640,11 @@
       <form onsubmit="handleSaveCloudConfig(event)" class="space-y-4">
         <div>
           <label for="sb-url" class="block text-xs font-bold text-[#3f3f46] mb-1">Supabase URL</label>
-          <input type="url" id="sb-url" placeholder="https://xxxxxxxx.supabase.co" class="w-full px-3.5 py-2 rounded-lg border border-[#d6cfc2] text-xs font-mono focus:outline-none focus:border-[#1d4ed8]">
+          <input type="url" id="sb-url" placeholder="https://xxxxxxxx.supabase.co" class="w-full px-3.5 py-2 rounded-lg border border-[#d6cfc2] text-xs font-mono focus:outline-none focus:border-[#1E5E3A]">
         </div>
         <div>
           <label for="sb-key" class="block text-xs font-bold text-[#3f3f46] mb-1" data-i18n="login.cloudKeyLabel">Supabase Publishable / Anon Key</label>
-          <input type="text" id="sb-key" placeholder="sb_publishable_... or eyJ..." class="w-full px-3.5 py-2 rounded-lg border border-[#d6cfc2] text-xs font-mono focus:outline-none focus:border-[#1d4ed8]">
+          <input type="text" id="sb-key" placeholder="sb_publishable_... or eyJ..." class="w-full px-3.5 py-2 rounded-lg border border-[#d6cfc2] text-xs font-mono focus:outline-none focus:border-[#1E5E3A]">
           <p class="text-[11px] text-[#78716c] mt-1" data-i18n="login.cloudKeyHint">
             Use the new Publishable Key (sb_publishable_...) or legacy Anon Key (eyJ...). Never use Secret Key (service_role)!
           </p>
@@ -2643,7 +2653,7 @@
           <button type="button" onclick="handleResetCloudConfig()" class="px-4 py-2 rounded-lg bg-[#f4f1ea] hover:bg-[#e7e2d8] text-[#18181b] font-semibold text-xs cursor-pointer" data-i18n="login.cloudReset">
             Reset Cloud Config
           </button>
-          <button type="submit" class="flex-1 py-2 rounded-lg bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-xs cursor-pointer" data-i18n="login.cloudSave">
+          <button type="submit" class="flex-1 py-2 rounded-lg bg-[#1E5E3A] hover:bg-[#164E30] text-white font-bold text-xs cursor-pointer" data-i18n="login.cloudSave">
             Save Cloud Config
           </button>
         </div>
@@ -2675,13 +2685,13 @@
             <span class="ui-sprite ui-xs ui-users-switch"></span>
             <span>Quick Demo Access</span>
           </h4>
-          <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#eff6ff] text-[#1d4ed8] border border-[#bfdbfe]">Demo: demo / demo</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#EAF5ED] text-[#1E5E3A] border border-[#bce1c9]">Demo: demo / demo</span>
         </div>
         <p class="text-[11px] text-[#78716c]" data-i18n="admin.demoDesc">
           Log in directly as Demo Teacher with pre-seeded classroom projects (Solar System, Fruit Slicer, AI Hand Slicer).
         </p>
         <button type="button" onclick="quickLoginTeacher('t-demo')"
-          class="w-full py-2.5 rounded-lg bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer" data-i18n="admin.demoBtn">
+          class="w-full py-2.5 rounded-lg bg-[#1E5E3A] hover:bg-[#164E30] text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer" data-i18n="admin.demoBtn">
           <span class="ui-sprite ui-sm ui-dashboard"></span>
           <span>Launch Demo Teacher Dashboard</span>
         </button>
@@ -2731,7 +2741,7 @@
     <div class="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl border border-[#d6cfc2] space-y-4" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between border-b border-[#eee9df] pb-3">
         <div class="flex items-center gap-2">
-          <span class="w-8 h-8 rounded-lg bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-center text-[#1d4ed8]">
+          <span class="w-8 h-8 rounded-lg bg-[#EAF5ED] border border-[#bce1c9] flex items-center justify-center text-[#1E5E3A]">
             <span class="ui-sprite ui-sm ui-lock"></span>
           </span>
           <h3 id="forgot-modal-title" class="text-base font-bold text-[#18181b]" data-i18n="forgot.titlePassword">Reset Kata Sandi</h3>
@@ -2744,7 +2754,7 @@
       <!-- Tab Switcher: Lupa Password vs Lupa Username -->
       <div class="grid grid-cols-2 gap-1 p-1 rounded-lg bg-[#f4f1ea] border border-[#e5dfd3]">
         <button type="button" id="tab-forgot-password" onclick="switchForgotTab('password')"
-          class="py-2 rounded-md text-xs font-bold bg-white text-[#1d4ed8] shadow-2xs transition-colors cursor-pointer" data-i18n="forgot.titlePassword">
+          class="py-2 rounded-md text-xs font-bold bg-white text-[#1E5E3A] shadow-2xs transition-colors cursor-pointer" data-i18n="forgot.titlePassword">
           Reset Password
         </button>
         <button type="button" id="tab-forgot-username" onclick="switchForgotTab('username')"
@@ -2770,7 +2780,7 @@
           <div class="relative flex items-center">
             <span class="ui-sprite ui-sm ui-user absolute left-3"></span>
             <input type="email" id="forgot-pass-email" required placeholder="guru@sekolah.sch.id" data-i18n-placeholder="forgot.emailPlaceholder"
-              class="w-full pl-10 pr-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
+              class="w-full pl-10 pr-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1E5E3A]">
           </div>
         </div>
 
@@ -2779,7 +2789,7 @@
           <div class="relative flex items-center">
             <span class="ui-sprite ui-sm ui-lock absolute left-3"></span>
             <input type="password" id="forgot-pass-new" minlength="4" placeholder="Masukkan kata sandi baru (min. 4 karakter)" data-i18n-placeholder="forgot.newPassPlaceholder"
-              class="w-full pl-10 pr-11 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
+              class="w-full pl-10 pr-11 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1E5E3A]">
             <button type="button" onclick="togglePasswordVisibility('forgot-pass-new', 'forgot-pass-eye')" class="absolute right-2.5 p-1.5 rounded-md hover:bg-[#f4f1ea] cursor-pointer" aria-label="Toggle Password Visibility">
               <span id="forgot-pass-eye" class="ui-sprite ui-sm ui-eye"></span>
             </button>
@@ -2788,7 +2798,7 @@
 
         <div class="space-y-2 pt-1">
           <button type="button" id="btn-direct-reset" onclick="handleDirectPasswordReset()"
-            class="w-full py-2.5 rounded-lg bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 border-b-[2px] border-[#1e3a8a] transition-colors cursor-pointer">
+            class="w-full py-2.5 rounded-lg bg-[#1E5E3A] hover:bg-[#164E30] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 border-b-[2px] border-[#0F3520] transition-colors cursor-pointer">
             <span class="ui-sprite ui-sm ui-save"></span>
             <span data-i18n="forgot.btnResetDirect">Perbarui Kata Sandi Sekarang</span>
           </button>
@@ -2812,7 +2822,7 @@
           <div class="relative flex items-center">
             <span class="ui-sprite ui-sm ui-user absolute left-3"></span>
             <input type="email" id="forgot-user-email" required placeholder="guru@sekolah.sch.id" data-i18n-placeholder="forgot.emailPlaceholder"
-              class="w-full pl-10 pr-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
+              class="w-full pl-10 pr-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1E5E3A]">
           </div>
         </div>
 
@@ -2850,11 +2860,11 @@
       </div>
       <div>
         <label for="rename-input" class="block text-xs font-bold text-[#3f3f46] mb-1" data-i18n="rename.label">New Title</label>
-        <input type="text" id="rename-input" class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
+        <input type="text" id="rename-input" class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1E5E3A]">
       </div>
       <div class="flex justify-end gap-2">
         <button type="button" onclick="closeRenameModal()" class="px-4 py-2 bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] font-semibold text-xs rounded-lg text-[#18181b] cursor-pointer" data-i18n="dash.btnCancel">Cancel</button>
-        <button type="button" onclick="confirmRenameProject()" class="px-5 py-2 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-xs rounded-lg cursor-pointer" data-i18n="rename.save">Save Name</button>
+        <button type="button" onclick="confirmRenameProject()" class="px-5 py-2 bg-[#1E5E3A] hover:bg-[#164E30] text-white font-bold text-xs rounded-lg cursor-pointer" data-i18n="rename.save">Save Name</button>
       </div>
     </div>
   </div>
@@ -2961,7 +2971,7 @@
       
       <!-- Step 1: Confirmation -->
       <div id="asg-step-confirm" class="space-y-4 text-center">
-        <div class="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#1d4ed8] mx-auto">
+        <div class="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-[#1E5E3A] mx-auto">
           <span class="ui-sprite ui-md ui-share"></span>
         </div>
         <div>
@@ -2978,7 +2988,7 @@
           <button type="button" onclick="closeGenerateAssignmentModal()" class="flex-1 py-2.5 bg-[#f4f1ea] hover:bg-[#e7e2d8] border border-[#d6cfc2] font-semibold text-xs rounded-xl text-[#18181b] cursor-pointer">
             Batal
           </button>
-          <button type="button" onclick="goToAssignmentSettingsStep()" class="flex-1 py-2.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-xs rounded-xl border-b-[2px] border-[#1e3a8a] cursor-pointer" data-i18n="assign.btnYesContinue">
+          <button type="button" onclick="goToAssignmentSettingsStep()" class="flex-1 py-2.5 bg-[#1E5E3A] hover:bg-[#164E30] text-white font-bold text-xs rounded-xl border-b-[2px] border-[#0F3520] cursor-pointer" data-i18n="assign.btnYesContinue">
             Ya, Lanjut Atur Tugas
           </button>
         </div>
@@ -2999,7 +3009,7 @@
         <form onsubmit="handleCreateAssignmentSubmit(event)" class="space-y-3.5 text-xs">
           <div>
             <label for="asg-input-title" class="block font-bold text-[#3f3f46] mb-1" data-i18n="assign.titleLabel">Judul Penugasan</label>
-            <input type="text" id="asg-input-title" required class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-semibold focus:outline-none focus:border-[#1d4ed8]">
+            <input type="text" id="asg-input-title" required class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-semibold focus:outline-none focus:border-[#1E5E3A]">
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -3096,22 +3106,22 @@
 
           <div class="space-y-2 pt-1 border-t border-[#eee9df]">
             <label class="flex items-center gap-2 cursor-pointer select-none">
-              <input type="checkbox" id="asg-check-shuffle-q" checked class="w-4 h-4 rounded border-[#d6cfc2] accent-[#1d4ed8]">
+              <input type="checkbox" id="asg-check-shuffle-q" checked class="w-4 h-4 rounded border-[#d6cfc2] accent-[#1E5E3A]">
               <span class="font-medium text-[#3f3f46]" data-i18n="assign.shuffleQ">Acak urutan pertanyaan</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer select-none">
-              <input type="checkbox" id="asg-check-shuffle-a" checked class="w-4 h-4 rounded border-[#d6cfc2] accent-[#1d4ed8]">
+              <input type="checkbox" id="asg-check-shuffle-a" checked class="w-4 h-4 rounded border-[#d6cfc2] accent-[#1E5E3A]">
               <span class="font-medium text-[#3f3f46]" data-i18n="assign.shuffleA">Acak urutan pilihan jawaban</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer select-none">
-              <input type="checkbox" id="asg-check-multiple" class="w-4 h-4 rounded border-[#d6cfc2] accent-[#1d4ed8]">
+              <input type="checkbox" id="asg-check-multiple" class="w-4 h-4 rounded border-[#d6cfc2] accent-[#1E5E3A]">
               <div>
                 <span class="font-bold text-[#3f3f46]" data-i18n="assign.allowMultiple">Boleh dikerjakan berulang kali</span>
                 <span class="block text-[10px] text-[#78716c]" data-i18n="assign.allowMultipleDesc">Jika tidak dicentang, setiap murid hanya bisa mengumpulkan nilai 1 kali.</span>
               </div>
             </label>
             <label class="flex items-center gap-2 cursor-pointer select-none">
-              <input type="checkbox" id="asg-check-show-answers" checked class="w-4 h-4 rounded border-[#d6cfc2] accent-[#1d4ed8]">
+              <input type="checkbox" id="asg-check-show-answers" checked class="w-4 h-4 rounded border-[#d6cfc2] accent-[#1E5E3A]">
               <div>
                 <span class="font-bold text-[#3f3f46]" data-i18n="assign.showAnswers">Izinkan murid melihat pembahasan/kunci jawaban</span>
                 <span class="block text-[10px] text-[#78716c]" data-i18n="assign.showAnswersDesc">Murid dapat mempelajari kunci jawaban setelah mengumpulkan tugas.</span>
@@ -3144,7 +3154,7 @@
         <div class="space-y-2">
           <div class="flex items-center gap-1.5 bg-[#fcfbf8] p-1.5 rounded-xl border border-[#d6cfc2]">
             <input type="text" id="asg-success-url" readonly class="flex-1 bg-transparent px-2.5 text-xs font-mono font-semibold text-[#18181b] focus:outline-none">
-            <button type="button" onclick="copyCreatedAssignmentLink()" class="px-3.5 py-2 rounded-lg bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-xs flex items-center gap-1 cursor-pointer">
+            <button type="button" onclick="copyCreatedAssignmentLink()" class="px-3.5 py-2 rounded-lg bg-[#1E5E3A] hover:bg-[#164E30] text-white font-bold text-xs flex items-center gap-1 cursor-pointer">
               <span class="ui-sprite ui-xs ui-share"></span>
               <span>Salin</span>
             </button>
@@ -3341,7 +3351,7 @@
               <span>👔</span><span>+ Seragam</span>
             </button>
             <button type="button" onclick="addAgendaModalItemWithCategory('buku')"
-              class="px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 font-bold text-[11px] flex items-center gap-1 cursor-pointer">
+              class="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-blue-100 text-emerald-900 border border-emerald-200 font-bold text-[11px] flex items-center gap-1 cursor-pointer">
               <span>📖</span><span>+ Buku Mapel</span>
             </button>
             <button type="button" onclick="addAgendaModalItemWithCategory('tugas')"
@@ -3565,7 +3575,7 @@
       <!-- Modal Header -->
       <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#eee9df] pb-3">
         <div class="flex items-center gap-3 min-w-0">
-          <div class="w-10 h-10 rounded-lg bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-center shrink-0">
+          <div class="w-10 h-10 rounded-lg bg-[#EAF5ED] border border-[#bce1c9] flex items-center justify-center shrink-0">
             <span class="ui-sprite ui-md ui-palette"></span>
           </div>
           <div class="min-w-0">
@@ -3592,16 +3602,16 @@
           <div class="sm:col-span-5">
             <label for="media-cse-key-input" class="block text-[11px] font-bold text-[#3f3f46] mb-1" data-i18n="studio.mediaApiKeyLabel">Google Custom Search API Key</label>
             <input type="text" id="media-cse-key-input" placeholder="AIza..."
-              class="w-full px-3 py-1.5 rounded-md border border-[#d6cfc2] bg-white text-xs font-medium focus:outline-none focus:border-[#1d4ed8]">
+              class="w-full px-3 py-1.5 rounded-md border border-[#d6cfc2] bg-white text-xs font-medium focus:outline-none focus:border-[#1E5E3A]">
           </div>
           <div class="sm:col-span-4">
             <label for="media-cse-cx-input" class="block text-[11px] font-bold text-[#3f3f46] mb-1" data-i18n="studio.mediaApiCxLabel">Search Engine ID (cx)</label>
             <input type="text" id="media-cse-cx-input" placeholder="a1b2c3d4..."
-              class="w-full px-3 py-1.5 rounded-md border border-[#d6cfc2] bg-white text-xs font-medium focus:outline-none focus:border-[#1d4ed8]">
+              class="w-full px-3 py-1.5 rounded-md border border-[#d6cfc2] bg-white text-xs font-medium focus:outline-none focus:border-[#1E5E3A]">
           </div>
           <div class="sm:col-span-3 flex gap-1.5">
             <button type="button" id="media-cse-save-btn" onclick="saveMediaCseConfig()"
-              class="flex-1 px-3 py-1.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-xs rounded-md cursor-pointer" data-i18n="studio.mediaApiSave">
+              class="flex-1 px-3 py-1.5 bg-[#1E5E3A] hover:bg-[#164E30] text-white font-bold text-xs rounded-md cursor-pointer" data-i18n="studio.mediaApiSave">
               Save Key
             </button>
             <button type="button" onclick="clearMediaCseConfig()"
@@ -3642,11 +3652,11 @@
             <input type="text" id="media-search-input"
               data-i18n-placeholder="studio.mediaSearchPh" placeholder="Type keyword (e.g. Mars planet, volcano)..."
               onkeydown="if(event.key==='Enter'){event.preventDefault();executeMediaSearch();}"
-              class="w-full pl-9 pr-3 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-xs sm:text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">
+              class="w-full pl-9 pr-3 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-xs sm:text-sm font-medium focus:outline-none focus:border-[#1E5E3A]">
           </div>
           <div class="flex items-center gap-2 shrink-0">
             <button type="button" id="media-search-btn" onclick="executeMediaSearch()"
-              class="px-4 py-2 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-xs rounded-lg border-b-2 border-[#1e3a8a] cursor-pointer" data-i18n="studio.mediaSearchBtn">
+              class="px-4 py-2 bg-[#1E5E3A] hover:bg-[#164E30] text-white font-bold text-xs rounded-lg border-b-2 border-[#0F3520] cursor-pointer" data-i18n="studio.mediaSearchBtn">
               Search
             </button>
             <button type="button" id="media-open-google-btn" onclick="openGoogleImagesNewTab()"
@@ -3675,7 +3685,7 @@
       <!-- Upload File Tab Body -->
       <div id="media-upload-panel" class="hidden py-4">
         <label id="media-upload-dropzone" for="media-upload-input"
-          class="flex flex-col items-center justify-center gap-3 p-8 rounded-xl border-2 border-dashed border-[#c9c1b2] hover:border-[#1d4ed8] bg-[#fcfbf8] hover:bg-[#eff6ff]/40 text-center transition-colors cursor-pointer">
+          class="flex flex-col items-center justify-center gap-3 p-8 rounded-xl border-2 border-dashed border-[#c9c1b2] hover:border-[#1E5E3A] bg-[#fcfbf8] hover:bg-[#EAF5ED]/40 text-center transition-colors cursor-pointer">
           <span class="w-12 h-12 rounded-xl bg-white border border-[#d6cfc2] flex items-center justify-center">
             <span class="ui-sprite ui-md ui-download"></span>
           </span>
@@ -3683,7 +3693,7 @@
             <div class="text-sm font-bold text-[#18181b]" data-i18n="studio.mediaTabUpload">Upload File</div>
             <div class="text-xs text-[#57534e]">PNG, JPG, WEBP, GIF — stored offline in your activity DB</div>
           </div>
-          <span class="px-4 py-2 rounded-lg bg-[#1d4ed8] text-white text-xs font-bold">Choose Image / GIF</span>
+          <span class="px-4 py-2 rounded-lg bg-[#1E5E3A] text-white text-xs font-bold">Choose Image / GIF</span>
           <input type="file" id="media-upload-input" accept="image/*,image/gif" class="hidden" onchange="handleMediaPickerFileUpload(this.files[0])">
         </label>
       </div>
@@ -3693,7 +3703,7 @@
         <input type="url" id="media-direct-url-input"
           data-i18n-placeholder="studio.mediaUrlPh" placeholder="Or paste direct image / GIF URL (https://...)"
           onkeydown="if(event.key==='Enter'){event.preventDefault();applyDirectMediaUrl();}"
-          class="flex-1 px-3.5 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-xs font-medium focus:outline-none focus:border-[#1d4ed8]">
+          class="flex-1 px-3.5 py-2 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-xs font-medium focus:outline-none focus:border-[#1E5E3A]">
         <button type="button" id="media-direct-url-btn" onclick="applyDirectMediaUrl()"
           class="px-4 py-2 bg-[#15803d] hover:bg-[#166534] text-white font-bold text-xs rounded-lg border-b-2 border-[#14532d] cursor-pointer shrink-0" data-i18n="studio.mediaUrlUse">
           Use URL
@@ -4051,7 +4061,7 @@
 
       if (btnAssignments) {
         btnAssignments.className = currentActiveTab === 'assignments'
-          ? 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#1d4ed8] text-white transition-colors flex items-center gap-2 cursor-pointer'
+          ? 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#1E5E3A] text-white transition-colors flex items-center gap-2 cursor-pointer'
           : 'px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#f4f1ea] text-[#57534e] hover:bg-[#e7e2d8] transition-colors flex items-center gap-2 cursor-pointer';
       }
 
@@ -4167,11 +4177,11 @@
           const visBadge = isPublic ? LotusI18n.t('dash.publicBadge') : LotusI18n.t('dash.privateBadge');
 
           return `
-            <article class="bg-white rounded-xl border border-[#e5dfd3] hover:border-[#1d4ed8] shadow-[0_2px_8px_rgba(24,24,27,0.04)] hover:shadow-[0_4px_14px_rgba(24,24,27,0.08)] p-5 flex flex-col justify-between gap-4 transition-all">
+            <article class="bg-white rounded-xl border border-[#e5dfd3] hover:border-[#1E5E3A] shadow-[0_2px_8px_rgba(24,24,27,0.04)] hover:shadow-[0_4px_14px_rgba(24,24,27,0.08)] p-5 flex flex-col justify-between gap-4 transition-all">
               <div class="space-y-3">
                 <div class="flex items-center justify-between gap-2 text-[11px] font-semibold text-[#57534e]">
                   <div class="truncate">
-                    <span class="text-[#1d4ed8] font-bold">${escapeHtml(levelCode)}</span>
+                    <span class="text-[#1E5E3A] font-bold">${escapeHtml(levelCode)}</span>
                     <span class="text-[#c9c1b2] mx-1">·</span>
                     <span>${escapeHtml(getSubjectDisplayName(proj.subject))}</span>
                     <span class="text-[#c9c1b2] mx-1">·</span>
@@ -4182,7 +4192,7 @@
                   <span class="text-[#78716c] shrink-0">${escapeHtml(LotusI18n.t('comm.questionsCount', { n: proj.questions?.length || 0 }))}</span>
                 </div>
 
-                <h3 onclick="openGamePlayer('${escapeHtml(proj.id)}')" class="font-bold text-base text-[#18181b] cursor-pointer hover:text-[#1d4ed8] transition-colors leading-snug line-clamp-2">
+                <h3 onclick="openGamePlayer('${escapeHtml(proj.id)}')" class="font-bold text-base text-[#18181b] cursor-pointer hover:text-[#1E5E3A] transition-colors leading-snug line-clamp-2">
                   ${escapeHtml(proj.title)}
                 </h3>
 
@@ -4204,7 +4214,7 @@
 
               <!-- Generate Assignment Link Button -->
               <button type="button" onclick="openGenerateAssignmentModal('${escapeHtml(proj.id)}')"
-                class="w-full py-2 px-3 rounded-lg bg-[#eff6ff] hover:bg-[#dbeafe] text-[#1d4ed8] border border-[#bfdbfe] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+                class="w-full py-2 px-3 rounded-lg bg-[#EAF5ED] hover:bg-[#d5ebd9] text-[#1E5E3A] border border-[#bce1c9] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
                 <span class="ui-sprite ui-xs ui-share"></span>
                 <span data-i18n="assign.createBtn">Generate Link Tugas</span>
               </button>
@@ -4221,7 +4231,7 @@
                 <!-- 5 Quick Action Icons: Pencil (Edit Questions), Copy (Duplicate), Sliders (Edit Activity), Trash (Delete), Aa (Rename) -->
                 <div class="flex items-center gap-1">
                   <button type="button" data-card-action="edit-questions" onclick="openQuestionStudioById('${escapeHtml(proj.id)}')"
-                    class="w-9 h-9 rounded-lg bg-[#fcfbf8] hover:bg-[#eff6ff] border border-[#e5dfd3] hover:border-[#1d4ed8] flex items-center justify-center transition-colors cursor-pointer"
+                    class="w-9 h-9 rounded-lg bg-[#fcfbf8] hover:bg-[#EAF5ED] border border-[#e5dfd3] hover:border-[#1E5E3A] flex items-center justify-center transition-colors cursor-pointer"
                     title="${escapeHtml(editQTitle)}" aria-label="${escapeHtml(editQTitle)}">
                     <span class="ui-sprite ui-sm ui-pencil"></span>
                   </button>
@@ -4400,7 +4410,7 @@
           <div class="bg-white p-5 sm:p-6 rounded-xl border border-[#e5dfd3] space-y-4">
             <div class="flex items-center justify-between border-b border-[#eee9df] pb-3">
               <span class="font-bold text-sm text-[#18181b] flex items-center gap-2">
-                <span class="w-7 h-7 rounded-md bg-[#f4f1ea] border border-[#e5dfd3] text-[#1d4ed8] flex items-center justify-center text-xs font-bold">${qIdx + 1}</span>
+                <span class="w-7 h-7 rounded-md bg-[#f4f1ea] border border-[#e5dfd3] text-[#1E5E3A] flex items-center justify-center text-xs font-bold">${qIdx + 1}</span>
                 <span>${escapeHtml(LotusI18n.t('studio.questionLabel', { n: qIdx + 1 }))}</span>
               </span>
               ${projectQuestions.length > 1 ? `
@@ -4414,7 +4424,7 @@
             <div>
               <textarea rows="2" placeholder="${escapeHtml(LotusI18n.t('studio.questionPlaceholder'))}"
                 oninput="projectQuestions[${qIdx}].text=this.value"
-                class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1d4ed8]">${escapeHtml(q.text || '')}</textarea>
+                class="w-full px-3.5 py-2.5 rounded-lg border border-[#d6cfc2] bg-[#fcfbf8] focus:bg-white text-sm font-medium focus:outline-none focus:border-[#1E5E3A]">${escapeHtml(q.text || '')}</textarea>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#fcfbf8] p-3.5 rounded-lg border border-[#e5dfd3]">
@@ -4425,13 +4435,13 @@
                     <div class="flex items-center gap-2.5 bg-white p-1.5 pr-2.5 rounded-lg border border-[#d6cfc2]">
                       <img src="${escapeHtml(q.image)}" class="w-16 h-12 object-cover rounded border border-[#e5dfd3] bg-[#f4f1ea] shrink-0" alt="question media">
                       <div class="flex flex-col items-start gap-0.5">
-                        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#eff6ff] text-[#1d4ed8] border border-[#bfdbfe]">${escapeHtml(imgBadge)}</span>
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#EAF5ED] text-[#1E5E3A] border border-[#bce1c9]">${escapeHtml(imgBadge)}</span>
                         <button type="button" onclick="removeQuestionImage(${qIdx})" class="text-xs text-red-700 font-semibold hover:underline cursor-pointer">${rmMediaText}</button>
                       </div>
                     </div>
                   ` : ''}
                   <button type="button" id="q-choose-img-${qIdx}" onclick="openMediaPickerModal(${qIdx}, 'question')"
-                    class="px-3.5 py-2 rounded-lg border border-[#bfdbfe] bg-[#eff6ff] hover:bg-[#dbeafe] text-[#1d4ed8] text-xs font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer">
+                    class="px-3.5 py-2 rounded-lg border border-[#bce1c9] bg-[#EAF5ED] hover:bg-[#d5ebd9] text-[#1E5E3A] text-xs font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer">
                     <span class="ui-sprite ui-xs ui-search"></span>
                     <span>${chooseImgText}</span>
                   </button>
@@ -4455,7 +4465,7 @@
               <div class="flex items-center justify-between">
                 <span class="text-xs font-semibold text-[#57534e]">${escapeHtml(LotusI18n.t('studio.correctHint'))}</span>
                 ${q.options.length < 6 ? `
-                  <button type="button" onclick="addOptionToQuestion(${qIdx})" class="text-xs font-bold text-[#1d4ed8] hover:underline cursor-pointer">
+                  <button type="button" onclick="addOptionToQuestion(${qIdx})" class="text-xs font-bold text-[#1E5E3A] hover:underline cursor-pointer">
                     ${addOptText}
                   </button>
                 ` : ''}
@@ -4469,7 +4479,7 @@
                     </span>
                     <input type="text" placeholder="${escapeHtml(LotusI18n.t('studio.answerOptPlaceholder', { key: keys[oIdx] }))}"
                       value="${escapeHtml(opt.text || '')}" oninput="projectQuestions[${qIdx}].options[${oIdx}].text=this.value"
-                      class="flex-1 min-w-[140px] px-3 py-1.5 rounded-md border border-[#d6cfc2] text-xs font-medium focus:outline-none focus:border-[#1d4ed8]">
+                      class="flex-1 min-w-[140px] px-3 py-1.5 rounded-md border border-[#d6cfc2] text-xs font-medium focus:outline-none focus:border-[#1E5E3A]">
 
                     ${opt.image ? `
                       <div class="flex items-center gap-1 bg-[#fcfbf8] border border-[#d6cfc2] rounded-md p-0.5 shrink-0">
@@ -4478,7 +4488,7 @@
                       </div>
                     ` : `
                       <button type="button" onclick="openMediaPickerModal(${qIdx}, 'option', ${oIdx})"
-                        class="p-1.5 rounded-md border border-[#e5dfd3] bg-[#fcfbf8] hover:bg-[#eff6ff] hover:border-[#bfdbfe] cursor-pointer shrink-0" title="${optImgHint}" aria-label="${optImgHint}">
+                        class="p-1.5 rounded-md border border-[#e5dfd3] bg-[#fcfbf8] hover:bg-[#EAF5ED] hover:border-[#bce1c9] cursor-pointer shrink-0" title="${optImgHint}" aria-label="${optImgHint}">
                         <span class="ui-sprite ui-xs ui-palette"></span>
                       </button>
                     `}
@@ -4882,7 +4892,7 @@
         const fallbackAttr = item.fallbackThumb ? `data-fallback="${escapeHtml(item.fallbackThumb)}"` : '';
         return `
           <button type="button" onclick="selectMediaSearchResult(${idx})"
-            class="group text-left bg-white hover:bg-[#eff6ff]/40 rounded-lg border border-[#e5dfd3] hover:border-[#1d4ed8] p-2 flex flex-col justify-between gap-1.5 transition-colors cursor-pointer">
+            class="group text-left bg-white hover:bg-[#EAF5ED]/40 rounded-lg border border-[#e5dfd3] hover:border-[#1E5E3A] p-2 flex flex-col justify-between gap-1.5 transition-colors cursor-pointer">
             <div class="w-full h-28 rounded bg-[#f4f1ea] overflow-hidden flex items-center justify-center relative">
               <img src="${escapeHtml(item.thumb)}" ${fallbackAttr}
                 onerror="if(this.dataset.fallback && this.src!==this.dataset.fallback){this.src=this.dataset.fallback;this.dataset.fallback='';}else{this.closest('button').style.display='none';}"
@@ -4893,7 +4903,7 @@
             </div>
             <div class="px-0.5 flex items-center justify-between gap-1 text-[10px] text-[#57534e] font-medium">
               <span class="truncate">${escapeHtml(item.title || item.source)}</span>
-              <span class="shrink-0 font-bold text-[#1d4ed8]">${escapeHtml(dims)}</span>
+              <span class="shrink-0 font-bold text-[#1E5E3A]">${escapeHtml(dims)}</span>
             </div>
           </button>
         `;
@@ -4946,14 +4956,14 @@
       dz.dataset.bound = '1';
       dz.addEventListener('dragover', (e) => {
         e.preventDefault();
-        dz.classList.add('border-[#1d4ed8]', 'bg-[#eff6ff]/60');
+        dz.classList.add('border-[#1E5E3A]', 'bg-[#EAF5ED]/60');
       });
       dz.addEventListener('dragleave', () => {
-        dz.classList.remove('border-[#1d4ed8]', 'bg-[#eff6ff]/60');
+        dz.classList.remove('border-[#1E5E3A]', 'bg-[#EAF5ED]/60');
       });
       dz.addEventListener('drop', (e) => {
         e.preventDefault();
-        dz.classList.remove('border-[#1d4ed8]', 'bg-[#eff6ff]/60');
+        dz.classList.remove('border-[#1E5E3A]', 'bg-[#EAF5ED]/60');
         const file = e.dataTransfer?.files?.[0];
         if (file) handleMediaPickerFileUpload(file);
       });
@@ -5120,7 +5130,7 @@
         const isSel = t.id === activeTheme;
         return `
           <button type="button" onclick="selectTheme('${t.id}')"
-            class="p-4 rounded-lg border-2 text-left flex items-start gap-3 transition-colors cursor-pointer ${isSel ? 'border-[#1d4ed8] bg-[#eff6ff]/60' : 'border-[#e5dfd3] bg-white hover:bg-[#fcfbf8]'}">
+            class="p-4 rounded-lg border-2 text-left flex items-start gap-3 transition-colors cursor-pointer ${isSel ? 'border-[#1E5E3A] bg-[#EAF5ED]/60' : 'border-[#e5dfd3] bg-white hover:bg-[#fcfbf8]'}">
             <div class="w-10 h-10 rounded-md border ${t.bg} flex items-center justify-center shrink-0">
               <span class="ui-sprite ui-md ${t.sprite}"></span>
             </div>
@@ -5487,7 +5497,7 @@
                 const active = playerLiveState.speed === opt.id;
                 return `
                   <button type="button" data-speed-btn="${opt.id}" onclick="sendPlayerSpeedChange('${opt.id}')"
-                    class="px-3.5 py-2 rounded-lg border-2 text-xs font-bold inline-flex items-center gap-2 transition-colors cursor-pointer ${active ? 'border-[#1d4ed8] bg-[#eff6ff] text-[#1d4ed8]' : 'border-[#d6cfc2] bg-white hover:bg-[#f4f1ea] text-[#18181b]'}">
+                    class="px-3.5 py-2 rounded-lg border-2 text-xs font-bold inline-flex items-center gap-2 transition-colors cursor-pointer ${active ? 'border-[#1E5E3A] bg-[#EAF5ED] text-[#1E5E3A]' : 'border-[#d6cfc2] bg-white hover:bg-[#f4f1ea] text-[#18181b]'}">
                     <span class="w-2.5 h-2.5 rounded-full" style="background:${opt.dot};"></span>
                     <span>${escapeHtml(opt.label)}</span>
                   </button>
@@ -5520,7 +5530,7 @@
             <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
               <label for="ps-ai-hand" class="block text-[11px] font-bold text-[#3f3f46] mb-1">${escapeHtml(LotusI18n.t('aiSlicer.handLabel'))}</label>
               <select id="ps-ai-hand" onchange="sendPlayerGameSettings({ hand: this.value })"
-                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1E5E3A]">
                 <option value="auto" ${playerLiveState.hand === 'auto' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('aiSlicer.handAuto'))}</option>
                 <option value="right" ${playerLiveState.hand === 'right' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('aiSlicer.handRight'))}</option>
                 <option value="left" ${playerLiveState.hand === 'left' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('aiSlicer.handLeft'))}</option>
@@ -5530,7 +5540,7 @@
             <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
               <label for="ps-ai-blade" class="block text-[11px] font-bold text-[#3f3f46] mb-1">${escapeHtml(LotusI18n.t('aiSlicer.pointLabel'))}</label>
               <select id="ps-ai-blade" onchange="sendPlayerGameSettings({ bladePoint: this.value })"
-                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1E5E3A]">
                 <option value="finger" ${playerLiveState.bladePoint === 'finger' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('aiSlicer.pointFinger'))}</option>
                 <option value="palm" ${playerLiveState.bladePoint === 'palm' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('aiSlicer.pointPalm'))}</option>
               </select>
@@ -5539,7 +5549,7 @@
             <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
               <label for="ps-speed-select" class="block text-[11px] font-bold text-[#3f3f46] mb-1">${escapeHtml(tx('player.settingsSpeedHead', 'Speed', 'Kecepatan'))}</label>
               <select id="ps-speed-select" onchange="sendPlayerSpeedChange(this.value)"
-                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1E5E3A]">
                 <option value="relaxed" ${playerLiveState.speed === 'relaxed' ? 'selected' : ''}>${escapeHtml(getSpeedLabelText('relaxed'))}</option>
                 <option value="normal" ${playerLiveState.speed === 'normal' ? 'selected' : ''}>${escapeHtml(getSpeedLabelText('normal'))}</option>
                 <option value="fast" ${playerLiveState.speed === 'fast' ? 'selected' : ''}>${escapeHtml(getSpeedLabelText('fast'))}</option>
@@ -5549,7 +5559,7 @@
             <div class="bg-white p-3 rounded-lg border border-[#e5dfd3] flex items-center">
               <label class="inline-flex items-center gap-2 text-xs font-semibold text-[#18181b] cursor-pointer">
                 <input type="checkbox" id="ps-ai-skeleton" ${playerLiveState.skeleton !== false ? 'checked' : ''} onchange="sendPlayerGameSettings({ skeleton: this.checked })"
-                  class="w-4 h-4 rounded accent-[#1d4ed8]">
+                  class="w-4 h-4 rounded accent-[#1E5E3A]">
                 <span>${escapeHtml(LotusI18n.t('aiSlicer.skeleton'))}</span>
               </label>
             </div>
@@ -5561,7 +5571,7 @@
             <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
               <label for="ps-speed-select" class="block text-[11px] font-bold text-[#3f3f46] mb-1">${escapeHtml(tx('player.settingsSpeedHead', 'Speed', 'Kecepatan'))}</label>
               <select id="ps-speed-select" onchange="sendPlayerSpeedChange(this.value)"
-                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1E5E3A]">
                 <option value="relaxed" ${playerLiveState.speed === 'relaxed' ? 'selected' : ''}>${escapeHtml(getSpeedLabelText('relaxed'))}</option>
                 <option value="normal" ${playerLiveState.speed === 'normal' ? 'selected' : ''}>${escapeHtml(getSpeedLabelText('normal'))}</option>
                 <option value="fast" ${playerLiveState.speed === 'fast' ? 'selected' : ''}>${escapeHtml(getSpeedLabelText('fast'))}</option>
@@ -5571,7 +5581,7 @@
             <div class="bg-white p-3 rounded-lg border border-[#e5dfd3] flex items-center">
               <label class="inline-flex items-center gap-2 text-xs font-semibold text-[#18181b] cursor-pointer">
                 <input type="checkbox" id="ps-ai-skeleton" ${playerLiveState.skeleton !== false ? 'checked' : ''} onchange="sendPlayerGameSettings({ skeleton: this.checked })"
-                  class="w-4 h-4 rounded accent-[#1d4ed8]">
+                  class="w-4 h-4 rounded accent-[#1E5E3A]">
                 <span>${escapeHtml(LotusI18n.t('hc.aiOverlay'))}</span>
               </label>
             </div>
@@ -5592,7 +5602,7 @@
             <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
               <label for="ps-hb-tracking" class="block text-[11px] font-bold text-[#3f3f46] mb-1">${escapeHtml(isId ? 'Mode Pelacakan' : 'Tracking Mode')}</label>
               <select id="ps-hb-tracking" onchange="sendPlayerGameSettings({ trackingMode: this.value })"
-                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1E5E3A]">
                 <option value="hands" ${playerLiveState.trackingMode !== 'pose' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('hb.trackingNear'))}</option>
                 <option value="pose" ${playerLiveState.trackingMode === 'pose' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('hb.trackingFar'))}</option>
               </select>
@@ -5601,7 +5611,7 @@
             <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
               <label for="ps-ai-hand" class="block text-[11px] font-bold text-[#3f3f46] mb-1">${escapeHtml(LotusI18n.t('aiSlicer.handLabel'))}</label>
               <select id="ps-ai-hand" onchange="sendPlayerGameSettings({ hand: this.value })"
-                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8]">
+                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1E5E3A]">
                 <option value="auto" ${playerLiveState.hand === 'auto' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('hb.handAuto'))}</option>
                 <option value="right" ${playerLiveState.hand === 'right' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('hb.handRight'))}</option>
                 <option value="left" ${playerLiveState.hand === 'left' ? 'selected' : ''}>${escapeHtml(LotusI18n.t('hb.handLeft'))}</option>
@@ -5611,7 +5621,7 @@
             <div class="bg-white p-3 rounded-lg border border-[#e5dfd3]">
               <label for="ps-hb-chapter" class="block text-[11px] font-bold text-[#3f3f46] mb-1">${escapeHtml(tx('player.hanziDeck', 'Hanzi Unit / Deck', 'Unit / Dek Hanzi'))}</label>
               <select id="ps-hb-chapter" onchange="sendPlayerHanziDeckChange(this.value)" ${chapters.length === 0 ? 'disabled' : ''}
-                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1d4ed8] disabled:opacity-60">
+                class="w-full px-2.5 py-2 rounded-md border border-[#d6cfc2] bg-[#fcfbf8] text-xs font-semibold text-[#18181b] focus:outline-none focus:border-[#1E5E3A] disabled:opacity-60">
                 ${chaptersOptionsHtml}
               </select>
             </div>
@@ -5634,20 +5644,20 @@
               <span class="ui-sprite ui-xs ui-camera"></span>
               <span>${escapeHtml(tx('player.settingsCameraHead', 'AI Motion & Live Controls', 'Kontrol Gerak AI & Kamera'))}</span>
             </h4>
-            <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-md border ${camActive ? 'bg-[#ecfdf5] text-[#15803d] border-[#86efac]' : (mouseActive ? 'bg-[#eff6ff] text-[#1d4ed8] border-[#bfdbfe]' : 'bg-white text-[#57534e] border-[#d6cfc2]')}">
+            <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-md border ${camActive ? 'bg-[#ecfdf5] text-[#15803d] border-[#86efac]' : (mouseActive ? 'bg-[#EAF5ED] text-[#1E5E3A] border-[#bce1c9]' : 'bg-white text-[#57534e] border-[#d6cfc2]')}">
               ${escapeHtml(statePill)}
             </span>
           </div>
 
           <div class="flex flex-wrap items-center gap-2">
             <button type="button" id="ps-btn-camera" onclick="sendPlayerGameCmd('TOGGLE_CAMERA')"
-              class="px-4 py-2 rounded-lg font-bold text-xs border-b-2 inline-flex items-center gap-2 transition-colors cursor-pointer ${camActive ? 'bg-[#b91c1c] hover:bg-[#991b1b] text-white border-[#7f1d1d]' : 'bg-[#1d4ed8] hover:bg-[#1e40af] text-white border-[#1e3a8a]'}">
+              class="px-4 py-2 rounded-lg font-bold text-xs border-b-2 inline-flex items-center gap-2 transition-colors cursor-pointer ${camActive ? 'bg-[#b91c1c] hover:bg-[#991b1b] text-white border-[#7f1d1d]' : 'bg-[#1E5E3A] hover:bg-[#164E30] text-white border-[#0F3520]'}">
               <span class="ui-sprite ui-xs ${camActive ? 'ui-camera-off' : 'ui-camera'}"></span>
               <span>${escapeHtml(camBtnLabel)}</span>
             </button>
 
             <button type="button" id="ps-btn-mouse" onclick="sendPlayerGameCmd('MOUSE_MODE')"
-              class="px-4 py-2 rounded-lg font-bold text-xs border inline-flex items-center gap-2 transition-colors cursor-pointer ${mouseActive ? 'bg-[#eff6ff] border-[#1d4ed8] text-[#1d4ed8]' : 'bg-white hover:bg-[#f4f1ea] border-[#d6cfc2] text-[#18181b]'}">
+              class="px-4 py-2 rounded-lg font-bold text-xs border inline-flex items-center gap-2 transition-colors cursor-pointer ${mouseActive ? 'bg-[#EAF5ED] border-[#1E5E3A] text-[#1E5E3A]' : 'bg-white hover:bg-[#f4f1ea] border-[#d6cfc2] text-[#18181b]'}">
               <span class="ui-sprite ui-xs ui-gamepad"></span>
               <span>${escapeHtml(mouseBtnLabel)}</span>
             </button>
@@ -6536,12 +6546,12 @@
 
       container.innerHTML = teachers.map(t => `
         <button type="button" onclick="selectTeacherAccount('${escapeHtml(t.id)}')"
-          class="w-full p-3 rounded-lg border ${t.id === currentTeacher.id ? 'border-[#1d4ed8] bg-[#eff6ff]/60' : 'border-[#e5dfd3] bg-white hover:bg-[#fcfbf8]'} cursor-pointer flex items-center justify-between text-left transition-colors">
+          class="w-full p-3 rounded-lg border ${t.id === currentTeacher.id ? 'border-[#1E5E3A] bg-[#EAF5ED]/60' : 'border-[#e5dfd3] bg-white hover:bg-[#fcfbf8]'} cursor-pointer flex items-center justify-between text-left transition-colors">
           <div>
             <div class="font-bold text-xs text-[#18181b]">${escapeHtml(t.name)}</div>
             <div class="text-[11px] text-[#78716c]">${escapeHtml(t.email)} • ${escapeHtml(t.subject)}</div>
           </div>
-          <span class="text-xs font-bold text-[#1d4ed8]">${actionLabel}</span>
+          <span class="text-xs font-bold text-[#1E5E3A]">${actionLabel}</span>
         </button>
       `).join('');
 
@@ -6882,7 +6892,7 @@
       if (assignments.length === 0) {
         grid.innerHTML = `
           <div class="col-span-full py-14 text-center bg-white rounded-xl border border-[#e5dfd3] p-8 space-y-3">
-            <div class="w-12 h-12 mx-auto rounded-lg bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-center text-[#1d4ed8]">
+            <div class="w-12 h-12 mx-auto rounded-lg bg-[#EAF5ED] border border-[#bce1c9] flex items-center justify-center text-[#1E5E3A]">
               <span class="ui-sprite ui-md ui-share"></span>
             </div>
             <h3 class="text-base font-bold text-[#18181b]" data-i18n="assign.emptyTitle">Belum ada tugas yang dibuat</h3>
@@ -6890,7 +6900,7 @@
               Buat link tugas dari proyek apa pun di tab "Proyek Saya" untuk dibagikan kepada murid.
             </p>
             <button type="button" onclick="switchDashboardTab('projects')"
-              class="px-5 py-2.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold text-xs rounded-lg inline-flex items-center gap-1.5 cursor-pointer">
+              class="px-5 py-2.5 bg-[#1E5E3A] hover:bg-[#164E30] text-white font-bold text-xs rounded-lg inline-flex items-center gap-1.5 cursor-pointer">
               <span class="ui-sprite ui-xs ui-folder"></span>
               <span>Buka Proyek Saya</span>
             </button>
@@ -6908,7 +6918,7 @@
         const subs = LotusDB.getAllSubmissions().filter(s => s.assignment_id === asg.id);
 
         return `
-          <article class="bg-white rounded-xl border border-[#e5dfd3] hover:border-[#1d4ed8] shadow-[0_2px_8px_rgba(24,24,27,0.04)] p-5 flex flex-col justify-between gap-4 transition-all">
+          <article class="bg-white rounded-xl border border-[#e5dfd3] hover:border-[#1E5E3A] shadow-[0_2px_8px_rgba(24,24,27,0.04)] p-5 flex flex-col justify-between gap-4 transition-all">
             <div class="space-y-3">
               <div class="flex items-center justify-between gap-2 text-[11px] font-semibold">
                 <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isActive ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-zinc-100 text-zinc-600 border border-zinc-200'}">
@@ -6917,7 +6927,7 @@
                 <span class="text-[#78716c] font-normal">${dateStr}</span>
               </div>
 
-              <h3 onclick="openAssignmentDetail('${escapeHtml(asg.id)}')" class="font-bold text-base text-[#18181b] cursor-pointer hover:text-[#1d4ed8] transition-colors leading-snug line-clamp-2">
+              <h3 onclick="openAssignmentDetail('${escapeHtml(asg.id)}')" class="font-bold text-base text-[#18181b] cursor-pointer hover:text-[#1E5E3A] transition-colors leading-snug line-clamp-2">
                 ${escapeHtml(asg.title)}
               </h3>
 
@@ -6933,7 +6943,7 @@
 
               <div class="p-2.5 rounded-lg bg-[#fcfbf8] border border-[#e5dfd3] flex items-center justify-between text-xs">
                 <span class="text-[#57534e]">Siswa Mengumpulkan:</span>
-                <span class="font-bold text-[#1d4ed8] text-sm">${subs.length} Siswa</span>
+                <span class="font-bold text-[#1E5E3A] text-sm">${subs.length} Siswa</span>
               </div>
             </div>
 
@@ -6946,7 +6956,7 @@
               </button>
 
               <button type="button" onclick="copyAssignmentLinkById('${escapeHtml(asg.id)}')"
-                class="w-8 h-8 rounded-lg bg-[#fcfbf8] hover:bg-[#eff6ff] border border-[#e5dfd3] hover:border-[#1d4ed8] flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                class="w-8 h-8 rounded-lg bg-[#fcfbf8] hover:bg-[#EAF5ED] border border-[#e5dfd3] hover:border-[#1E5E3A] flex items-center justify-center transition-colors cursor-pointer shrink-0"
                 title="Salin Link Tugas">
                 <span class="ui-sprite ui-xs ui-share"></span>
               </button>
@@ -7007,7 +7017,7 @@
         : 'px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#f4f1ea] text-[#57534e] hover:bg-[#e7e2d8] flex items-center gap-2 transition-colors cursor-pointer';
 
       btnAnalytics.className = subtab === 'analytics'
-        ? 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#1d4ed8] text-white flex items-center gap-2 transition-colors cursor-pointer'
+        ? 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#1E5E3A] text-white flex items-center gap-2 transition-colors cursor-pointer'
         : 'px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#f4f1ea] text-[#57534e] hover:bg-[#e7e2d8] flex items-center gap-2 transition-colors cursor-pointer';
 
       contentSubs.classList.toggle('hidden', subtab !== 'submissions');
@@ -7311,7 +7321,7 @@
               </button>
 
               <button type="button" onclick="openGenerateAssignmentModal('${escapeHtml(proj.id)}')"
-                class="flex-1 min-w-[95px] py-2 px-2.5 rounded-lg bg-[#eff6ff] hover:bg-[#dbeafe] text-[#1d4ed8] border border-[#bfdbfe] font-bold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                class="flex-1 min-w-[95px] py-2 px-2.5 rounded-lg bg-[#EAF5ED] hover:bg-[#d5ebd9] text-[#1E5E3A] border border-[#bce1c9] font-bold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer"
                 title="Tugaskan langsung ke Siswa">
                 <span>📋</span>
                 <span>Tugaskan</span>
@@ -7728,6 +7738,19 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
     // AUTH NAVIGATION SYNCHRONIZER (Fixed 3-Zone Support)
     // -------------------------------------------------------------------------
     
+    
+    // Strict mobile zoom-out lock: block pinch-to-zoom gestures
+    if (typeof window !== 'undefined') {
+      window.addEventListener('gesturestart', function(e) { e.preventDefault(); }, { passive: false });
+      window.addEventListener('gesturechange', function(e) { e.preventDefault(); }, { passive: false });
+      window.addEventListener('gestureend', function(e) { e.preventDefault(); }, { passive: false });
+      document.addEventListener('touchmove', function(e) {
+        if (e.touches && e.touches.length > 1) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+    }
+  
     // Mobile Vertical Navigation Bar Controller
     function toggleMobileNav() {
       const panel = document.getElementById('mobile-nav-panel');
@@ -8427,7 +8450,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
       document.getElementById('form-signin').classList.toggle('hidden', !isSignIn);
       document.getElementById('form-register').classList.toggle('hidden', isSignIn);
       document.getElementById('auth-tab-signin').className = isSignIn
-        ? 'py-2 rounded-md text-xs sm:text-sm font-bold bg-white text-[#1d4ed8] shadow-2xs transition-colors cursor-pointer'
+        ? 'py-2 rounded-md text-xs sm:text-sm font-bold bg-white text-[#1E5E3A] shadow-2xs transition-colors cursor-pointer'
         : 'py-2 rounded-md text-xs sm:text-sm font-semibold text-[#57534e] hover:text-[#18181b] transition-colors cursor-pointer';
       document.getElementById('auth-tab-register').className = !isSignIn
         ? 'py-2 rounded-md text-xs sm:text-sm font-bold bg-white text-[#15803d] shadow-2xs transition-colors cursor-pointer'
@@ -8821,7 +8844,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
 
       if (tabPass) {
         tabPass.className = isPass
-          ? 'py-2 rounded-md text-xs font-bold bg-white text-[#1d4ed8] shadow-2xs transition-colors cursor-pointer'
+          ? 'py-2 rounded-md text-xs font-bold bg-white text-[#1E5E3A] shadow-2xs transition-colors cursor-pointer'
           : 'py-2 rounded-md text-xs font-semibold text-[#57534e] hover:text-[#18181b] transition-colors cursor-pointer';
       }
       if (tabUser) {
@@ -9105,7 +9128,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
             </div>
             <p class="text-sm font-bold text-[#18181b]">${escapeHtml(LotusI18n.t('comm.empty'))}</p>
             <button type="button" onclick="resetCommunityFilters()"
-              class="px-4 py-2 rounded-lg bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-semibold text-xs cursor-pointer">
+              class="px-4 py-2 rounded-lg bg-[#1E5E3A] hover:bg-[#164E30] text-white font-semibold text-xs cursor-pointer">
               ${escapeHtml(LotusI18n.t('comm.filterReset'))}
             </button>
           </div>
@@ -9125,12 +9148,12 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
         const isCam = meta.category === 'camera';
 
         return `
-          <article class="bg-white rounded-xl border border-[#e5dfd3] hover:border-[#1d4ed8] shadow-[0_2px_8px_rgba(24,24,27,0.04)] hover:shadow-[0_4px_14px_rgba(24,24,27,0.08)] transition-all p-5 flex flex-col justify-between gap-4">
+          <article class="bg-white rounded-xl border border-[#e5dfd3] hover:border-[#1E5E3A] shadow-[0_2px_8px_rgba(24,24,27,0.04)] hover:shadow-[0_4px_14px_rgba(24,24,27,0.08)] transition-all p-5 flex flex-col justify-between gap-4">
             <div class="space-y-3">
               <!-- Typographic Metadata Header (No Pill Soup) -->
               <div class="flex items-center justify-between gap-2 text-[11px] font-semibold text-[#57534e]">
                 <div class="truncate">
-                  <span class="text-[#1d4ed8] font-bold">${escapeHtml(levelCode)}</span>
+                  <span class="text-[#1E5E3A] font-bold">${escapeHtml(levelCode)}</span>
                   <span class="text-[#c9c1b2] mx-1">·</span>
                   <span>${escapeHtml(proj.subject || 'General')}</span>
                   <span class="text-[#c9c1b2] mx-1">·</span>
@@ -9142,7 +9165,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
               </div>
 
               <!-- Title -->
-              <h3 onclick="openCommunityPlayer('${escapeHtml(proj.id)}')" class="text-base font-bold text-[#18181b] hover:text-[#1d4ed8] transition-colors leading-snug line-clamp-2 cursor-pointer">
+              <h3 onclick="openCommunityPlayer('${escapeHtml(proj.id)}')" class="text-base font-bold text-[#18181b] hover:text-[#1E5E3A] transition-colors leading-snug line-clamp-2 cursor-pointer">
                 ${escapeHtml(proj.title)}
               </h3>
 
@@ -9179,7 +9202,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
               </button>
 
               <button type="button" onclick="assignDirectlyFromCommunity('${escapeHtml(proj.id)}')"
-                class="flex-1 min-w-[105px] py-2 px-3 rounded-lg bg-[#eff6ff] hover:bg-[#dbeafe] text-[#1d4ed8] border border-[#bfdbfe] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                class="flex-1 min-w-[105px] py-2 px-3 rounded-lg bg-[#EAF5ED] hover:bg-[#d5ebd9] text-[#1E5E3A] border border-[#bce1c9] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 title="Tugaskan ke Siswa">
                 <span class="text-xs">📋</span>
                 <span>Tugaskan</span>
@@ -10336,9 +10359,9 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
 
         const hasExtras = item.file_name || item.external_link || item.project_id || item.assignment_id;
         const extrasPills = [
-          item.file_name ? '<span class="text-[10px] font-bold text-sky-800 bg-sky-100 px-1.5 py-0.5 rounded border border-sky-300">📎 File</span>' : '',
-          item.external_link ? '<span class="text-[10px] font-bold text-purple-800 bg-purple-100 px-1.5 py-0.5 rounded border border-purple-300">🔗 Link</span>' : '',
-          (item.project_id || item.assignment_id) ? '<span class="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-300">🎮 Kerjakan</span>' : ''
+          item.file_name ? '<span class="text-[10px] font-bold text-[#334155] bg-slate-100 px-1.5 py-0.5 rounded border border-slate-300">📎 File</span>' : '',
+          item.external_link ? '<span class="text-[10px] font-bold text-[#334155] bg-slate-100 px-1.5 py-0.5 rounded border border-slate-300">🔗 Link</span>' : '',
+          (item.project_id || item.assignment_id) ? '<span class="text-[10px] font-bold text-[#1E5E3A] bg-[#EAF5ED] px-1.5 py-0.5 rounded border border-[#BCE1C9]">🎮 Kerjakan</span>' : ''
         ].filter(Boolean).join(' ');
 
         return `
@@ -10431,7 +10454,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
             
             <div class="font-black text-xs sm:text-sm text-[#0f172a] flex items-center justify-between">
               <span>${idx + 1}. ${escapeHtml(catName)}</span>
-              ${hasExtras ? '<span class="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-300">🎮 Kerjakan</span>' : ''}
+              ${hasExtras ? '<span class="text-[10px] font-bold text-[#1E5E3A] bg-[#EAF5ED] px-1.5 py-0.5 rounded border border-[#BCE1C9]">🎮 Kerjakan</span>' : ''}
             </div>
 
             <div class="text-xs sm:text-sm font-semibold text-[#1e293b] leading-relaxed">
@@ -10494,7 +10517,7 @@ const PORTAL_TEMPLATES = GAME_TEMPLATES_CONFIG;
           ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-50 text-amber-800 border border-amber-200">📝 Tugas</span>'
           : (item.type === 'materi'
             ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-50 text-purple-800 border border-purple-200">📚 Materi</span>'
-            : '<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-800 border border-blue-200">📢 Pengumuman</span>');
+            : '<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-900 border border-emerald-200">📢 Pengumuman</span>');
 
         return `
           <div class="bg-white rounded-2xl border border-[#D5E9DC] hover:border-[#1E5E3A] p-4.5 custom-card-shadow flex flex-col justify-between gap-3 group">
